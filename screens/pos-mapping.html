@@ -323,6 +323,7 @@
       font-family: inherit;
     }
     .overflow-menu-item:hover { background: var(--surface-soft); }
+    .overflow-wrap { position: relative; display: inline-block; }
     .overflow-cell { position: relative; }
 
     /* Activity timeline */
@@ -522,6 +523,12 @@
         padding: var(--space-lg);
       }
     }
+      /* Section spacing — flex gap on canvas, not page-body */
+    .page-body .napp-canvas {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+    }
   </style>
 </head>
 <body>
@@ -551,7 +558,7 @@
                 <button class="split-dropdown-item" role="menuitem"><i class="ti ti-send"></i>Push to all</button>
                 <button class="split-dropdown-item" role="menuitem"><i class="ti ti-list-check"></i>Push to selection</button>
               </div>
-            </button>
+            </div>
           </div>
         </div>
       </header>
@@ -613,13 +620,13 @@
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
                   <button class="link-action" onclick="openOverwriteDialog('Avocado Toast v3', 42)">Push</button>
-                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
-                    <i class="ti ti-dots"></i>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
                       <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
                       <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -636,13 +643,13 @@
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
                   <button class="link-action" onclick="openOverwriteDialog('Avocado Toast v3 Large', 42)">Push</button>
-                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
-                    <i class="ti ti-dots"></i>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
                       <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
                       <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -659,13 +666,13 @@
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
                   <button class="link-action" onclick="openOverwriteDialog('Classic Cheeseburger', 38)">Push</button>
-                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
-                    <i class="ti ti-dots"></i>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
                       <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
                       <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -682,13 +689,13 @@
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
                   <button class="link-action" onclick="openOverwriteDialog('Classic Cheeseburger Double', 38)">Push</button>
-                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
-                    <i class="ti ti-dots"></i>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
                       <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
                       <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -705,13 +712,13 @@
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
                   <button class="link-action" onclick="openOverwriteDialog('Flat White', 42)">Push</button>
-                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
-                    <i class="ti ti-dots"></i>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
                       <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
                       <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -728,13 +735,13 @@
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
                   <button class="link-action" onclick="openOverwriteDialog('Flat White Large', 42)">Push</button>
-                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
-                    <i class="ti ti-dots"></i>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
                       <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
                       <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -751,13 +758,13 @@
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
                   <button class="link-action">Push</button>
-                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
-                    <i class="ti ti-dots"></i>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
                       <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
                       <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -774,13 +781,13 @@
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
                   <button class="link-action" onclick="openOverwriteDialog('Caesar Salad', 18)">Push</button>
-                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
-                    <i class="ti ti-dots"></i>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
                       <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
                       <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -848,7 +855,7 @@
     document.addEventListener('DOMContentLoaded', () => NomniShell.init('POS mapping'));
 
     function toggleMenu(btn) {
-      const menu = btn.querySelector('.overflow-menu');
+      const menu = btn.nextElementSibling;
       document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
       menu.classList.toggle('open');
     }
