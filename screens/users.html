@@ -127,9 +127,9 @@
       text-transform: uppercase;
     }
     .avatar-green  { background: var(--mint); color: var(--spinach); }
-    .avatar-purple { background: #ede9fe; color: #6d28d9; }
-    .avatar-blue   { background: #dbeafe; color: #1d4ed8; }
-    .avatar-amber  { background: #fef3c7; color: #92400e; }
+    .avatar-purple { background: rgba(176,94,192,0.13); color: var(--procurement); }
+    .avatar-blue   { background: rgba(63,138,251,0.13); color: var(--pos); }
+    .avatar-amber  { background: var(--status-warn-bg); color: var(--status-warn-fg); }
     .avatar-rose   { background: var(--status-risk-bg); color: var(--rose); }
     .cell-name { font-weight: 600; color: var(--text); }
     .cell-sub { font-size: 12px; color: var(--text-soft); }
@@ -140,10 +140,10 @@
       font-size: 12px; font-weight: 600;
       padding: 3px 10px; border-radius: 99px; white-space: nowrap;
     }
-    .role-badge.owner    { background: #fef3c7; color: #92400e; }
+    .role-badge.owner    { background: var(--status-warn-bg); color: var(--status-warn-fg); }
     .role-badge.admin    { background: var(--status-risk-bg); color: var(--rose); }
-    .role-badge.manager  { background: #ede9fe; color: #6d28d9; }
-    .role-badge.buyer    { background: #dbeafe; color: #1d4ed8; }
+    .role-badge.manager  { background: rgba(176,94,192,0.13); color: var(--procurement); }
+    .role-badge.buyer    { background: rgba(63,138,251,0.13); color: var(--pos); }
     .role-badge.viewer   { background: var(--surface-soft); color: var(--text-soft); }
 
     /* Venue access pill strip */
@@ -165,10 +165,10 @@
       font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
     }
     .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
-    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-text); }
-    .status-pill.active::before { background: var(--status-ok-text); }
-    .status-pill.invited { background: var(--status-pending-bg); color: var(--status-pending-text); }
-    .status-pill.invited::before { background: var(--status-pending-text); }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
+    .status-pill.invited { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .status-pill.invited::before { background: var(--status-warn-fg); }
     .status-pill.suspended { background: var(--surface-soft); color: var(--text-soft); }
     .status-pill.suspended::before { background: var(--text-soft); }
 
@@ -530,7 +530,7 @@
 <!-- Invite user dialog -->
 <div id="invite-dialog" role="dialog" aria-modal="true" aria-labelledby="invite-title" style="display:none;position:fixed;inset:0;z-index:200;">
   <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" onclick="closeInviteDialog()"></div>
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-xl);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-lg);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <h2 id="invite-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Invite user</h2>
       <button onclick="closeInviteDialog()" style="background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px;" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>

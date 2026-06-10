@@ -130,10 +130,10 @@
       font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
     }
     .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
-    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-text); }
-    .status-pill.active::before { background: var(--status-ok-text); }
-    .status-pill.pending { background: var(--status-pending-bg); color: var(--status-pending-text); }
-    .status-pill.pending::before { background: var(--status-pending-text); }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
+    .status-pill.pending { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .status-pill.pending::before { background: var(--status-warn-fg); }
     .status-pill.inactive { background: var(--surface-soft); color: var(--text-soft); }
     .status-pill.inactive::before { background: var(--text-soft); }
 
@@ -433,7 +433,7 @@
 <!-- Add supplier dialog -->
 <div id="add-supplier-dialog" role="dialog" aria-modal="true" aria-labelledby="add-supplier-title" style="display:none;position:fixed;inset:0;z-index:200;">
   <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" onclick="closeAddSupplierDialog()"></div>
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-xl);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-lg);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <h2 id="add-supplier-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Add supplier</h2>
       <button onclick="closeAddSupplierDialog()" style="background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px;" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>

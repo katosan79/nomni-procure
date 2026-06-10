@@ -119,9 +119,9 @@
       flex-shrink: 0;
     }
     .group-icon i { color: #fff; font-size: 16px; }
-    .group-icon.purple { background: #7c3aed; }
-    .group-icon.blue   { background: #1d4ed8; }
-    .group-icon.amber  { background: #b45309; }
+    .group-icon.purple { background: var(--procurement); }
+    .group-icon.blue   { background: var(--pos); }
+    .group-icon.amber  { background: var(--ordering); }
     .group-name { font-size: 14px; font-weight: 700; color: var(--text); }
     .group-meta { font-size: 12px; color: var(--text-soft); }
 
@@ -170,10 +170,10 @@
       padding: 3px 10px; border-radius: 99px;
       white-space: nowrap;
     }
-    .group-badge.green  { background: var(--status-ok-bg);   color: var(--status-ok-text); }
-    .group-badge.purple { background: #ede9fe; color: #6d28d9; }
-    .group-badge.blue   { background: #dbeafe; color: #1d4ed8; }
-    .group-badge.amber  { background: #fef3c7; color: #92400e; }
+    .group-badge.green  { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .group-badge.purple { background: rgba(176,94,192,0.13); color: var(--procurement); }
+    .group-badge.blue   { background: rgba(63,138,251,0.13); color: var(--pos); }
+    .group-badge.amber  { background: rgba(23,179,163,0.13); color: var(--ordering); }
     .group-badge.none   { background: var(--surface-soft); color: var(--text-soft); }
     .group-badge i { font-size: 11px; }
 
@@ -186,8 +186,8 @@
     .status-pill::before {
       content: ''; width: 6px; height: 6px; border-radius: 50%;
     }
-    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-text); }
-    .status-pill.active::before { background: var(--status-ok-text); }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
     .status-pill.inactive { background: var(--surface-soft); color: var(--text-soft); }
     .status-pill.inactive::before { background: var(--text-soft); }
 
@@ -499,7 +499,7 @@
 <!-- Add venue dialog -->
 <div id="add-venue-dialog" role="dialog" aria-modal="true" aria-labelledby="add-venue-title" style="display:none;position:fixed;inset:0;z-index:200;display:none;">
   <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" onclick="closeAddVenueDialog()"></div>
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-xl);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-lg);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <h2 id="add-venue-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Add venue</h2>
       <button onclick="closeAddVenueDialog()" style="background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px;" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>
