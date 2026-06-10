@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Users — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex; flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex; flex-direction: column;
+      gap: var(--space-3xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.025em; line-height: 1.1;
+    }
+    .page-desc { font-size: 14px; color: var(--text-soft); margin-top: var(--space-xs); }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none; white-space: nowrap; border: 1.5px solid transparent;
+      font-family: inherit;
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--fern); color: #fff; border-color: var(--fern); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn i { font-size: 15px; }
+
+    /* Role tabs */
+    .tab-bar {
+      display: flex; gap: 2px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 3px;
+      width: fit-content;
+    }
+    .tab-btn {
+      height: 32px; padding-inline: var(--space-lg);
+      border-radius: calc(var(--radius-md) - 2px); border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      background: none; color: var(--text-soft);
+      transition: background 0.12s, color 0.12s;
+      font-family: inherit; display: flex; align-items: center; gap: 6px;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { background: var(--fern); color: #fff; }
+    .tab-count {
+      font-size: 11px; font-weight: 700;
+      background: rgba(255,255,255,0.25); border-radius: 99px;
+      padding: 1px 7px; line-height: 1.5;
+    }
+    .tab-btn:not(.active) .tab-count {
+      background: var(--surface-soft); color: var(--text-soft);
+    }
+
+    /* Filter bar */
+    .filter-bar { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap i {
+      position: absolute; left: var(--space-md); top: 50%; transform: translateY(-50%);
+      color: var(--text-soft); font-size: 15px; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; height: var(--control-h); padding-inline: var(--space-3xl) var(--space-lg);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); outline: none;
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .filter-select {
+      height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+
+    /* Table card */
+    .table-card {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .data-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px; }
+    .data-table thead tr { border-bottom: 1px solid var(--border); }
+    .data-table th {
+      padding: var(--space-md) var(--space-lg); text-align: left;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--space-md) var(--space-lg); color: var(--text);
+      border-bottom: 0.5px solid var(--border); vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+
+    /* User cell */
+    .cell-user { display: flex; align-items: center; gap: var(--space-md); }
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+      text-transform: uppercase;
+    }
+    .avatar-green  { background: var(--mint); color: var(--spinach); }
+    .avatar-purple { background: #ede9fe; color: #6d28d9; }
+    .avatar-blue   { background: #dbeafe; color: #1d4ed8; }
+    .avatar-amber  { background: #fef3c7; color: #92400e; }
+    .avatar-rose   { background: var(--status-risk-bg); color: var(--rose); }
+    .cell-name { font-weight: 600; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--text-soft); }
+
+    /* Role badge */
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600;
+      padding: 3px 10px; border-radius: 99px; white-space: nowrap;
+    }
+    .role-badge.owner    { background: #fef3c7; color: #92400e; }
+    .role-badge.admin    { background: var(--status-risk-bg); color: var(--rose); }
+    .role-badge.manager  { background: #ede9fe; color: #6d28d9; }
+    .role-badge.buyer    { background: #dbeafe; color: #1d4ed8; }
+    .role-badge.viewer   { background: var(--surface-soft); color: var(--text-soft); }
+
+    /* Venue access pill strip */
+    .venue-access { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+    .venue-pill {
+      font-size: 11px; font-weight: 500; padding: 2px 8px;
+      border-radius: 99px; background: var(--surface-soft);
+      border: 1px solid var(--border); color: var(--text-soft);
+      white-space: nowrap;
+    }
+    .venue-pill-more {
+      font-size: 11px; font-weight: 600; color: var(--text-accent);
+      cursor: pointer;
+    }
+
+    /* Status pill */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+    }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-text); }
+    .status-pill.active::before { background: var(--status-ok-text); }
+    .status-pill.invited { background: var(--status-pending-bg); color: var(--status-pending-text); }
+    .status-pill.invited::before { background: var(--status-pending-text); }
+    .status-pill.suspended { background: var(--surface-soft); color: var(--text-soft); }
+    .status-pill.suspended::before { background: var(--text-soft); }
+
+    /* Row actions */
+    .row-actions { display: flex; align-items: center; gap: var(--space-sm); white-space: nowrap; }
+    .link-action {
+      font-size: 13px; font-weight: 600; color: var(--text-accent);
+      background: none; border: none; cursor: pointer; padding: 0; font-family: inherit;
+    }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+    .overflow-btn {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft); transition: background 0.12s;
+    }
+    .overflow-btn:hover { background: var(--surface-soft); color: var(--text); }
+    .overflow-btn i { font-size: 15px; }
+    .overflow-wrap { position: relative; display: inline-flex; }
+    .overflow-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 50;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      min-width: 180px; padding: var(--space-xs);
+    }
+    .overflow-menu.open { display: block; }
+    .overflow-menu-item {
+      display: flex; align-items: center; gap: var(--space-sm);
+      width: 100%; padding: var(--space-sm) var(--space-md);
+      font-size: 13px; font-weight: 500; color: var(--text);
+      background: none; border: none; cursor: pointer;
+      border-radius: var(--radius-sm); font-family: inherit; text-align: left;
+    }
+    .overflow-menu-item:hover { background: var(--surface-soft); }
+    .overflow-menu-item.destructive { color: var(--rose); }
+    .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
+    .overflow-menu-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
+    .overflow-cell { width: 1%; white-space: nowrap; }
+
+    /* Roles info card */
+    .info-card {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .info-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+    }
+    .info-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .roles-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+      gap: 0;
+    }
+    .role-row {
+      padding: var(--space-md) var(--space-xl);
+      border-bottom: 0.5px solid var(--border);
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .role-row:last-child { border-bottom: none; }
+    .role-row-name {
+      display: flex; align-items: center; gap: var(--space-sm);
+      font-size: 13px; font-weight: 700; color: var(--text);
+    }
+    .role-row-desc { font-size: 12px; color: var(--text-soft); line-height: 1.4; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .page-header { flex-direction: column; align-items: flex-start; }
+      .tab-bar { width: 100%; }
+      .tab-btn { flex: 1; justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .filter-bar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <span class="page-eyebrow">Administration</span>
+        <h1 class="page-title">Users</h1>
+        <p class="page-desc">Manage who has access to Nomni, their roles, and which venues they can operate in.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline"><i class="ti ti-shield-lock"></i>Roles &amp; permissions</button>
+        <button class="btn btn-primary" onclick="openInviteDialog()"><i class="ti ti-user-plus"></i>Invite user</button>
+      </div>
+    </div>
+
+    <!-- Users table -->
+    <div>
+      <!-- Tab bar + filter -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-lg);flex-wrap:wrap;margin-bottom:var(--space-lg);">
+        <div class="tab-bar" role="tablist">
+          <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab(this,'all')">All users <span class="tab-count">24</span></button>
+          <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(this,'active')">Active <span class="tab-count">20</span></button>
+          <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(this,'invited')">Invited <span class="tab-count">3</span></button>
+          <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(this,'suspended')">Suspended <span class="tab-count">1</span></button>
+        </div>
+        <div class="filter-bar" style="flex:1;min-width:240px;max-width:480px;">
+          <div class="search-wrap" style="flex:1;">
+            <i class="ti ti-search"></i>
+            <input class="search-input" type="search" placeholder="Search users…" aria-label="Search users"/>
+          </div>
+          <select class="filter-select" aria-label="Filter by role">
+            <option value="">All roles</option>
+            <option>Owner</option>
+            <option>Admin</option>
+            <option>Manager</option>
+            <option>Buyer</option>
+            <option>Viewer</option>
+          </select>
+          <select class="filter-select" aria-label="Filter by venue">
+            <option value="">All venues</option>
+            <option>CBD Cluster</option>
+            <option>Beachside</option>
+            <option>Suburban</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table" aria-label="Users">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Venue access</th>
+              <th>Last active</th>
+              <th>Status</th>
+              <th class="overflow-cell"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-amber">KT</div>
+                  <div><div class="cell-name">Keith Tan</div><div class="cell-sub">ktwm79@gmail.com</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge owner">Owner</span></td>
+              <td><span class="venue-pill">All venues</span></td>
+              <td><span style="font-size:13px;color:var(--text-soft);">Today</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Keith Tan" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit venue access</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-rose">JL</div>
+                  <div><div class="cell-name">Jane Liu</div><div class="cell-sub">jane.liu@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge admin">Admin</span></td>
+              <td><span class="venue-pill">All venues</span></td>
+              <td><span style="font-size:13px;color:var(--text-soft);">2 hours ago</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Jane Liu" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit venue access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-user-off"></i>Suspend account</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-purple">SO</div>
+                  <div><div class="cell-name">Sarah Okonkwo</div><div class="cell-sub">s.okonkwo@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge manager">Manager</span></td>
+              <td>
+                <div class="venue-access">
+                  <span class="venue-pill">Harbour Kitchen</span>
+                  <span class="venue-pill">Darling St Bistro</span>
+                  <span class="venue-pill-more">+2</span>
+                </div>
+              </td>
+              <td><span style="font-size:13px;color:var(--text-soft);">Yesterday</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Sarah Okonkwo" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit venue access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-user-off"></i>Suspend account</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-blue">JN</div>
+                  <div><div class="cell-name">James Nguyen</div><div class="cell-sub">j.nguyen@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge buyer">Buyer</span></td>
+              <td>
+                <div class="venue-access">
+                  <span class="venue-pill">Darling St Bistro</span>
+                </div>
+              </td>
+              <td><span style="font-size:13px;color:var(--text-soft);">3 days ago</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for James Nguyen" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit venue access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-user-off"></i>Suspend account</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-green">AP</div>
+                  <div><div class="cell-name">Aisha Patel</div><div class="cell-sub">a.patel@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge buyer">Buyer</span></td>
+              <td>
+                <div class="venue-access">
+                  <span class="venue-pill">Parramatta Table</span>
+                  <span class="venue-pill">Surry Hills Social</span>
+                </div>
+              </td>
+              <td><span style="font-size:13px;color:var(--text-soft);">Today</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Aisha Patel" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit venue access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-user-off"></i>Suspend account</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-purple">MC</div>
+                  <div><div class="cell-name">Mia Chen</div><div class="cell-sub">m.chen@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge viewer">Viewer</span></td>
+              <td>
+                <div class="venue-access">
+                  <span class="venue-pill">Bondi Rooftop</span>
+                  <span class="venue-pill">Manly Wharf Bar</span>
+                  <span class="venue-pill">Beachside ×3</span>
+                </div>
+              </td>
+              <td><span style="font-size:13px;color:var(--text-soft);">1 week ago</span></td>
+              <td><span class="status-pill invited">Invited</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Resend</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Mia Chen" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-mail-forward"></i>Resend invite</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit venue access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-x"></i>Cancel invite</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Role reference card -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <span class="info-card-title">Roles &amp; permissions</span>
+        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);"><i class="ti ti-edit"></i>Edit roles</button>
+      </div>
+      <div class="roles-grid">
+        <div class="role-row">
+          <div class="role-row-name"><span class="role-badge owner">Owner</span></div>
+          <div class="role-row-desc">Full access to all venues, billing, and account settings. Cannot be suspended.</div>
+        </div>
+        <div class="role-row">
+          <div class="role-row-name"><span class="role-badge admin">Admin</span></div>
+          <div class="role-row-desc">Full access across all venues. Can manage users and venue configuration.</div>
+        </div>
+        <div class="role-row">
+          <div class="role-row-name"><span class="role-badge manager">Manager</span></div>
+          <div class="role-row-desc">Can approve orders, manage suppliers, and configure assigned venues.</div>
+        </div>
+        <div class="role-row">
+          <div class="role-row-name"><span class="role-badge buyer">Buyer</span></div>
+          <div class="role-row-desc">Can create and submit orders for assigned venues. Cannot approve.</div>
+        </div>
+        <div class="role-row">
+          <div class="role-row-name"><span class="role-badge viewer">Viewer</span></div>
+          <div class="role-row-desc">Read-only access to orders, inventory, and reports for assigned venues.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.napp-canvas -->
+</div><!-- /.page-body -->
+
+<!-- Invite user dialog -->
+<div id="invite-dialog" role="dialog" aria-modal="true" aria-labelledby="invite-title" style="display:none;position:fixed;inset:0;z-index:200;">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" onclick="closeInviteDialog()"></div>
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-xl);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <h2 id="invite-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Invite user</h2>
+      <button onclick="closeInviteDialog()" style="background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px;" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Email address <span style="color:var(--rose);">*</span></label>
+        <input type="email" placeholder="colleague@example.com" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Role <span style="color:var(--rose);">*</span></label>
+        <select style="height:var(--control-h);padding-inline:var(--space-md) var(--space-2xl);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;appearance:none;width:100%;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center;">
+          <option value="">Select role…</option>
+          <option>Admin</option>
+          <option>Manager</option>
+          <option>Buyer</option>
+          <option>Viewer</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Venue access</label>
+        <select style="height:var(--control-h);padding-inline:var(--space-md) var(--space-2xl);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;appearance:none;width:100%;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center;">
+          <option value="">All venues</option>
+          <option>CBD Cluster only</option>
+          <option>Beachside only</option>
+          <option>Suburban only</option>
+          <option>Select specific venues…</option>
+        </select>
+        <span style="font-size:12px;color:var(--text-soft);">Admins always have access to all venues.</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--space-sm);">
+      <button class="btn btn-outline" onclick="closeInviteDialog()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeInviteDialog()"><i class="ti ti-send"></i>Send invite</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared/shell.js" data-active="users"></script>
+<script>
+  NomniShell.init('Users');
+
+  function toggleMenu(btn) {
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+    menu.classList.toggle('open');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.overflow-wrap')) {
+      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  function switchTab(el, id) {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    el.classList.add('active');
+    el.setAttribute('aria-selected', 'true');
+  }
+
+  function openInviteDialog() {
+    document.getElementById('invite-dialog').style.display = 'block';
+  }
+  function closeInviteDialog() {
+    document.getElementById('invite-dialog').style.display = 'none';
+  }
+</script>
+</body>
+</html>

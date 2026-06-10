@@ -11,6 +11,9 @@
     { id: 'inventory',   icon: 'ti-package',            label: 'Inventory',    href: 'inventory.html' },
     { id: 'pos-mapping', icon: 'ti-device-desktop',     label: 'POS mapping',  href: 'pos-mapping.html' },
     { id: 'reporting',   icon: 'ti-chart-bar',          label: 'Reporting',    href: 'reporting.html' },
+    { id: 'venues',      icon: 'ti-building-store',     label: 'Venues',       href: 'venues.html' },
+    { id: 'suppliers',   icon: 'ti-truck',              label: 'Suppliers',    href: 'suppliers.html' },
+    { id: 'users',       icon: 'ti-users',              label: 'Users',        href: 'users.html' },
   ];
 
   const script   = document.currentScript;
@@ -112,6 +115,11 @@
       color: var(--chrome-fg);
     }
     .shell-nav-item i { font-size: 16px; flex-shrink: 0; }
+    .shell-nav-divider {
+      height: 1px;
+      background: rgba(250,247,233,0.1);
+      margin-block: var(--space-sm);
+    }
     .shell-nav-footer {
       margin-top: auto;
       padding-top: var(--space-xl);
@@ -256,12 +264,20 @@
   document.head.appendChild(style);
 
   function buildShell(pageTitle) {
-    const navItems = NAV.map(n => `
+    const ADMIN_IDS = new Set(['venues', 'suppliers', 'users']);
+    let dividerInserted = false;
+    const navItems = NAV.map(n => {
+      let prefix = '';
+      if (ADMIN_IDS.has(n.id) && !dividerInserted) {
+        prefix = '<div class="shell-nav-divider" aria-hidden="true"></div>';
+        dividerInserted = true;
+      }
+      return `${prefix}
       <a class="shell-nav-item${n.id === activeId ? ' active' : ''}" href="${n.href}" aria-current="${n.id === activeId ? 'page' : 'false'}">
         <i class="ti ${n.icon}" aria-hidden="true"></i>
         ${n.label}
-      </a>
-    `).join('');
+      </a>`;
+    }).join('');
 
     return `
       <div class="shell-overlay" id="shell-overlay" aria-hidden="true"></div>

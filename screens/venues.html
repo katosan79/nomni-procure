@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Venues — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex;
+      flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700;
+      color: var(--text); letter-spacing: -0.025em; line-height: 1.1;
+    }
+    .page-desc {
+      font-size: 14px; color: var(--text-soft); margin-top: var(--space-xs);
+    }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none; white-space: nowrap; border: 1.5px solid transparent;
+      font-family: inherit;
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--fern); color: #fff; border-color: var(--fern); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn i { font-size: 15px; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; align-items: center;
+      gap: var(--space-sm); flex-wrap: wrap;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap i {
+      position: absolute; left: var(--space-md); top: 50%; transform: translateY(-50%);
+      color: var(--text-soft); font-size: 15px; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; height: var(--control-h);
+      padding-inline: var(--space-3xl) var(--space-lg);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit;
+      background: var(--surface); color: var(--text); outline: none;
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .filter-select {
+      height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+
+    /* Section heading */
+    .section-heading {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-md);
+    }
+    .section-title {
+      font-size: 16px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .section-count {
+      font-size: 12px; font-weight: 600; color: var(--text-soft);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: 99px; padding: 2px 10px;
+    }
+
+    /* Groups strip */
+    .groups-strip {
+      display: flex; gap: var(--space-md); flex-wrap: wrap;
+    }
+    .group-card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl);
+      min-width: 180px; flex: 1; max-width: 260px;
+      display: flex; flex-direction: column; gap: var(--space-sm);
+      cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .group-card:hover { border-color: var(--fern); box-shadow: 0 2px 8px rgba(14,55,39,0.08); }
+    .group-card.active { border-color: var(--fern); background: var(--mint); }
+    .group-card-header { display: flex; align-items: center; gap: var(--space-sm); }
+    .group-icon {
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      background: var(--fern); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .group-icon i { color: #fff; font-size: 16px; }
+    .group-icon.purple { background: #7c3aed; }
+    .group-icon.blue   { background: #1d4ed8; }
+    .group-icon.amber  { background: #b45309; }
+    .group-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .group-meta { font-size: 12px; color: var(--text-soft); }
+
+    /* Add group card */
+    .group-card-add {
+      background: var(--surface); border: 1.5px dashed var(--border);
+      border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl);
+      min-width: 140px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: var(--space-xs);
+      cursor: pointer; color: var(--text-soft); transition: border-color 0.12s, color 0.12s;
+      font-size: 13px; font-weight: 600;
+    }
+    .group-card-add:hover { border-color: var(--fern); color: var(--text-accent); }
+    .group-card-add i { font-size: 20px; }
+
+    /* Table card */
+    .table-card {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .data-table {
+      width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px;
+    }
+    .data-table thead tr { border-bottom: 1px solid var(--border); }
+    .data-table th {
+      padding: var(--space-md) var(--space-lg); text-align: left;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--space-md) var(--space-lg); color: var(--text);
+      border-bottom: 0.5px solid var(--border); vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+
+    /* Cell styles */
+    .cell-venue { display: flex; flex-direction: column; gap: 2px; }
+    .cell-name { font-weight: 600; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--text-soft); }
+
+    /* Group badge */
+    .group-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600;
+      padding: 3px 10px; border-radius: 99px;
+      white-space: nowrap;
+    }
+    .group-badge.green  { background: var(--status-ok-bg);   color: var(--status-ok-text); }
+    .group-badge.purple { background: #ede9fe; color: #6d28d9; }
+    .group-badge.blue   { background: #dbeafe; color: #1d4ed8; }
+    .group-badge.amber  { background: #fef3c7; color: #92400e; }
+    .group-badge.none   { background: var(--surface-soft); color: var(--text-soft); }
+    .group-badge i { font-size: 11px; }
+
+    /* Status pill */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600;
+      padding: 3px 10px; border-radius: 99px;
+    }
+    .status-pill::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+    }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-text); }
+    .status-pill.active::before { background: var(--status-ok-text); }
+    .status-pill.inactive { background: var(--surface-soft); color: var(--text-soft); }
+    .status-pill.inactive::before { background: var(--text-soft); }
+
+    /* Row actions */
+    .row-actions { display: flex; align-items: center; gap: var(--space-sm); white-space: nowrap; }
+    .link-action {
+      font-size: 13px; font-weight: 600; color: var(--text-accent);
+      background: none; border: none; cursor: pointer; padding: 0; font-family: inherit;
+    }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+    .overflow-btn {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft); transition: background 0.12s;
+    }
+    .overflow-btn:hover { background: var(--surface-soft); color: var(--text); }
+    .overflow-btn i { font-size: 15px; }
+    .overflow-wrap { position: relative; display: inline-flex; }
+    .overflow-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 50;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      min-width: 160px; padding: var(--space-xs);
+    }
+    .overflow-menu.open { display: block; }
+    .overflow-menu-item {
+      display: flex; align-items: center; gap: var(--space-sm);
+      width: 100%; padding: var(--space-sm) var(--space-md);
+      font-size: 13px; font-weight: 500; color: var(--text);
+      background: none; border: none; cursor: pointer;
+      border-radius: var(--radius-sm); font-family: inherit; text-align: left;
+    }
+    .overflow-menu-item:hover { background: var(--surface-soft); }
+    .overflow-menu-item.destructive { color: var(--rose); }
+    .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
+    .overflow-menu-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
+    .overflow-cell { width: 1%; white-space: nowrap; }
+
+    /* Empty state */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      padding: var(--space-5xl) var(--space-2xl); text-align: center; gap: var(--space-md);
+    }
+    .empty-icon {
+      width: 56px; height: 56px; border-radius: var(--radius-lg);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; color: var(--text-soft);
+    }
+    .empty-icon i { font-size: 24px; }
+    .empty-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .empty-desc { font-size: 13px; color: var(--text-soft); max-width: 300px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .page-header { flex-direction: column; align-items: flex-start; }
+      .groups-strip { gap: var(--space-sm); }
+      .group-card { min-width: 140px; }
+    }
+    @media (max-width: 480px) {
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-bar .search-wrap { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <span class="page-eyebrow">Administration</span>
+        <h1 class="page-title">Venues</h1>
+        <p class="page-desc">Manage your outlets and organise them into groups for shared configuration.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline"><i class="ti ti-adjustments-horizontal"></i>Manage groups</button>
+        <button class="btn btn-primary" onclick="openAddVenueDialog()"><i class="ti ti-plus"></i>Add venue</button>
+      </div>
+    </div>
+
+    <!-- Groups -->
+    <div>
+      <div class="section-heading" style="margin-bottom: var(--space-lg);">
+        <div style="display:flex;align-items:center;gap:var(--space-sm);">
+          <span class="section-title">Venue groups</span>
+          <span class="section-count">4 groups</span>
+        </div>
+        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);" onclick="openCreateGroupDialog()">
+          <i class="ti ti-plus"></i>New group
+        </button>
+      </div>
+      <div class="groups-strip">
+        <div class="group-card active" onclick="filterByGroup('all')">
+          <div class="group-card-header">
+            <div class="group-icon"><i class="ti ti-layout-grid"></i></div>
+            <span class="group-name">All venues</span>
+          </div>
+          <span class="group-meta">12 venues</span>
+        </div>
+        <div class="group-card" onclick="filterByGroup('cbd')">
+          <div class="group-card-header">
+            <div class="group-icon purple"><i class="ti ti-building"></i></div>
+            <span class="group-name">CBD Cluster</span>
+          </div>
+          <span class="group-meta">4 venues · City</span>
+        </div>
+        <div class="group-card" onclick="filterByGroup('beachside')">
+          <div class="group-card-header">
+            <div class="group-icon blue"><i class="ti ti-wave-sine"></i></div>
+            <span class="group-name">Beachside</span>
+          </div>
+          <span class="group-meta">3 venues · Coastal</span>
+        </div>
+        <div class="group-card" onclick="filterByGroup('suburban')">
+          <div class="group-card-header">
+            <div class="group-icon amber"><i class="ti ti-home"></i></div>
+            <span class="group-name">Suburban</span>
+          </div>
+          <span class="group-meta">5 venues · Various</span>
+        </div>
+        <div class="group-card-add" onclick="openCreateGroupDialog()">
+          <i class="ti ti-plus"></i>
+          New group
+        </div>
+      </div>
+    </div>
+
+    <!-- Venues table -->
+    <div>
+      <div class="section-heading" style="margin-bottom: var(--space-lg);">
+        <div style="display:flex;align-items:center;gap:var(--space-sm);">
+          <span class="section-title">All venues</span>
+          <span class="section-count">12 venues</span>
+        </div>
+      </div>
+      <div class="filter-bar" style="margin-bottom: var(--space-md);">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input class="search-input" type="search" placeholder="Search venues…" aria-label="Search venues"/>
+        </div>
+        <select class="filter-select" aria-label="Filter by group">
+          <option value="">All groups</option>
+          <option>CBD Cluster</option>
+          <option>Beachside</option>
+          <option>Suburban</option>
+          <option>Ungrouped</option>
+        </select>
+        <select class="filter-select" aria-label="Filter by status">
+          <option value="">All status</option>
+          <option>Active</option>
+          <option>Inactive</option>
+        </select>
+      </div>
+      <div class="table-card">
+        <table class="data-table" aria-label="Venues">
+          <thead>
+            <tr>
+              <th>Venue</th>
+              <th>Location</th>
+              <th>Group</th>
+              <th>Procurement contact</th>
+              <th>Status</th>
+              <th class="overflow-cell"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="cell-venue"><span class="cell-name">The Harbour Kitchen</span><span class="cell-sub">ID: VEN-001</span></div></td>
+              <td>Circular Quay, Sydney NSW</td>
+              <td><span class="group-badge purple"><i class="ti ti-circle-filled"></i>CBD Cluster</span></td>
+              <td>Sarah Okonkwo</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Configure</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for The Harbour Kitchen" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-layout-grid"></i>Change group</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-users"></i>Manage access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><div class="cell-venue"><span class="cell-name">Darling Street Bistro</span><span class="cell-sub">ID: VEN-002</span></div></td>
+              <td>Darlinghurst, Sydney NSW</td>
+              <td><span class="group-badge purple"><i class="ti ti-circle-filled"></i>CBD Cluster</span></td>
+              <td>James Nguyen</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Configure</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Darling Street Bistro" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-layout-grid"></i>Change group</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-users"></i>Manage access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><div class="cell-venue"><span class="cell-name">Bondi Rooftop</span><span class="cell-sub">ID: VEN-003</span></div></td>
+              <td>Bondi Beach, Sydney NSW</td>
+              <td><span class="group-badge blue"><i class="ti ti-circle-filled"></i>Beachside</span></td>
+              <td>Mia Chen</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Configure</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Bondi Rooftop" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-layout-grid"></i>Change group</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-users"></i>Manage access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><div class="cell-venue"><span class="cell-name">Manly Wharf Bar</span><span class="cell-sub">ID: VEN-004</span></div></td>
+              <td>Manly, Sydney NSW</td>
+              <td><span class="group-badge blue"><i class="ti ti-circle-filled"></i>Beachside</span></td>
+              <td>Tom Walker</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Configure</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Manly Wharf Bar" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-layout-grid"></i>Change group</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-users"></i>Manage access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><div class="cell-venue"><span class="cell-name">Parramatta Table</span><span class="cell-sub">ID: VEN-005</span></div></td>
+              <td>Parramatta, Sydney NSW</td>
+              <td><span class="group-badge amber"><i class="ti ti-circle-filled"></i>Suburban</span></td>
+              <td>Aisha Patel</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Configure</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Parramatta Table" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-layout-grid"></i>Change group</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-users"></i>Manage access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><div class="cell-venue"><span class="cell-name">Surry Hills Social</span><span class="cell-sub">ID: VEN-006</span></div></td>
+              <td>Surry Hills, Sydney NSW</td>
+              <td><span class="group-badge none">Ungrouped</span></td>
+              <td>—</td>
+              <td><span class="status-pill inactive">Inactive</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Configure</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Surry Hills Social" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-layout-grid"></i>Assign to group</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-users"></i>Manage access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-player-play"></i>Reactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /.napp-canvas -->
+</div><!-- /.page-body -->
+
+<!-- Add venue dialog -->
+<div id="add-venue-dialog" role="dialog" aria-modal="true" aria-labelledby="add-venue-title" style="display:none;position:fixed;inset:0;z-index:200;display:none;">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" onclick="closeAddVenueDialog()"></div>
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-xl);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <h2 id="add-venue-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Add venue</h2>
+      <button onclick="closeAddVenueDialog()" style="background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px;" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Venue name <span style="color:var(--rose);">*</span></label>
+        <input type="text" placeholder="e.g. The Harbour Kitchen" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Address</label>
+        <input type="text" placeholder="Street, suburb, state" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Venue group</label>
+        <select style="height:var(--control-h);padding-inline:var(--space-md) var(--space-2xl);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;appearance:none;width:100%;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center;">
+          <option value="">None (ungrouped)</option>
+          <option>CBD Cluster</option>
+          <option>Beachside</option>
+          <option>Suburban</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Procurement contact</label>
+        <input type="text" placeholder="Name or email" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--space-sm);">
+      <button class="btn btn-outline" onclick="closeAddVenueDialog()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeAddVenueDialog()">Add venue</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared/shell.js" data-active="venues"></script>
+<script>
+  NomniShell.init('Venues');
+
+  function toggleMenu(btn) {
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+    menu.classList.toggle('open');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.overflow-wrap')) {
+      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  function filterByGroup(id) {
+    document.querySelectorAll('.group-card').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  function openAddVenueDialog() {
+    document.getElementById('add-venue-dialog').style.display = 'block';
+  }
+  function closeAddVenueDialog() {
+    document.getElementById('add-venue-dialog').style.display = 'none';
+  }
+  function openCreateGroupDialog() {
+    alert('Create group dialog — to be wired up');
+  }
+</script>
+</body>
+</html>

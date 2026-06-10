@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Suppliers — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex; flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex; flex-direction: column;
+      gap: var(--space-3xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.025em; line-height: 1.1;
+    }
+    .page-desc { font-size: 14px; color: var(--text-soft); margin-top: var(--space-xs); }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none; white-space: nowrap; border: 1.5px solid transparent;
+      font-family: inherit;
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--fern); color: #fff; border-color: var(--fern); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn i { font-size: 15px; }
+
+    /* KPI strip */
+    .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-md); }
+    .kpi-tile {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column; gap: var(--space-xs);
+    }
+    .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); }
+    .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; font-feature-settings: 'tnum' 1; }
+    .kpi-sub { font-size: 12px; color: var(--text-soft); }
+
+    /* Filter bar */
+    .filter-bar { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap i {
+      position: absolute; left: var(--space-md); top: 50%; transform: translateY(-50%);
+      color: var(--text-soft); font-size: 15px; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; height: var(--control-h); padding-inline: var(--space-3xl) var(--space-lg);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); outline: none;
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .filter-select {
+      height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+
+    /* Table card */
+    .table-card {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .data-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px; }
+    .data-table thead tr { border-bottom: 1px solid var(--border); }
+    .data-table th {
+      padding: var(--space-md) var(--space-lg); text-align: left;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--space-md) var(--space-lg); color: var(--text);
+      border-bottom: 0.5px solid var(--border); vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+
+    /* Supplier cell */
+    .cell-supplier { display: flex; align-items: center; gap: var(--space-md); }
+    .supplier-avatar {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--text-accent);
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .cell-name { font-weight: 600; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--text-soft); }
+
+    /* Category pills */
+    .cat-list { display: flex; gap: 4px; flex-wrap: wrap; }
+    .cat-pill {
+      font-size: 11px; font-weight: 600; padding: 2px 8px;
+      border-radius: 99px; background: var(--surface-soft);
+      border: 1px solid var(--border); color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    /* Status pill */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+    }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-text); }
+    .status-pill.active::before { background: var(--status-ok-text); }
+    .status-pill.pending { background: var(--status-pending-bg); color: var(--status-pending-text); }
+    .status-pill.pending::before { background: var(--status-pending-text); }
+    .status-pill.inactive { background: var(--surface-soft); color: var(--text-soft); }
+    .status-pill.inactive::before { background: var(--text-soft); }
+
+    /* Row actions */
+    .row-actions { display: flex; align-items: center; gap: var(--space-sm); white-space: nowrap; }
+    .link-action {
+      font-size: 13px; font-weight: 600; color: var(--text-accent);
+      background: none; border: none; cursor: pointer; padding: 0; font-family: inherit;
+    }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+    .overflow-btn {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft); transition: background 0.12s;
+    }
+    .overflow-btn:hover { background: var(--surface-soft); color: var(--text); }
+    .overflow-btn i { font-size: 15px; }
+    .overflow-wrap { position: relative; display: inline-flex; }
+    .overflow-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 50;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      min-width: 160px; padding: var(--space-xs);
+    }
+    .overflow-menu.open { display: block; }
+    .overflow-menu-item {
+      display: flex; align-items: center; gap: var(--space-sm);
+      width: 100%; padding: var(--space-sm) var(--space-md);
+      font-size: 13px; font-weight: 500; color: var(--text);
+      background: none; border: none; cursor: pointer;
+      border-radius: var(--radius-sm); font-family: inherit; text-align: left;
+    }
+    .overflow-menu-item:hover { background: var(--surface-soft); }
+    .overflow-menu-item.destructive { color: var(--rose); }
+    .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
+    .overflow-menu-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
+    .overflow-cell { width: 1%; white-space: nowrap; }
+
+    /* Responsive */
+    @media (max-width: 1024px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 768px) { .page-header { flex-direction: column; align-items: flex-start; } }
+    @media (max-width: 480px) {
+      .kpi-strip { grid-template-columns: 1fr 1fr; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <span class="page-eyebrow">Administration</span>
+        <h1 class="page-title">Suppliers</h1>
+        <p class="page-desc">Manage the suppliers your venues procure from, their categories, and approval status.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline"><i class="ti ti-download"></i>Export</button>
+        <button class="btn btn-primary" onclick="openAddSupplierDialog()"><i class="ti ti-plus"></i>Add supplier</button>
+      </div>
+    </div>
+
+    <!-- KPI strip -->
+    <div class="kpi-strip">
+      <div class="kpi-tile">
+        <span class="kpi-label">Total suppliers</span>
+        <span class="kpi-value">38</span>
+        <span class="kpi-sub">Across all venues</span>
+      </div>
+      <div class="kpi-tile">
+        <span class="kpi-label">Active</span>
+        <span class="kpi-value">31</span>
+        <span class="kpi-sub">Currently supplying</span>
+      </div>
+      <div class="kpi-tile">
+        <span class="kpi-label">Pending approval</span>
+        <span class="kpi-value">4</span>
+        <span class="kpi-sub">Awaiting review</span>
+      </div>
+      <div class="kpi-tile">
+        <span class="kpi-label">Categories</span>
+        <span class="kpi-value">9</span>
+        <span class="kpi-sub">Product categories</span>
+      </div>
+    </div>
+
+    <!-- Suppliers table -->
+    <div>
+      <div class="filter-bar" style="margin-bottom: var(--space-md);">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input class="search-input" type="search" placeholder="Search suppliers…" aria-label="Search suppliers"/>
+        </div>
+        <select class="filter-select" aria-label="Filter by category">
+          <option value="">All categories</option>
+          <option>Meat &amp; Seafood</option>
+          <option>Produce</option>
+          <option>Dairy</option>
+          <option>Dry Goods</option>
+          <option>Beverages</option>
+          <option>Bakery</option>
+          <option>Packaging</option>
+          <option>Cleaning</option>
+          <option>Equipment</option>
+        </select>
+        <select class="filter-select" aria-label="Filter by status">
+          <option value="">All status</option>
+          <option>Active</option>
+          <option>Pending</option>
+          <option>Inactive</option>
+        </select>
+      </div>
+      <div class="table-card">
+        <table class="data-table" aria-label="Suppliers">
+          <thead>
+            <tr>
+              <th>Supplier</th>
+              <th>Categories</th>
+              <th>Contact</th>
+              <th>Venues supplied</th>
+              <th>Status</th>
+              <th class="overflow-cell"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">SB</div>
+                  <div><div class="cell-name">Sydney Butchers Co.</div><div class="cell-sub">ABN: 12 345 678 901</div></div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Meat &amp; Seafood</span></div></td>
+              <td><div class="cell-name">orders@sydneybutchers.com.au</div><div class="cell-sub">+61 2 9000 1234</div></td>
+              <td>8 venues</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">View</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Sydney Butchers Co." onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Venue assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">GF</div>
+                  <div><div class="cell-name">Green Farmers Market</div><div class="cell-sub">ABN: 98 765 432 109</div></div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Produce</span><span class="cat-pill">Dairy</span></div></td>
+              <td><div class="cell-name">supply@greenfarmers.com.au</div><div class="cell-sub">+61 2 8000 5678</div></td>
+              <td>12 venues</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">View</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Green Farmers Market" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Venue assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">AB</div>
+                  <div><div class="cell-name">Artisan Bakehouse</div><div class="cell-sub">ABN: 55 123 987 456</div></div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Bakery</span><span class="cat-pill">Dry Goods</span></div></td>
+              <td><div class="cell-name">wholesale@artisanbake.com.au</div><div class="cell-sub">+61 3 9000 2222</div></td>
+              <td>5 venues</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">View</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Artisan Bakehouse" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Venue assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">PD</div>
+                  <div><div class="cell-name">Pacific Drinks Wholesale</div><div class="cell-sub">ABN: 77 888 111 222</div></td>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Beverages</span></div></td>
+              <td><div class="cell-name">trade@pacificdrinks.com.au</div><div class="cell-sub">+61 2 7000 9900</div></td>
+              <td>12 venues</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">View</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Pacific Drinks Wholesale" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Venue assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">NS</div>
+                  <div><div class="cell-name">NSW Seafood Direct</div><div class="cell-sub">ABN: 33 444 555 666</div></div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Meat &amp; Seafood</span></div></td>
+              <td><div class="cell-name">fresh@nswseafood.com.au</div><div class="cell-sub">+61 2 9111 3333</div></td>
+              <td>3 venues</td>
+              <td><span class="status-pill pending">Pending</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Review</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for NSW Seafood Direct" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-check"></i>Approve</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-x"></i>Reject</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">CP</div>
+                  <div><div class="cell-name">Clean Pack Solutions</div><div class="cell-sub">ABN: 22 111 888 999</div></div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Packaging</span><span class="cat-pill">Cleaning</span></div></td>
+              <td><div class="cell-name">b2b@cleanpack.com.au</div><div class="cell-sub">+61 3 8000 7777</div></td>
+              <td>12 venues</td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">View</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Clean Pack Solutions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Venue assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /.napp-canvas -->
+</div><!-- /.page-body -->
+
+<!-- Add supplier dialog -->
+<div id="add-supplier-dialog" role="dialog" aria-modal="true" aria-labelledby="add-supplier-title" style="display:none;position:fixed;inset:0;z-index:200;">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" onclick="closeAddSupplierDialog()"></div>
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-xl);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <h2 id="add-supplier-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Add supplier</h2>
+      <button onclick="closeAddSupplierDialog()" style="background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px;" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Supplier name <span style="color:var(--rose);">*</span></label>
+        <input type="text" placeholder="e.g. Sydney Butchers Co." style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">ABN</label>
+        <input type="text" placeholder="XX XXX XXX XXX" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Category <span style="color:var(--rose);">*</span></label>
+        <select style="height:var(--control-h);padding-inline:var(--space-md) var(--space-2xl);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;appearance:none;width:100%;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center;">
+          <option value="">Select category…</option>
+          <option>Meat &amp; Seafood</option>
+          <option>Produce</option>
+          <option>Dairy</option>
+          <option>Dry Goods</option>
+          <option>Beverages</option>
+          <option>Bakery</option>
+          <option>Packaging</option>
+          <option>Cleaning</option>
+          <option>Equipment</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Contact email</label>
+        <input type="email" placeholder="orders@supplier.com.au" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--space-sm);">
+      <button class="btn btn-outline" onclick="closeAddSupplierDialog()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeAddSupplierDialog()">Add supplier</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared/shell.js" data-active="suppliers"></script>
+<script>
+  NomniShell.init('Suppliers');
+
+  function toggleMenu(btn) {
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+    menu.classList.toggle('open');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.overflow-wrap')) {
+      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  function openAddSupplierDialog() {
+    document.getElementById('add-supplier-dialog').style.display = 'block';
+  }
+  function closeAddSupplierDialog() {
+    document.getElementById('add-supplier-dialog').style.display = 'none';
+  }
+</script>
+</body>
+</html>
