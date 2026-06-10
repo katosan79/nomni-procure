@@ -428,6 +428,100 @@
       justify-content: flex-end;
       gap: var(--space-sm);
     }
+
+    /* ── Responsive breakpoints ── */
+
+    /* Tablet ≤1024px: allow dense table to scroll horizontally */
+    @media (max-width: 1024px) {
+      .table-card {
+        overflow-x: auto;
+      }
+      .data-table {
+        min-width: 760px;
+      }
+    }
+
+    /* Mobile ≤768px: reduce typography, stack header actions, table scroll */
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 24px;
+      }
+      .page-header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: var(--space-md);
+      }
+      .page-actions {
+        flex-wrap: wrap;
+      }
+      .table-card {
+        overflow-x: auto;
+      }
+      .data-table {
+        min-width: 700px;
+      }
+      .page-banner {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* Mobile ≤640px: stack filter bar, stack header actions */
+    @media (max-width: 640px) {
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .page-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-wrap {
+        min-width: 0;
+      }
+      .filter-select {
+        width: 100%;
+      }
+    }
+
+    /* Small mobile ≤480px: reduce padding, single-column actions, full-width dialog */
+    @media (max-width: 480px) {
+      .page-body {
+        padding-block: var(--space-lg);
+        gap: var(--space-xl);
+      }
+      .page-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+      }
+      .page-actions .btn,
+      .page-actions .split-btn {
+        width: 100%;
+      }
+      .split-btn {
+        display: flex;
+      }
+      .split-btn-main {
+        flex: 1;
+      }
+      .page-banner {
+        padding: var(--space-sm) var(--space-md);
+      }
+      dialog {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        align-self: flex-end;
+      }
+      .dialog-inner {
+        padding: var(--space-lg);
+      }
+    }
   </style>
 </head>
 <body>

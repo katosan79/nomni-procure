@@ -432,6 +432,70 @@
       border-top: 1px solid var(--border);
     }
     .footer-spacer { flex: 1; }
+
+  /* ── Responsive breakpoints ── */
+
+  /* Tablet — ≤1024px */
+  @media (max-width: 1024px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Mobile — ≤768px */
+  @media (max-width: 768px) {
+    .page-h1 { font-size: 24px; }
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+
+    .form-section { padding: var(--space-lg); }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+    .form-grid .span-2 { grid-column: span 1; }
+
+    .section-heading { font-size: 16px; }
+
+    /* Ingredients table — horizontal scroll */
+    .form-section:has(.ingredients-table) { overflow-x: auto; }
+    .ingredients-table { min-width: 480px; }
+
+    /* Footer actions — stack vertically */
+    .footer-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .footer-spacer { display: none; }
+    .footer-actions .btn,
+    .footer-actions .split-btn { width: 100%; justify-content: center; }
+    .footer-actions .split-btn .btn { flex: 1; }
+
+    /* Sticky save bar — reset left offset on mobile */
+    .save-bar {
+      left: 0;
+      padding: var(--space-sm) var(--space-lg);
+    }
+
+    .toggle-row {
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .toggle-wrap { align-self: flex-start; }
+  }
+
+  /* Small mobile — ≤480px */
+  @media (max-width: 480px) {
+    .page-body { padding: var(--space-lg) 0 100px; }
+    .page-h1 { font-size: 22px; }
+    .form-section { padding: var(--space-md); }
+    .form-grid { gap: var(--space-lg); }
+    .notification { padding: var(--space-sm) var(--space-md); }
+    .footer-actions { margin-top: var(--space-lg); padding-top: var(--space-lg); gap: var(--space-sm); }
+  }
   </style>
 </head>
 <body>

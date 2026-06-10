@@ -10,10 +10,12 @@
 
     /* ── Page layout ── */
     .page-body {
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
       display: flex;
       flex-direction: column;
       gap: var(--space-3xl);
-      padding-block: var(--space-2xl);
     }
 
     /* ── Page header ── */
@@ -285,7 +287,28 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--text-soft);
-      margin-bottom: calc(-1 * var(--space-md));
+      margin-bottom: var(--space-md);
+    }
+
+    /* ── Responsive: tablet ── */
+    @media (max-width: 1024px) {
+      .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+      .module-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── Responsive: mobile ── */
+    @media (max-width: 640px) {
+      .page-title { font-size: 26px; }
+      .kpi-strip { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+      .kpi-value { font-size: 28px; }
+      .module-grid { grid-template-columns: 1fr; }
+      .page-body { padding-block: var(--space-lg); }
+      .page-body .napp-canvas { gap: var(--space-2xl); }
+    }
+
+    @media (max-width: 400px) {
+      .kpi-strip { grid-template-columns: 1fr; }
     }
   </style>
 </head>

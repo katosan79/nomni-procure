@@ -412,6 +412,89 @@
       justify-content: flex-end;
       gap: var(--space-sm);
     }
+
+    /* ── Responsive breakpoints ── */
+
+    /* Tablet ≤1024px */
+    @media (max-width: 1024px) {
+      .table-card {
+        overflow-x: auto;
+      }
+      .data-table {
+        min-width: 640px;
+      }
+    }
+
+    /* Mobile ≤768px: reduce typography, wrap header actions, table scroll */
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 24px;
+      }
+      .page-header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: var(--space-md);
+      }
+      .page-actions {
+        flex-wrap: wrap;
+      }
+      .table-card {
+        overflow-x: auto;
+      }
+      .data-table {
+        min-width: 600px;
+      }
+      .upload-zone {
+        padding: var(--space-xl) var(--space-md);
+      }
+    }
+
+    /* Mobile ≤640px: stack filter bar */
+    @media (max-width: 640px) {
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-wrap {
+        min-width: 0;
+      }
+      .filter-select {
+        width: 100%;
+      }
+    }
+
+    /* Small mobile ≤480px: reduce padding, full-width dialog */
+    @media (max-width: 480px) {
+      .page-body {
+        padding-block: var(--space-lg);
+        gap: var(--space-xl);
+      }
+      .page-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+      }
+      .page-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .upload-zone {
+        padding: var(--space-lg) var(--space-sm);
+      }
+      dialog {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        align-self: flex-end;
+      }
+      .section-header {
+        padding: var(--space-md) var(--space-md);
+      }
+      .section-body {
+        padding: var(--space-md);
+      }
+    }
   </style>
 </head>
 <body>

@@ -379,6 +379,59 @@
       z-index: 200;
     }
     .tooltip-wrap:hover .tooltip-text { display: block; }
+
+  /* ── Responsive breakpoints ── */
+
+  /* Tablet — ≤1024px */
+  @media (max-width: 1024px) {
+    .filter-bar { flex-wrap: wrap; }
+    .status-pills { margin-left: 0; }
+  }
+
+  /* Mobile — ≤768px */
+  @media (max-width: 768px) {
+    .page-h1 { font-size: 24px; }
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-md);
+    }
+    .page-header-actions {
+      flex-wrap: wrap;
+      flex-shrink: unset;
+      width: 100%;
+    }
+    .page-header-actions .btn { flex: 1; justify-content: center; }
+
+    .filter-bar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .search-wrap { min-width: unset; width: 100%; }
+    .select-input { width: 100%; min-width: unset; }
+    .status-pills { flex-wrap: wrap; }
+
+    .card { overflow-x: auto; }
+    .data-table { min-width: 640px; }
+
+    .row-actions { flex-wrap: wrap; gap: var(--space-xs); }
+
+    .pagination-bar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+  }
+
+  /* Small mobile — ≤480px */
+  @media (max-width: 480px) {
+    .page-body { padding: var(--space-lg) 0; }
+    .page-h1 { font-size: 22px; }
+    .page-header { margin-bottom: var(--space-lg); }
+    .filter-bar { margin-bottom: var(--space-lg); gap: var(--space-sm); }
+    .pagination-bar { padding: var(--space-md); }
+  }
   </style>
 </head>
 <body>

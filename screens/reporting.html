@@ -345,6 +345,69 @@
     .status-pill.warn::before { background: var(--sun); }
     .status-pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
     .status-pill.risk::before { background: var(--rose); }
+
+  /* ── Responsive breakpoints ── */
+
+  /* Tablet — ≤1024px */
+  @media (max-width: 1024px) {
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+    .anomaly-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Mobile — ≤768px */
+  @media (max-width: 768px) {
+    .page-title { font-size: 24px; }
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-md);
+    }
+    .page-actions { width: 100%; }
+    .page-actions .btn { width: 100%; justify-content: center; }
+
+    /* Gating banner — wrap text */
+    .gating-banner {
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+
+    /* Pulse hero — stack stats vertically */
+    .pulse-hero { padding: var(--space-xl); }
+    .pulse-stats {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-lg);
+    }
+    .pulse-divider { display: none; }
+    .pulse-stat-value { font-size: 32px; }
+
+    /* KPI strip — 2-col already set at 1024; keep on mobile */
+    .kpi-strip { gap: var(--space-md); }
+
+    /* AI ask bar */
+    .ai-ask-bar { flex-wrap: wrap; padding: var(--space-sm) var(--space-md); }
+
+    /* Checklist — reduce padding */
+    .checklist-row { padding: var(--space-sm) var(--space-lg); gap: var(--space-sm); }
+    .checklist-right { flex-wrap: wrap; justify-content: flex-end; }
+  }
+
+  /* Small mobile — ≤480px */
+  @media (max-width: 480px) {
+    .page-body { padding-block: var(--space-lg); gap: var(--space-xl); }
+    .page-title { font-size: 22px; }
+    .kpi-strip { grid-template-columns: 1fr; }
+    .kpi-tile { padding: var(--space-lg); }
+    .kpi-value { font-size: 24px; }
+    .pulse-hero { padding: var(--space-lg); }
+    .gating-banner { padding: var(--space-md); }
+    .anomaly-card { padding: var(--space-md); }
+    .checklist-header { padding: var(--space-md); }
+    .checklist-row { padding: var(--space-sm) var(--space-md); }
+    .bar-row { grid-template-columns: 80px 1fr 40px; }
+  }
   </style>
 </head>
 <body>

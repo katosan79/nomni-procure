@@ -16,7 +16,7 @@
   const script   = document.currentScript;
   const activeId = script ? script.getAttribute('data-active') : '';
 
-  /* ── Tabler Icons CDN (if not already loaded) ── */
+  /* ── Tabler Icons CDN ── */
   if (!document.querySelector('link[href*="tabler-icons"]')) {
     const link = document.createElement('link');
     link.rel  = 'stylesheet';
@@ -27,11 +27,29 @@
   /* ── Shell styles ── */
   const style = document.createElement('style');
   style.textContent = `
+    /* ── Base layout ── */
     .shell-layout {
       display: flex;
       min-height: 100vh;
       background: var(--surface-soft);
     }
+
+    /* ── Nav overlay (mobile) ── */
+    .shell-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(14,55,39,0.4);
+      z-index: 39;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .shell-overlay.open {
+      display: block;
+      opacity: 1;
+    }
+
+    /* ── Nav rail (chrome) ── */
     .shell-chrome {
       width: var(--nav-width, 220px);
       flex-shrink: 0;
@@ -44,7 +62,11 @@
       top: 0;
       height: 100vh;
       overflow-y: auto;
+      z-index: 40;
+      transition: transform 0.22s ease;
     }
+
+    /* ── Wordmark ── */
     .shell-wordmark {
       display: flex;
       align-items: center;
@@ -64,6 +86,8 @@
       color: var(--chrome-fg);
       letter-spacing: -0.01em;
     }
+
+    /* ── Nav items ── */
     .shell-nav {
       display: flex; flex-direction: column;
       gap: var(--space-xs);
@@ -96,6 +120,17 @@
       flex-direction: column;
       gap: var(--space-xs);
     }
+
+    /* ── Main content area ── */
+    .shell-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    /* ── Top bar ── */
     .shell-topbar {
       display: flex;
       align-items: center;
@@ -107,15 +142,26 @@
       position: sticky;
       top: 0;
       z-index: 10;
+      gap: var(--space-md);
+    }
+    .shell-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      min-width: 0;
     }
     .shell-topbar-title {
       font-size: 16px; font-weight: 600;
       color: var(--text);
       letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .shell-topbar-actions {
       display: flex; align-items: center;
       gap: var(--space-sm);
+      flex-shrink: 0;
     }
     .shell-avatar {
       width: 32px; height: 32px;
@@ -140,16 +186,71 @@
     }
     .shell-icon-btn:hover { background: var(--surface-soft); color: var(--text); }
     .shell-icon-btn i { font-size: 18px; }
-    .shell-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+
+    /* Hamburger — hidden on desktop */
+    .shell-hamburger { display: none; }
+
+    /* ── Scrollable content ── */
     .shell-content {
       flex: 1;
       padding: var(--space-2xl);
       overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* ── napp-canvas responsive measure ── */
+    .napp-canvas {
+      width: 100%;
+      max-width: var(--measure-content);
+      margin-inline: auto;
+    }
+    .napp-canvas[data-measure="narrow"]  { max-width: var(--measure-narrow);  }
+    .napp-canvas[data-measure="prose"]   { max-width: var(--measure-prose);   }
+    .napp-canvas[data-measure="wide"]    { max-width: var(--measure-wide);    }
+
+    /* ── Responsive: tablet (≤ 1024px) ── */
+    @media (max-width: 1024px) {
+      .shell-chrome {
+        width: 200px;
+      }
+      .shell-content {
+        padding: var(--space-xl);
+      }
+    }
+
+    /* ── Responsive: mobile (≤ 768px) ── */
+    @media (max-width: 768px) {
+      .shell-chrome {
+        position: fixed;
+        top: 0; left: 0;
+        height: 100vh;
+        width: 260px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(14,55,39,0.18);
+      }
+      .shell-chrome.open {
+        transform: translateX(0);
+      }
+      .shell-hamburger {
+        display: flex;
+      }
+      .shell-topbar {
+        padding-inline: var(--space-lg);
+      }
+      .shell-content {
+        padding: var(--space-lg);
+      }
+      /* Search button hidden on very small screens */
+      .shell-search-btn { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .shell-content {
+        padding: var(--space-md);
+      }
+      .shell-topbar-title {
+        font-size: 14px;
+      }
     }
   `;
   document.head.appendChild(style);
@@ -163,7 +264,9 @@
     `).join('');
 
     return `
-      <aside class="shell-chrome" aria-label="Main navigation">
+      <div class="shell-overlay" id="shell-overlay" aria-hidden="true"></div>
+
+      <aside class="shell-chrome" id="shell-chrome" aria-label="Main navigation">
         <a class="shell-wordmark" href="dashboard.html" aria-label="Nomni HQ home">
           <div class="shell-wordmark-icon" aria-hidden="true">
             <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
@@ -184,11 +287,17 @@
           </div>
         </nav>
       </aside>
+
       <div class="shell-main">
         <header class="shell-topbar">
-          <span class="shell-topbar-title">${pageTitle || 'HQ Module'}</span>
+          <div class="shell-topbar-left">
+            <button class="shell-icon-btn shell-hamburger" id="shell-hamburger" aria-label="Open navigation" aria-expanded="false" aria-controls="shell-chrome">
+              <i class="ti ti-menu-2" aria-hidden="true"></i>
+            </button>
+            <span class="shell-topbar-title">${pageTitle || 'HQ Module'}</span>
+          </div>
           <div class="shell-topbar-actions">
-            <button class="shell-icon-btn" aria-label="Search (⌘K)">
+            <button class="shell-icon-btn shell-search-btn" aria-label="Search (⌘K)">
               <i class="ti ti-search" aria-hidden="true"></i>
             </button>
             <button class="shell-icon-btn" aria-label="Notifications">
@@ -203,18 +312,39 @@
 
   /* ── Public API ── */
   window.NomniShell = {
-    /**
-     * Wrap page body content in the shell.
-     * Call after DOMContentLoaded with the page title.
-     */
     init(pageTitle) {
       document.body.innerHTML =
         `<div class="shell-layout">${buildShell(pageTitle)}${document.body.innerHTML}</div></div></div>`;
+
+      // Wire up hamburger
+      const hamburger = document.getElementById('shell-hamburger');
+      const chrome    = document.getElementById('shell-chrome');
+      const overlay   = document.getElementById('shell-overlay');
+
+      function openNav() {
+        chrome.classList.add('open');
+        overlay.classList.add('open');
+        hamburger.setAttribute('aria-expanded', 'true');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeNav() {
+        chrome.classList.remove('open');
+        overlay.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+
+      if (hamburger) hamburger.addEventListener('click', openNav);
+      if (overlay)   overlay.addEventListener('click', closeNav);
+
+      // Close on Escape
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeNav();
+      });
     },
 
-    /**
-     * Lower-level: return raw shell HTML for manual injection.
-     */
     html: buildShell,
   };
 })();
