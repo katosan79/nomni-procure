@@ -204,10 +204,12 @@
       background: var(--surface);
       border: 0.5px solid var(--border);
       border-radius: var(--radius-lg);
-      overflow: hidden;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .data-table {
       width: 100%;
+      min-width: 760px;
       border-collapse: collapse;
       font-size: 13px;
     }
@@ -552,12 +554,12 @@
           <button class="btn btn-outline"><i class="ti ti-download"></i>Export</button>
           <div class="split-btn" style="position:relative">
             <button class="split-btn-main"><i class="ti ti-send"></i>Push to all</button>
-            <button class="split-btn-arrow" onclick="toggleSplitMenu(this)" aria-label="More push options" aria-haspopup="true">
+            <button class="split-btn-arrow" onclick="toggleSplitMenu(this)" aria-label="More push options" aria-haspopup="true" aria-expanded="false">
               <i class="ti ti-chevron-down"></i>
-              <div class="split-dropdown" id="push-dropdown" role="menu">
-                <button class="split-dropdown-item" role="menuitem"><i class="ti ti-send"></i>Push to all</button>
-                <button class="split-dropdown-item" role="menuitem"><i class="ti ti-list-check"></i>Push to selection</button>
-              </div>
+            </button>
+            <div class="split-dropdown" id="push-dropdown" role="menu">
+              <button class="split-dropdown-item" role="menuitem"><i class="ti ti-send"></i>Push to all</button>
+              <button class="split-dropdown-item" role="menuitem"><i class="ti ti-list-check"></i>Push to selection</button>
             </div>
           </div>
         </div>
@@ -867,8 +869,9 @@
     });
 
     function toggleSplitMenu(btn) {
-      const dd = btn.querySelector('.split-dropdown');
+      const dd = btn.nextElementSibling;
       dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', dd.classList.contains('open'));
     }
 
     function openOverwriteDialog(name, outlets) {
