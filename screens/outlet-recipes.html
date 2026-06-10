@@ -243,6 +243,12 @@
     .detail-panel { padding: var(--space-md); }
     .ingredient-row { padding: var(--space-xs) var(--space-md); gap: var(--space-md); }
   }
+      /* Section spacing — flex gap on canvas, not page-body */
+    .page-body .napp-canvas {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+    }
   </style>
 </head>
 <body>

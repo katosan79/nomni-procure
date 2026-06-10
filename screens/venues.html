@@ -52,7 +52,7 @@
     }
     .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
     .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
-    .btn-primary { background: var(--fern); color: #fff; border-color: var(--fern); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
     .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
     .btn i { font-size: 15px; }
 
@@ -110,15 +110,15 @@
       display: flex; flex-direction: column; gap: var(--space-sm);
       cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s;
     }
-    .group-card:hover { border-color: var(--fern); box-shadow: 0 2px 8px rgba(14,55,39,0.08); }
-    .group-card.active { border-color: var(--fern); background: var(--mint); }
+    .group-card:hover { border-color: var(--text-accent); box-shadow: 0 2px 8px rgba(14,55,39,0.08); }
+    .group-card.active { border-color: var(--text-accent); background: var(--mint); }
     .group-card-header { display: flex; align-items: center; gap: var(--space-sm); }
     .group-icon {
       width: 32px; height: 32px; border-radius: var(--radius-sm);
       background: var(--fern); display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .group-icon i { color: #fff; font-size: 16px; }
+    .group-icon i { color: var(--chrome-fg); font-size: 16px; }
     .group-icon.purple { background: var(--procurement); }
     .group-icon.blue   { background: var(--pos); }
     .group-icon.amber  { background: var(--ordering); }
@@ -134,7 +134,7 @@
       cursor: pointer; color: var(--text-soft); transition: border-color 0.12s, color 0.12s;
       font-size: 13px; font-weight: 600;
     }
-    .group-card-add:hover { border-color: var(--fern); color: var(--text-accent); }
+    .group-card-add:hover { border-color: var(--text-accent); color: var(--text-accent); }
     .group-card-add i { font-size: 20px; }
 
     /* Table card */
@@ -255,7 +255,7 @@
 </head>
 <body>
 <div class="page-body">
-  <div class="napp-canvas" data-measure="wide">
+  <div class="napp-canvas" data-measure="content">
 
     <!-- Page header -->
     <div class="page-header">

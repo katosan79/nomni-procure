@@ -45,7 +45,7 @@
     }
     .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
     .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
-    .btn-primary { background: var(--fern); color: #fff; border-color: var(--fern); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
     .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
     .btn i { font-size: 15px; }
 
@@ -65,7 +65,7 @@
       font-family: inherit; display: flex; align-items: center; gap: 6px;
     }
     .tab-btn:hover { color: var(--text); }
-    .tab-btn.active { background: var(--fern); color: #fff; }
+    .tab-btn.active { background: var(--fern); color: var(--btn-primary-fg); }
     .tab-count {
       font-size: 11px; font-weight: 700;
       background: rgba(255,255,255,0.25); border-radius: 99px;
@@ -248,7 +248,7 @@
 </head>
 <body>
 <div class="page-body">
-  <div class="napp-canvas" data-measure="wide">
+  <div class="napp-canvas" data-measure="content">
 
     <!-- Page header -->
     <div class="page-header">

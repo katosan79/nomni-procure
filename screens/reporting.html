@@ -31,7 +31,7 @@
       background: var(--sun);
       border-radius: 99px;
       font-size: 11px; font-weight: 700;
-      color: #5a4100;
+      color: var(--status-warn-fg);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       flex-shrink: 0;
@@ -108,7 +108,7 @@
     .pulse-stat { display: flex; flex-direction: column; gap: var(--space-xs); }
     .pulse-stat-value {
       font-size: 40px; font-weight: 700;
-      color: #fff;
+      color: var(--btn-primary-fg);
       letter-spacing: -0.03em;
       line-height: 1;
       font-feature-settings: 'tnum' 1;
@@ -244,7 +244,7 @@
       padding-inline: var(--space-md);
       border-radius: var(--radius-sm);
       background: var(--fern);
-      color: #fff;
+      color: var(--btn-primary-fg);
       border: none;
       font-size: 12px; font-weight: 600;
       cursor: pointer;
@@ -408,6 +408,12 @@
     .checklist-row { padding: var(--space-sm) var(--space-md); }
     .bar-row { grid-template-columns: 80px 1fr 40px; }
   }
+      /* Section spacing — flex gap on canvas, not page-body */
+    .page-body .napp-canvas {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+    }
   </style>
 </head>
 <body>
