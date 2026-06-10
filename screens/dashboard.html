@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Overview — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    /* ── Page layout ── */
+    .page-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+      padding-block: var(--space-2xl);
+    }
+
+    /* ── Page header ── */
+    .page-header { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+    }
+    .page-sub {
+      font-size: 16px;
+      color: var(--text-soft);
+      margin-top: var(--space-xs);
+    }
+
+    /* ── KPI strip ── */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+    }
+    .kpi-tile {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      transition: box-shadow 0.15s;
+    }
+    .kpi-tile:hover {
+      box-shadow: 0 2px 12px rgba(14,55,39,0.07);
+    }
+    .kpi-label {
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+    }
+    .kpi-value {
+      font-size: 40px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      font-feature-settings: 'tnum' 1;
+    }
+    .kpi-context {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .kpi-context .ok  { color: var(--status-ok-fg); }
+    .kpi-context .warn { color: var(--status-warn-fg); }
+
+    /* ── Two-column row ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    /* ── Panel ── */
+    .panel {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: var(--space-xl) var(--space-xl) var(--space-md);
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .panel-action {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-link);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .panel-action:hover { text-decoration: underline; }
+
+    /* ── Activity timeline ── */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon-wrap {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .activity-icon-wrap i {
+      font-size: 14px;
+      color: var(--text-soft);
+    }
+    .activity-body { flex: 1; min-width: 0; }
+    .activity-desc {
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .activity-desc strong { font-weight: 600; }
+    .activity-meta {
+      display: flex; align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-xs);
+    }
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+    }
+    .activity-actor {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-soft);
+      display: flex; align-items: center;
+      gap: var(--space-xs);
+    }
+    .activity-actor::before {
+      content: '·';
+      color: var(--border);
+      font-size: 14px;
+    }
+    .activity-actor i { font-size: 11px; }
+
+    /* ── Propagation status ── */
+    .prop-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .prop-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+    }
+    .prop-item:last-child { border-bottom: none; }
+    .prop-name {
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prop-coverage {
+      font-size: 11px;
+      color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+      white-space: nowrap;
+    }
+
+    /* ── Status pill ── */
+    .pill {
+      display: inline-flex; align-items: center;
+      gap: var(--space-xs);
+      padding: 3px var(--space-sm);
+      border-radius: 99px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pill-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pill.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg);   }
+    .pill.ok   .pill-dot { background: var(--status-ok-fg); }
+    .pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .pill.warn .pill-dot { background: var(--status-warn-fg); }
+    .pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .pill.risk .pill-dot { background: var(--status-risk-fg); }
+
+    /* ── Module quick-links ── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+    }
+    .module-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      text-decoration: none;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .module-card:hover {
+      box-shadow: 0 4px 16px rgba(14,55,39,0.08);
+      border-color: rgba(18,155,65,0.3);
+    }
+    .module-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .module-icon i { font-size: 20px; }
+    .module-icon.ml  { background: rgba(176,94,192,0.1); }
+    .module-icon.ml  i { color: var(--procurement); }
+    .module-icon.rec { background: rgba(23,179,163,0.1); }
+    .module-icon.rec i { color: var(--ordering); }
+    .module-icon.inv { background: rgba(245,194,25,0.12); }
+    .module-icon.inv i { color: var(--status-warn-fg); }
+    .module-icon.pos { background: rgba(63,138,251,0.1); }
+    .module-icon.pos i { color: var(--pos); }
+    .module-name {
+      font-size: 15px; font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .module-desc {
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.5;
+      flex: 1;
+    }
+    .module-link {
+      font-size: 12px; font-weight: 600;
+      color: var(--text-link);
+      display: flex; align-items: center;
+      gap: var(--space-xs);
+      margin-top: var(--space-xs);
+    }
+    .module-link i { font-size: 12px; }
+
+    /* ── Section heading ── */
+    .section-heading {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      margin-bottom: calc(-1 * var(--space-md));
+    }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js" data-active="dashboard"></script>
+
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <!-- 1. Page header -->
+      <header class="page-header">
+        <p class="page-eyebrow">HQ Module</p>
+        <h1 class="page-title">Overview</h1>
+        <p class="page-sub">Manage your outlet network from one place.</p>
+      </header>
+
+      <!-- 2. KPI strip -->
+      <section aria-label="Key metrics">
+        <div class="kpi-strip">
+
+          <div class="kpi-tile">
+            <span class="kpi-label">Active outlets</span>
+            <span class="kpi-value tabular">124</span>
+            <span class="kpi-context">
+              <i class="ti ti-arrow-up" aria-hidden="true"></i>
+              <span class="ok">+3 this month</span>
+            </span>
+          </div>
+
+          <div class="kpi-tile">
+            <span class="kpi-label">Market lists</span>
+            <span class="kpi-value tabular">18</span>
+            <span class="kpi-context">
+              <i class="ti ti-clock" aria-hidden="true"></i>
+              <span class="warn">2 pending sync</span>
+            </span>
+          </div>
+
+          <div class="kpi-tile">
+            <span class="kpi-label">Recipes</span>
+            <span class="kpi-value tabular">346</span>
+            <span class="kpi-context">
+              <i class="ti ti-refresh" aria-hidden="true"></i>
+              <span class="ok">12 updated today</span>
+            </span>
+          </div>
+
+          <div class="kpi-tile">
+            <span class="kpi-label">POS mappings</span>
+            <span class="kpi-value tabular">89<span style="font-size:24px;font-weight:600;">%</span></span>
+            <span class="kpi-context">
+              <i class="ti ti-device-desktop" aria-hidden="true"></i>
+              Coverage
+            </span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 3. Two-column row: activity + propagation -->
+      <section aria-label="Activity and propagation" class="two-col">
+
+        <!-- Left: Recent activity -->
+        <div class="panel" aria-label="Recent activity">
+          <div class="panel-header">
+            <h2 class="panel-title">Recent activity</h2>
+            <a class="panel-action" href="#" role="link">View full log</a>
+          </div>
+          <ol class="activity-list" aria-label="Activity timeline">
+
+            <li class="activity-item">
+              <div class="activity-icon-wrap" aria-hidden="true">
+                <i class="ti ti-receipt"></i>
+              </div>
+              <div class="activity-body">
+                <p class="activity-desc">Market list <strong>"Spring Menu AU"</strong> pushed to 42 outlets</p>
+                <div class="activity-meta">
+                  <span class="activity-time">2h ago</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                </div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon-wrap" aria-hidden="true">
+                <i class="ti ti-tools-kitchen-2"></i>
+              </div>
+              <div class="activity-body">
+                <p class="activity-desc">Recipe <strong>"Avocado Toast v3"</strong> updated and locked</p>
+                <div class="activity-meta">
+                  <span class="activity-time">5h ago</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                </div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon-wrap" aria-hidden="true">
+                <i class="ti ti-package"></i>
+              </div>
+              <div class="activity-body">
+                <p class="activity-desc">Inventory item <strong>"Chicken Breast 500g"</strong> par level updated</p>
+                <div class="activity-meta">
+                  <span class="activity-time">Yesterday</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                </div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon-wrap" aria-hidden="true">
+                <i class="ti ti-device-desktop"></i>
+              </div>
+              <div class="activity-body">
+                <p class="activity-desc">POS mapping set <strong>"Weekend Brunch"</strong> synced</p>
+                <div class="activity-meta">
+                  <span class="activity-time">2 days ago</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                </div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon-wrap" aria-hidden="true">
+                <i class="ti ti-building-store"></i>
+              </div>
+              <div class="activity-body">
+                <p class="activity-desc">New outlet <strong>"Bondi Beach"</strong> onboarded</p>
+                <div class="activity-meta">
+                  <span class="activity-time">3 days ago</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                </div>
+              </div>
+            </li>
+
+          </ol>
+        </div>
+
+        <!-- Right: Propagation status -->
+        <div class="panel" aria-label="Propagation status">
+          <div class="panel-header">
+            <h2 class="panel-title">Propagation status</h2>
+            <a class="panel-action" href="market-list.html" role="link">View all</a>
+          </div>
+          <ul class="prop-list" aria-label="Market list propagation">
+
+            <li class="prop-item">
+              <span class="prop-name">Spring Menu AU</span>
+              <span class="pill ok" role="status">
+                <span class="pill-dot" aria-hidden="true"></span>
+                Propagated
+              </span>
+              <span class="prop-coverage tabular">42/42</span>
+            </li>
+
+            <li class="prop-item">
+              <span class="prop-name">Winter Specials</span>
+              <span class="pill warn" role="status">
+                <span class="pill-dot" aria-hidden="true"></span>
+                Pending
+              </span>
+              <span class="prop-coverage tabular">38/42</span>
+            </li>
+
+            <li class="prop-item">
+              <span class="prop-name">Inventory restock</span>
+              <span class="pill risk" role="status">
+                <span class="pill-dot" aria-hidden="true"></span>
+                Error
+              </span>
+              <span class="prop-coverage tabular" style="color: var(--status-risk-fg);">1 failed</span>
+            </li>
+
+          </ul>
+        </div>
+
+      </section>
+
+      <!-- 4. Module quick-links -->
+      <section aria-label="Module navigation">
+        <p class="section-heading">Modules</p>
+        <div class="module-grid">
+
+          <a class="module-card" href="market-list.html" aria-label="Go to Market Lists module">
+            <div class="module-icon ml" aria-hidden="true">
+              <i class="ti ti-receipt"></i>
+            </div>
+            <p class="module-name">Market Lists</p>
+            <p class="module-desc">Create and push approved market lists to your outlet network.</p>
+            <span class="module-link" aria-hidden="true">
+              Go to module <i class="ti ti-arrow-right"></i>
+            </span>
+          </a>
+
+          <a class="module-card" href="recipes.html" aria-label="Go to Recipes module">
+            <div class="module-icon rec" aria-hidden="true">
+              <i class="ti ti-tools-kitchen-2"></i>
+            </div>
+            <p class="module-name">Recipes</p>
+            <p class="module-desc">Manage the central recipe library and lock HQ-controlled items.</p>
+            <span class="module-link" aria-hidden="true">
+              Go to module <i class="ti ti-arrow-right"></i>
+            </span>
+          </a>
+
+          <a class="module-card" href="inventory.html" aria-label="Go to Inventory module">
+            <div class="module-icon inv" aria-hidden="true">
+              <i class="ti ti-package"></i>
+            </div>
+            <p class="module-name">Inventory</p>
+            <p class="module-desc">Set par levels and manage master item lists across all outlets.</p>
+            <span class="module-link" aria-hidden="true">
+              Go to module <i class="ti ti-arrow-right"></i>
+            </span>
+          </a>
+
+          <a class="module-card" href="pos-mapping.html" aria-label="Go to POS Mapping module">
+            <div class="module-icon pos" aria-hidden="true">
+              <i class="ti ti-device-desktop"></i>
+            </div>
+            <p class="module-name">POS Mapping</p>
+            <p class="module-desc">Push and manage POS variant mappings to your outlet network.</p>
+            <span class="module-link" aria-hidden="true">
+              Go to module <i class="ti ti-arrow-right"></i>
+            </span>
+          </a>
+
+        </div>
+      </section>
+
+    </div><!-- /.napp-canvas -->
+  </div><!-- /.page-body -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Overview'));
+  </script>
+</body>
+</html>

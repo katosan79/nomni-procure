@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Inventory — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+      padding-block: var(--space-2xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+    }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h);
+      padding-inline: var(--space-lg);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none;
+      white-space: nowrap;
+      border: 1.5px solid transparent;
+    }
+    .btn-outline {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary {
+      background: var(--fern);
+      color: #fff;
+      border-color: var(--fern);
+    }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn-danger {
+      background: var(--rose);
+      color: #fff;
+      border-color: var(--rose);
+    }
+    .btn-danger:hover { opacity: 0.9; }
+    .btn i { font-size: 15px; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+    .search-wrap i {
+      position: absolute;
+      left: var(--space-md);
+      top: 50%; transform: translateY(-50%);
+      color: var(--text-soft);
+      font-size: 15px;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      height: var(--control-h);
+      padding-inline: var(--space-3xl) var(--space-lg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .filter-select {
+      height: var(--control-h);
+      padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+
+    /* Table card */
+    .table-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .data-table thead tr {
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table th {
+      padding: var(--space-md) var(--space-lg);
+      text-align: left;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--space-md) var(--space-lg);
+      color: var(--text);
+      border-bottom: 0.5px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+    .data-table .tabular { font-feature-settings: 'tnum' 1; }
+
+    /* Cell styles */
+    .cell-name { font-weight: 600; color: var(--text); }
+    .cell-cat {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-soft);
+    }
+    .cell-groups {
+      font-size: 13px;
+      color: var(--text-soft);
+    }
+    .cell-timestamp {
+      font-size: 12px;
+      color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+    }
+    .row-actions {
+      display: flex; align-items: center;
+      gap: var(--space-sm);
+      white-space: nowrap;
+    }
+    .link-action {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* Kebab / overflow menu */
+    .overflow-btn {
+      width: 28px; height: 28px;
+      border-radius: var(--radius-sm);
+      background: none;
+      border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-soft);
+      position: relative;
+      font-size: 14px;
+    }
+    .overflow-btn:hover { background: var(--surface-soft); color: var(--text); }
+    .overflow-menu {
+      position: absolute;
+      right: 0; top: 100%;
+      margin-top: var(--space-xs);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 20px rgba(14,55,39,0.12);
+      min-width: 160px;
+      z-index: 50;
+      padding: var(--space-xs) 0;
+      display: none;
+    }
+    .overflow-menu.open { display: block; }
+    .overflow-menu-item {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .overflow-menu-item:hover { background: var(--surface-soft); }
+    .overflow-menu-item.destructive { color: var(--rose); }
+    .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
+    .overflow-menu-divider {
+      height: 1px;
+      background: var(--border);
+      margin: var(--space-xs) 0;
+    }
+    .overflow-cell { position: relative; }
+
+    /* Bulk import section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 0.5px solid var(--border);
+    }
+    .section-header-left {
+      display: flex; align-items: center; gap: var(--space-sm);
+    }
+    .section-title {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+    }
+    .section-chevron {
+      font-size: 16px;
+      color: var(--text-soft);
+      transition: transform 0.2s;
+    }
+    .section-chevron.open { transform: rotate(180deg); }
+    .section-body {
+      padding: var(--space-xl);
+      display: none;
+    }
+    .section-body.open { display: block; }
+
+    .import-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3xl) var(--space-xl);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    .upload-zone:hover {
+      border-color: var(--fern);
+      background: var(--mint);
+    }
+    .upload-zone i {
+      font-size: 32px;
+      color: var(--text-accent);
+    }
+    .upload-zone-label {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+    }
+    .upload-zone-hint {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+    .upload-link {
+      margin-top: var(--space-md);
+      font-size: 13px; font-weight: 600;
+      color: var(--text-link);
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .upload-link:hover { text-decoration: underline; }
+    .progress-wrap {
+      margin-top: var(--space-lg);
+      display: none;
+    }
+    .progress-wrap.show { display: block; }
+    .progress-label {
+      font-size: 12px; font-weight: 600;
+      color: var(--text-soft);
+      margin-bottom: var(--space-xs);
+    }
+    .progress-bar-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 64%;
+      background: var(--fern);
+      border-radius: 99px;
+      transition: width 0.4s;
+    }
+
+    /* Activity timeline */
+    .timeline-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+    }
+    .timeline-heading {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+      margin-bottom: var(--space-xl);
+    }
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .timeline-item {
+      display: grid;
+      grid-template-columns: var(--space-xl) 1fr auto;
+      gap: var(--space-sm);
+      align-items: start;
+      padding-bottom: var(--space-lg);
+      position: relative;
+    }
+    .timeline-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 20px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+    .timeline-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--fern);
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .timeline-body { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .timeline-text { font-size: 13px; font-weight: 500; color: var(--text); }
+    .timeline-meta { font-size: 11px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .timeline-time { font-size: 11px; color: var(--text-soft); white-space: nowrap; font-feature-settings: 'tnum' 1; }
+
+    /* Dialog */
+    dialog {
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 0;
+      box-shadow: 0 16px 48px rgba(14,55,39,0.18);
+      max-width: 440px;
+      width: 90%;
+    }
+    dialog::backdrop {
+      background: rgba(14,55,39,0.35);
+    }
+    .dialog-inner {
+      padding: var(--space-2xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xl);
+    }
+    .dialog-header { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .dialog-title {
+      font-size: 20px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .dialog-body {
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.6;
+    }
+    .dialog-body strong { color: var(--text); }
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-sm);
+    }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js" data-active="inventory"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <!-- Page header -->
+      <header class="page-header">
+        <div class="page-header-left">
+          <span class="page-eyebrow">Inventory Management</span>
+          <h1 class="page-title">Master item list</h1>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline"><i class="ti ti-download"></i>Download template</button>
+          <button class="btn btn-outline" id="btn-import-toggle"><i class="ti ti-file-import"></i>Import items</button>
+          <button class="btn btn-primary"><i class="ti ti-plus"></i>New item</button>
+        </div>
+      </header>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input class="search-input" type="search" placeholder="Search items…" aria-label="Search inventory items"/>
+        </div>
+        <select class="filter-select" aria-label="Filter by category">
+          <option value="">All categories</option>
+          <option>Produce</option>
+          <option>Protein</option>
+          <option>Dairy</option>
+          <option>Dry goods</option>
+          <option>Beverages</option>
+        </select>
+        <select class="filter-select" aria-label="Filter by brand">
+          <option value="">All brands</option>
+          <option>Brand A</option>
+          <option>Brand B</option>
+        </select>
+      </div>
+
+      <!-- Inventory table -->
+      <div class="table-card">
+        <table class="data-table" aria-label="Inventory master item list">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>UOM</th>
+              <th style="text-align:right">Par level</th>
+              <th>Assigned groups</th>
+              <th>Last updated</th>
+              <th><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1 -->
+            <tr>
+              <td class="cell-name">Chicken Breast 500g</td>
+              <td><span class="cell-cat">Protein</span></td>
+              <td class="tabular">kg</td>
+              <td class="tabular" style="text-align:right">10</td>
+              <td class="cell-groups">3 groups</td>
+              <td class="cell-timestamp">2h ago</td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="overflow-btn" aria-label="More actions for Chicken Breast 500g" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Assign to groups</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem" onclick="openRemoveDialog('Chicken Breast 500g', 3, 8, 2)"><i class="ti ti-trash"></i>Remove item</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 2 -->
+            <tr>
+              <td class="cell-name">Avocado</td>
+              <td><span class="cell-cat">Produce</span></td>
+              <td class="tabular">each</td>
+              <td class="tabular" style="text-align:right">50</td>
+              <td class="cell-groups">2 groups</td>
+              <td class="cell-timestamp">1 day ago</td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="overflow-btn" aria-label="More actions for Avocado" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Assign to groups</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem" onclick="openRemoveDialog('Avocado', 2, 4, 1)"><i class="ti ti-trash"></i>Remove item</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 3 -->
+            <tr>
+              <td class="cell-name">Feta Cheese</td>
+              <td><span class="cell-cat">Dairy</span></td>
+              <td class="tabular">kg</td>
+              <td class="tabular" style="text-align:right">5</td>
+              <td class="cell-groups">4 groups</td>
+              <td class="cell-timestamp">3 days ago</td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="overflow-btn" aria-label="More actions for Feta Cheese" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Feta Cheese', 4, 6, 3)"><i class="ti ti-trash"></i>Remove item</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 4 -->
+            <tr>
+              <td class="cell-name">Sourdough Bread</td>
+              <td><span class="cell-cat">Dry goods</span></td>
+              <td class="tabular">loaf</td>
+              <td class="tabular" style="text-align:right">20</td>
+              <td class="cell-groups">3 groups</td>
+              <td class="cell-timestamp">1 week ago</td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="overflow-btn" aria-label="More actions for Sourdough Bread" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Sourdough Bread', 3, 5, 2)"><i class="ti ti-trash"></i>Remove item</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 5 -->
+            <tr>
+              <td class="cell-name">Olive Oil 1L</td>
+              <td><span class="cell-cat">Dry goods</span></td>
+              <td class="tabular">bottle</td>
+              <td class="tabular" style="text-align:right">8</td>
+              <td class="cell-groups">4 groups</td>
+              <td class="cell-timestamp">1 week ago</td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="overflow-btn" aria-label="More actions for Olive Oil 1L" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Olive Oil 1L', 4, 7, 4)"><i class="ti ti-trash"></i>Remove item</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 6 -->
+            <tr>
+              <td class="cell-name">Whole Milk 2L</td>
+              <td><span class="cell-cat">Dairy</span></td>
+              <td class="tabular">carton</td>
+              <td class="tabular" style="text-align:right">15</td>
+              <td class="cell-groups">2 groups</td>
+              <td class="cell-timestamp">2 weeks ago</td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="overflow-btn" aria-label="More actions for Whole Milk 2L" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Whole Milk 2L', 2, 3, 1)"><i class="ti ti-trash"></i>Remove item</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 7 -->
+            <tr>
+              <td class="cell-name">Roma Tomatoes</td>
+              <td><span class="cell-cat">Produce</span></td>
+              <td class="tabular">kg</td>
+              <td class="tabular" style="text-align:right">12</td>
+              <td class="cell-groups">3 groups</td>
+              <td class="cell-timestamp">2 weeks ago</td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="overflow-btn" aria-label="More actions for Roma Tomatoes" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Roma Tomatoes', 3, 4, 2)"><i class="ti ti-trash"></i>Remove item</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bulk import section -->
+      <div class="import-card">
+        <div class="section-header" id="import-header" role="button" aria-expanded="false" onclick="toggleImport()" tabindex="0">
+          <div class="section-header-left">
+            <i class="ti ti-file-spreadsheet" style="color:var(--text-accent);font-size:16px"></i>
+            <span class="section-title">Bulk import</span>
+          </div>
+          <i class="ti ti-chevron-down section-chevron" id="import-chevron"></i>
+        </div>
+        <div class="section-body" id="import-body">
+          <div class="upload-zone" id="upload-zone" onclick="simulateUpload()">
+            <i class="ti ti-cloud-upload"></i>
+            <div class="upload-zone-label">Drag and drop your Excel file here, or click to browse</div>
+            <div class="upload-zone-hint">Accepts .xlsx files only · Max 5MB</div>
+          </div>
+          <a class="upload-link" href="#"><i class="ti ti-download"></i>Download the standard template</a>
+          <div class="progress-wrap" id="upload-progress">
+            <div class="progress-label">Importing items… 64%</div>
+            <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity timeline -->
+      <div class="timeline-card">
+        <div class="timeline-heading">Recent activity</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <div class="timeline-text">Par level for <strong>Chicken Breast 500g</strong> updated to 10 kg</div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">2h ago</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <div class="timeline-text"><strong>12 items</strong> imported via bulk upload</div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">1 day ago</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <div class="timeline-text"><strong>Avocado</strong> assigned to 2 new groups</div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">3 days ago</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <!-- Remove item confirm dialog -->
+  <dialog id="remove-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
+    <div class="dialog-inner">
+      <div class="dialog-header">
+        <h2 class="dialog-title" id="dialog-title">Remove item?</h2>
+      </div>
+      <p class="dialog-body" id="dialog-desc">
+        This will remove this item from outlet inventories and affect recipes and POS mappings. This action cannot be undone.
+      </p>
+      <div class="dialog-footer">
+        <button class="btn btn-outline" onclick="closeRemoveDialog()">Cancel</button>
+        <button class="btn btn-danger" id="confirm-remove-btn"><i class="ti ti-trash"></i>Remove item</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Inventory'));
+
+    /* Overflow menus */
+    function toggleMenu(btn) {
+      const menu = btn.querySelector('.overflow-menu');
+      document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.overflow-btn')) {
+        document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    /* Remove dialog */
+    function openRemoveDialog(name, outlets, recipes, pos) {
+      document.getElementById('dialog-title').textContent = `Remove ${name}?`;
+      document.getElementById('dialog-desc').innerHTML =
+        `This will remove the item from <strong>${outlets} outlet inventories</strong> and affect ` +
+        `<strong>${recipes} recipes</strong> and <strong>${pos} POS mappings</strong>. This action cannot be undone.`;
+      document.getElementById('remove-dialog').showModal();
+      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    }
+    function closeRemoveDialog() {
+      document.getElementById('remove-dialog').close();
+    }
+    document.getElementById('confirm-remove-btn')?.addEventListener('click', () => {
+      closeRemoveDialog();
+    });
+    document.getElementById('remove-dialog')?.addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeRemoveDialog();
+    });
+
+    /* Import toggle */
+    function toggleImport() {
+      const body = document.getElementById('import-body');
+      const chevron = document.getElementById('import-chevron');
+      const header = document.getElementById('import-header');
+      const isOpen = body.classList.toggle('open');
+      chevron.classList.toggle('open', isOpen);
+      header.setAttribute('aria-expanded', isOpen);
+    }
+    document.getElementById('btn-import-toggle')?.addEventListener('click', () => {
+      const body = document.getElementById('import-body');
+      if (!body.classList.contains('open')) toggleImport();
+      document.getElementById('import-body').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    /* Simulate upload progress */
+    function simulateUpload() {
+      document.getElementById('upload-progress').classList.add('show');
+    }
+  </script>
+</body>
+</html>

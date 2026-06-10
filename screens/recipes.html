@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Recipes — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    .page-body { padding: var(--space-2xl) 0; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: var(--space-2xl);
+      gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+    }
+    .page-h1 {
+      font-size: 35px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .page-header-actions { display: flex; align-items: center; gap: var(--space-sm); flex-shrink: 0; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      height: var(--control-h);
+      padding-inline: var(--space-lg);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .btn i { font-size: 16px; }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
+    .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
+    .btn-outline:hover { background: var(--surface-soft); }
+    .btn-sm { height: 32px; padding-inline: var(--space-md); font-size: 13px; }
+    .btn-ghost { background: transparent; color: var(--text-soft); border-color: transparent; }
+    .btn-ghost:hover { background: var(--surface-soft); color: var(--text); }
+
+    .split-btn { display: inline-flex; align-items: stretch; }
+    .split-btn .btn { border-radius: var(--radius-md) 0 0 var(--radius-md); border-right: none; }
+    .split-btn .split-caret {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border: 1px solid var(--btn-primary-bg);
+      border-left: 1px solid rgba(255,255,255,0.25);
+      cursor: pointer;
+      position: relative;
+    }
+    .split-caret:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
+    .split-caret i { font-size: 14px; }
+
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+      flex-wrap: wrap;
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 220px;
+    }
+    .search-wrap i {
+      position: absolute;
+      left: var(--space-md);
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--text-soft);
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      height: var(--control-h);
+      padding-left: calc(var(--space-md) + 16px + var(--space-sm));
+      padding-right: var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.12s;
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .search-input::placeholder { color: var(--text-soft); }
+
+    .select-input {
+      height: var(--control-h);
+      padding-inline: var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      cursor: pointer;
+      min-width: 160px;
+    }
+    .select-input:focus { border-color: var(--border-focus); }
+
+    .status-pills {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+    .status-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      padding-inline: var(--space-md);
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-soft);
+      font-family: inherit;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .status-pill-btn:hover { background: var(--surface-soft); color: var(--text); }
+    .status-pill-btn.active {
+      background: var(--mint);
+      color: var(--spinach);
+      border-color: rgba(7,103,21,0.2);
+      font-weight: 600;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table thead th {
+      padding: var(--space-md) var(--space-lg);
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-soft);
+      background: var(--surface-soft);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .data-table thead th.num { text-align: right; }
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: var(--surface-soft); }
+    .data-table td {
+      padding: 0 var(--space-lg);
+      height: var(--row-h);
+      vertical-align: middle;
+      color: var(--text);
+    }
+    .data-table td.num {
+      text-align: right;
+      font-feature-settings: 'tnum' 1;
+    }
+
+    .recipe-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .recipe-name-sub { font-size: 12px; color: var(--text-soft); margin-top: 1px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      height: 24px;
+      padding-inline: var(--space-sm);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .pill-ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .pill-ok   .pill-dot { background: var(--status-ok-fg); }
+    .pill-warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .pill-warn .pill-dot { background: var(--status-warn-fg); }
+    .pill-info { background: var(--status-info-bg); color: var(--status-info-fg); }
+    .pill-info .pill-dot { background: var(--status-info-fg); }
+
+    .lock-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lock-icon-locked { color: var(--fern); font-size: 16px; cursor: help; }
+    .lock-icon-open   { color: var(--stone); font-size: 16px; cursor: help; }
+
+    .row-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .link-action {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-link);
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--radius-sm);
+      transition: background 0.1s;
+    }
+    .link-action:hover { background: var(--mint); }
+
+    .split-btn-sm { display: inline-flex; align-items: stretch; }
+    .split-btn-sm .btn-split-main {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding-inline: var(--space-sm);
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border: none;
+      border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .split-btn-sm .btn-split-main:hover { background: var(--btn-primary-hover); }
+    .split-btn-sm .btn-split-caret {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border: none;
+      border-left: 1px solid rgba(255,255,255,0.25);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .split-btn-sm .btn-split-caret:hover { background: var(--btn-primary-hover); }
+
+    .kebab-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      background: none;
+      border: none;
+      color: var(--text-soft);
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.1s;
+      position: relative;
+    }
+    .kebab-btn:hover { background: var(--surface-soft); color: var(--text); }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      min-width: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 16px rgba(14,55,39,0.12);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      padding: var(--space-xs) 0;
+    }
+    .dropdown-menu.open { display: flex; }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      text-align: left;
+      transition: background 0.1s;
+    }
+    .dropdown-item:hover { background: var(--surface-soft); }
+    .dropdown-item.danger { color: var(--status-risk-fg); }
+    .dropdown-item i { font-size: 15px; color: var(--text-soft); }
+    .dropdown-item.danger i { color: var(--status-risk-fg); }
+    .dropdown-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
+
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl);
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .pagination-info { font-size: 13px; color: var(--text-soft); }
+    .pagination-controls { display: flex; align-items: center; gap: var(--space-sm); }
+    .page-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      height: 32px;
+      padding-inline: var(--space-md);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      transition: background 0.1s;
+    }
+    .page-btn:hover:not(:disabled) { background: var(--surface-soft); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-btn i { font-size: 14px; }
+
+    .tooltip-wrap { position: relative; display: inline-flex; }
+    .tooltip-wrap .tooltip-text {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-deep);
+      color: var(--chrome-fg);
+      font-size: 12px;
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .tooltip-wrap:hover .tooltip-text { display: block; }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js" data-active="recipes"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <!-- Page header -->
+      <header class="page-header">
+        <div class="page-header-left">
+          <p class="eyebrow">Recipe Management</p>
+          <h1 class="page-h1">Recipe library</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-outline">
+            <i class="ti ti-upload" aria-hidden="true"></i>
+            Import recipes
+          </button>
+          <button class="btn btn-primary">
+            <i class="ti ti-plus" aria-hidden="true"></i>
+            New recipe
+          </button>
+        </div>
+      </header>
+
+      <!-- Filter / search bar -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input type="text" class="search-input" placeholder="Search recipes…" aria-label="Search recipes"/>
+        </div>
+        <select class="select-input" aria-label="Filter by category">
+          <option value="">All categories</option>
+          <option>Breakfast</option>
+          <option>Mains</option>
+          <option>Desserts</option>
+          <option>Beverages</option>
+          <option>Sides</option>
+        </select>
+        <select class="select-input" aria-label="Filter by brand">
+          <option value="">All brands</option>
+          <option>The Burger Co</option>
+          <option>Pasta Palace</option>
+          <option>Taco Time</option>
+        </select>
+        <div class="status-pills" role="group" aria-label="Filter by status">
+          <button class="status-pill-btn active" onclick="setStatusFilter(this,'all')">All</button>
+          <button class="status-pill-btn" onclick="setStatusFilter(this,'active')">Active</button>
+          <button class="status-pill-btn" onclick="setStatusFilter(this,'draft')">Draft</button>
+          <button class="status-pill-btn" onclick="setStatusFilter(this,'archived')">Archived</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <table class="data-table" aria-label="Recipe library">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Brand</th>
+              <th class="num">Cost</th>
+              <th class="num">Selling price</th>
+              <th>Status</th>
+              <th style="text-align:center;">Locked</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- Row 1 -->
+            <tr>
+              <td>
+                <p class="recipe-name">Avocado Toast v3</p>
+              </td>
+              <td>Breakfast</td>
+              <td>The Burger Co</td>
+              <td class="num tabular">$4.20</td>
+              <td class="num tabular">$18.00</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock lock-icon-locked" aria-label="Locked by HQ"></i>
+                  <span class="tooltip-text">Locked by HQ — outlet cannot edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div class="split-btn-sm">
+                    <button class="btn-split-main">Push</button>
+                    <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
+                  </div>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-1')">
+                      <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+                    </button>
+                    <div class="dropdown-menu" id="menu-1">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <button class="dropdown-item"><i class="ti ti-send" aria-hidden="true"></i>Push to outlets</button>
+                      <button class="dropdown-item"><i class="ti ti-lock-open" aria-hidden="true"></i>Unlock</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr>
+              <td><p class="recipe-name">Classic Cheeseburger</p></td>
+              <td>Mains</td>
+              <td>The Burger Co</td>
+              <td class="num tabular">$6.80</td>
+              <td class="num tabular">$22.00</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock lock-icon-locked" aria-label="Locked by HQ"></i>
+                  <span class="tooltip-text">Locked by HQ — outlet cannot edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div class="split-btn-sm">
+                    <button class="btn-split-main">Push</button>
+                    <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
+                  </div>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-2')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-2">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <button class="dropdown-item"><i class="ti ti-send" aria-hidden="true"></i>Push to outlets</button>
+                      <button class="dropdown-item"><i class="ti ti-lock-open" aria-hidden="true"></i>Unlock</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr>
+              <td><p class="recipe-name">Tiramisu</p></td>
+              <td>Desserts</td>
+              <td>Pasta Palace</td>
+              <td class="num tabular">$3.50</td>
+              <td class="num tabular">$14.00</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock-open lock-icon-open" aria-label="Unlocked"></i>
+                  <span class="tooltip-text">Unlocked — outlets can edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div class="split-btn-sm">
+                    <button class="btn-split-main">Push</button>
+                    <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
+                  </div>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-3')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-3">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <button class="dropdown-item"><i class="ti ti-send" aria-hidden="true"></i>Push to outlets</button>
+                      <button class="dropdown-item"><i class="ti ti-lock" aria-hidden="true"></i>Lock</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 4 -->
+            <tr>
+              <td><p class="recipe-name">Flat White</p></td>
+              <td>Beverages</td>
+              <td>The Burger Co</td>
+              <td class="num tabular">$1.20</td>
+              <td class="num tabular">$6.00</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock lock-icon-locked" aria-label="Locked by HQ"></i>
+                  <span class="tooltip-text">Locked by HQ — outlet cannot edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div class="split-btn-sm">
+                    <button class="btn-split-main">Push</button>
+                    <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
+                  </div>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-4')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-4">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <button class="dropdown-item"><i class="ti ti-send" aria-hidden="true"></i>Push to outlets</button>
+                      <button class="dropdown-item"><i class="ti ti-lock-open" aria-hidden="true"></i>Unlock</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 5 -->
+            <tr>
+              <td><p class="recipe-name">Caesar Salad</p></td>
+              <td>Mains</td>
+              <td>Pasta Palace</td>
+              <td class="num tabular">$5.10</td>
+              <td class="num tabular">$19.00</td>
+              <td><span class="pill pill-warn"><span class="pill-dot"></span>Pending review</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock-open lock-icon-open" aria-label="Unlocked"></i>
+                  <span class="tooltip-text">Unlocked — outlets can edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div class="split-btn-sm">
+                    <button class="btn-split-main">Push</button>
+                    <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
+                  </div>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-5')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-5">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <button class="dropdown-item"><i class="ti ti-send" aria-hidden="true"></i>Push to outlets</button>
+                      <button class="dropdown-item"><i class="ti ti-lock" aria-hidden="true"></i>Lock</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 6 -->
+            <tr>
+              <td><p class="recipe-name">Chocolate Fondant</p></td>
+              <td>Desserts</td>
+              <td>Taco Time</td>
+              <td class="num tabular">$4.80</td>
+              <td class="num tabular">$16.00</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock lock-icon-locked" aria-label="Locked by HQ"></i>
+                  <span class="tooltip-text">Locked by HQ — outlet cannot edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div class="split-btn-sm">
+                    <button class="btn-split-main">Push</button>
+                    <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
+                  </div>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-6')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-6">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <button class="dropdown-item"><i class="ti ti-send" aria-hidden="true"></i>Push to outlets</button>
+                      <button class="dropdown-item"><i class="ti ti-lock-open" aria-hidden="true"></i>Unlock</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 7 -->
+            <tr>
+              <td><p class="recipe-name">Breakfast Burrito</p></td>
+              <td>Breakfast</td>
+              <td>Taco Time</td>
+              <td class="num tabular">$5.50</td>
+              <td class="num tabular">$21.00</td>
+              <td><span class="pill pill-info"><span class="pill-dot"></span>Draft</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock-open lock-icon-open" aria-label="Unlocked"></i>
+                  <span class="tooltip-text">Unlocked — outlets can edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div class="split-btn-sm">
+                    <button class="btn-split-main">Push</button>
+                    <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
+                  </div>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-7')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-7">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <button class="dropdown-item"><i class="ti ti-send" aria-hidden="true"></i>Push to outlets</button>
+                      <button class="dropdown-item"><i class="ti ti-lock" aria-hidden="true"></i>Lock</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 8 -->
+            <tr>
+              <td><p class="recipe-name">Garlic Bread</p></td>
+              <td>Sides</td>
+              <td>Pasta Palace</td>
+              <td class="num tabular">$1.80</td>
+              <td class="num tabular">$8.00</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock lock-icon-locked" aria-label="Locked by HQ"></i>
+                  <span class="tooltip-text">Locked by HQ — outlet cannot edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div class="split-btn-sm">
+                    <button class="btn-split-main">Push</button>
+                    <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
+                  </div>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-8')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-8">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <button class="dropdown-item"><i class="ti ti-send" aria-hidden="true"></i>Push to outlets</button>
+                      <button class="dropdown-item"><i class="ti ti-lock-open" aria-hidden="true"></i>Unlock</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-bar">
+          <p class="pagination-info">Showing <strong>1–8</strong> of <strong>346</strong> recipes</p>
+          <div class="pagination-controls">
+            <button class="page-btn" disabled aria-label="Previous page">
+              <i class="ti ti-chevron-left" aria-hidden="true"></i> Prev
+            </button>
+            <button class="page-btn" aria-label="Next page">
+              Next <i class="ti ti-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.napp-canvas -->
+  </div><!-- /.page-body -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Recipes'));
+
+    function setStatusFilter(btn, status) {
+      document.querySelectorAll('.status-pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function toggleMenu(event, id) {
+      event.stopPropagation();
+      const menu = document.getElementById(id);
+      const isOpen = menu.classList.contains('open');
+      document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
+      if (!isOpen) menu.classList.add('open');
+    }
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
+    });
+  </script>
+</body>
+</html>

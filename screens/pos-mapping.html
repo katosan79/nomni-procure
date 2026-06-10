@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>POS mapping — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+      padding-block: var(--space-2xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+    }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h);
+      padding-inline: var(--space-lg);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      border: 1.5px solid transparent;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .btn-outline {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary {
+      background: var(--fern);
+      color: #fff;
+      border-color: var(--fern);
+    }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn i { font-size: 15px; }
+
+    /* Split button */
+    .split-btn {
+      display: inline-flex;
+      align-items: stretch;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1.5px solid var(--fern);
+      position: relative;
+    }
+    .split-btn-main {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding-inline: var(--space-lg);
+      height: var(--control-h);
+      background: var(--fern);
+      color: #fff;
+      font-size: 14px; font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.12s;
+    }
+    .split-btn-main:hover { background: var(--spinach); }
+    .split-btn-arrow {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px;
+      background: var(--fern);
+      color: #fff;
+      border: none;
+      border-left: 1px solid rgba(255,255,255,0.25);
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.12s;
+      position: relative;
+    }
+    .split-btn-arrow:hover { background: var(--spinach); }
+    .split-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 20px rgba(14,55,39,0.12);
+      min-width: 160px;
+      z-index: 50;
+      padding: var(--space-xs) 0;
+      display: none;
+    }
+    .split-dropdown.open { display: block; }
+    .split-dropdown-item {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .split-dropdown-item:hover { background: var(--surface-soft); }
+
+    /* Notification banner */
+    .page-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-md);
+      font-size: 13px; font-weight: 500;
+      line-height: 1.5;
+    }
+    .page-banner.info {
+      background: var(--status-info-bg);
+      color: var(--status-info-fg);
+      border: 1px solid rgba(63,195,251,0.3);
+    }
+    .page-banner i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+    .search-wrap i {
+      position: absolute;
+      left: var(--space-md);
+      top: 50%; transform: translateY(-50%);
+      color: var(--text-soft);
+      font-size: 15px;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      height: var(--control-h);
+      padding-inline: var(--space-3xl) var(--space-lg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .filter-select {
+      height: var(--control-h);
+      padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+
+    /* Table */
+    .table-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table thead tr { border-bottom: 1px solid var(--border); }
+    .data-table th {
+      padding: var(--space-sm) var(--space-md);
+      text-align: left;
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--space-sm) var(--space-md);
+      color: var(--text);
+      border-bottom: 0.5px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+    [data-density="compact"] .data-table th,
+    [data-density="compact"] .data-table td { padding: var(--space-xs) var(--space-md); }
+
+    .cell-name { font-weight: 600; color: var(--text); white-space: nowrap; }
+    .cell-code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
+    .cell-price { font-feature-settings: 'tnum' 1; font-weight: 500; white-space: nowrap; }
+    .cell-outlets { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .cell-dash { color: var(--text-soft); }
+
+    /* Status pills */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: 2px var(--space-sm);
+      border-radius: 99px;
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-pill::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-pill.ok {
+      background: var(--status-ok-bg);
+      color: var(--status-ok-fg);
+    }
+    .status-pill.ok::before { background: var(--status-ok-fg); }
+    .status-pill.warn {
+      background: var(--status-warn-bg);
+      color: var(--status-warn-fg);
+    }
+    .status-pill.warn::before { background: var(--sun); }
+    .status-pill.risk {
+      background: var(--status-risk-bg);
+      color: var(--status-risk-fg);
+    }
+    .status-pill.risk::before { background: var(--rose); }
+
+    /* Row actions */
+    .row-actions {
+      display: flex; align-items: center;
+      gap: var(--space-sm);
+      white-space: nowrap;
+    }
+    .link-action {
+      font-size: 12px; font-weight: 600;
+      color: var(--text-accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+    .overflow-btn {
+      width: 26px; height: 26px;
+      border-radius: var(--radius-sm);
+      background: none;
+      border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-soft);
+      position: relative;
+      font-size: 13px;
+    }
+    .overflow-btn:hover { background: var(--surface-soft); }
+    .overflow-menu {
+      position: absolute;
+      right: 0; top: 100%;
+      margin-top: var(--space-xs);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 20px rgba(14,55,39,0.12);
+      min-width: 160px;
+      z-index: 50;
+      padding: var(--space-xs) 0;
+      display: none;
+    }
+    .overflow-menu.open { display: block; }
+    .overflow-menu-item {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      font-size: 12px; font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .overflow-menu-item:hover { background: var(--surface-soft); }
+    .overflow-cell { position: relative; }
+
+    /* Activity timeline */
+    .timeline-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+    }
+    .timeline-heading {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+      margin-bottom: var(--space-xl);
+    }
+    .timeline-item {
+      display: grid;
+      grid-template-columns: var(--space-xl) 1fr auto;
+      gap: var(--space-sm);
+      align-items: start;
+      padding-bottom: var(--space-lg);
+      position: relative;
+    }
+    .timeline-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 20px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+    .timeline-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--fern);
+      margin-top: 3px;
+    }
+    .timeline-text { font-size: 13px; font-weight: 500; color: var(--text); }
+    .timeline-meta { font-size: 11px; color: var(--text-soft); margin-top: var(--space-xs); }
+    .timeline-time { font-size: 11px; color: var(--text-soft); white-space: nowrap; font-feature-settings: 'tnum' 1; }
+
+    /* Overwrite confirm dialog */
+    dialog {
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 0;
+      box-shadow: 0 16px 48px rgba(14,55,39,0.18);
+      max-width: 440px;
+      width: 90%;
+    }
+    dialog::backdrop { background: rgba(14,55,39,0.35); }
+    .dialog-inner {
+      padding: var(--space-2xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xl);
+    }
+    .dialog-banner {
+      display: flex; align-items: flex-start; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-md);
+      background: var(--status-warn-bg);
+      border: 1px solid rgba(245,194,25,0.3);
+      color: var(--status-warn-fg);
+      font-size: 13px; font-weight: 500;
+    }
+    .dialog-banner i { font-size: 16px; flex-shrink: 0; }
+    .dialog-title {
+      font-size: 20px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .dialog-body {
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.6;
+    }
+    .dialog-body strong { color: var(--text); }
+    .dialog-checkbox-row {
+      display: flex; align-items: flex-start; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-md);
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+    .dialog-checkbox-row input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--fern);
+      flex-shrink: 0;
+      margin-top: 2px;
+      cursor: pointer;
+    }
+    .dialog-checkbox-label {
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      line-height: 1.5;
+      cursor: pointer;
+    }
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-sm);
+    }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js" data-active="pos-mapping"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <!-- Notification banner -->
+      <div class="page-banner info" role="status">
+        <i class="ti ti-info-circle"></i>
+        Pushing to outlets with existing mappings will trigger a confirmation step.
+      </div>
+
+      <!-- Page header -->
+      <header class="page-header">
+        <div class="page-header-left">
+          <span class="page-eyebrow">POS Mapping</span>
+          <h1 class="page-title">Master mapping set</h1>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline"><i class="ti ti-download"></i>Export</button>
+          <div class="split-btn" style="position:relative">
+            <button class="split-btn-main"><i class="ti ti-send"></i>Push to all</button>
+            <button class="split-btn-arrow" onclick="toggleSplitMenu(this)" aria-label="More push options" aria-haspopup="true">
+              <i class="ti ti-chevron-down"></i>
+              <div class="split-dropdown" id="push-dropdown" role="menu">
+                <button class="split-dropdown-item" role="menuitem"><i class="ti ti-send"></i>Push to all</button>
+                <button class="split-dropdown-item" role="menuitem"><i class="ti ti-list-check"></i>Push to selection</button>
+              </div>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input class="search-input" type="search" placeholder="Search items…" aria-label="Search POS mappings"/>
+        </div>
+        <select class="filter-select" aria-label="Filter by brand">
+          <option value="">All brands</option>
+          <option>Brand A</option>
+          <option>Brand B</option>
+        </select>
+        <select class="filter-select" aria-label="Filter by menu category">
+          <option value="">All menu categories</option>
+          <option>Breakfast</option>
+          <option>Mains</option>
+          <option>Desserts</option>
+          <option>Beverages</option>
+          <option>Sides</option>
+        </select>
+        <select class="filter-select" aria-label="Filter by outlet">
+          <option value="">All outlets</option>
+          <option>Circular Quay</option>
+          <option>Surry Hills</option>
+          <option>Bondi Beach</option>
+          <option>Melbourne CBD</option>
+        </select>
+      </div>
+
+      <!-- Dense mapping table -->
+      <div class="table-card" data-density="compact">
+        <table class="data-table" aria-label="POS master mapping set">
+          <thead>
+            <tr>
+              <th>Item name</th>
+              <th>Menu category</th>
+              <th>POS code</th>
+              <th>Variant</th>
+              <th style="text-align:right">Price</th>
+              <th>Assigned outlets</th>
+              <th>Mapped</th>
+              <th><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1 -->
+            <tr>
+              <td class="cell-name">Avocado Toast v3</td>
+              <td>Breakfast</td>
+              <td class="cell-code">BRG-001</td>
+              <td>Regular</td>
+              <td class="cell-price" style="text-align:right">$18.00</td>
+              <td class="cell-outlets">42 outlets</td>
+              <td><span class="status-pill ok">Mapped</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openOverwriteDialog('Avocado Toast v3', 42)">Push</button>
+                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
+                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 2 -->
+            <tr>
+              <td class="cell-name">Avocado Toast v3</td>
+              <td>Breakfast</td>
+              <td class="cell-code">BRG-001-L</td>
+              <td>Large</td>
+              <td class="cell-price" style="text-align:right">$22.00</td>
+              <td class="cell-outlets">42 outlets</td>
+              <td><span class="status-pill ok">Mapped</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openOverwriteDialog('Avocado Toast v3 Large', 42)">Push</button>
+                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
+                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 3 -->
+            <tr>
+              <td class="cell-name">Classic Cheeseburger</td>
+              <td>Mains</td>
+              <td class="cell-code">BRG-010</td>
+              <td>Single</td>
+              <td class="cell-price" style="text-align:right">$22.00</td>
+              <td class="cell-outlets">38 outlets</td>
+              <td><span class="status-pill warn">Partial</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openOverwriteDialog('Classic Cheeseburger', 38)">Push</button>
+                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
+                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 4 -->
+            <tr>
+              <td class="cell-name">Classic Cheeseburger</td>
+              <td>Mains</td>
+              <td class="cell-code">BRG-010-D</td>
+              <td>Double</td>
+              <td class="cell-price" style="text-align:right">$26.00</td>
+              <td class="cell-outlets">38 outlets</td>
+              <td><span class="status-pill warn">Partial</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openOverwriteDialog('Classic Cheeseburger Double', 38)">Push</button>
+                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
+                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 5 -->
+            <tr>
+              <td class="cell-name">Flat White</td>
+              <td>Beverages</td>
+              <td class="cell-code">BRG-050</td>
+              <td>Regular</td>
+              <td class="cell-price" style="text-align:right">$6.00</td>
+              <td class="cell-outlets">42 outlets</td>
+              <td><span class="status-pill ok">Mapped</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openOverwriteDialog('Flat White', 42)">Push</button>
+                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
+                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 6 -->
+            <tr>
+              <td class="cell-name">Flat White</td>
+              <td>Beverages</td>
+              <td class="cell-code">BRG-050-L</td>
+              <td>Large</td>
+              <td class="cell-price" style="text-align:right">$7.00</td>
+              <td class="cell-outlets">42 outlets</td>
+              <td><span class="status-pill ok">Mapped</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openOverwriteDialog('Flat White Large', 42)">Push</button>
+                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
+                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 7 -->
+            <tr>
+              <td class="cell-name">Tiramisu</td>
+              <td>Desserts</td>
+              <td class="cell-code">PST-020</td>
+              <td class="cell-dash">—</td>
+              <td class="cell-price" style="text-align:right">$14.00</td>
+              <td class="cell-outlets">18 outlets</td>
+              <td><span class="status-pill risk">Unmapped</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="link-action">Push</button>
+                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
+                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 8 -->
+            <tr>
+              <td class="cell-name">Caesar Salad</td>
+              <td>Mains</td>
+              <td class="cell-code">PST-030</td>
+              <td class="cell-dash">—</td>
+              <td class="cell-price" style="text-align:right">$19.00</td>
+              <td class="cell-outlets">18 outlets</td>
+              <td><span class="status-pill ok">Mapped</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openOverwriteDialog('Caesar Salad', 18)">Push</button>
+                  <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)">
+                    <i class="ti ti-dots"></i>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
+                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+                    </div>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Activity timeline -->
+      <div class="timeline-card">
+        <div class="timeline-heading">Recent activity</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div>
+              <div class="timeline-text">"Weekend Brunch" mapping set synced to <strong>42 outlets</strong></div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">2 days ago</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div>
+              <div class="timeline-text">POS code <strong>BRG-010</strong> updated</div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">3 days ago</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div>
+              <div class="timeline-text"><strong>Tiramisu</strong> added to master mapping set</div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">1 week ago</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <!-- Overwrite confirm dialog -->
+  <dialog id="overwrite-dialog" aria-labelledby="ow-title" aria-describedby="ow-desc">
+    <div class="dialog-inner">
+      <div class="dialog-banner">
+        <i class="ti ti-alert-triangle"></i>
+        Overwrite warning — this action will modify existing outlet configurations.
+      </div>
+      <h2 class="dialog-title" id="ow-title">Overwrite existing POS mappings?</h2>
+      <p class="dialog-body" id="ow-desc">
+        This item is already mapped on outlets. Pushing will overwrite their current configuration.
+      </p>
+      <label class="dialog-checkbox-row">
+        <input type="checkbox" id="ow-checkbox" onchange="updateConfirmBtn()"/>
+        <span class="dialog-checkbox-label">I understand this will overwrite existing mappings</span>
+      </label>
+      <div class="dialog-footer">
+        <button class="btn btn-outline" onclick="closeOverwriteDialog()">Cancel</button>
+        <button class="btn btn-primary" id="ow-confirm-btn" disabled><i class="ti ti-send"></i>Push and overwrite</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('POS mapping'));
+
+    function toggleMenu(btn) {
+      const menu = btn.querySelector('.overflow-menu');
+      document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.overflow-btn') && !e.target.closest('.split-btn-arrow')) {
+        document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+        document.querySelectorAll('.split-dropdown.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    function toggleSplitMenu(btn) {
+      const dd = btn.querySelector('.split-dropdown');
+      dd.classList.toggle('open');
+    }
+
+    function openOverwriteDialog(name, outlets) {
+      document.getElementById('ow-desc').innerHTML =
+        `<strong>${name}</strong> is already mapped on <strong>${outlets} outlets</strong>. ` +
+        `Pushing will overwrite their current configuration.`;
+      document.getElementById('ow-checkbox').checked = false;
+      document.getElementById('ow-confirm-btn').disabled = true;
+      document.getElementById('overwrite-dialog').showModal();
+      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    }
+    function closeOverwriteDialog() {
+      document.getElementById('overwrite-dialog').close();
+    }
+    function updateConfirmBtn() {
+      document.getElementById('ow-confirm-btn').disabled = !document.getElementById('ow-checkbox').checked;
+    }
+    document.getElementById('overwrite-dialog')?.addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeOverwriteDialog();
+    });
+    document.getElementById('ow-confirm-btn')?.addEventListener('click', () => closeOverwriteDialog());
+  </script>
+</body>
+</html>

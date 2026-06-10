@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ── Primitives ── */
+  --spring:   #2AC864;
+  --fern:     #129B41;
+  --spinach:  #076715;
+  --seaweed:  #0E3727;
+  --porcelain:#FFFFFF;
+  --app-cream:#F5F2EF;
+  --cream:    #FAF7E9;
+  --mint:     #E2FFE6;
+  --stone:    #BCBCBC;
+  --ink:      #111111;
+  --charcoal: #353535;
+
+  /* Status */
+  --sun:  #F5C219;
+  --rose: #EE4B87;
+  --sky:  #3FC3FB;
+
+  /* Expressive */
+  --procurement: #B05EC0;
+  --ordering:    #17B3A3;
+  --pos:         #3F8AFB;
+  --insights:    #EE4B87;
+
+  /* ── Tier 2 semantic aliases ── */
+  --surface:       var(--porcelain);
+  --surface-soft:  var(--app-cream);
+  --surface-deep:  var(--seaweed);
+  --chrome-bg:     var(--charcoal);
+  --chrome-fg:     var(--cream);
+  --chrome-fg-soft:rgba(250,247,233,0.58);
+  --chrome-panel:  rgba(250,247,233,0.06);
+  --chrome-active: rgba(250,247,233,0.12);
+
+  --text:          var(--seaweed);
+  --text-soft:     rgba(7,39,21,0.65);
+  --text-accent:   var(--fern);
+  --text-link:     var(--spinach);
+  --accent:        var(--spring);
+
+  --border:        rgba(7,39,21,0.14);
+  --border-focus:  var(--spinach);
+
+  /* Buttons */
+  --btn-primary-bg:    var(--fern);
+  --btn-primary-fg:    #FFFFFF;
+  --btn-primary-hover: var(--spinach);
+
+  /* Status semantic */
+  --status-ok-bg:   var(--mint);
+  --status-ok-fg:   var(--spinach);
+  --status-warn-bg: rgba(245,194,25,0.15);
+  --status-warn-fg: #8A6900;
+  --status-risk-bg: rgba(238,75,135,0.12);
+  --status-risk-fg: #A3124F;
+  --status-info-bg: rgba(63,195,251,0.15);
+  --status-info-fg: #0A6B8A;
+
+  /* Agent */
+  --agent-border: var(--fern);
+  --agent-glow:   rgba(42,200,100,0.18);
+
+  /* ── Spacing (8-based t-shirt scale) ── */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  12px;
+  --space-lg:  16px;
+  --space-xl:  24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --space-4xl: 64px;
+  --space-5xl: 96px;
+
+  /* ── Content measure ── */
+  --measure-narrow:  720px;
+  --measure-prose:   880px;
+  --measure-content: 1080px;
+  --measure-wide:    1280px;
+
+  /* ── Control sizing ── */
+  --control-h:    40px;
+  --row-h:        52px;
+  --nav-width:    220px;
+  --topbar-h:     56px;
+  --radius-sm:    6px;
+  --radius-md:    8px;
+  --radius-lg:    12px;
+
+  /* ── Typography ── */
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-feature-settings: 'tnum' 0;
+}
+
+/* Compact density modifier */
+[data-density="compact"] {
+  --control-h: 32px;
+  --row-h:     40px;
+}
+
+/* Canvas measure */
+.napp-canvas {
+  width: 100%;
+  max-width: var(--measure-content);
+  margin-inline: auto;
+  padding-inline: var(--space-2xl);
+}
+.napp-canvas[data-measure="narrow"]  { max-width: var(--measure-narrow);  }
+.napp-canvas[data-measure="prose"]   { max-width: var(--measure-prose);   }
+.napp-canvas[data-measure="wide"]    { max-width: var(--measure-wide);    }
+
+/* Tabular figures for data */
+.tabular { font-feature-settings: 'tnum' 1; }
+
+/* Screen reader only */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
+}

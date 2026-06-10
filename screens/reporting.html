@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Reporting — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+      padding-block: var(--space-2xl);
+    }
+
+    /* Phase 2 gating banner */
+    .gating-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-lg) var(--space-xl);
+      background: rgba(245,194,25,0.12);
+      border: 1.5px solid rgba(245,194,25,0.4);
+      border-radius: var(--radius-md);
+    }
+    .gating-chip {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-md);
+      background: var(--sun);
+      border-radius: 99px;
+      font-size: 11px; font-weight: 700;
+      color: #5a4100;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+    }
+    .gating-text {
+      font-size: 14px; font-weight: 600;
+      color: var(--status-warn-fg);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+    }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h);
+      padding-inline: var(--space-lg);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      border: 1.5px solid transparent;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .btn-outline {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn i { font-size: 15px; }
+
+    /* Pulse hero */
+    .pulse-hero {
+      background: var(--surface-deep);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2xl) var(--space-3xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+    .pulse-scope {
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.55);
+    }
+    .pulse-stats {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4xl);
+      flex-wrap: wrap;
+    }
+    .pulse-stat { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .pulse-stat-value {
+      font-size: 40px; font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      font-feature-settings: 'tnum' 1;
+    }
+    .pulse-stat-label {
+      font-size: 13px; font-weight: 500;
+      color: rgba(255,255,255,0.6);
+    }
+    .pulse-divider {
+      width: 1px;
+      height: 56px;
+      background: rgba(255,255,255,0.12);
+      flex-shrink: 0;
+    }
+
+    /* KPI tile row */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+    }
+    .kpi-tile {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .kpi-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+    }
+    .kpi-value {
+      font-size: 28px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      font-feature-settings: 'tnum' 1;
+    }
+    .kpi-context {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-soft);
+    }
+    .kpi-context .risk { color: var(--status-risk-fg); }
+    .kpi-context .warn { color: var(--status-warn-fg); }
+
+    /* Charts section */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+    .chart-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+    .chart-title {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+    }
+    .chart-area { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 48px;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .bar-label { font-size: 12px; font-weight: 500; color: var(--text-soft); }
+    .bar-track {
+      height: 10px;
+      background: var(--surface-soft);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--fern);
+      transition: width 0.5s ease;
+    }
+    .bar-fill.high { background: var(--rose); }
+    .bar-fill.mid  { background: var(--sun); }
+    .bar-value {
+      font-size: 12px; font-weight: 600;
+      color: var(--text);
+      text-align: right;
+      font-feature-settings: 'tnum' 1;
+    }
+
+    /* AI insights section */
+    .ai-section { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .ai-section-title {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+      display: flex; align-items: center; gap: var(--space-sm);
+    }
+    .ai-section-title i { color: var(--text-accent); }
+
+    /* AI ask bar */
+    .ai-ask-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      background: var(--surface);
+      border: 1.5px solid var(--agent-border);
+      border-radius: var(--radius-md);
+      padding-inline: var(--space-lg);
+      box-shadow: 0 0 0 3px var(--agent-glow);
+    }
+    .ai-ask-bar i { color: var(--text-accent); font-size: 18px; flex-shrink: 0; }
+    .ai-ask-input {
+      flex: 1;
+      height: var(--control-h);
+      border: none;
+      outline: none;
+      font-size: 14px;
+      font-family: inherit;
+      background: transparent;
+      color: var(--text);
+    }
+    .ai-ask-input::placeholder { color: var(--text-soft); }
+    .ai-ask-submit {
+      height: 30px;
+      padding-inline: var(--space-md);
+      border-radius: var(--radius-sm);
+      background: var(--fern);
+      color: #fff;
+      border: none;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.12s;
+      flex-shrink: 0;
+    }
+    .ai-ask-submit:hover { background: var(--spinach); }
+
+    /* Anomaly callout cards */
+    .anomaly-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+    .anomaly-card {
+      background: var(--surface);
+      border: 1.5px solid var(--agent-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg) var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      box-shadow: 0 0 0 3px var(--agent-glow);
+    }
+    .anomaly-agent {
+      display: flex; align-items: center; gap: var(--space-sm);
+    }
+    .agent-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--mint);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      color: var(--spinach);
+      flex-shrink: 0;
+    }
+    .agent-name {
+      font-size: 12px; font-weight: 700;
+      color: var(--text-accent);
+    }
+    .anomaly-text {
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* Data completeness checklist */
+    .checklist-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .checklist-header {
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 0.5px solid var(--border);
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+    }
+    .checklist-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md) var(--space-xl);
+      border-bottom: 0.5px solid var(--border);
+      gap: var(--space-lg);
+    }
+    .checklist-row:last-child { border-bottom: none; }
+    .checklist-label {
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+    }
+    .checklist-right {
+      display: flex; align-items: center; gap: var(--space-md);
+    }
+    .checklist-note {
+      font-size: 12px;
+      color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+    }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: 2px var(--space-sm);
+      border-radius: 99px;
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-pill::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-pill.ok  { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .status-pill.ok::before { background: var(--status-ok-fg); }
+    .status-pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .status-pill.warn::before { background: var(--sun); }
+    .status-pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .status-pill.risk::before { background: var(--rose); }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js" data-active="reporting"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <!-- Phase 2 gating banner -->
+      <div class="gating-banner" role="status" aria-label="Phase 2 preview">
+        <div class="gating-chip"><i class="ti ti-lock" style="font-size:10px"></i>Phase 2</div>
+        <span class="gating-text">Reporting &amp; Analytics is coming in Phase 2. Preview the dashboard below.</span>
+      </div>
+
+      <!-- Page header -->
+      <header class="page-header">
+        <div class="page-header-left">
+          <span class="page-eyebrow">Reporting &amp; Analytics</span>
+          <h1 class="page-title">Cross-outlet performance</h1>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline"><i class="ti ti-file-spreadsheet"></i>Export XLSX</button>
+        </div>
+      </header>
+
+      <!-- Pulse hero -->
+      <div class="pulse-hero" aria-label="Summary — all outlets, last 30 days">
+        <div class="pulse-scope">All outlets · Last 30 days</div>
+        <div class="pulse-stats">
+          <div class="pulse-stat">
+            <div class="pulse-stat-value">$2.4M</div>
+            <div class="pulse-stat-label">Total revenue</div>
+          </div>
+          <div class="pulse-divider" aria-hidden="true"></div>
+          <div class="pulse-stat">
+            <div class="pulse-stat-value">3.2%</div>
+            <div class="pulse-stat-label">Stock variance</div>
+          </div>
+          <div class="pulse-divider" aria-hidden="true"></div>
+          <div class="pulse-stat">
+            <div class="pulse-stat-value">96.8%</div>
+            <div class="pulse-stat-label">Theoretical vs actual</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI tile row -->
+      <div class="kpi-strip">
+        <div class="kpi-tile">
+          <div class="kpi-label">Top spend item</div>
+          <div class="kpi-value">$48,200</div>
+          <div class="kpi-context">Chicken Breast</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Highest variance outlet</div>
+          <div class="kpi-value kpi-value--risk" style="color:var(--status-risk-fg)">8.1%</div>
+          <div class="kpi-context"><span class="risk">Bondi Beach</span></div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Recipes in use</div>
+          <div class="kpi-value">284 <span style="font-size:18px;font-weight:400;color:var(--text-soft)">/ 346</span></div>
+          <div class="kpi-context">82% of library active</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Unresolved variances</div>
+          <div class="kpi-value" style="color:var(--status-risk-fg)">7</div>
+          <div class="kpi-context"><span class="risk">Requires attention</span></div>
+        </div>
+      </div>
+
+      <!-- Charts section -->
+      <div class="charts-grid">
+        <!-- Left: Stock variance by outlet -->
+        <div class="chart-card">
+          <div class="chart-title">Stock variance by outlet</div>
+          <div class="chart-area" aria-label="Stock variance bar chart">
+            <div class="bar-row">
+              <div class="bar-label">Circular Quay</div>
+              <div class="bar-track"><div class="bar-fill" style="width:26%"></div></div>
+              <div class="bar-value">2.1%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Surry Hills</div>
+              <div class="bar-track"><div class="bar-fill mid" style="width:42%"></div></div>
+              <div class="bar-value">3.4%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Newtown</div>
+              <div class="bar-track"><div class="bar-fill" style="width:22%"></div></div>
+              <div class="bar-value">1.8%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Bondi Beach</div>
+              <div class="bar-track"><div class="bar-fill high" style="width:100%"></div></div>
+              <div class="bar-value" style="color:var(--status-risk-fg)">8.1%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Melbourne CBD</div>
+              <div class="bar-track"><div class="bar-fill mid" style="width:36%"></div></div>
+              <div class="bar-value">2.9%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">St Kilda</div>
+              <div class="bar-track"><div class="bar-fill mid" style="width:52%"></div></div>
+              <div class="bar-value">4.2%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Top spend items -->
+        <div class="chart-card">
+          <div class="chart-title">Top spend items</div>
+          <div class="chart-area" aria-label="Top spend items ranking bars">
+            <div class="bar-row">
+              <div class="bar-label">Chicken Breast</div>
+              <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+              <div class="bar-value">$48.2k</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Avocado</div>
+              <div class="bar-track"><div class="bar-fill" style="width:65%"></div></div>
+              <div class="bar-value">$31.1k</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Feta</div>
+              <div class="bar-track"><div class="bar-fill" style="width:46%"></div></div>
+              <div class="bar-value">$22.4k</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Sourdough</div>
+              <div class="bar-track"><div class="bar-fill" style="width:39%"></div></div>
+              <div class="bar-value">$18.9k</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Olive Oil</div>
+              <div class="bar-track"><div class="bar-fill" style="width:25%"></div></div>
+              <div class="bar-value">$12.3k</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI insights section -->
+      <div class="ai-section">
+        <div class="ai-section-title">
+          <i class="ti ti-sparkles"></i>
+          AI insights
+        </div>
+        <div class="ai-ask-bar">
+          <i class="ti ti-message-circle-2"></i>
+          <input class="ai-ask-input" type="text" placeholder="Ask Sloan about your outlet performance…" aria-label="Ask Sloan"/>
+          <button class="ai-ask-submit"><i class="ti ti-arrow-right" style="font-size:12px"></i></button>
+        </div>
+        <div class="anomaly-grid">
+          <div class="anomaly-card">
+            <div class="anomaly-agent">
+              <div class="agent-avatar">SL</div>
+              <span class="agent-name">Sloan</span>
+            </div>
+            <div class="anomaly-text">
+              Bondi Beach stock variance is <strong>8.1%</strong> — 2.5× the network average. Check receiving logs for the past 7 days.
+            </div>
+          </div>
+          <div class="anomaly-card">
+            <div class="anomaly-agent">
+              <div class="agent-avatar">CY</div>
+              <span class="agent-name">Cyrus</span>
+            </div>
+            <div class="anomaly-text">
+              <strong>3 outlets</strong> have not reconciled invoices this week. Review before period close to avoid reporting gaps.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data completeness checklist -->
+      <div class="checklist-card">
+        <div class="checklist-header">Data completeness</div>
+        <div class="checklist-row">
+          <div class="checklist-label">Invoice reconciliations</div>
+          <div class="checklist-right">
+            <span class="checklist-note">38 / 42 outlets</span>
+            <span class="status-pill ok">Complete</span>
+          </div>
+        </div>
+        <div class="checklist-row">
+          <div class="checklist-label">Unresolved variances</div>
+          <div class="checklist-right">
+            <span class="checklist-note">7 open</span>
+            <span class="status-pill risk">7 open</span>
+          </div>
+        </div>
+        <div class="checklist-row">
+          <div class="checklist-label">POS data sync</div>
+          <div class="checklist-right">
+            <span class="checklist-note">All outlets</span>
+            <span class="status-pill ok">Complete</span>
+          </div>
+        </div>
+        <div class="checklist-row">
+          <div class="checklist-label">Theoretical consumption</div>
+          <div class="checklist-right">
+            <span class="checklist-note">2 outlets pending</span>
+            <span class="status-pill warn">Pending</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Reporting'));
+  </script>
+</body>
+</html>

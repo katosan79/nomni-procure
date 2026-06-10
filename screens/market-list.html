@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Market lists — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <style>
+    /* ── Page body layout ── */
+    .page-body {
+      display: flex;
+      gap: 0;
+      min-height: calc(100vh - var(--topbar-h));
+    }
+
+    /* ── Left panel: Outlet group tree ── */
+    .tree-panel {
+      width: 280px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .tree-panel-header {
+      padding: var(--space-xl) var(--space-lg) var(--space-md);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .tree-panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tree-search {
+      position: relative;
+    }
+
+    .tree-search input {
+      width: 100%;
+      height: 32px;
+      padding: 0 var(--space-sm) 0 var(--space-2xl);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-soft);
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .tree-search input::placeholder { color: var(--text-soft); }
+
+    .tree-search input:focus {
+      border-color: var(--border-focus);
+      background: var(--surface);
+    }
+
+    .tree-search i {
+      position: absolute;
+      left: var(--space-sm);
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: var(--text-soft);
+      pointer-events: none;
+    }
+
+    .tree-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-sm) 0;
+    }
+
+    /* Tree items */
+    .tree-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-lg);
+      cursor: pointer;
+      user-select: none;
+      font-size: 13px;
+      color: var(--text);
+      border-radius: 0;
+      transition: background 0.1s;
+      position: relative;
+    }
+
+    .tree-item:hover { background: var(--surface-soft); }
+
+    .tree-item.selected {
+      background: var(--mint);
+      color: var(--spinach);
+    }
+
+    .tree-item.selected::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--fern);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .tree-item .tree-toggle {
+      font-size: 12px;
+      width: 16px;
+      flex-shrink: 0;
+      color: var(--text-soft);
+      transition: transform 0.15s;
+    }
+
+    .tree-item.collapsed .tree-toggle {
+      transform: rotate(-90deg);
+    }
+
+    .tree-item .tree-label {
+      flex: 1;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .tree-item .tree-count {
+      font-size: 11px;
+      color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+    }
+
+    .tree-item .tree-check {
+      font-size: 13px;
+      color: var(--fern);
+      flex-shrink: 0;
+    }
+
+    /* Indentation levels */
+    .tree-l1 { padding-left: var(--space-lg); }
+    .tree-l2 { padding-left: calc(var(--space-lg) + 16px); }
+    .tree-l3 { padding-left: calc(var(--space-lg) + 32px); }
+    .tree-l4 { padding-left: calc(var(--space-lg) + 48px); }
+
+    .tree-group { font-weight: 600; }
+
+    .tree-children {
+      overflow: hidden;
+      transition: height 0.15s ease;
+    }
+
+    .tree-children.collapsed { display: none; }
+
+    /* ── Right panel: main content ── */
+    .main-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .main-scroll {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .napp-canvas {
+      padding-top: var(--space-2xl);
+      padding-bottom: var(--space-4xl);
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: var(--space-2xl);
+    }
+
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+
+    .page-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    .page-h1 {
+      font-size: 35px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      height: var(--control-h);
+      padding: 0 var(--space-lg);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      text-decoration: none;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border-color: var(--btn-primary-bg);
+    }
+
+    .btn-primary:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .btn-outline:hover { background: var(--surface-soft); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-soft);
+      border-color: transparent;
+      padding: 0 var(--space-sm);
+    }
+
+    .btn-ghost:hover { background: var(--surface-soft); color: var(--text); }
+
+    .btn[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ── Split button ── */
+    .split-btn {
+      display: inline-flex;
+      align-items: stretch;
+      border-radius: var(--radius-sm);
+      overflow: visible;
+      position: relative;
+    }
+
+    .split-btn-main {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      height: 32px;
+      padding: 0 var(--space-md);
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border: 1px solid var(--btn-primary-bg);
+      border-right: none;
+      border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.12s;
+      white-space: nowrap;
+    }
+
+    .split-btn-main:hover { background: var(--btn-primary-hover); }
+
+    .split-btn-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border: 1px solid var(--btn-primary-bg);
+      border-left: 1px solid rgba(255,255,255,0.25);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .split-btn-arrow:hover { background: var(--btn-primary-hover); }
+
+    .split-btn[data-disabled="true"] .split-btn-main,
+    .split-btn[data-disabled="true"] .split-btn-arrow {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Split button dropdown */
+    .split-dropdown {
+      position: absolute;
+      top: calc(100% + var(--space-xs));
+      right: 0;
+      min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 16px rgba(14,55,39,0.12);
+      z-index: 100;
+      overflow: hidden;
+      display: none;
+    }
+
+    .split-dropdown.open { display: block; }
+
+    .split-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .split-dropdown-item:hover { background: var(--surface-soft); }
+
+    .split-dropdown-item i { font-size: 14px; color: var(--text-soft); }
+
+    .split-dropdown-divider {
+      height: 1px;
+      background: var(--border);
+      margin: var(--space-xs) 0;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
+      flex-wrap: wrap;
+    }
+
+    .filter-search {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 280px;
+    }
+
+    .filter-search input {
+      width: 100%;
+      height: var(--control-h);
+      padding: 0 var(--space-sm) 0 var(--space-3xl);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .filter-search input::placeholder { color: var(--text-soft); }
+    .filter-search input:focus { border-color: var(--border-focus); }
+
+    .filter-search i {
+      position: absolute;
+      left: var(--space-md);
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--text-soft);
+      pointer-events: none;
+    }
+
+    .filter-select {
+      height: var(--control-h);
+      padding: 0 var(--space-lg) 0 var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right var(--space-sm) center;
+      padding-right: 28px;
+    }
+
+    .filter-select:focus { border-color: var(--border-focus); }
+
+    .filter-pills {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      margin-left: auto;
+    }
+
+    .filter-pill {
+      height: 32px;
+      padding: 0 var(--space-md);
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-soft);
+      cursor: pointer;
+      transition: background 0.1s, color 0.1s, border-color 0.1s;
+    }
+
+    .filter-pill:hover { background: var(--surface-soft); color: var(--text); }
+
+    .filter-pill.active {
+      background: var(--mint);
+      color: var(--spinach);
+      border-color: var(--fern);
+    }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: var(--space-xl);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead {
+      background: var(--surface-soft);
+      border-bottom: 1px solid var(--border);
+    }
+
+    thead th {
+      padding: var(--space-sm) var(--space-lg);
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    thead th:first-child { padding-left: var(--space-xl); }
+    thead th:last-child  { padding-right: var(--space-xl); text-align: right; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface-soft); }
+
+    tbody td {
+      padding: var(--space-md) var(--space-lg);
+      vertical-align: middle;
+      height: var(--row-h);
+    }
+
+    tbody td:first-child { padding-left: var(--space-xl); }
+    tbody td:last-child  { padding-right: var(--space-xl); }
+
+    .col-name    { min-width: 160px; }
+    .col-brand   { min-width: 120px; }
+    .col-groups  { min-width: 160px; font-feature-settings: 'tnum' 1; }
+    .col-updated { min-width: 100px; color: var(--text-soft); font-size: 13px; font-feature-settings: 'tnum' 1; }
+    .col-status  { min-width: 100px; }
+    .col-actions { min-width: 120px; text-align: right; }
+
+    .row-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .row-brand {
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .row-groups-main {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .row-groups-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .row-empty {
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    /* ── Status pill ── */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      height: 24px;
+      padding: 0 var(--space-sm);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .status-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-pill.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg);   }
+    .status-pill.ok   .dot { background: var(--status-ok-fg); }
+    .status-pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .status-pill.warn .dot { background: var(--status-warn-fg); }
+    .status-pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .status-pill.risk .dot { background: var(--status-risk-fg); }
+    .status-pill.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+    .status-pill.info .dot { background: var(--status-info-fg); }
+
+    /* ── Row actions: ⋮ menu ── */
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--space-xs);
+    }
+
+    .row-menu-wrap {
+      position: relative;
+    }
+
+    .row-menu-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: none;
+      color: var(--text-soft);
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.1s;
+    }
+
+    .row-menu-btn:hover { background: var(--surface-soft); color: var(--text); }
+
+    .row-menu {
+      position: absolute;
+      top: calc(100% + var(--space-xs));
+      right: 0;
+      min-width: 160px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 16px rgba(14,55,39,0.12);
+      z-index: 100;
+      overflow: hidden;
+      display: none;
+    }
+
+    .row-menu.open { display: block; }
+
+    .row-menu-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.1s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .row-menu-item:hover { background: var(--surface-soft); }
+    .row-menu-item.destructive { color: var(--status-risk-fg); }
+    .row-menu-item.destructive:hover { background: var(--status-risk-bg); }
+    .row-menu-item i { font-size: 14px; color: inherit; }
+    .row-menu-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
+
+    /* ── Activity timeline ── */
+    .activity-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .activity-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl);
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .activity-header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .activity-header-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .activity-header-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 var(--space-xs);
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+    }
+
+    .activity-toggle-icon {
+      font-size: 16px;
+      color: var(--text-soft);
+      transition: transform 0.15s;
+    }
+
+    .activity-toggle-icon.collapsed { transform: rotate(-90deg); }
+
+    .activity-body {
+      padding: var(--space-lg) var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .activity-body.collapsed { display: none; }
+
+    .timeline-item {
+      display: flex;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      position: relative;
+    }
+
+    .timeline-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: calc(var(--space-md) + 30px);
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .timeline-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+
+    .timeline-icon.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .timeline-icon.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .timeline-icon.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+
+    .timeline-content {
+      flex: 1;
+      padding-top: var(--space-xs);
+    }
+
+    .timeline-headline {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .timeline-headline strong { font-weight: 600; }
+
+    .timeline-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-xs);
+    }
+
+    .timeline-time {
+      font-size: 12px;
+      color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+    }
+
+    .timeline-actor {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .timeline-actor::before {
+      content: '·';
+      margin-right: var(--space-xs);
+    }
+
+    /* ── Push modal ── */
+    dialog {
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 0;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(14,55,39,0.18);
+      background: var(--surface);
+      outline: none;
+    }
+
+    dialog::backdrop {
+      background: rgba(14,55,39,0.35);
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-xl) var(--space-xl) var(--space-md);
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: none;
+      color: var(--text-soft);
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.1s;
+    }
+
+    .modal-close:hover { background: var(--surface-soft); }
+
+    .modal-divider { height: 1px; background: var(--border); }
+
+    .modal-body {
+      padding: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+
+    .modal-desc {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .modal-desc strong { font-weight: 600; }
+
+    /* Radio group */
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .radio-group-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-soft);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-xs);
+    }
+
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s;
+    }
+
+    .radio-item:hover { background: var(--surface-soft); }
+
+    .radio-item.selected {
+      background: var(--mint);
+      border-color: var(--fern);
+    }
+
+    .radio-item input[type="radio"] { accent-color: var(--fern); flex-shrink: 0; }
+
+    .radio-item-label {
+      font-size: 14px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .modal-note {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--status-info-bg);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--status-info-fg);
+      line-height: 1.4;
+    }
+
+    .modal-note i { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--space-sm);
+      padding: var(--space-md) var(--space-xl) var(--space-xl);
+    }
+
+    /* ── Toast ── */
+    #toast-container {
+      position: fixed;
+      bottom: var(--space-2xl);
+      right: var(--space-2xl);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      pointer-events: none;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--text);
+      color: var(--cream);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 16px rgba(14,55,39,0.2);
+      pointer-events: all;
+      animation: toast-in 0.2s ease;
+    }
+
+    .toast i { font-size: 16px; color: var(--spring); }
+
+    @keyframes toast-in {
+      from { transform: translateY(8px); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+
+    /* ── Misc utility ── */
+    .text-soft    { color: var(--text-soft); }
+    .text-accent  { color: var(--text-accent); }
+    .tabular      { font-feature-settings: 'tnum' 1; }
+
+    /* Hover overlay closer */
+    .overlay-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: none;
+    }
+
+    .overlay-bg.active { display: block; }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js" data-active="market-list"></script>
+
+  <div class="page-body">
+
+    <!-- ══ LEFT: Outlet group tree ══ -->
+    <aside class="tree-panel" aria-label="Outlet groups">
+      <div class="tree-panel-header">
+        <span class="tree-panel-title">Outlet groups</span>
+        <div class="tree-search">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input type="search" placeholder="Search outlets…" aria-label="Search outlet groups"/>
+        </div>
+      </div>
+
+      <div class="tree-scroll" role="tree" aria-label="Brand outlet hierarchy">
+
+        <!-- Brand: The Burger Co -->
+        <div class="tree-item tree-l1 tree-group" role="treeitem" aria-expanded="true" data-tree="burger-co" onclick="toggleTree(this)">
+          <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
+          <span class="tree-label">The Burger Co</span>
+          <span class="tree-count tabular">24</span>
+        </div>
+        <div class="tree-children" id="tree-burger-co" role="group">
+
+          <!-- NSW -->
+          <div class="tree-item tree-l2 tree-group" role="treeitem" aria-expanded="true" data-tree="burger-nsw" onclick="toggleTree(this)">
+            <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
+            <span class="tree-label">New South Wales</span>
+          </div>
+          <div class="tree-children" id="tree-burger-nsw" role="group">
+
+            <div class="tree-item tree-l3 tree-group" role="treeitem" aria-expanded="true" data-tree="burger-sydney" onclick="toggleTree(this)">
+              <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
+              <span class="tree-label">Sydney Metro</span>
+            </div>
+            <div class="tree-children" id="tree-burger-sydney" role="group">
+              <div class="tree-item tree-l4 selected" role="treeitem" aria-selected="true" onclick="selectOutlet(this)">
+                <span class="tree-label">Circular Quay</span>
+                <i class="ti ti-check tree-check" aria-label="Selected" aria-hidden="false"></i>
+              </div>
+              <div class="tree-item tree-l4 selected" role="treeitem" aria-selected="true" onclick="selectOutlet(this)">
+                <span class="tree-label">Surry Hills</span>
+                <i class="ti ti-check tree-check" aria-label="Selected" aria-hidden="false"></i>
+              </div>
+              <div class="tree-item tree-l4" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
+                <span class="tree-label">Newtown</span>
+              </div>
+            </div>
+
+            <div class="tree-item tree-l3" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
+              <span class="tree-label">Hunter Valley</span>
+            </div>
+          </div>
+
+          <!-- VIC -->
+          <div class="tree-item tree-l2 tree-group" role="treeitem" aria-expanded="true" data-tree="burger-vic" onclick="toggleTree(this)">
+            <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
+            <span class="tree-label">Victoria</span>
+          </div>
+          <div class="tree-children" id="tree-burger-vic" role="group">
+            <div class="tree-item tree-l3 selected" role="treeitem" aria-selected="true" onclick="selectOutlet(this)">
+              <span class="tree-label">Melbourne CBD</span>
+              <i class="ti ti-check tree-check" aria-label="Selected" aria-hidden="false"></i>
+            </div>
+            <div class="tree-item tree-l3" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
+              <span class="tree-label">St Kilda</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand: Pasta Palace -->
+        <div class="tree-item tree-l1 tree-group" role="treeitem" aria-expanded="true" data-tree="pasta" onclick="toggleTree(this)">
+          <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
+          <span class="tree-label">Pasta Palace</span>
+          <span class="tree-count tabular">18</span>
+        </div>
+        <div class="tree-children" id="tree-pasta" role="group">
+          <div class="tree-item tree-l2" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
+            <span class="tree-label">New South Wales</span>
+          </div>
+          <div class="tree-item tree-l2" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
+            <span class="tree-label">Queensland</span>
+          </div>
+        </div>
+
+        <!-- Brand: Taco Time (collapsed) -->
+        <div class="tree-item tree-l1 tree-group collapsed" role="treeitem" aria-expanded="false" data-tree="taco" onclick="toggleTree(this)">
+          <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
+          <span class="tree-label">Taco Time</span>
+          <span class="tree-count tabular">12</span>
+        </div>
+        <div class="tree-children collapsed" id="tree-taco" role="group">
+          <div class="tree-item tree-l2" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
+            <span class="tree-label">New South Wales</span>
+          </div>
+          <div class="tree-item tree-l2" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
+            <span class="tree-label">Victoria</span>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ══ RIGHT: Main content ══ -->
+    <main class="main-panel" id="main-panel">
+      <div class="main-scroll">
+        <div class="napp-canvas" data-measure="content">
+
+          <!-- Page header -->
+          <header class="page-header">
+            <div class="page-header-left">
+              <span class="page-eyebrow">Market List Assignment</span>
+              <h1 class="page-h1">Market lists</h1>
+            </div>
+            <button class="btn btn-primary" onclick="openNewListModal()">
+              <i class="ti ti-plus" aria-hidden="true"></i>
+              New market list
+            </button>
+          </header>
+
+          <!-- Filter bar -->
+          <div class="filter-bar" role="search" aria-label="Filter market lists">
+            <div class="filter-search">
+              <i class="ti ti-search" aria-hidden="true"></i>
+              <input type="search" placeholder="Search market lists…" aria-label="Search market lists"/>
+            </div>
+            <select class="filter-select" aria-label="Filter by brand">
+              <option>All brands</option>
+              <option>The Burger Co</option>
+              <option>Pasta Palace</option>
+              <option>Taco Time</option>
+            </select>
+            <select class="filter-select" aria-label="Filter by region">
+              <option>All regions</option>
+              <option>New South Wales</option>
+              <option>Victoria</option>
+              <option>Queensland</option>
+            </select>
+            <div class="filter-pills" role="group" aria-label="Status filter">
+              <button class="filter-pill active" onclick="setStatusFilter(this, 'all')">All</button>
+              <button class="filter-pill" onclick="setStatusFilter(this, 'active')">Active</button>
+              <button class="filter-pill" onclick="setStatusFilter(this, 'pending')">Pending</button>
+              <button class="filter-pill" onclick="setStatusFilter(this, 'archived')">Archived</button>
+            </div>
+          </div>
+
+          <!-- Market list table -->
+          <div class="table-wrap" role="region" aria-label="Market lists">
+            <table aria-label="Market list assignments">
+              <thead>
+                <tr>
+                  <th class="col-name"   scope="col">Name</th>
+                  <th class="col-brand"  scope="col">Brand</th>
+                  <th class="col-groups" scope="col">Assigned groups</th>
+                  <th class="col-updated"scope="col">Last updated</th>
+                  <th class="col-status" scope="col">Status</th>
+                  <th class="col-actions"scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <!-- Row 1: Spring Menu AU — Active -->
+                <tr>
+                  <td class="col-name">
+                    <span class="row-name">Spring Menu AU</span>
+                  </td>
+                  <td class="col-brand">
+                    <span class="row-brand">The Burger Co</span>
+                  </td>
+                  <td class="col-groups">
+                    <span class="row-groups-main tabular">3 groups</span>
+                    <br>
+                    <span class="row-groups-sub tabular">42 outlets</span>
+                  </td>
+                  <td class="col-updated tabular">2h ago</td>
+                  <td class="col-status">
+                    <span class="status-pill ok" role="status" aria-label="Status: Active">
+                      <span class="dot" aria-hidden="true"></span>
+                      Active
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <div class="actions-cell">
+                      <div class="split-btn" role="group" aria-label="Push Spring Menu AU">
+                        <button class="split-btn-main" onclick="openPushModal('Spring Menu AU', 42)" aria-label="Push Spring Menu AU">
+                          <i class="ti ti-send" aria-hidden="true"></i>
+                          Push
+                        </button>
+                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-1')" aria-haspopup="menu" aria-expanded="false" aria-label="More push options">
+                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                        </button>
+                        <div class="split-dropdown" id="split-1" role="menu">
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Spring Menu AU', 42); closeSplitMenus()">
+                            <i class="ti ti-layers" aria-hidden="true"></i>Push to group
+                          </div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Spring Menu AU', 3); closeSplitMenus()">
+                            <i class="ti ti-list-check" aria-hidden="true"></i>Push to selection
+                          </div>
+                          <div class="split-dropdown-divider" role="separator"></div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Spring Menu AU', 42); closeSplitMenus()">
+                            <i class="ti ti-broadcast" aria-hidden="true"></i>Push to all outlets
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row-menu-wrap">
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-1')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Spring Menu AU">
+                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+                        </button>
+                        <div class="row-menu" id="menu-1" role="menu">
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <div class="row-menu-divider" role="separator"></div>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
+                          <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 2: Winter Specials — Pending -->
+                <tr>
+                  <td class="col-name">
+                    <span class="row-name">Winter Specials</span>
+                  </td>
+                  <td class="col-brand">
+                    <span class="row-brand">The Burger Co</span>
+                  </td>
+                  <td class="col-groups">
+                    <span class="row-groups-main tabular">2 groups</span>
+                    <br>
+                    <span class="row-groups-sub tabular">28 outlets</span>
+                  </td>
+                  <td class="col-updated tabular">1 day ago</td>
+                  <td class="col-status">
+                    <span class="status-pill warn" role="status" aria-label="Status: Pending">
+                      <span class="dot" aria-hidden="true"></span>
+                      Pending
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <div class="actions-cell">
+                      <div class="split-btn" role="group" aria-label="Push Winter Specials">
+                        <button class="split-btn-main" onclick="openPushModal('Winter Specials', 28)" aria-label="Push Winter Specials">
+                          <i class="ti ti-send" aria-hidden="true"></i>
+                          Push
+                        </button>
+                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-2')" aria-haspopup="menu" aria-expanded="false" aria-label="More push options">
+                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                        </button>
+                        <div class="split-dropdown" id="split-2" role="menu">
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Winter Specials', 28); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Winter Specials', 3); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
+                          <div class="split-dropdown-divider" role="separator"></div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Winter Specials', 28); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
+                        </div>
+                      </div>
+                      <div class="row-menu-wrap">
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-2')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Winter Specials">
+                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+                        </button>
+                        <div class="row-menu" id="menu-2" role="menu">
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <div class="row-menu-divider" role="separator"></div>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
+                          <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 3: Pasta Classics — Active -->
+                <tr>
+                  <td class="col-name">
+                    <span class="row-name">Pasta Classics</span>
+                  </td>
+                  <td class="col-brand">
+                    <span class="row-brand">Pasta Palace</span>
+                  </td>
+                  <td class="col-groups">
+                    <span class="row-groups-main tabular">4 groups</span>
+                    <br>
+                    <span class="row-groups-sub tabular">18 outlets</span>
+                  </td>
+                  <td class="col-updated tabular">3 days ago</td>
+                  <td class="col-status">
+                    <span class="status-pill ok" role="status" aria-label="Status: Active">
+                      <span class="dot" aria-hidden="true"></span>
+                      Active
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <div class="actions-cell">
+                      <div class="split-btn" role="group" aria-label="Push Pasta Classics">
+                        <button class="split-btn-main" onclick="openPushModal('Pasta Classics', 18)" aria-label="Push Pasta Classics">
+                          <i class="ti ti-send" aria-hidden="true"></i>
+                          Push
+                        </button>
+                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-3')" aria-haspopup="menu" aria-expanded="false" aria-label="More push options">
+                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                        </button>
+                        <div class="split-dropdown" id="split-3" role="menu">
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Pasta Classics', 18); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Pasta Classics', 4); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
+                          <div class="split-dropdown-divider" role="separator"></div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Pasta Classics', 18); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
+                        </div>
+                      </div>
+                      <div class="row-menu-wrap">
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-3')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Pasta Classics">
+                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+                        </button>
+                        <div class="row-menu" id="menu-3" role="menu">
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <div class="row-menu-divider" role="separator"></div>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
+                          <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 4: Taco Tuesday — Active -->
+                <tr>
+                  <td class="col-name">
+                    <span class="row-name">Taco Tuesday</span>
+                  </td>
+                  <td class="col-brand">
+                    <span class="row-brand">Taco Time</span>
+                  </td>
+                  <td class="col-groups">
+                    <span class="row-groups-main tabular">1 group</span>
+                    <br>
+                    <span class="row-groups-sub tabular">12 outlets</span>
+                  </td>
+                  <td class="col-updated tabular">1 week ago</td>
+                  <td class="col-status">
+                    <span class="status-pill ok" role="status" aria-label="Status: Active">
+                      <span class="dot" aria-hidden="true"></span>
+                      Active
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <div class="actions-cell">
+                      <div class="split-btn" role="group" aria-label="Push Taco Tuesday">
+                        <button class="split-btn-main" onclick="openPushModal('Taco Tuesday', 12)" aria-label="Push Taco Tuesday">
+                          <i class="ti ti-send" aria-hidden="true"></i>
+                          Push
+                        </button>
+                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-4')" aria-haspopup="menu" aria-expanded="false" aria-label="More push options">
+                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                        </button>
+                        <div class="split-dropdown" id="split-4" role="menu">
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Taco Tuesday', 12); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Taco Tuesday', 1); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
+                          <div class="split-dropdown-divider" role="separator"></div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Taco Tuesday', 12); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
+                        </div>
+                      </div>
+                      <div class="row-menu-wrap">
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-4')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Taco Tuesday">
+                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+                        </button>
+                        <div class="row-menu" id="menu-4" role="menu">
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <div class="row-menu-divider" role="separator"></div>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
+                          <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 5: Summer Refresh — Draft (disabled push) -->
+                <tr>
+                  <td class="col-name">
+                    <span class="row-name">Summer Refresh</span>
+                  </td>
+                  <td class="col-brand">
+                    <span class="row-brand">The Burger Co</span>
+                  </td>
+                  <td class="col-groups">
+                    <span class="row-empty">—</span>
+                  </td>
+                  <td class="col-updated tabular">2 weeks ago</td>
+                  <td class="col-status">
+                    <span class="status-pill info" role="status" aria-label="Status: Draft">
+                      <span class="dot" aria-hidden="true"></span>
+                      Draft
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <div class="actions-cell">
+                      <div class="split-btn" data-disabled="true" role="group" aria-label="Push Summer Refresh (unavailable for draft)" aria-disabled="true">
+                        <button class="split-btn-main" disabled aria-disabled="true" aria-label="Push unavailable — assign outlets first">
+                          <i class="ti ti-send" aria-hidden="true"></i>
+                          Push
+                        </button>
+                        <button class="split-btn-arrow" disabled aria-disabled="true" aria-label="More push options unavailable">
+                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                        </button>
+                      </div>
+                      <div class="row-menu-wrap">
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-5')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Summer Refresh">
+                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+                        </button>
+                        <div class="row-menu" id="menu-5" role="menu">
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <div class="row-menu-divider" role="separator"></div>
+                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
+                          <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Activity timeline -->
+          <section class="activity-section" aria-label="Recent activity">
+            <div class="activity-header" onclick="toggleActivity()" role="button" aria-expanded="true" aria-controls="activity-body" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleActivity()">
+              <div class="activity-header-left">
+                <span class="activity-header-title">Recent activity</span>
+                <span class="activity-header-count tabular" aria-label="2 entries">2</span>
+              </div>
+              <i class="ti ti-chevron-down activity-toggle-icon" id="activity-toggle-icon" aria-hidden="true"></i>
+            </div>
+
+            <div class="activity-body" id="activity-body" role="list" aria-label="Activity log">
+
+              <div class="timeline-item" role="listitem">
+                <div class="timeline-icon ok" aria-hidden="true">
+                  <i class="ti ti-send"></i>
+                </div>
+                <div class="timeline-content">
+                  <p class="timeline-headline">
+                    <strong>Spring Menu AU</strong> pushed to <strong class="tabular">42 outlets</strong> across 3 groups
+                  </p>
+                  <div class="timeline-meta">
+                    <span class="timeline-time">2h ago</span>
+                    <span class="timeline-actor">HQ Administrator</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-item" role="listitem">
+                <div class="timeline-icon warn" aria-hidden="true">
+                  <i class="ti ti-alert-triangle"></i>
+                </div>
+                <div class="timeline-content">
+                  <p class="timeline-headline">
+                    <strong>Winter Specials</strong> sync error on <strong class="tabular">4 outlets</strong> — connection timeout
+                  </p>
+                  <div class="timeline-meta">
+                    <span class="timeline-time">1 day ago</span>
+                    <span class="timeline-actor">HQ Administrator</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ══ Push modal ══ -->
+  <dialog id="push-modal" aria-modal="true" aria-labelledby="push-modal-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="push-modal-title">Push market list</h2>
+      <button class="modal-close" onclick="closePushModal()" aria-label="Close dialog">
+        <i class="ti ti-x" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="modal-divider" role="separator"></div>
+    <div class="modal-body">
+      <p class="modal-desc" id="push-modal-desc">
+        Push <strong id="push-list-name">Spring Menu AU</strong> to selected outlets?
+      </p>
+
+      <div class="radio-group" role="radiogroup" aria-label="Push scope">
+        <div class="radio-group-label">Push scope</div>
+        <label class="radio-item selected" id="radio-all">
+          <input type="radio" name="push-scope" value="all" checked onchange="selectRadio('radio-all')"/>
+          <span class="radio-item-label">All outlets <span class="tabular" id="push-outlet-count">(42 outlets)</span></span>
+        </label>
+        <label class="radio-item" id="radio-group">
+          <input type="radio" name="push-scope" value="group" onchange="selectRadio('radio-group')"/>
+          <span class="radio-item-label">By group</span>
+        </label>
+        <label class="radio-item" id="radio-selection">
+          <input type="radio" name="push-scope" value="selection" onchange="selectRadio('radio-selection')"/>
+          <span class="radio-item-label">Selection only</span>
+        </label>
+      </div>
+
+      <div class="modal-note" role="note">
+        <i class="ti ti-info-circle" aria-hidden="true"></i>
+        <span>This action will not affect in-flight orders. Outlets currently processing orders will receive the updated list after their active orders complete.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closePushModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmPush()">
+        <i class="ti ti-send" aria-hidden="true"></i>
+        Confirm push
+      </button>
+    </div>
+  </dialog>
+
+  <!-- Toast container -->
+  <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Overlay backdrop for menus -->
+  <div class="overlay-bg" id="overlay-bg" onclick="closeMenus(); closeSplitMenus()"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Market lists'));
+
+    /* ── Tree toggle ── */
+    function toggleTree(el) {
+      const id = el.getAttribute('data-tree');
+      const children = document.getElementById('tree-' + id);
+      if (!children) return;
+
+      const isCollapsed = children.classList.contains('collapsed');
+      children.classList.toggle('collapsed', !isCollapsed);
+      el.classList.toggle('collapsed', !isCollapsed);
+      el.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+    }
+
+    /* ── Outlet select toggle ── */
+    function selectOutlet(el) {
+      el.classList.toggle('selected');
+      const isSelected = el.classList.contains('selected');
+      el.setAttribute('aria-selected', isSelected);
+
+      // Add or remove checkmark icon
+      let check = el.querySelector('.tree-check');
+      if (isSelected) {
+        if (!check) {
+          check = document.createElement('i');
+          check.className = 'ti ti-check tree-check';
+          check.setAttribute('aria-label', 'Selected');
+          el.appendChild(check);
+        }
+      } else {
+        if (check) check.remove();
+      }
+    }
+
+    /* ── Status filter pills ── */
+    function setStatusFilter(btn, filter) {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    /* ── Row ⋮ menus ── */
+    function toggleRowMenu(event, id) {
+      event.stopPropagation();
+      const menu = document.getElementById(id);
+      const wasOpen = menu.classList.contains('open');
+      closeMenus();
+      closeSplitMenus();
+      if (!wasOpen) {
+        menu.classList.add('open');
+        menu.previousElementSibling.setAttribute('aria-expanded', 'true');
+        document.getElementById('overlay-bg').classList.add('active');
+      }
+    }
+
+    function closeMenus() {
+      document.querySelectorAll('.row-menu.open').forEach(m => {
+        m.classList.remove('open');
+        const btn = m.previousElementSibling;
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      });
+      document.getElementById('overlay-bg').classList.remove('active');
+    }
+
+    /* ── Split button dropdown ── */
+    function toggleSplitMenu(event, id) {
+      event.stopPropagation();
+      const menu = document.getElementById(id);
+      const btn = event.currentTarget;
+      const wasOpen = menu.classList.contains('open');
+      closeSplitMenus();
+      closeMenus();
+      if (!wasOpen) {
+        menu.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+        document.getElementById('overlay-bg').classList.add('active');
+      }
+    }
+
+    function closeSplitMenus() {
+      document.querySelectorAll('.split-dropdown.open').forEach(m => {
+        m.classList.remove('open');
+        const wrap = m.closest('.split-btn');
+        if (wrap) {
+          const arrow = wrap.querySelector('.split-btn-arrow');
+          if (arrow) arrow.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    /* ── Push modal ── */
+    let currentPushList = '';
+
+    function openPushModal(listName, outletCount) {
+      closeMenus();
+      closeSplitMenus();
+      currentPushList = listName;
+      document.getElementById('push-list-name').textContent = listName;
+      document.getElementById('push-outlet-count').textContent = '(' + outletCount + ' outlets)';
+
+      // Reset radio to "all"
+      const radios = document.querySelectorAll('.radio-item');
+      radios.forEach(r => r.classList.remove('selected'));
+      document.getElementById('radio-all').classList.add('selected');
+      document.querySelector('input[name="push-scope"][value="all"]').checked = true;
+
+      document.getElementById('push-modal').showModal();
+    }
+
+    function closePushModal() {
+      document.getElementById('push-modal').close();
+    }
+
+    function selectRadio(selectedId) {
+      document.querySelectorAll('.radio-item').forEach(r => r.classList.remove('selected'));
+      document.getElementById(selectedId).classList.add('selected');
+    }
+
+    function confirmPush() {
+      closePushModal();
+      showToast('ti-circle-check', currentPushList + ' pushed successfully');
+      addActivityEntry(currentPushList);
+    }
+
+    /* ── Toast ── */
+    function showToast(icon, message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      toast.innerHTML = `<i class="ti ${icon}" aria-hidden="true"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    /* ── Activity timeline: append on push ── */
+    function addActivityEntry(listName) {
+      const body = document.getElementById('activity-body');
+      const now = 'Just now';
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.setAttribute('role', 'listitem');
+      item.innerHTML = `
+        <div class="timeline-icon ok" aria-hidden="true">
+          <i class="ti ti-send"></i>
+        </div>
+        <div class="timeline-content">
+          <p class="timeline-headline">
+            <strong>${listName}</strong> pushed to outlets
+          </p>
+          <div class="timeline-meta">
+            <span class="timeline-time">${now}</span>
+            <span class="timeline-actor">HQ Administrator</span>
+          </div>
+        </div>
+      `;
+      body.insertBefore(item, body.firstChild);
+
+      // Update count badge
+      const countEl = document.querySelector('.activity-header-count');
+      countEl.textContent = String(parseInt(countEl.textContent || '0') + 1);
+
+      // Ensure activity is expanded
+      const actBody = document.getElementById('activity-body');
+      const actIcon = document.getElementById('activity-toggle-icon');
+      actBody.classList.remove('collapsed');
+      actIcon.classList.remove('collapsed');
+      document.querySelector('[aria-controls="activity-body"]').setAttribute('aria-expanded', 'true');
+    }
+
+    /* ── Activity collapse toggle ── */
+    function toggleActivity() {
+      const body = document.getElementById('activity-body');
+      const icon = document.getElementById('activity-toggle-icon');
+      const header = document.querySelector('[aria-controls="activity-body"]');
+      const isCollapsed = body.classList.toggle('collapsed');
+      icon.classList.toggle('collapsed', isCollapsed);
+      header.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+    }
+
+    /* ── Modal: close on backdrop click ── */
+    document.getElementById('push-modal').addEventListener('click', function(e) {
+      if (e.target === this) closePushModal();
+    });
+
+    /* ── Keyboard: Escape closes menus ── */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeMenus();
+        closeSplitMenus();
+      }
+    });
+
+    /* ── New market list placeholder ── */
+    function openNewListModal() {
+      showToast('ti-plus', 'New market list — coming soon');
+    }
+  </script>
+</body>
+</html>
