@@ -8,35 +8,213 @@
   <style>
     body { background: var(--surface-soft); }
 
-    /* ── Page layout ── */
-    .page-body {
-      padding-block: var(--space-2xl);
-    }
+    .page-body { padding-block: var(--space-2xl); }
     .page-body .napp-canvas {
       display: flex;
       flex-direction: column;
       gap: var(--space-3xl);
     }
 
-    /* ── Page header ── */
-    .page-header { display: flex; flex-direction: column; gap: var(--space-xs); }
-    .page-eyebrow {
+    /* ── Greeting ── */
+    .greeting { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .greeting-eyebrow {
       font-size: 11px; font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+      text-transform: uppercase; letter-spacing: 0.08em;
       color: var(--text-accent);
     }
-    .page-title {
+    .greeting-title {
       font-size: 35px; font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.025em;
-      line-height: 1.1;
+      color: var(--text); letter-spacing: -0.025em; line-height: 1.1;
     }
-    .page-sub {
-      font-size: 16px;
-      color: var(--text-soft);
+    .greeting-sub {
+      font-size: 15px; color: var(--text-soft);
       margin-top: var(--space-xs);
     }
+
+    /* ── Agent brief ── */
+    .agent-brief {
+      background: var(--surface);
+      border: 1.5px solid var(--agent-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm), 0 0 0 4px var(--agent-glow);
+      overflow: hidden;
+    }
+    .agent-brief-header {
+      display: flex; align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+    }
+    .agent-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(23,179,163,0.15);
+      border: 1.5px solid rgba(23,179,163,0.3);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 12px; font-weight: 700;
+      color: var(--ordering);
+    }
+    .agent-identity { flex: 1; min-width: 0; }
+    .agent-name {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: var(--space-xs);
+    }
+    .agent-name .agent-spark {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0;
+    }
+    .agent-role { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .agent-brief-meta {
+      font-size: 11px; color: var(--text-soft);
+      white-space: nowrap;
+    }
+    .agent-callouts {
+      display: flex; flex-direction: column;
+    }
+    .callout-item {
+      display: flex; align-items: flex-start;
+      gap: var(--space-lg);
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+      transition: background var(--dur-1) var(--ease-standard);
+    }
+    .callout-item:last-child { border-bottom: none; }
+    .callout-item:hover { background: var(--surface-soft); }
+    .callout-icon {
+      width: 36px; height: 36px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .callout-icon.warn { background: var(--status-warn-bg); }
+    .callout-icon.warn i { color: var(--status-warn-fg); font-size: 16px; }
+    .callout-icon.risk { background: var(--status-risk-bg); }
+    .callout-icon.risk i { color: var(--status-risk-fg); font-size: 16px; }
+    .callout-icon.info { background: var(--status-info-bg); }
+    .callout-icon.info i { color: var(--status-info-fg); font-size: 16px; }
+    .callout-body { flex: 1; min-width: 0; }
+    .callout-headline {
+      font-size: 13px; font-weight: 600;
+      color: var(--text); line-height: 1.4;
+    }
+    .callout-why {
+      font-size: 12px; color: var(--text-soft);
+      margin-top: var(--space-xs); line-height: 1.5;
+    }
+    .callout-actions {
+      display: flex; align-items: center;
+      gap: var(--space-sm); margin-top: var(--space-md);
+    }
+    .btn-sm {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: 5px var(--space-md);
+      border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; border: none;
+      transition: background var(--dur-1) var(--ease-standard);
+    }
+    .btn-sm:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn-sm.primary {
+      background: var(--btn-primary-bg); color: var(--btn-primary-fg);
+    }
+    .btn-sm.primary:hover { background: var(--btn-primary-hover); }
+    .btn-sm.ghost {
+      background: transparent; color: var(--text-link);
+      border: 1px solid var(--border);
+    }
+    .btn-sm.ghost:hover { background: var(--surface-soft); }
+
+    /* ── Network revenue pulse ── */
+    .pulse-row {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: var(--space-lg);
+      align-items: stretch;
+    }
+    .pulse-hero {
+      background: var(--surface-deep);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-xl);
+    }
+    .pulse-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: rgba(250,247,233,0.5);
+    }
+    .pulse-value {
+      font-size: 44px; font-weight: 700;
+      color: var(--cream); letter-spacing: -0.04em; line-height: 1;
+      font-feature-settings: 'tnum' 1;
+    }
+    .pulse-value sup { font-size: 22px; vertical-align: super; }
+    .pulse-delta {
+      display: flex; align-items: center; gap: var(--space-xs);
+      font-size: 12px; font-weight: 600;
+    }
+    .pulse-delta.up { color: var(--spring); }
+    .pulse-delta.down { color: var(--rose); }
+    .pulse-context {
+      font-size: 11px; color: rgba(250,247,233,0.45);
+      margin-top: var(--space-xs);
+    }
+    .pulse-sparkline {
+      display: flex; align-items: flex-end;
+      gap: 3px; height: 32px;
+    }
+    .spark-bar {
+      flex: 1; border-radius: 2px 2px 0 0;
+      background: rgba(42,200,100,0.3);
+      transition: background var(--dur-1) var(--ease-standard);
+    }
+    .spark-bar.today { background: var(--spring); }
+    .spark-bar:hover { background: rgba(42,200,100,0.6); }
+
+    .group-chart-panel {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .group-chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+    }
+    .group-chart-title {
+      font-size: 13px; font-weight: 600; color: var(--text);
+    }
+    .chart-period {
+      font-size: 11px; color: var(--text-soft);
+    }
+    .group-bars { padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-md); }
+    .group-bar-row { display: flex; align-items: center; gap: var(--space-md); }
+    .group-bar-label {
+      font-size: 12px; font-weight: 500; color: var(--text);
+      width: 130px; flex-shrink: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .group-bar-track {
+      flex: 1; height: 8px; background: var(--surface-soft);
+      border-radius: var(--radius-pill); overflow: hidden;
+    }
+    .group-bar-fill {
+      height: 100%; border-radius: var(--radius-pill);
+      background: var(--text-accent);
+      transition: width var(--dur-3) var(--ease-emphasized);
+    }
+    .group-bar-amt {
+      font-size: 12px; font-weight: 600; color: var(--text);
+      font-feature-settings: 'tnum' 1;
+      width: 64px; text-align: right; flex-shrink: 0;
+    }
+    .group-bar-delta {
+      font-size: 11px; width: 44px; text-align: right; flex-shrink: 0;
+      font-feature-settings: 'tnum' 1; font-weight: 500;
+    }
+    .group-bar-delta.up { color: var(--status-ok-fg); }
+    .group-bar-delta.down { color: var(--status-risk-fg); }
 
     /* ── KPI strip ── */
     .kpi-strip {
@@ -49,38 +227,82 @@
       border: 0.5px solid var(--border);
       border-radius: var(--radius-lg);
       padding: var(--space-xl);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-md);
-      transition: box-shadow 0.15s;
+      display: flex; flex-direction: column; gap: var(--space-md);
+      transition: box-shadow var(--dur-1) var(--ease-standard);
+      cursor: default;
     }
-    .kpi-tile:hover {
-      box-shadow: 0 2px 12px rgba(14,55,39,0.07);
-    }
+    .kpi-tile:hover { box-shadow: var(--shadow-md); }
+    .kpi-tile-top { display: flex; align-items: flex-start; justify-content: space-between; }
     .kpi-label {
-      font-size: 12px; font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
       color: var(--text-soft);
     }
     .kpi-value {
-      font-size: 40px; font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.03em;
-      line-height: 1;
+      font-size: 36px; font-weight: 700;
+      color: var(--text); letter-spacing: -0.03em; line-height: 1;
       font-feature-settings: 'tnum' 1;
     }
+    .kpi-value sup { font-size: 18px; vertical-align: super; font-weight: 600; }
     .kpi-context {
-      font-size: 12px; font-weight: 500;
-      color: var(--text-soft);
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
+      font-size: 12px; font-weight: 500; color: var(--text-soft);
+      display: flex; align-items: center; gap: var(--space-xs);
     }
-    .kpi-context .ok  { color: var(--status-ok-fg); }
+    .kpi-context .ok   { color: var(--status-ok-fg); }
     .kpi-context .warn { color: var(--status-warn-fg); }
+    .kpi-context .risk { color: var(--status-risk-fg); }
+    .kpi-spark {
+      display: flex; align-items: flex-end;
+      gap: 2px; height: 24px; margin-top: var(--space-xs);
+    }
+    .kpi-spark-bar {
+      flex: 1; border-radius: 1px 1px 0 0;
+      background: rgba(18,155,65,0.2);
+    }
+    .kpi-spark-bar.hi { background: var(--text-accent); }
 
-    /* ── Two-column row ── */
+    /* ── Pending actions ── */
+    .pending-strip {
+      display: flex; align-items: center;
+      gap: var(--space-sm); flex-wrap: wrap;
+    }
+    .pending-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-soft); flex-shrink: 0;
+      margin-right: var(--space-xs);
+    }
+    .pending-chip {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: 5px var(--space-md);
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-pill);
+      font-size: 12px; font-weight: 500;
+      color: var(--text);
+      cursor: pointer; text-decoration: none;
+      transition: border-color var(--dur-1) var(--ease-standard),
+                  box-shadow var(--dur-1) var(--ease-standard);
+    }
+    .pending-chip:hover {
+      border-color: var(--text-accent);
+      box-shadow: var(--shadow-sm);
+    }
+    .pending-chip:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .pending-chip .chip-count {
+      background: var(--status-warn-bg);
+      color: var(--status-warn-fg);
+      border-radius: var(--radius-pill);
+      padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+      font-feature-settings: 'tnum' 1;
+    }
+    .pending-chip .chip-count.risk {
+      background: var(--status-risk-bg);
+      color: var(--status-risk-fg);
+    }
+
+    /* ── Two-column bottom row ── */
     .two-col {
       display: grid;
       grid-template-columns: 3fr 2fr;
@@ -96,219 +318,154 @@
       overflow: hidden;
     }
     .panel-header {
-      display: flex; align-items: center;
-      justify-content: space-between;
-      padding: var(--space-xl) var(--space-xl) var(--space-md);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl);
       border-bottom: 1px solid var(--border);
     }
-    .panel-title {
-      font-size: 14px; font-weight: 600;
-      color: var(--text);
-      letter-spacing: -0.01em;
-    }
+    .panel-title { font-size: 13px; font-weight: 600; color: var(--text); }
     .panel-action {
       font-size: 12px; font-weight: 500;
-      color: var(--text-link);
-      text-decoration: none;
-      cursor: pointer;
+      color: var(--text-link); text-decoration: none; cursor: pointer;
     }
     .panel-action:hover { text-decoration: underline; }
 
     /* ── Activity timeline ── */
-    .activity-list {
-      display: flex;
-      flex-direction: column;
-    }
+    .activity-list { display: flex; flex-direction: column; }
     .activity-item {
-      display: flex;
-      align-items: flex-start;
+      display: flex; align-items: flex-start;
       gap: var(--space-md);
       padding: var(--space-lg) var(--space-xl);
       border-bottom: 1px solid var(--border);
-      position: relative;
+      transition: background var(--dur-1) var(--ease-standard);
     }
     .activity-item:last-child { border-bottom: none; }
+    .activity-item:hover { background: var(--surface-soft); }
     .activity-icon-wrap {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--surface-soft); border: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      margin-top: 2px;
+      flex-shrink: 0; margin-top: 2px;
     }
-    .activity-icon-wrap i {
-      font-size: 14px;
-      color: var(--text-soft);
+    .activity-icon-wrap i { font-size: 14px; color: var(--text-soft); }
+    .activity-icon-wrap.agent-icon {
+      background: rgba(42,200,100,0.1);
+      border-color: rgba(42,200,100,0.3);
     }
+    .activity-icon-wrap.agent-icon i { color: var(--text-accent); }
     .activity-body { flex: 1; min-width: 0; }
     .activity-desc {
-      font-size: 13px; font-weight: 500;
-      color: var(--text);
-      line-height: 1.4;
+      font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4;
     }
     .activity-desc strong { font-weight: 600; }
     .activity-meta {
-      display: flex; align-items: center;
-      gap: var(--space-sm);
+      display: flex; align-items: center; gap: var(--space-sm);
       margin-top: var(--space-xs);
     }
-    .activity-time {
-      font-size: 11px;
-      color: var(--text-soft);
-      font-feature-settings: 'tnum' 1;
-    }
+    .activity-time { font-size: 11px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
     .activity-actor {
-      font-size: 11px; font-weight: 500;
-      color: var(--text-soft);
-      display: flex; align-items: center;
-      gap: var(--space-xs);
+      font-size: 11px; font-weight: 500; color: var(--text-soft);
+      display: flex; align-items: center; gap: var(--space-xs);
     }
-    .activity-actor::before {
-      content: '·';
-      color: var(--border);
-      font-size: 14px;
+    .activity-actor::before { content: '·'; color: var(--border); font-size: 14px; }
+    .activity-actor.agent-actor { color: var(--text-accent); }
+    .undo-link {
+      font-size: 11px; font-weight: 500; color: var(--text-link);
+      text-decoration: none; margin-left: var(--space-sm);
     }
-    .activity-actor i { font-size: 11px; }
+    .undo-link:hover { text-decoration: underline; }
 
-    /* ── Propagation status ── */
-    .prop-list {
-      display: flex;
-      flex-direction: column;
-    }
-    .prop-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-md);
-      padding: var(--space-lg) var(--space-xl);
+    /* ── Outlet group health ── */
+    .group-health-list { display: flex; flex-direction: column; }
+    .group-health-item {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-md) var(--space-xl);
       border-bottom: 1px solid var(--border);
+      transition: background var(--dur-1) var(--ease-standard);
+      cursor: pointer; text-decoration: none;
     }
-    .prop-item:last-child { border-bottom: none; }
-    .prop-name {
-      font-size: 13px; font-weight: 500;
-      color: var(--text);
-      flex: 1;
-      min-width: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .group-health-item:last-child { border-bottom: none; }
+    .group-health-item:hover { background: var(--surface-soft); }
+    .group-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
     }
-    .prop-coverage {
-      font-size: 11px;
-      color: var(--text-soft);
-      font-feature-settings: 'tnum' 1;
-      white-space: nowrap;
+    .group-dot.ok   { background: var(--status-ok-fg); }
+    .group-dot.warn { background: var(--status-warn-fg); }
+    .group-dot.risk { background: var(--status-risk-fg); }
+    .group-info { flex: 1; min-width: 0; }
+    .group-name {
+      font-size: 13px; font-weight: 500; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    .group-count { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .group-issue {
+      font-size: 11px; font-weight: 500; color: var(--text-soft);
+      text-align: right; white-space: nowrap;
+    }
+    .group-issue.warn { color: var(--status-warn-fg); }
+    .group-issue.risk { color: var(--status-risk-fg); }
 
     /* ── Status pill ── */
     .pill {
-      display: inline-flex; align-items: center;
-      gap: var(--space-xs);
-      padding: 3px var(--space-sm);
-      border-radius: 99px;
-      font-size: 11px; font-weight: 600;
-      letter-spacing: 0.01em;
-      white-space: nowrap;
-      flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: 3px var(--space-sm); border-radius: 99px;
+      font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
     }
-    .pill-dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .pill.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg);   }
+    .pill-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .pill.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
     .pill.ok   .pill-dot { background: var(--status-ok-fg); }
     .pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
     .pill.warn .pill-dot { background: var(--status-warn-fg); }
     .pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
     .pill.risk .pill-dot { background: var(--status-risk-fg); }
 
-    /* ── Module quick-links ── */
-    .module-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: var(--space-lg);
+    /* ── Top-moving items ── */
+    .mover-list { display: flex; flex-direction: column; }
+    .mover-item {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-md) var(--space-xl);
+      border-bottom: 1px solid var(--border);
     }
-    .module-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: var(--space-xl);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-md);
-      text-decoration: none;
-      transition: box-shadow 0.15s, border-color 0.15s;
-      cursor: pointer;
-    }
-    .module-card:hover {
-      box-shadow: 0 4px 16px rgba(14,55,39,0.08);
-      border-color: rgba(18,155,65,0.3);
-    }
-    .module-icon {
-      width: 40px; height: 40px;
-      border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
+    .mover-item:last-child { border-bottom: none; }
+    .mover-rank {
+      font-size: 11px; font-weight: 700; color: var(--text-soft);
+      width: 16px; text-align: center; font-feature-settings: 'tnum' 1;
       flex-shrink: 0;
     }
-    .module-icon i { font-size: 20px; }
-    .module-icon.ml  { background: rgba(176,94,192,0.1); }
-    .module-icon.ml  i { color: var(--procurement); }
-    .module-icon.rec { background: rgba(23,179,163,0.1); }
-    .module-icon.rec i { color: var(--ordering); }
-    .module-icon.inv { background: rgba(245,194,25,0.12); }
-    .module-icon.inv i { color: var(--status-warn-fg); }
-    .module-icon.pos { background: rgba(63,138,251,0.1); }
-    .module-icon.pos i { color: var(--pos); }
-    .module-name {
-      font-size: 15px; font-weight: 600;
-      color: var(--text);
-      letter-spacing: -0.01em;
+    .mover-info { flex: 1; min-width: 0; }
+    .mover-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .mover-category { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .mover-velocity {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
     }
-    .module-desc {
-      font-size: 12px;
-      color: var(--text-soft);
-      line-height: 1.5;
-      flex: 1;
+    .mover-volume {
+      font-size: 12px; font-weight: 600; color: var(--text);
+      font-feature-settings: 'tnum' 1;
     }
-    .module-link {
-      font-size: 12px; font-weight: 600;
-      color: var(--text-link);
-      display: flex; align-items: center;
-      gap: var(--space-xs);
-      margin-top: var(--space-xs);
-    }
-    .module-link i { font-size: 12px; }
-
-    /* ── Section heading ── */
-    .section-heading {
+    .mover-trend {
       font-size: 11px; font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-soft);
-      margin-bottom: var(--space-md);
+      font-feature-settings: 'tnum' 1;
+    }
+    .mover-trend.up { color: var(--status-ok-fg); }
+    .mover-trend.down { color: var(--status-risk-fg); }
+    .mover-alert-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--status-warn-fg); flex-shrink: 0;
+      margin-left: var(--space-xs);
     }
 
-    /* ── Responsive: tablet ── */
+    /* ── Responsive ── */
     @media (max-width: 1024px) {
+      .pulse-row { grid-template-columns: 1fr; }
       .kpi-strip { grid-template-columns: repeat(2, 1fr); }
-      .module-grid { grid-template-columns: repeat(2, 1fr); }
       .two-col { grid-template-columns: 1fr; }
     }
-
-    /* ── Responsive: mobile ── */
     @media (max-width: 640px) {
-      .page-title { font-size: 26px; }
+      .greeting-title { font-size: 26px; }
       .kpi-strip { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
       .kpi-value { font-size: 28px; }
-      .module-grid { grid-template-columns: 1fr; }
       .page-body { padding-block: var(--space-lg); }
       .page-body .napp-canvas { gap: var(--space-2xl); }
-    }
-
-    @media (max-width: 400px) {
-      .kpi-strip { grid-template-columns: 1fr; }
+      .pending-strip { gap: var(--space-xs); }
     }
   </style>
 </head>
@@ -318,66 +475,297 @@
   <div class="page-body">
     <div class="napp-canvas" data-measure="content">
 
-      <!-- 1. Page header -->
-      <header class="page-header">
-        <p class="page-eyebrow">HQ Module</p>
-        <h1 class="page-title">Overview</h1>
-        <p class="page-sub">Manage your outlet network from one place.</p>
+      <!-- 1 · Greeting -->
+      <header class="greeting">
+        <p class="greeting-eyebrow" id="greeting-date">Tuesday, 10 June 2025</p>
+        <h1 class="greeting-title" id="greeting-text">Good morning, Sarah.</h1>
+        <p class="greeting-sub">Here's where things stand across your 124 outlets.</p>
       </header>
 
-      <!-- 2. KPI strip -->
-      <section aria-label="Key metrics">
-        <div class="kpi-strip">
-
-          <div class="kpi-tile">
-            <span class="kpi-label">Active outlets</span>
-            <span class="kpi-value tabular">124</span>
-            <span class="kpi-context">
-              <i class="ti ti-arrow-up" aria-hidden="true"></i>
-              <span class="ok">+3 this month</span>
+      <!-- 2 · Agent morning brief -->
+      <section aria-label="Agent morning brief" class="agent-brief">
+        <div class="agent-brief-header">
+          <div class="agent-avatar" aria-hidden="true">Cy</div>
+          <div class="agent-identity">
+            <span class="agent-name">
+              <span class="agent-spark" aria-hidden="true"></span>
+              Cyrus · Procurement intelligence
             </span>
+            <p class="agent-role">3 items need your attention this morning</p>
+          </div>
+          <span class="agent-brief-meta">Updated 6:42 am</span>
+        </div>
+
+        <div class="agent-callouts">
+
+          <!-- Callout 1: stock depletion risk -->
+          <div class="callout-item">
+            <div class="callout-icon warn" aria-hidden="true">
+              <i class="ti ti-package"></i>
+            </div>
+            <div class="callout-body">
+              <p class="callout-headline">Chicken Breast 500g will deplete at 12 venues before Friday's delivery</p>
+              <p class="callout-why">Sales ran 22% above forecast this week. At current par levels, 12 outlets across NSW and VIC will hit zero stock by Thursday evening.</p>
+              <div class="callout-actions">
+                <button class="btn-sm primary" onclick="alert('Opening par level editor…')">Adjust par levels</button>
+                <button class="btn-sm ghost" onclick="alert('Viewing affected outlets…')">See 12 outlets</button>
+              </div>
+            </div>
           </div>
 
-          <div class="kpi-tile">
-            <span class="kpi-label">Market lists</span>
-            <span class="kpi-value tabular">18</span>
-            <span class="kpi-context">
-              <i class="ti ti-clock" aria-hidden="true"></i>
-              <span class="warn">2 pending sync</span>
-            </span>
+          <!-- Callout 2: POS sync failure -->
+          <div class="callout-item">
+            <div class="callout-icon risk" aria-hidden="true">
+              <i class="ti ti-device-desktop"></i>
+            </div>
+            <div class="callout-body">
+              <p class="callout-headline">POS sync failed at Bondi Beach — Winter Menu mappings not applied</p>
+              <p class="callout-why">Outlet onboarded 3 days ago. POS integration is connected but the initial mapping push returned an auth error. Revenue data is live but menu items aren't mapped.</p>
+              <div class="callout-actions">
+                <button class="btn-sm primary" onclick="window.location.href='pos-mapping.html'">Go to POS mapping</button>
+                <button class="btn-sm ghost" onclick="alert('Viewing error log…')">View error</button>
+              </div>
+            </div>
           </div>
 
-          <div class="kpi-tile">
-            <span class="kpi-label">Recipes</span>
-            <span class="kpi-value tabular">346</span>
-            <span class="kpi-context">
-              <i class="ti ti-refresh" aria-hidden="true"></i>
-              <span class="ok">12 updated today</span>
-            </span>
-          </div>
-
-          <div class="kpi-tile">
-            <span class="kpi-label">POS mappings</span>
-            <span class="kpi-value tabular">89<span style="font-size:24px;font-weight:600;">%</span></span>
-            <span class="kpi-context">
-              <i class="ti ti-device-desktop" aria-hidden="true"></i>
-              Coverage
-            </span>
+          <!-- Callout 3: market list pending -->
+          <div class="callout-item">
+            <div class="callout-icon info" aria-hidden="true">
+              <i class="ti ti-receipt"></i>
+            </div>
+            <div class="callout-body">
+              <p class="callout-headline">4 outlets haven't confirmed Spring Menu delivery</p>
+              <p class="callout-why">The Spring Menu AU market list was pushed 2 days ago. These 4 outlets (3 × QLD, 1 × WA) show the list as received but haven't acknowledged delivery confirmation.</p>
+              <div class="callout-actions">
+                <button class="btn-sm primary" onclick="window.location.href='market-list.html'">Review market lists</button>
+                <button class="btn-sm ghost" onclick="alert('Sending reminder…')">Send reminder</button>
+              </div>
+            </div>
           </div>
 
         </div>
       </section>
 
-      <!-- 3. Two-column row: activity + propagation -->
-      <section aria-label="Activity and propagation" class="two-col">
+      <!-- 3 · Network revenue pulse -->
+      <section aria-label="Network revenue">
+        <div class="pulse-row">
+
+          <!-- Hero revenue tile -->
+          <div class="pulse-hero" aria-label="Yesterday's network revenue">
+            <div>
+              <p class="pulse-eyebrow">Network revenue · Yesterday</p>
+              <p class="pulse-value tabular"><sup>$</sup>248,340</p>
+              <div style="margin-top: var(--space-sm);">
+                <span class="pulse-delta up" aria-label="Up 9% vs last week">
+                  <i class="ti ti-trending-up" aria-hidden="true"></i> +9% vs last week
+                </span>
+                <p class="pulse-context">vs $227,830 same day last week</p>
+              </div>
+            </div>
+            <div>
+              <p style="font-size:10px;color:rgba(250,247,233,0.4);margin-bottom:var(--space-xs);text-transform:uppercase;letter-spacing:0.07em;">7-day trend</p>
+              <div class="pulse-sparkline" aria-hidden="true">
+                <div class="spark-bar" style="height:45%"></div>
+                <div class="spark-bar" style="height:60%"></div>
+                <div class="spark-bar" style="height:52%"></div>
+                <div class="spark-bar" style="height:78%"></div>
+                <div class="spark-bar" style="height:65%"></div>
+                <div class="spark-bar" style="height:70%"></div>
+                <div class="spark-bar today" style="height:100%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revenue by outlet group -->
+          <div class="group-chart-panel" aria-label="Revenue by outlet group">
+            <div class="group-chart-header">
+              <h2 class="group-chart-title">Revenue by outlet group · Yesterday</h2>
+              <span class="chart-period">
+                <a class="panel-action" href="reporting.html">Full report</a>
+              </span>
+            </div>
+            <div class="group-bars">
+              <div class="group-bar-row">
+                <span class="group-bar-label">NSW Metro</span>
+                <div class="group-bar-track" role="progressbar" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100" aria-label="88% of top group">
+                  <div class="group-bar-fill" style="width:88%"></div>
+                </div>
+                <span class="group-bar-amt tabular">$89.2k</span>
+                <span class="group-bar-delta up tabular">+11%</span>
+              </div>
+              <div class="group-bar-row">
+                <span class="group-bar-label">VIC Metro</span>
+                <div class="group-bar-track" role="progressbar" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100" aria-label="72%">
+                  <div class="group-bar-fill" style="width:72%"></div>
+                </div>
+                <span class="group-bar-amt tabular">$72.1k</span>
+                <span class="group-bar-delta up tabular">+7%</span>
+              </div>
+              <div class="group-bar-row">
+                <span class="group-bar-label">QLD Coastal</span>
+                <div class="group-bar-track" role="progressbar" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100" aria-label="58%">
+                  <div class="group-bar-fill" style="width:58%"></div>
+                </div>
+                <span class="group-bar-amt tabular">$51.4k</span>
+                <span class="group-bar-delta down tabular">−3%</span>
+              </div>
+              <div class="group-bar-row">
+                <span class="group-bar-label">SA &amp; WA</span>
+                <div class="group-bar-track" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" aria-label="40%">
+                  <div class="group-bar-fill" style="width:40%"></div>
+                </div>
+                <span class="group-bar-amt tabular">$35.6k</span>
+                <span class="group-bar-delta up tabular">+4%</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 4 · KPI strip -->
+      <section aria-label="Key metrics">
+        <div class="kpi-strip">
+
+          <div class="kpi-tile">
+            <div class="kpi-tile-top">
+              <span class="kpi-label">Active outlets</span>
+            </div>
+            <span class="kpi-value tabular">124</span>
+            <span class="kpi-context">
+              <i class="ti ti-arrow-up" aria-hidden="true"></i>
+              <span class="ok">+3 this month</span>
+            </span>
+            <div class="kpi-spark" aria-hidden="true">
+              <div class="kpi-spark-bar" style="height:40%"></div>
+              <div class="kpi-spark-bar" style="height:55%"></div>
+              <div class="kpi-spark-bar" style="height:55%"></div>
+              <div class="kpi-spark-bar" style="height:70%"></div>
+              <div class="kpi-spark-bar" style="height:80%"></div>
+              <div class="kpi-spark-bar" style="height:90%"></div>
+              <div class="kpi-spark-bar hi" style="height:100%"></div>
+            </div>
+          </div>
+
+          <div class="kpi-tile">
+            <div class="kpi-tile-top">
+              <span class="kpi-label">Market lists</span>
+            </div>
+            <span class="kpi-value tabular">18</span>
+            <span class="kpi-context">
+              <i class="ti ti-clock" aria-hidden="true"></i>
+              <span class="warn">2 pending sync</span>
+            </span>
+            <div class="kpi-spark" aria-hidden="true">
+              <div class="kpi-spark-bar" style="height:60%"></div>
+              <div class="kpi-spark-bar" style="height:60%"></div>
+              <div class="kpi-spark-bar" style="height:65%"></div>
+              <div class="kpi-spark-bar" style="height:65%"></div>
+              <div class="kpi-spark-bar" style="height:75%"></div>
+              <div class="kpi-spark-bar" style="height:85%"></div>
+              <div class="kpi-spark-bar hi" style="height:100%"></div>
+            </div>
+          </div>
+
+          <div class="kpi-tile">
+            <div class="kpi-tile-top">
+              <span class="kpi-label">Avg food cost %</span>
+            </div>
+            <span class="kpi-value tabular">28<sup>%</sup></span>
+            <span class="kpi-context">
+              <i class="ti ti-trending-up" aria-hidden="true"></i>
+              <span class="warn">+1.4% vs last month</span>
+            </span>
+            <div class="kpi-spark" aria-hidden="true">
+              <div class="kpi-spark-bar" style="height:55%"></div>
+              <div class="kpi-spark-bar" style="height:58%"></div>
+              <div class="kpi-spark-bar" style="height:60%"></div>
+              <div class="kpi-spark-bar" style="height:65%"></div>
+              <div class="kpi-spark-bar" style="height:72%"></div>
+              <div class="kpi-spark-bar" style="height:85%"></div>
+              <div class="kpi-spark-bar hi" style="height:100%"></div>
+            </div>
+          </div>
+
+          <div class="kpi-tile">
+            <div class="kpi-tile-top">
+              <span class="kpi-label">POS coverage</span>
+            </div>
+            <span class="kpi-value tabular">89<sup>%</sup></span>
+            <span class="kpi-context">
+              <i class="ti ti-device-desktop" aria-hidden="true"></i>
+              <span class="risk">1 outlet failing</span>
+            </span>
+            <div class="kpi-spark" aria-hidden="true">
+              <div class="kpi-spark-bar" style="height:70%"></div>
+              <div class="kpi-spark-bar" style="height:78%"></div>
+              <div class="kpi-spark-bar" style="height:82%"></div>
+              <div class="kpi-spark-bar" style="height:85%"></div>
+              <div class="kpi-spark-bar" style="height:88%"></div>
+              <div class="kpi-spark-bar" style="height:92%"></div>
+              <div class="kpi-spark-bar hi" style="height:89%"></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 5 · Pending actions strip -->
+      <section aria-label="Pending actions">
+        <div class="pending-strip">
+          <span class="pending-label" aria-hidden="true">Needs action</span>
+          <a class="pending-chip" href="market-list.html" aria-label="2 market lists pending review">
+            <i class="ti ti-receipt" aria-hidden="true"></i>
+            Market lists
+            <span class="chip-count" aria-label="2 pending">2</span>
+          </a>
+          <a class="pending-chip" href="recipes.html" aria-label="5 recipes awaiting push">
+            <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>
+            Recipes to push
+            <span class="chip-count" aria-label="5 pending">5</span>
+          </a>
+          <a class="pending-chip" href="pos-mapping.html" aria-label="1 POS sync failure">
+            <i class="ti ti-device-desktop" aria-hidden="true"></i>
+            POS sync errors
+            <span class="chip-count risk" aria-label="1 error">1</span>
+          </a>
+          <a class="pending-chip" href="suppliers.html" aria-label="3 supplier approvals waiting">
+            <i class="ti ti-truck" aria-hidden="true"></i>
+            Supplier approvals
+            <span class="chip-count" aria-label="3 pending">3</span>
+          </a>
+          <a class="pending-chip" href="venues.html" aria-label="1 new venue awaiting setup">
+            <i class="ti ti-building-store" aria-hidden="true"></i>
+            Venue setup
+            <span class="chip-count" aria-label="1 pending">1</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- 6 · Two-column: activity + outlet health & top movers -->
+      <section aria-label="Activity and outlet health" class="two-col">
 
         <!-- Left: Recent activity -->
-        <div class="panel" aria-label="Recent activity">
+        <div class="panel">
           <div class="panel-header">
             <h2 class="panel-title">Recent activity</h2>
-            <a class="panel-action" href="#" role="link">View full log</a>
+            <a class="panel-action" href="#">View full log</a>
           </div>
           <ol class="activity-list" aria-label="Activity timeline">
+
+            <li class="activity-item">
+              <div class="activity-icon-wrap agent-icon" aria-hidden="true">
+                <i class="ti ti-sparkles"></i>
+              </div>
+              <div class="activity-body">
+                <p class="activity-desc">Cyrus adjusted par levels for <strong>Avocado</strong> across 18 QLD outlets based on sell-through velocity</p>
+                <div class="activity-meta">
+                  <span class="activity-time">6:38 am</span>
+                  <span class="activity-actor agent-actor"><i class="ti ti-sparkles" aria-hidden="true"></i>by Cyrus</span>
+                  <a class="undo-link" href="#" role="button">Undo</a>
+                </div>
+              </div>
+            </li>
 
             <li class="activity-item">
               <div class="activity-icon-wrap" aria-hidden="true">
@@ -387,7 +775,7 @@
                 <p class="activity-desc">Market list <strong>"Spring Menu AU"</strong> pushed to 42 outlets</p>
                 <div class="activity-meta">
                   <span class="activity-time">2h ago</span>
-                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>Sarah Chen</span>
                 </div>
               </div>
             </li>
@@ -400,7 +788,7 @@
                 <p class="activity-desc">Recipe <strong>"Avocado Toast v3"</strong> updated and locked</p>
                 <div class="activity-meta">
                   <span class="activity-time">5h ago</span>
-                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>Sarah Chen</span>
                 </div>
               </div>
             </li>
@@ -410,23 +798,10 @@
                 <i class="ti ti-package"></i>
               </div>
               <div class="activity-body">
-                <p class="activity-desc">Inventory item <strong>"Chicken Breast 500g"</strong> par level updated</p>
+                <p class="activity-desc">Inventory par level updated for <strong>Chicken Breast 500g</strong></p>
                 <div class="activity-meta">
                   <span class="activity-time">Yesterday</span>
-                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
-                </div>
-              </div>
-            </li>
-
-            <li class="activity-item">
-              <div class="activity-icon-wrap" aria-hidden="true">
-                <i class="ti ti-device-desktop"></i>
-              </div>
-              <div class="activity-body">
-                <p class="activity-desc">POS mapping set <strong>"Weekend Brunch"</strong> synced</p>
-                <div class="activity-meta">
-                  <span class="activity-time">2 days ago</span>
-                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>Sarah Chen</span>
                 </div>
               </div>
             </li>
@@ -436,10 +811,10 @@
                 <i class="ti ti-building-store"></i>
               </div>
               <div class="activity-body">
-                <p class="activity-desc">New outlet <strong>"Bondi Beach"</strong> onboarded</p>
+                <p class="activity-desc">New outlet <strong>"Bondi Beach"</strong> onboarded to the network</p>
                 <div class="activity-meta">
-                  <span class="activity-time">3 days ago</span>
-                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>HQ Admin</span>
+                  <span class="activity-time">2 days ago</span>
+                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>Sarah Chen</span>
                 </div>
               </div>
             </li>
@@ -447,100 +822,128 @@
           </ol>
         </div>
 
-        <!-- Right: Propagation status -->
-        <div class="panel" aria-label="Propagation status">
-          <div class="panel-header">
-            <h2 class="panel-title">Propagation status</h2>
-            <a class="panel-action" href="market-list.html" role="link">View all</a>
+        <!-- Right: outlet health + top movers -->
+        <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+
+          <!-- Outlet group health -->
+          <div class="panel" aria-label="Outlet group health">
+            <div class="panel-header">
+              <h2 class="panel-title">Outlet groups</h2>
+              <a class="panel-action" href="venues.html">Manage</a>
+            </div>
+            <div class="group-health-list">
+              <a class="group-health-item" href="venues.html" aria-label="NSW Metro — 38 outlets, all synced">
+                <span class="group-dot ok" aria-label="Healthy" aria-hidden="true"></span>
+                <div class="group-info">
+                  <p class="group-name">NSW Metro</p>
+                  <p class="group-count">38 outlets</p>
+                </div>
+                <span class="group-issue">All synced</span>
+              </a>
+              <a class="group-health-item" href="venues.html" aria-label="VIC Metro — 29 outlets, 2 pending market list">
+                <span class="group-dot warn" aria-label="Warning" aria-hidden="true"></span>
+                <div class="group-info">
+                  <p class="group-name">VIC Metro</p>
+                  <p class="group-count">29 outlets</p>
+                </div>
+                <span class="group-issue warn">2 pending list</span>
+              </a>
+              <a class="group-health-item" href="venues.html" aria-label="QLD Coastal — 32 outlets, all synced">
+                <span class="group-dot ok" aria-label="Healthy" aria-hidden="true"></span>
+                <div class="group-info">
+                  <p class="group-name">QLD Coastal</p>
+                  <p class="group-count">32 outlets</p>
+                </div>
+                <span class="group-issue">All synced</span>
+              </a>
+              <a class="group-health-item" href="venues.html" aria-label="SA and WA — 25 outlets, 1 POS failure">
+                <span class="group-dot risk" aria-label="Issue" aria-hidden="true"></span>
+                <div class="group-info">
+                  <p class="group-name">SA &amp; WA</p>
+                  <p class="group-count">25 outlets</p>
+                </div>
+                <span class="group-issue risk">1 POS failure</span>
+              </a>
+            </div>
           </div>
-          <ul class="prop-list" aria-label="Market list propagation">
 
-            <li class="prop-item">
-              <span class="prop-name">Spring Menu AU</span>
-              <span class="pill ok" role="status">
-                <span class="pill-dot" aria-hidden="true"></span>
-                Propagated
-              </span>
-              <span class="prop-coverage tabular">42/42</span>
-            </li>
-
-            <li class="prop-item">
-              <span class="prop-name">Winter Specials</span>
-              <span class="pill warn" role="status">
-                <span class="pill-dot" aria-hidden="true"></span>
-                Pending
-              </span>
-              <span class="prop-coverage tabular">38/42</span>
-            </li>
-
-            <li class="prop-item">
-              <span class="prop-name">Inventory restock</span>
-              <span class="pill risk" role="status">
-                <span class="pill-dot" aria-hidden="true"></span>
-                Error
-              </span>
-              <span class="prop-coverage tabular" style="color: var(--status-risk-fg);">1 failed</span>
-            </li>
-
-          </ul>
-        </div>
-
-      </section>
-
-      <!-- 4. Module quick-links -->
-      <section aria-label="Module navigation">
-        <p class="section-heading">Modules</p>
-        <div class="module-grid">
-
-          <a class="module-card" href="market-list.html" aria-label="Go to Market Lists module">
-            <div class="module-icon ml" aria-hidden="true">
-              <i class="ti ti-receipt"></i>
+          <!-- Top-moving items -->
+          <div class="panel" aria-label="Top moving inventory items">
+            <div class="panel-header">
+              <h2 class="panel-title">Top-moving items this week</h2>
+              <a class="panel-action" href="inventory.html">View inventory</a>
             </div>
-            <p class="module-name">Market Lists</p>
-            <p class="module-desc">Create and push approved market lists to your outlet network.</p>
-            <span class="module-link" aria-hidden="true">
-              Go to module <i class="ti ti-arrow-right"></i>
-            </span>
-          </a>
-
-          <a class="module-card" href="recipes.html" aria-label="Go to Recipes module">
-            <div class="module-icon rec" aria-hidden="true">
-              <i class="ti ti-tools-kitchen-2"></i>
+            <div class="mover-list">
+              <div class="mover-item">
+                <span class="mover-rank">1</span>
+                <div class="mover-info">
+                  <p class="mover-name">Chicken Breast 500g</p>
+                  <p class="mover-category">Protein · 124 outlets</p>
+                </div>
+                <div class="mover-velocity">
+                  <span class="mover-volume tabular">4,820 units</span>
+                  <span class="mover-trend up tabular">↑ 22% vs avg</span>
+                </div>
+                <span class="mover-alert-dot" aria-label="Stock alert"></span>
+              </div>
+              <div class="mover-item">
+                <span class="mover-rank">2</span>
+                <div class="mover-info">
+                  <p class="mover-name">Avocado (each)</p>
+                  <p class="mover-category">Produce · 98 outlets</p>
+                </div>
+                <div class="mover-velocity">
+                  <span class="mover-volume tabular">3,240 units</span>
+                  <span class="mover-trend up tabular">↑ 18% vs avg</span>
+                </div>
+                <span class="mover-alert-dot" aria-label="Stock alert"></span>
+              </div>
+              <div class="mover-item">
+                <span class="mover-rank">3</span>
+                <div class="mover-info">
+                  <p class="mover-name">Oat Milk 1L</p>
+                  <p class="mover-category">Dairy alt · 112 outlets</p>
+                </div>
+                <div class="mover-velocity">
+                  <span class="mover-volume tabular">2,890 units</span>
+                  <span class="mover-trend down tabular">↓ 5% vs avg</span>
+                </div>
+              </div>
+              <div class="mover-item">
+                <span class="mover-rank">4</span>
+                <div class="mover-info">
+                  <p class="mover-name">Sourdough Loaf</p>
+                  <p class="mover-category">Bakery · 87 outlets</p>
+                </div>
+                <div class="mover-velocity">
+                  <span class="mover-volume tabular">1,960 units</span>
+                  <span class="mover-trend up tabular">↑ 9% vs avg</span>
+                </div>
+              </div>
             </div>
-            <p class="module-name">Recipes</p>
-            <p class="module-desc">Manage the central recipe library and lock HQ-controlled items.</p>
-            <span class="module-link" aria-hidden="true">
-              Go to module <i class="ti ti-arrow-right"></i>
-            </span>
-          </a>
-
-          <a class="module-card" href="inventory.html" aria-label="Go to Inventory module">
-            <div class="module-icon inv" aria-hidden="true">
-              <i class="ti ti-package"></i>
-            </div>
-            <p class="module-name">Inventory</p>
-            <p class="module-desc">Set par levels and manage master item lists across all outlets.</p>
-            <span class="module-link" aria-hidden="true">
-              Go to module <i class="ti ti-arrow-right"></i>
-            </span>
-          </a>
-
-          <a class="module-card" href="pos-mapping.html" aria-label="Go to POS Mapping module">
-            <div class="module-icon pos" aria-hidden="true">
-              <i class="ti ti-device-desktop"></i>
-            </div>
-            <p class="module-name">POS Mapping</p>
-            <p class="module-desc">Push and manage POS variant mappings to your outlet network.</p>
-            <span class="module-link" aria-hidden="true">
-              Go to module <i class="ti ti-arrow-right"></i>
-            </span>
-          </a>
+          </div>
 
         </div>
       </section>
 
     </div><!-- /.napp-canvas -->
   </div><!-- /.page-body -->
+
+  <script>
+    // Personalise greeting based on time of day
+    (function () {
+      const h = new Date().getHours();
+      const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+      const el = document.getElementById('greeting-text');
+      if (el) el.textContent = greet + ', Sarah.';
+
+      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const now = new Date();
+      const dateEl = document.getElementById('greeting-date');
+      if (dateEl) dateEl.textContent = days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+    })();
+  </script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => NomniShell.init('Overview'));

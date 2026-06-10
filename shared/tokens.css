@@ -87,9 +87,29 @@
   --row-h:        52px;
   --nav-width:    220px;
   --topbar-h:     56px;
-  --radius-sm:    6px;
-  --radius-md:    8px;
-  --radius-lg:    12px;
+  --radius-xs:    2px;   /* chips, ticks */
+  --radius-sm:    6px;   /* inputs, avatars — alias for design-system --radius-sm(4px) */
+  --radius-md:    8px;   /* tables, tiles, rows, buttons */
+  --radius-lg:    12px;  /* cards, panels */
+  --radius-xl:    12px;  /* drawers, modals — left corners only on drawers */
+  --radius-pill:  999px; /* status pill verdicts only */
+
+  /* ── Elevation (forest-green tinted shadows) ── */
+  --shadow-sm: 0 1px 3px rgba(14,55,39,0.10), 0 1px 2px rgba(14,55,39,0.06);  /* resting cards */
+  --shadow-md: 0 4px 12px rgba(14,55,39,0.12), 0 2px 4px rgba(14,55,39,0.07); /* hover, popovers */
+  --shadow-lg: 0 12px 32px rgba(14,55,39,0.16), 0 4px 8px rgba(14,55,39,0.08);/* drawers, modals, toasts */
+
+  /* ── Motion ── */
+  --dur-1: 80ms;   /* micro: hover, press */
+  --dur-2: 140ms;  /* controls: toggles, tabs */
+  --dur-3: 220ms;  /* drawers, toasts */
+  --dur-4: 360ms;  /* page, section */
+  --ease-standard:  cubic-bezier(0.2, 0, 0, 1);    /* enters & moves */
+  --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1); /* agent acted */
+  --ease-exit:      cubic-bezier(0.3, 0, 0.8, 0.15); /* toasts, dismissals */
+
+  /* ── Focus ── */
+  --focus-ring:    0 0 0 3px rgba(42,200,100,0.45); /* spring halo on :focus-visible */
 
   /* ── Typography ── */
   font-family: 'Hanken Grotesk', system-ui, sans-serif;
