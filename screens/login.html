@@ -70,7 +70,7 @@
     /* ── Card ── */
     .login-card {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: var(--space-3xl);
       width: 100%;
@@ -129,12 +129,12 @@
       padding: 10px var(--space-md);
       height: var(--control-h);
       outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: border-color var(--dur-2) var(--ease-standard), box-shadow var(--dur-2) var(--ease-standard);
     }
-    .field input::placeholder { color: rgba(14,55,39,0.35); }
+    .field input::placeholder { color: var(--text-soft); }
     .field input:focus {
       border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(18,155,65,0.12);
+      box-shadow: var(--focus-ring);
     }
     .field-row {
       display: flex; align-items: center;
@@ -158,7 +158,7 @@
       border-radius: var(--radius-md);
       height: var(--control-h);
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background var(--dur-2) var(--ease-standard);
       width: 100%;
       letter-spacing: -0.01em;
     }
@@ -184,11 +184,11 @@
       width: 100%;
       display: flex; align-items: center; justify-content: center;
       gap: var(--space-sm);
-      transition: border-color 0.15s, background 0.15s;
+      transition: border-color var(--dur-2) var(--ease-standard), background var(--dur-2) var(--ease-standard);
       letter-spacing: -0.01em;
     }
     .btn-sso:hover {
-      border-color: rgba(14,55,39,0.3);
+      border-color: var(--border-focus);
       background: var(--surface-soft);
     }
     .btn-sso i { font-size: 16px; color: var(--text-soft); }
@@ -205,6 +205,18 @@
       font-weight: 500;
     }
     .card-footer a:hover { text-decoration: underline; }
+
+    /* Error banner */
+    .error-banner {
+      display: flex; align-items: center; gap: var(--space-sm);
+      background: var(--status-risk-bg); color: var(--status-risk-fg);
+      border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-md);
+      font-size: 13px; font-weight: 500;
+    }
+    .error-banner i { font-size: 16px; flex-shrink: 0; }
+    .field input.invalid { border-color: var(--status-risk-fg); }
+    .btn-primary:disabled { opacity: 0.6; cursor: progress; }
+    @media (max-width: 768px) { .login-chrome { display: none; } }
   </style>
 </head>
 <body>
@@ -240,11 +252,18 @@
 
         <header class="card-header">
           <p class="card-eyebrow">HQ module</p>
-          <h1 class="card-title">Sign in to your account</h1>
-          <p class="card-sub">Central management for your outlet network.</p>
+          <h1 class="card-title" id="step-title">Sign in to your account</h1>
+          <p class="card-sub" id="step-sub">Central management for your outlet network.</p>
         </header>
 
-        <form class="form" novalidate onsubmit="handleLogin(event)">
+        <!-- Error banner -->
+        <div class="error-banner" id="error-banner" role="alert" hidden>
+          <i class="ti ti-alert-circle" aria-hidden="true"></i>
+          <span id="error-text">Incorrect email or password. Please try again.</span>
+        </div>
+
+        <!-- Step 1: credentials -->
+        <form class="form" id="step-credentials" novalidate onsubmit="handleLogin(event)">
           <div class="field">
             <label for="email">Email address</label>
             <input
@@ -256,7 +275,7 @@
           <div class="field">
             <div class="field-row">
               <label for="password">Password</label>
-              <a class="forgot" tabindex="0" role="button">Forgot password?</a>
+              <a class="forgot" tabindex="0" role="button" onclick="loginToast('Password reset link sent if the account exists')">Forgot password?</a>
             </div>
             <input
               type="password" id="password" name="password"
@@ -264,23 +283,44 @@
               autocomplete="current-password"
             />
           </div>
-          <button type="submit" class="btn-primary">Sign in</button>
+          <button type="submit" class="btn-primary" id="signin-btn">Sign in</button>
         </form>
 
-        <div class="divider" aria-hidden="true">
-          <div class="divider-line"></div>
-          <span class="divider-label">or</span>
-          <div class="divider-line"></div>
-        </div>
+        <!-- Step 2: MFA (NF-8) -->
+        <form class="form" id="step-mfa" novalidate onsubmit="verifyMfa(event)" hidden>
+          <div class="field">
+            <label for="mfa-code">6-digit authentication code</label>
+            <input
+              type="text" id="mfa-code" name="mfa-code"
+              inputmode="numeric" maxlength="6" placeholder="••••••"
+              autocomplete="one-time-code"
+              style="letter-spacing:0.4em;text-align:center;font-size:18px;font-feature-settings:'tnum' 1;"
+            />
+            <span style="font-size:12px;color:var(--text-soft);">Enter the code from your authenticator app.</span>
+          </div>
+          <button type="submit" class="btn-primary" id="verify-btn">Verify &amp; continue</button>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <a class="forgot" tabindex="0" role="button" onclick="loginToast('New code sent')">Resend code</a>
+            <a class="forgot" tabindex="0" role="button" onclick="backToCredentials()">Use a different account</a>
+          </div>
+        </form>
 
-        <button class="btn-sso" type="button" onclick="window.location.href='dashboard.html'">
-          <i class="ti ti-building" aria-hidden="true"></i>
-          Continue with SSO
-        </button>
+        <div id="sso-block">
+          <div class="divider" aria-hidden="true">
+            <div class="divider-line"></div>
+            <span class="divider-label">or</span>
+            <div class="divider-line"></div>
+          </div>
+
+          <button class="btn-sso" type="button" onclick="handleSso()">
+            <i class="ti ti-building" aria-hidden="true"></i>
+            Continue with enterprise SSO
+          </button>
+        </div>
 
         <footer class="card-footer">
           Don't have an account?
-          <a tabindex="0" role="button">Contact your administrator</a>
+          <a tabindex="0" role="button" onclick="loginToast('Ask your HQ administrator to invite you')">Contact your administrator</a>
         </footer>
 
       </div>
@@ -288,10 +328,91 @@
   </div>
 
   <script>
+    function showError(msg) {
+      const b = document.getElementById('error-banner');
+      document.getElementById('error-text').textContent = msg;
+      b.hidden = false;
+    }
+    function hideError() { document.getElementById('error-banner').hidden = true; }
+
     function handleLogin(e) {
       e.preventDefault();
-      window.location.href = 'dashboard.html';
+      hideError();
+      const email = document.getElementById('email').value.trim();
+      const pw = document.getElementById('password').value;
+      if (!email || !pw) {
+        showError('Enter both your email and password to continue.');
+        if (!email) document.getElementById('email').classList.add('invalid');
+        if (!pw) document.getElementById('password').classList.add('invalid');
+        return;
+      }
+      // Loading state, then advance to MFA
+      const btn = document.getElementById('signin-btn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+        // Advance to MFA step
+        document.getElementById('step-credentials').hidden = true;
+        document.getElementById('sso-block').hidden = true;
+        document.getElementById('step-mfa').hidden = false;
+        document.getElementById('step-title').textContent = 'Two-factor authentication';
+        document.getElementById('step-sub').textContent = 'We sent a code to your authenticator app.';
+        document.getElementById('mfa-code').focus();
+      }, 700);
     }
+
+    function verifyMfa(e) {
+      e.preventDefault();
+      hideError();
+      const code = document.getElementById('mfa-code').value.trim();
+      if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+        document.getElementById('mfa-code').classList.add('invalid');
+        showError('Enter the 6-digit code from your authenticator app.');
+        return;
+      }
+      const btn = document.getElementById('verify-btn');
+      btn.disabled = true;
+      btn.textContent = 'Verifying…';
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+    }
+
+    function backToCredentials() {
+      hideError();
+      document.getElementById('step-mfa').hidden = true;
+      document.getElementById('step-credentials').hidden = false;
+      document.getElementById('sso-block').hidden = false;
+      document.getElementById('step-title').textContent = 'Sign in to your account';
+      document.getElementById('step-sub').textContent = 'Central management for your outlet network.';
+    }
+
+    function handleSso() {
+      const email = document.getElementById('email').value.trim();
+      const domain = email.includes('@') ? email.split('@')[1] : '';
+      loginToast(domain ? 'Routing ' + domain + ' to your identity provider…' : 'Enter your work email, then continue with SSO');
+      if (domain) setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+    }
+
+    function loginToast(msg) {
+      let wrap = document.getElementById('login-toast');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'login-toast';
+        wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;';
+        document.body.appendChild(wrap);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-info-circle" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    // Clear invalid state on input
+    ['email','password','mfa-code'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', e => e.target.classList.remove('invalid'));
+    });
   </script>
 </body>
 </html>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Users — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
   <style>
     body { background: var(--surface-soft); }
 
@@ -68,7 +69,7 @@
     .tab-btn.active { background: var(--fern); color: var(--btn-primary-fg); }
     .tab-count {
       font-size: 11px; font-weight: 700;
-      background: rgba(255,255,255,0.25); border-radius: 99px;
+      background: color-mix(in srgb, var(--cream) 25%, transparent); border-radius: var(--radius-pill);
       padding: 1px 7px; line-height: 1.5;
     }
     .tab-btn:not(.active) .tab-count {
@@ -101,7 +102,7 @@
 
     /* Table card */
     .table-card {
-      background: var(--surface); border: 0.5px solid var(--border);
+      background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
     .data-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px; }
@@ -113,7 +114,7 @@
     }
     .data-table td {
       padding: var(--space-md) var(--space-lg); color: var(--text);
-      border-bottom: 0.5px solid var(--border); vertical-align: middle;
+      border-bottom: 1px solid var(--border); vertical-align: middle;
     }
     .data-table tbody tr:last-child td { border-bottom: none; }
     .data-table tbody tr:hover td { background: var(--surface-soft); }
@@ -130,7 +131,7 @@
     .avatar-purple { background: rgba(176,94,192,0.13); color: var(--procurement); }
     .avatar-blue   { background: rgba(63,138,251,0.13); color: var(--pos); }
     .avatar-amber  { background: var(--status-warn-bg); color: var(--status-warn-fg); }
-    .avatar-rose   { background: var(--status-risk-bg); color: var(--rose); }
+    .avatar-rose   { background: var(--status-risk-bg); color: var(--status-risk-fg); }
     .cell-name { font-weight: 600; color: var(--text); }
     .cell-sub { font-size: 12px; color: var(--text-soft); }
 
@@ -138,19 +139,34 @@
     .role-badge {
       display: inline-flex; align-items: center; gap: 4px;
       font-size: 12px; font-weight: 600;
-      padding: 3px 10px; border-radius: 99px; white-space: nowrap;
+      padding: 3px 10px; border-radius: var(--radius-pill); white-space: nowrap;
     }
     .role-badge.owner    { background: var(--status-warn-bg); color: var(--status-warn-fg); }
-    .role-badge.admin    { background: var(--status-risk-bg); color: var(--rose); }
-    .role-badge.manager  { background: rgba(176,94,192,0.13); color: var(--procurement); }
-    .role-badge.buyer    { background: rgba(63,138,251,0.13); color: var(--pos); }
+    .role-badge.admin    { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .role-badge.manager  { background: color-mix(in srgb, var(--procurement) 13%, transparent); color: var(--procurement); }
+    .role-badge.buyer    { background: color-mix(in srgb, var(--pos) 13%, transparent); color: var(--pos); }
     .role-badge.viewer   { background: var(--surface-soft); color: var(--text-soft); }
+    .role-badge.finance  { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .role-badge.supplier { background: color-mix(in srgb, var(--ordering) 14%, transparent); color: var(--ordering); }
+
+    /* Permission matrix */
+    .matrix-wrap { overflow-x: auto; }
+    .matrix { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 13px; }
+    .matrix th, .matrix td { padding: var(--space-sm) var(--space-md); text-align: center; border-bottom: 1px solid var(--border); }
+    .matrix th:first-child, .matrix td:first-child { text-align: left; font-weight: 600; color: var(--text); white-space: nowrap; }
+    .matrix thead th { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+    .matrix tbody tr:last-child td { border-bottom: none; }
+    .perm-yes { color: var(--status-ok-fg); }
+    .perm-no  { color: var(--stone); }
+    .perm-view { color: var(--status-info-fg); }
+    .perm-legend { display: flex; gap: var(--space-lg); flex-wrap: wrap; font-size: 12px; color: var(--text-soft); padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--border); }
+    .perm-legend span { display: inline-flex; align-items: center; gap: var(--space-xs); }
 
     /* Venue access pill strip */
     .venue-access { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
     .venue-pill {
       font-size: 11px; font-weight: 500; padding: 2px 8px;
-      border-radius: 99px; background: var(--surface-soft);
+      border-radius: var(--radius-pill); background: var(--surface-soft);
       border: 1px solid var(--border); color: var(--text-soft);
       white-space: nowrap;
     }
@@ -162,7 +178,7 @@
     /* Status pill */
     .status-pill {
       display: inline-flex; align-items: center; gap: 5px;
-      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-pill);
     }
     .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
     .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
@@ -191,7 +207,7 @@
     .overflow-menu {
       display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 50;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-md); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-md);
       min-width: 180px; padding: var(--space-xs);
     }
     .overflow-menu.open { display: block; }
@@ -203,14 +219,14 @@
       border-radius: var(--radius-sm); font-family: inherit; text-align: left;
     }
     .overflow-menu-item:hover { background: var(--surface-soft); }
-    .overflow-menu-item.destructive { color: var(--rose); }
+    .overflow-menu-item.destructive { color: var(--status-risk-fg); }
     .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
     .overflow-menu-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
     .overflow-cell { width: 1%; white-space: nowrap; }
 
     /* Roles info card */
     .info-card {
-      background: var(--surface); border: 0.5px solid var(--border);
+      background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius-lg); overflow: hidden;
     }
     .info-card-header {
@@ -225,7 +241,7 @@
     }
     .role-row {
       padding: var(--space-md) var(--space-xl);
-      border-bottom: 0.5px solid var(--border);
+      border-bottom: 1px solid var(--border);
       display: flex; flex-direction: column; gap: 3px;
     }
     .role-row:last-child { border-bottom: none; }
@@ -258,7 +274,7 @@
         <p class="page-desc">Manage who has access to Nomni, their roles, and which venues they can operate in.</p>
       </div>
       <div class="page-actions">
-        <button class="btn btn-outline"><i class="ti ti-shield-lock"></i>Roles &amp; permissions</button>
+        <button class="btn btn-outline" onclick="document.getElementById('permission-matrix').scrollIntoView({behavior:'smooth',block:'start'})"><i class="ti ti-shield-lock"></i>Roles &amp; permissions</button>
         <button class="btn btn-primary" onclick="openInviteDialog()"><i class="ti ti-user-plus"></i>Invite user</button>
       </div>
     </div>
@@ -280,11 +296,12 @@
           </div>
           <select class="filter-select" aria-label="Filter by role">
             <option value="">All roles</option>
-            <option>Owner</option>
-            <option>Admin</option>
-            <option>Manager</option>
-            <option>Buyer</option>
-            <option>Viewer</option>
+            <option>HQ Administrator</option>
+            <option>HQ Approver</option>
+            <option>Outlet Manager</option>
+            <option>Outlet User</option>
+            <option>Finance User</option>
+            <option>Supplier User</option>
           </select>
           <select class="filter-select" aria-label="Filter by venue">
             <option value="">All venues</option>
@@ -315,7 +332,7 @@
                   <div><div class="cell-name">Keith Tan</div><div class="cell-sub">ktwm79@gmail.com</div></div>
                 </div>
               </td>
-              <td><span class="role-badge owner">Owner</span></td>
+              <td><span class="role-badge owner">HQ Administrator</span></td>
               <td><span class="venue-pill">All venues</span></td>
               <td><span style="font-size:13px;color:var(--text-soft);">Today</span></td>
               <td><span class="status-pill active">Active</span></td>
@@ -340,7 +357,7 @@
                   <div><div class="cell-name">Jane Liu</div><div class="cell-sub">jane.liu@nomni.com.au</div></div>
                 </div>
               </td>
-              <td><span class="role-badge admin">Admin</span></td>
+              <td><span class="role-badge admin">HQ Approver</span></td>
               <td><span class="venue-pill">All venues</span></td>
               <td><span style="font-size:13px;color:var(--text-soft);">2 hours ago</span></td>
               <td><span class="status-pill active">Active</span></td>
@@ -367,7 +384,7 @@
                   <div><div class="cell-name">Sarah Okonkwo</div><div class="cell-sub">s.okonkwo@nomni.com.au</div></div>
                 </div>
               </td>
-              <td><span class="role-badge manager">Manager</span></td>
+              <td><span class="role-badge manager">Outlet Manager</span></td>
               <td>
                 <div class="venue-access">
                   <span class="venue-pill">Harbour Kitchen</span>
@@ -400,7 +417,7 @@
                   <div><div class="cell-name">James Nguyen</div><div class="cell-sub">j.nguyen@nomni.com.au</div></div>
                 </div>
               </td>
-              <td><span class="role-badge buyer">Buyer</span></td>
+              <td><span class="role-badge buyer">Outlet User</span></td>
               <td>
                 <div class="venue-access">
                   <span class="venue-pill">Darling St Bistro</span>
@@ -431,7 +448,7 @@
                   <div><div class="cell-name">Aisha Patel</div><div class="cell-sub">a.patel@nomni.com.au</div></div>
                 </div>
               </td>
-              <td><span class="role-badge buyer">Buyer</span></td>
+              <td><span class="role-badge finance">Finance User</span></td>
               <td>
                 <div class="venue-access">
                   <span class="venue-pill">Parramatta Table</span>
@@ -463,7 +480,7 @@
                   <div><div class="cell-name">Mia Chen</div><div class="cell-sub">m.chen@nomni.com.au</div></div>
                 </div>
               </td>
-              <td><span class="role-badge viewer">Viewer</span></td>
+              <td><span class="role-badge supplier">Supplier User</span></td>
               <td>
                 <div class="venue-access">
                   <span class="venue-pill">Bondi Rooftop</span>
@@ -494,34 +511,43 @@
       </div>
     </div>
 
-    <!-- Role reference card -->
-    <div class="info-card">
+    <!-- Permission matrix (§8 — role templates over a permission engine) -->
+    <div class="info-card" id="permission-matrix">
       <div class="info-card-header">
-        <span class="info-card-title">Roles &amp; permissions</span>
-        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);"><i class="ti ti-edit"></i>Edit roles</button>
+        <span class="info-card-title">Role permissions</span>
+        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);" onclick="usersToast('Editing role template — 200+ granular permissions')"><i class="ti ti-edit"></i>Edit role template</button>
       </div>
-      <div class="roles-grid">
-        <div class="role-row">
-          <div class="role-row-name"><span class="role-badge owner">Owner</span></div>
-          <div class="role-row-desc">Full access to all venues, billing, and account settings. Cannot be suspended.</div>
-        </div>
-        <div class="role-row">
-          <div class="role-row-name"><span class="role-badge admin">Admin</span></div>
-          <div class="role-row-desc">Full access across all venues. Can manage users and venue configuration.</div>
-        </div>
-        <div class="role-row">
-          <div class="role-row-name"><span class="role-badge manager">Manager</span></div>
-          <div class="role-row-desc">Can approve orders, manage suppliers, and configure assigned venues.</div>
-        </div>
-        <div class="role-row">
-          <div class="role-row-name"><span class="role-badge buyer">Buyer</span></div>
-          <div class="role-row-desc">Can create and submit orders for assigned venues. Cannot approve.</div>
-        </div>
-        <div class="role-row">
-          <div class="role-row-name"><span class="role-badge viewer">Viewer</span></div>
-          <div class="role-row-desc">Read-only access to orders, inventory, and reports for assigned venues.</div>
-        </div>
+      <div class="perm-legend">
+        <span><i class="ti ti-circle-check-filled perm-yes"></i>Full access</span>
+        <span><i class="ti ti-eye perm-view"></i>Read-only</span>
+        <span><i class="ti ti-minus perm-no"></i>No access</span>
       </div>
+      <div class="matrix-wrap">
+        <table class="matrix" aria-label="Role permission matrix">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th><span class="role-badge owner">HQ Admin</span></th>
+              <th><span class="role-badge admin">HQ Approver</span></th>
+              <th><span class="role-badge manager">Outlet Mgr</span></th>
+              <th><span class="role-badge buyer">Outlet User</span></th>
+              <th><span class="role-badge finance">Finance</span></th>
+              <th><span class="role-badge supplier">Supplier</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Market lists, recipes, POS mappings</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Approve recipes / mappings / high-value POs</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Raise requisitions &amp; orders</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Receive goods &amp; stock counts</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Invoices &amp; 3-way match exceptions</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Reports &amp; exports</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Manage users &amp; permissions</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Supplier catalogue &amp; e-invoices</td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--text-soft);padding:var(--space-md) var(--space-xl);">Roles are shipped templates over a permission engine of 200+ discrete permissions, enforced at the API layer. Scope is set per outlet group (Brand → Region → State → Outlet).</p>
     </div>
 
   </div><!-- /.napp-canvas -->
@@ -529,7 +555,7 @@
 
 <!-- Invite user dialog -->
 <div id="invite-dialog" role="dialog" aria-modal="true" aria-labelledby="invite-title" style="display:none;position:fixed;inset:0;z-index:200;">
-  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" onclick="closeInviteDialog()"></div>
+  <div style="position:absolute;inset:0;background:color-mix(in srgb, var(--seaweed) 40%, transparent);" onclick="closeInviteDialog()"></div>
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-lg);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <h2 id="invite-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Invite user</h2>
@@ -537,17 +563,19 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
       <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Email address <span style="color:var(--rose);">*</span></label>
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Email address <span style="color:var(--status-risk-fg);">*</span></label>
         <input type="email" placeholder="colleague@example.com" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
       </div>
       <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Role <span style="color:var(--rose);">*</span></label>
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Role <span style="color:var(--status-risk-fg);">*</span></label>
         <select style="height:var(--control-h);padding-inline:var(--space-md) var(--space-2xl);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;appearance:none;width:100%;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center;">
           <option value="">Select role…</option>
-          <option>Admin</option>
-          <option>Manager</option>
-          <option>Buyer</option>
-          <option>Viewer</option>
+          <option>HQ Administrator</option>
+          <option>HQ Approver</option>
+          <option>Outlet Manager</option>
+          <option>Outlet User</option>
+          <option>Finance User</option>
+          <option>Supplier User</option>
         </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
@@ -598,6 +626,20 @@
   }
   function closeInviteDialog() {
     document.getElementById('invite-dialog').style.display = 'none';
+  }
+  function usersToast(msg) {
+    let wrap = document.getElementById('users-toast');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = 'users-toast';
+      wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;';
+      document.body.appendChild(wrap);
+    }
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
   }
 </script>
 </body>
