@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Market lists — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
   <style>
     /* ── Page body layout ── */
     .page-body {
@@ -314,7 +315,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      box-shadow: 0 4px 16px rgba(14,55,39,0.12);
+      box-shadow: var(--shadow-md);
       z-index: 100;
       overflow: hidden;
       display: none;
@@ -415,7 +416,7 @@
     .filter-pill {
       height: 32px;
       padding: 0 var(--space-md);
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       border: 1px solid var(--border);
       background: var(--surface);
       font-family: inherit;
@@ -524,7 +525,7 @@
       gap: var(--space-xs);
       height: 24px;
       padding: 0 var(--space-sm);
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       font-size: 12px;
       font-weight: 600;
       white-space: nowrap;
@@ -583,7 +584,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      box-shadow: 0 4px 16px rgba(14,55,39,0.12);
+      box-shadow: var(--shadow-md);
       z-index: 100;
       overflow: hidden;
       display: none;
@@ -652,7 +653,7 @@
       padding: 0 var(--space-xs);
       background: var(--surface-soft);
       border: 1px solid var(--border);
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       font-size: 11px;
       font-weight: 600;
       color: var(--text-soft);
@@ -751,7 +752,7 @@
       padding: 0;
       max-width: 480px;
       width: 100%;
-      box-shadow: 0 8px 40px rgba(14,55,39,0.18);
+      box-shadow: var(--shadow-lg);
       background: var(--surface);
       outline: none;
     }
@@ -895,7 +896,7 @@
       border-radius: var(--radius-md);
       font-size: 14px;
       font-weight: 500;
-      box-shadow: 0 4px 16px rgba(14,55,39,0.2);
+      box-shadow: var(--shadow-lg);
       pointer-events: all;
       animation: toast-in 0.2s ease;
     }
@@ -906,6 +907,103 @@
       from { transform: translateY(8px); opacity: 0; }
       to   { transform: translateY(0);   opacity: 1; }
     }
+
+    /* ── Governance agent card (Sloan) ── */
+    .gov-card { margin-bottom: var(--space-2xl); padding: 0; }
+    .gov-card-head {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+    }
+    .gov-headline { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.4; }
+    .gov-why { font-size: 13px; color: var(--text-soft); margin-top: 2px; line-height: 1.5; }
+    .gov-changes {
+      display: flex; flex-direction: column;
+      padding: var(--space-sm) var(--space-xl);
+    }
+    .gov-change {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .gov-change:last-child { border-bottom: none; }
+    .gov-change-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+    .gov-change-icon.up   { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .gov-change-icon.down { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .gov-change-icon.new  { background: var(--status-info-bg); color: var(--status-info-fg); }
+    .gov-change-item { flex: 1; min-width: 0; color: var(--text); font-weight: 500; }
+    .gov-change-sub { font-size: 12px; color: var(--text-soft); font-weight: 400; }
+    .gov-change-delta { font-feature-settings: 'tnum' 1; font-weight: 600; white-space: nowrap; }
+    .gov-change-delta.up   { color: var(--status-risk-fg); }
+    .gov-change-delta.down { color: var(--status-ok-fg); }
+    .gov-actions {
+      display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap;
+      padding: var(--space-lg) var(--space-xl);
+      border-top: 1px solid var(--border);
+    }
+    .gov-card.resolved .gov-actions,
+    .gov-card.resolved .gov-changes { display: none; }
+    .gov-resolved { display: none; align-items: center; gap: var(--space-xs); padding: var(--space-lg) var(--space-xl); font-size: 13px; color: var(--text-soft); }
+    .gov-card.resolved .gov-resolved { display: flex; }
+    .gov-card.resolved { opacity: 0.7; }
+
+    /* ── Schedule + conflict sections in push modal ── */
+    .push-section-label {
+      font-size: 13px; font-weight: 600; color: var(--text-soft);
+      letter-spacing: 0.02em; text-transform: uppercase;
+      margin-bottom: var(--space-xs);
+    }
+    .schedule-row { display: flex; gap: var(--space-sm); }
+    .schedule-opt {
+      flex: 1; display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      cursor: pointer; font-size: 14px; color: var(--text);
+      transition: background var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard);
+    }
+    .schedule-opt:hover { background: var(--surface-soft); }
+    .schedule-opt.selected { background: var(--mint); border-color: var(--text-accent); }
+    .schedule-opt input { accent-color: var(--fern); }
+    .schedule-when { margin-top: var(--space-sm); display: none; }
+    .schedule-when.show { display: block; }
+    .schedule-when input {
+      width: 100%; height: var(--control-h); padding: 0 var(--space-md);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      font-family: inherit; font-size: 14px; color: var(--text); background: var(--surface);
+    }
+    .conflict-note {
+      display: flex; flex-direction: column; gap: var(--space-sm);
+      padding: var(--space-md); border-radius: var(--radius-md);
+      background: var(--status-warn-bg);
+    }
+    .conflict-head { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; font-weight: 600; color: var(--status-warn-fg); }
+    .conflict-list { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .conflict-item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); font-size: 13px; color: var(--text); }
+    .conflict-item .conflict-choice { display: flex; gap: var(--space-xs); }
+    .conflict-mini-btn {
+      font-size: 11px; font-weight: 600; padding: 2px var(--space-sm);
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-soft); cursor: pointer;
+    }
+    .conflict-mini-btn.active { background: var(--surface-deep); color: var(--cream); border-color: transparent; }
+
+    /* ── Propagation progress view ── */
+    .prop-view { display: none; flex-direction: column; gap: var(--space-lg); }
+    .prop-view.show { display: flex; }
+    .prop-progress-track { height: 8px; background: var(--surface-soft); border-radius: var(--radius-pill); overflow: hidden; }
+    .prop-progress-fill { height: 100%; width: 0; background: var(--fern); border-radius: var(--radius-pill); transition: width var(--dur-3) var(--ease-standard); }
+    .prop-progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-soft); font-feature-settings: 'tnum' 1; margin-bottom: var(--space-xs); }
+    .prop-outlets { display: flex; flex-direction: column; max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .prop-outlet { display: flex; align-items: center; justify-content: space-between; padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border); font-size: 13px; }
+    .prop-outlet:last-child { border-bottom: none; }
+
+    /* ── Empty state ── */
+    .empty-state { display: none; flex-direction: column; align-items: center; gap: var(--space-sm); padding: var(--space-4xl) var(--space-xl); text-align: center; }
+    .empty-state.show { display: flex; }
+    .empty-state i { font-size: 32px; color: var(--text-soft); }
+    .empty-state-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .empty-state-sub { font-size: 13px; color: var(--text-soft); }
 
     /* ── Misc utility ── */
     .text-soft    { color: var(--text-soft); }
@@ -1130,19 +1228,74 @@
             </button>
           </header>
 
+          <!-- ══ Governance Agent (Sloan) — ML-7 ══ -->
+          <article class="agent-surface gov-card" id="gov-card" aria-label="Governance agent proposal">
+            <div class="gov-card-head">
+              <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
+              <span class="agent-id">
+                <span class="agent-name">Sloan</span>
+                <span class="agent-role">Governance agent</span>
+              </span>
+              <span class="agent-card-spacer" style="flex:1"></span>
+              <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+            </div>
+            <div style="padding: var(--space-lg) var(--space-xl) 0;">
+              <p class="gov-headline">I drafted 6 market-list updates from this week's supplier price file</p>
+              <p class="gov-why">Fresh Produce Co and Harbour Meats sent updated pricing overnight. I've matched every line to your internal items and staged the changes below. Approve to push to all affected outlets in one action — in-flight orders are never touched.</p>
+            </div>
+            <div class="gov-changes">
+              <div class="gov-change">
+                <span class="gov-change-icon up" aria-hidden="true"><i class="ti ti-arrow-up"></i></span>
+                <span class="gov-change-item">Avocado (each) <span class="gov-change-sub">· Fresh Produce Co · in 3 lists</span></span>
+                <span class="gov-change-delta up">$2.10 → $2.40</span>
+              </div>
+              <div class="gov-change">
+                <span class="gov-change-icon up" aria-hidden="true"><i class="ti ti-arrow-up"></i></span>
+                <span class="gov-change-item">Chicken Breast 500g <span class="gov-change-sub">· Harbour Meats · in 4 lists</span></span>
+                <span class="gov-change-delta up">$6.80 → $7.15</span>
+              </div>
+              <div class="gov-change">
+                <span class="gov-change-icon down" aria-hidden="true"><i class="ti ti-arrow-down"></i></span>
+                <span class="gov-change-item">Roma Tomatoes 5kg <span class="gov-change-sub">· Fresh Produce Co · in 5 lists</span></span>
+                <span class="gov-change-delta down">$18.00 → $16.50</span>
+              </div>
+              <div class="gov-change">
+                <span class="gov-change-icon new" aria-hidden="true"><i class="ti ti-plus"></i></span>
+                <span class="gov-change-item">Buffalo Mozzarella 250g <span class="gov-change-sub">· new item · suggested for Pasta Classics</span></span>
+                <span class="gov-change-delta">$4.20</span>
+              </div>
+              <div class="gov-change">
+                <span class="gov-change-item" style="padding-left: calc(28px + var(--space-md));"><a class="panel-action" onclick="toggleGovAll()" id="gov-more" style="cursor:pointer;color:var(--text-link);">Show 2 more changes</a></span>
+              </div>
+            </div>
+            <div class="gov-actions">
+              <button class="btn btn-primary" onclick="approveGov()">
+                <i class="ti ti-checks" aria-hidden="true"></i>
+                Approve all 6 &amp; push
+              </button>
+              <button class="btn btn-outline" onclick="showToast('ti-list-search','Opening change review…')">Review changes</button>
+              <button class="btn btn-ghost" onclick="dismissGov()">Dismiss</button>
+            </div>
+            <div class="gov-resolved">
+              <i class="ti ti-circle-check spark" aria-hidden="true" style="color:var(--text-accent);"></i>
+              <span id="gov-resolved-text">Approved by you · 6 changes pushed to 64 outlets ·</span>
+              <a class="undo-link" onclick="undoGov()" style="color:var(--text-link);cursor:pointer;font-weight:600;margin-left:var(--space-xs);">Undo</a>
+            </div>
+          </article>
+
           <!-- Filter bar -->
           <div class="filter-bar" role="search" aria-label="Filter market lists">
             <div class="filter-search">
               <i class="ti ti-search" aria-hidden="true"></i>
-              <input type="search" placeholder="Search market lists…" aria-label="Search market lists"/>
+              <input type="search" id="ml-search" oninput="filterTable()" placeholder="Search market lists…" aria-label="Search market lists"/>
             </div>
-            <select class="filter-select" aria-label="Filter by brand">
+            <select class="filter-select" id="ml-brand" onchange="filterTable()" aria-label="Filter by brand">
               <option>All brands</option>
               <option>The Burger Co</option>
               <option>Pasta Palace</option>
               <option>Taco Time</option>
             </select>
-            <select class="filter-select" aria-label="Filter by region">
+            <select class="filter-select" id="ml-region" onchange="filterTable()" aria-label="Filter by region">
               <option>All regions</option>
               <option>New South Wales</option>
               <option>Victoria</option>
@@ -1436,6 +1589,11 @@
 
               </tbody>
             </table>
+            <div class="empty-state" id="empty-state">
+              <i class="ti ti-search-off" aria-hidden="true"></i>
+              <p class="empty-state-title">No market lists match your filters</p>
+              <p class="empty-state-sub">Try a different status, brand, or search term.</p>
+            </div>
           </div>
 
           <!-- Activity timeline -->
@@ -1497,7 +1655,9 @@
       </button>
     </div>
     <div class="modal-divider" role="separator"></div>
-    <div class="modal-body">
+
+    <!-- Configure view -->
+    <div class="modal-body" id="push-config">
       <p class="modal-desc" id="push-modal-desc">
         Push <strong id="push-list-name">Spring Menu AU</strong> to selected outlets?
       </p>
@@ -1514,8 +1674,47 @@
         </label>
         <label class="radio-item" id="radio-selection">
           <input type="radio" name="push-scope" value="selection" onchange="selectRadio('radio-selection')"/>
-          <span class="radio-item-label">Selection only</span>
+          <span class="radio-item-label">Selection only <span class="tabular">(3 selected)</span></span>
         </label>
+      </div>
+
+      <!-- Schedule (ML-5) -->
+      <div>
+        <div class="push-section-label">When</div>
+        <div class="schedule-row" role="radiogroup" aria-label="Schedule">
+          <label class="schedule-opt selected" id="sched-now">
+            <input type="radio" name="push-when" value="now" checked onchange="selectSchedule('now')"/>
+            <i class="ti ti-send" aria-hidden="true"></i> Push now
+          </label>
+          <label class="schedule-opt" id="sched-later">
+            <input type="radio" name="push-when" value="later" onchange="selectSchedule('later')"/>
+            <i class="ti ti-clock" aria-hidden="true"></i> Schedule
+          </label>
+        </div>
+        <div class="schedule-when" id="schedule-when">
+          <input type="datetime-local" aria-label="Scheduled date and time" id="schedule-input"/>
+        </div>
+      </div>
+
+      <!-- Conflict surface (ML-6) -->
+      <div class="conflict-note" id="conflict-note">
+        <div class="conflict-head"><i class="ti ti-alert-triangle" aria-hidden="true"></i> 2 outlets have local exceptions</div>
+        <div class="conflict-list">
+          <div class="conflict-item">
+            <span>Surry Hills — local price override on 3 items</span>
+            <span class="conflict-choice">
+              <button class="conflict-mini-btn active" onclick="setConflict(this)">Keep local</button>
+              <button class="conflict-mini-btn" onclick="setConflict(this)">Overwrite</button>
+            </span>
+          </div>
+          <div class="conflict-item">
+            <span>St Kilda — extra regional item</span>
+            <span class="conflict-choice">
+              <button class="conflict-mini-btn active" onclick="setConflict(this)">Keep local</button>
+              <button class="conflict-mini-btn" onclick="setConflict(this)">Overwrite</button>
+            </span>
+          </div>
+        </div>
       </div>
 
       <div class="modal-note" role="note">
@@ -1523,11 +1722,21 @@
         <span>This action will not affect in-flight orders. Outlets currently processing orders will receive the updated list after their active orders complete.</span>
       </div>
     </div>
-    <div class="modal-footer">
+
+    <!-- Propagation progress view (ML-3, NF-5) -->
+    <div class="modal-body prop-view" id="push-progress">
+      <div>
+        <div class="prop-progress-label"><span id="prop-status-text">Propagating…</span><span id="prop-count">0 / 42</span></div>
+        <div class="prop-progress-track"><div class="prop-progress-fill" id="prop-fill"></div></div>
+      </div>
+      <div class="prop-outlets" id="prop-outlets" aria-live="polite"></div>
+    </div>
+
+    <div class="modal-footer" id="push-footer">
       <button class="btn btn-outline" onclick="closePushModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmPush()">
+      <button class="btn btn-primary" id="push-confirm-btn" onclick="confirmPush()">
         <i class="ti ti-send" aria-hidden="true"></i>
-        Confirm push
+        <span id="push-confirm-label">Confirm push</span>
       </button>
     </div>
   </dialog>
@@ -1573,9 +1782,80 @@
       }
     }
 
-    /* ── Status filter pills ── */
+    /* ── Filtering ── */
+    let activeStatus = 'all';
     function setStatusFilter(btn, filter) {
       document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      activeStatus = filter;
+      filterTable();
+    }
+    function filterTable() {
+      const q = (document.getElementById('ml-search').value || '').toLowerCase().trim();
+      const brand = document.getElementById('ml-brand').value;
+      const rows = document.querySelectorAll('tbody tr');
+      let shown = 0;
+      rows.forEach(tr => {
+        const name = (tr.querySelector('.row-name')?.textContent || '').toLowerCase();
+        const rowBrand = tr.querySelector('.row-brand')?.textContent || '';
+        const statusEl = tr.querySelector('.status-pill');
+        const status = (statusEl?.textContent || '').toLowerCase().trim();
+        let ok = true;
+        if (q && !name.includes(q)) ok = false;
+        if (brand !== 'All brands' && rowBrand !== brand) ok = false;
+        if (activeStatus !== 'all') {
+          if (activeStatus === 'archived' && status !== 'draft') ok = false;
+          else if (activeStatus !== 'archived' && status !== activeStatus) ok = false;
+        }
+        tr.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      document.getElementById('empty-state').classList.toggle('show', shown === 0);
+    }
+
+    /* ── Governance agent (Sloan) ── */
+    function approveGov() {
+      const card = document.getElementById('gov-card');
+      const state = card.querySelector('.agent-state');
+      state.className = 'agent-state done';
+      state.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>Done';
+      card.classList.add('resolved');
+      showToast('ti-checks', 'Approved — 6 changes pushed to 64 outlets');
+      addActivityEntry('6 supplier price updates', 'by Sloan');
+    }
+    function dismissGov() {
+      const card = document.getElementById('gov-card');
+      const state = card.querySelector('.agent-state');
+      state.className = 'agent-state stepped-back';
+      state.innerHTML = '<i class="ti ti-player-pause" aria-hidden="true"></i>Stepped back';
+      card.classList.add('resolved');
+      document.getElementById('gov-resolved-text').textContent = "Dismissed — I'll keep the price file on hand ·";
+      showToast('ti-player-pause', 'Dismissed — Sloan will keep watching');
+    }
+    function undoGov() {
+      const card = document.getElementById('gov-card');
+      const state = card.querySelector('.agent-state');
+      state.className = 'agent-state proposed';
+      state.innerHTML = '<i class="ti ti-bulb" aria-hidden="true"></i>Proposed';
+      card.classList.remove('resolved');
+      document.getElementById('gov-resolved-text').textContent = 'Approved by you · 6 changes pushed to 64 outlets ·';
+      showToast('ti-arrow-back-up', 'Reverted — back to you');
+    }
+    function toggleGovAll() {
+      document.getElementById('gov-more').textContent = 'All 6 changes shown';
+    }
+
+    /* ── Schedule + conflict ── */
+    function selectSchedule(val) {
+      document.getElementById('sched-now').classList.toggle('selected', val === 'now');
+      document.getElementById('sched-later').classList.toggle('selected', val === 'later');
+      document.getElementById('schedule-when').classList.toggle('show', val === 'later');
+      const label = document.getElementById('push-confirm-label');
+      label.textContent = val === 'later' ? 'Schedule push' : 'Confirm push';
+    }
+    function setConflict(btn) {
+      const group = btn.parentElement;
+      group.querySelectorAll('.conflict-mini-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
     }
 
@@ -1631,18 +1911,29 @@
     /* ── Push modal ── */
     let currentPushList = '';
 
+    let currentPushCount = 42;
+
     function openPushModal(listName, outletCount) {
       closeMenus();
       closeSplitMenus();
       currentPushList = listName;
+      currentPushCount = outletCount;
       document.getElementById('push-list-name').textContent = listName;
       document.getElementById('push-outlet-count').textContent = '(' + outletCount + ' outlets)';
 
-      // Reset radio to "all"
-      const radios = document.querySelectorAll('.radio-item');
-      radios.forEach(r => r.classList.remove('selected'));
+      // Reset views
+      document.getElementById('push-config').style.display = 'flex';
+      document.getElementById('push-progress').classList.remove('show');
+      document.getElementById('push-footer').style.display = 'flex';
+      document.getElementById('push-confirm-btn').disabled = false;
+      document.getElementById('push-confirm-label').textContent = 'Confirm push';
+
+      // Reset scope + schedule
+      document.querySelectorAll('.radio-item').forEach(r => r.classList.remove('selected'));
       document.getElementById('radio-all').classList.add('selected');
       document.querySelector('input[name="push-scope"][value="all"]').checked = true;
+      selectSchedule('now');
+      document.querySelector('input[name="push-when"][value="now"]').checked = true;
 
       document.getElementById('push-modal').showModal();
     }
@@ -1657,9 +1948,55 @@
     }
 
     function confirmPush() {
-      closePushModal();
-      showToast('ti-circle-check', currentPushList + ' pushed successfully');
-      addActivityEntry(currentPushList);
+      const scheduled = document.querySelector('input[name="push-when"]:checked').value === 'later';
+      if (scheduled) {
+        const when = document.getElementById('schedule-input').value;
+        closePushModal();
+        showToast('ti-clock', currentPushList + ' scheduled' + (when ? ' for ' + when.replace('T', ' ') : ''));
+        addActivityEntry(currentPushList + ' (scheduled)', 'HQ Administrator');
+        return;
+      }
+      // Live propagation across outlets (NF-5, per-outlet status ML-3)
+      const total = currentPushCount;
+      document.getElementById('push-config').style.display = 'none';
+      document.getElementById('push-progress').classList.add('show');
+      document.getElementById('push-confirm-btn').disabled = true;
+      const fill = document.getElementById('prop-fill');
+      const list = document.getElementById('prop-outlets');
+      const countEl = document.getElementById('prop-count');
+      const statusText = document.getElementById('prop-status-text');
+      list.innerHTML = '';
+
+      const names = ['Circular Quay','Surry Hills','Newtown','Melbourne CBD','St Kilda','Bondi Beach','Hunter Valley','Brisbane CBD'];
+      let done = 0;
+      const step = () => {
+        done++;
+        const pct = Math.round(done / total * 100);
+        fill.style.width = pct + '%';
+        countEl.textContent = done + ' / ' + total;
+        // Add a few representative per-outlet rows
+        if (done <= names.length) {
+          const isErr = done === 6; // simulate one failure (Bondi Beach)
+          const row = document.createElement('div');
+          row.className = 'prop-outlet';
+          row.innerHTML = '<span>' + names[done-1] + '</span>' +
+            (isErr
+              ? '<span class="nb-pill risk"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Error</span>'
+              : '<span class="nb-pill ok"><i class="ti ti-check" aria-hidden="true"></i>Propagated</span>');
+          list.appendChild(row);
+        }
+        if (done < total) {
+          setTimeout(step, 90);
+        } else {
+          statusText.textContent = 'Complete — 1 outlet needs attention';
+          document.getElementById('push-confirm-btn').disabled = false;
+          document.getElementById('push-confirm-label').textContent = 'Done';
+          document.getElementById('push-confirm-btn').onclick = closePushModal;
+          showToast('ti-circle-check', currentPushList + ' propagated to ' + (total-1) + '/' + total + ' outlets');
+          addActivityEntry(currentPushList, 'HQ Administrator');
+        }
+      };
+      step();
     }
 
     /* ── Toast ── */
@@ -1674,23 +2011,24 @@
     }
 
     /* ── Activity timeline: append on push ── */
-    function addActivityEntry(listName) {
+    function addActivityEntry(listName, actor) {
       const body = document.getElementById('activity-body');
       const now = 'Just now';
+      const isAgent = (actor || '').startsWith('by ');
       const item = document.createElement('div');
       item.className = 'timeline-item';
       item.setAttribute('role', 'listitem');
       item.innerHTML = `
-        <div class="timeline-icon ok" aria-hidden="true">
-          <i class="ti ti-send"></i>
+        <div class="timeline-icon ${isAgent ? 'info' : 'ok'}" aria-hidden="true">
+          <i class="ti ${isAgent ? 'ti-sparkles' : 'ti-send'}"></i>
         </div>
         <div class="timeline-content">
           <p class="timeline-headline">
-            <strong>${listName}</strong> pushed to outlets
+            <strong>${listName}</strong> ${isAgent ? 'approved and pushed' : 'pushed to outlets'}
           </p>
           <div class="timeline-meta">
             <span class="timeline-time">${now}</span>
-            <span class="timeline-actor">HQ Administrator</span>
+            <span class="timeline-actor">${actor || 'HQ Administrator'}</span>
           </div>
         </div>
       `;
