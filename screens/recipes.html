@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Recipes — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
   <style>
     .page-body { padding: var(--space-2xl) 0; }
 
@@ -139,7 +140,7 @@
       align-items: center;
       height: 32px;
       padding-inline: var(--space-md);
-      border-radius: 99px;
+      border-radius: var(--radius-pill);
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
@@ -207,7 +208,7 @@
       gap: var(--space-xs);
       height: 24px;
       padding-inline: var(--space-sm);
-      border-radius: 99px;
+      border-radius: var(--radius-pill);
       font-size: 12px;
       font-weight: 500;
       white-space: nowrap;
@@ -305,7 +306,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      box-shadow: 0 4px 16px rgba(14,55,39,0.12);
+      box-shadow: var(--shadow-md);
       z-index: 100;
       display: none;
       flex-direction: column;

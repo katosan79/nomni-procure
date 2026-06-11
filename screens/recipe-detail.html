@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Avocado Toast v3 — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
   <style>
     .page-body { padding: var(--space-2xl) 0 120px; }
 
@@ -45,7 +46,7 @@
       gap: var(--space-xs);
       height: 24px;
       padding-inline: var(--space-sm);
-      border-radius: 99px;
+      border-radius: var(--radius-pill);
       font-size: 12px;
       font-weight: 500;
       white-space: nowrap;
@@ -311,7 +312,7 @@
     .toggle-track {
       position: absolute;
       inset: 0;
-      border-radius: 99px;
+      border-radius: var(--radius-pill);
       background: var(--stone);
       transition: background 0.2s;
     }
@@ -325,7 +326,7 @@
       border-radius: 50%;
       background: var(--porcelain);
       transition: transform 0.2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow-sm);
     }
     .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
 
@@ -383,7 +384,7 @@
       background: var(--mint);
       color: var(--spinach);
       padding: 1px 6px;
-      border-radius: 99px;
+      border-radius: var(--radius-pill);
     }
     .version-by { font-size: 12px; color: var(--text-soft); }
     .version-desc { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
@@ -580,47 +581,47 @@
               <th class="num">Subtotal</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
+          <tbody id="ingredient-rows">
+            <tr data-unit="0.40">
               <td>Sourdough bread</td>
-              <td class="num"><input class="inline-input" type="number" value="2" min="0" step="1" aria-label="Sourdough bread quantity" oninput="markDirty()"/></td>
+              <td class="num"><input class="inline-input ing-qty" type="number" value="2" min="0" step="1" aria-label="Sourdough bread quantity" oninput="recompute()"/></td>
               <td>slices</td>
               <td class="num">$0.40</td>
-              <td class="num">$0.80</td>
+              <td class="num ing-sub">$0.80</td>
             </tr>
-            <tr>
-              <td>Avocado</td>
-              <td class="num"><input class="inline-input" type="number" value="1" min="0" step="1" aria-label="Avocado quantity" oninput="markDirty()"/></td>
+            <tr data-unit="1.80">
+              <td>Avocado <span class="spark" id="avo-spark" title="Price set by Mara" style="display:none;font-size:11px;"><i class="ti ti-sparkles"></i></span></td>
+              <td class="num"><input class="inline-input ing-qty" type="number" value="1" min="0" step="1" aria-label="Avocado quantity" oninput="recompute()"/></td>
               <td>each</td>
-              <td class="num">$1.80</td>
-              <td class="num">$1.80</td>
+              <td class="num" id="avo-unit">$1.80</td>
+              <td class="num ing-sub">$1.80</td>
             </tr>
-            <tr>
+            <tr data-unit="0.05">
               <td>Feta cheese</td>
-              <td class="num"><input class="inline-input" type="number" value="30" min="0" step="1" aria-label="Feta cheese quantity" oninput="markDirty()"/></td>
+              <td class="num"><input class="inline-input ing-qty" type="number" value="30" min="0" step="1" aria-label="Feta cheese quantity" oninput="recompute()"/></td>
               <td>g</td>
               <td class="num">$0.05/g</td>
-              <td class="num">$1.50</td>
+              <td class="num ing-sub">$1.50</td>
             </tr>
-            <tr>
+            <tr data-unit="0.02">
               <td>Chilli flakes</td>
-              <td class="num"><input class="inline-input" type="number" value="2" min="0" step="1" aria-label="Chilli flakes quantity" oninput="markDirty()"/></td>
+              <td class="num"><input class="inline-input ing-qty" type="number" value="2" min="0" step="1" aria-label="Chilli flakes quantity" oninput="recompute()"/></td>
               <td>g</td>
               <td class="num">$0.02/g</td>
-              <td class="num">$0.04</td>
+              <td class="num ing-sub">$0.04</td>
             </tr>
-            <tr>
+            <tr data-unit="0.01">
               <td>Olive oil</td>
-              <td class="num"><input class="inline-input" type="number" value="5" min="0" step="1" aria-label="Olive oil quantity" oninput="markDirty()"/></td>
+              <td class="num"><input class="inline-input ing-qty" type="number" value="5" min="0" step="1" aria-label="Olive oil quantity" oninput="recompute()"/></td>
               <td>ml</td>
               <td class="num">$0.01/ml</td>
-              <td class="num">$0.06</td>
+              <td class="num ing-sub">$0.06</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
               <td class="total-label" colspan="4">Total cost</td>
-              <td class="total-value">$4.20</td>
+              <td class="total-value" id="total-cost">$4.20</td>
             </tr>
           </tfoot>
         </table>
@@ -630,23 +631,90 @@
         </button>
       </section>
 
+      <!-- ── Margin Agent (Mara) — RC-6, shown when margin breaches target ── -->
+      <article class="agent-surface" id="margin-agent" style="margin-bottom:var(--space-xl);display:none;">
+        <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
+          <div class="agent-card-head">
+            <span class="agent-avatar" data-agent="mara" aria-hidden="true">Ma</span>
+            <span class="agent-id">
+              <span class="agent-name">Mara</span>
+              <span class="agent-role">Margin agent</span>
+            </span>
+            <span class="agent-card-spacer"></span>
+            <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
+          </div>
+          <p class="brief-headline" style="font-size:15px;font-weight:600;" id="margin-agent-headline">This recipe has dropped below its 70% target margin</p>
+          <p class="agent-why" id="margin-agent-why">Avocado rose to $2.40/ea on yesterday's invoice, lifting food cost. Here are three ways to restore the target margin — POS prices sync automatically on reprice.</p>
+          <div class="agent-actions">
+            <button class="nb-btn primary" onclick="applyReprice()"><i class="ti ti-currency-dollar" aria-hidden="true"></i>Reprice to $18.90</button>
+            <button class="nb-btn" onclick="showToast('Rebuild: swap feta for ricotta (−$0.35/serve)')">Rebuild recipe</button>
+            <button class="nb-btn" onclick="showToast('Re-source: 2 suppliers offer avocado 8% cheaper')">Re-source</button>
+          </div>
+        </div>
+      </article>
+
       <!-- ── Section: Pricing ── -->
       <section class="form-section" aria-labelledby="sec-pricing">
-        <h2 class="section-heading" id="sec-pricing">Pricing</h2>
+        <h2 class="section-heading" id="sec-pricing">Pricing &amp; margin</h2>
         <div class="form-grid">
           <div class="field">
             <label class="field-label" for="selling-price">Selling price</label>
             <div class="input-prefix-wrap">
               <span class="input-prefix">$</span>
-              <input class="number-input" type="number" id="selling-price" value="18.00" min="0" step="0.01" oninput="markDirty()"/>
+              <input class="number-input" type="number" id="selling-price" value="18.00" min="0" step="0.01" oninput="recompute()"/>
             </div>
-            <p class="field-helper">Synced with POS selling price</p>
+            <p class="field-helper"><i class="ti ti-refresh" style="font-size:11px;" aria-hidden="true"></i> Two-way sync with POS · last synced 2h ago</p>
           </div>
           <div class="field">
             <label class="field-label">Food cost %</label>
             <div class="field-readonly" aria-label="Food cost percentage, auto-calculated">
-              <strong>23.3%</strong>&nbsp;<span style="font-size:12px;color:var(--text-soft);">auto-calculated</span>
+              <strong id="food-cost-pct">23.3%</strong>&nbsp;<span style="font-size:12px;color:var(--text-soft);">auto-calculated</span>
             </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Gross margin</label>
+            <div class="field-readonly" id="margin-readout" aria-label="Gross margin">
+              <strong id="gross-margin-pct">76.7%</strong>&nbsp;<span class="nb-pill ok" id="margin-pill" style="height:20px;"><i class="ti ti-check" aria-hidden="true"></i>On target</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label" for="target-margin">Target margin</label>
+            <div class="input-prefix-wrap">
+              <input class="number-input" type="number" id="target-margin" value="70" min="0" max="100" step="1" oninput="recompute()"/>
+              <span class="input-prefix" style="border-right:1px solid var(--border);border-left:none;border-radius:0 var(--radius-md) var(--radius-md) 0;">%</span>
+            </div>
+            <p class="field-helper">Mara alerts when margin drops below this</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section: Allergens & nutrition (RC-8) ── -->
+      <section class="form-section" aria-labelledby="sec-allergen">
+        <h2 class="section-heading" id="sec-allergen">Allergens &amp; nutrition</h2>
+        <div class="field" style="margin-bottom:var(--space-xl);">
+          <label class="field-label">Allergens <span class="field-helper" style="font-weight:400;">— propagated to outlets and POS menu</span></label>
+          <div style="display:flex;flex-wrap:wrap;gap:var(--space-sm);margin-top:var(--space-sm);">
+            <span class="nb-pill warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Gluten</span>
+            <span class="nb-pill warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Dairy</span>
+            <span class="nb-pill neutral" style="cursor:pointer;" onclick="markDirty()"><i class="ti ti-plus" aria-hidden="true"></i>Add allergen</span>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label class="field-label" for="nut-energy">Energy (kcal)</label>
+            <input class="number-input" type="number" id="nut-energy" value="420" min="0" oninput="markDirty()"/>
+          </div>
+          <div class="field">
+            <label class="field-label" for="nut-protein">Protein (g)</label>
+            <input class="number-input" type="number" id="nut-protein" value="12" min="0" oninput="markDirty()"/>
+          </div>
+          <div class="field">
+            <label class="field-label" for="nut-carbs">Carbs (g)</label>
+            <input class="number-input" type="number" id="nut-carbs" value="38" min="0" oninput="markDirty()"/>
+          </div>
+          <div class="field">
+            <label class="field-label" for="nut-fat">Fat (g)</label>
+            <input class="number-input" type="number" id="nut-fat" value="24" min="0" oninput="markDirty()"/>
           </div>
         </div>
       </section>
@@ -673,7 +741,7 @@
       <section class="form-section" aria-labelledby="sec-versions" style="padding:0; overflow:hidden;">
         <div class="accordion">
           <button class="accordion-trigger" aria-expanded="false" aria-controls="version-body" id="version-trigger" onclick="toggleAccordion(this,'version-body')">
-            <span id="sec-versions">Version history <span style="color:var(--text-soft);font-weight:400;">(4 versions)</span></span>
+            <span id="sec-versions">Version history <span style="color:var(--text-soft);font-weight:400;">(3 versions)</span></span>
             <i class="ti ti-chevron-down" aria-hidden="true"></i>
           </button>
           <div class="accordion-body" id="version-body" role="region" aria-labelledby="version-trigger">
@@ -689,18 +757,18 @@
               <div class="version-item">
                 <div class="version-meta">
                   <p class="version-tag">v2</p>
-                  <p class="version-by">Updated 3 days ago · HQ Admin</p>
+                  <p class="version-by">12 Jun 2026, 9:14 am · HQ Admin</p>
                   <p class="version-desc">Added feta cheese</p>
                 </div>
-                <button class="btn btn-outline btn-sm">Rollback</button>
+                <button class="btn btn-outline btn-sm" onclick="rollbackVersion('v2')">Rollback</button>
               </div>
               <div class="version-item">
                 <div class="version-meta">
                   <p class="version-tag">v1</p>
-                  <p class="version-by">Created 1 week ago · HQ Admin</p>
+                  <p class="version-by">5 Jun 2026, 2:30 pm · HQ Admin</p>
                   <p class="version-desc">Initial recipe</p>
                 </div>
-                <button class="btn btn-outline btn-sm">Rollback</button>
+                <button class="btn btn-outline btn-sm" onclick="rollbackVersion('v1')">Rollback</button>
               </div>
             </div>
           </div>
@@ -748,6 +816,10 @@
         </div>
         <div class="footer-spacer"></div>
         <button class="btn btn-outline" onclick="discardChanges()">Discard</button>
+        <button class="btn btn-outline" onclick="submitForApproval()">
+          <i class="ti ti-user-check" aria-hidden="true"></i>
+          Submit for approval
+        </button>
         <button class="btn btn-primary" onclick="saveChanges()">
           <i class="ti ti-device-floppy" aria-hidden="true"></i>
           Save changes
@@ -785,6 +857,73 @@
       saveBar.classList.add('visible');
     }
 
+    /* ── Live costing + margin (RC-5) ── */
+    function recompute() {
+      markDirty();
+      let total = 0;
+      document.querySelectorAll('#ingredient-rows tr').forEach(tr => {
+        const unit = parseFloat(tr.dataset.unit) || 0;
+        const qty = parseFloat(tr.querySelector('.ing-qty')?.value) || 0;
+        const sub = unit * qty;
+        total += sub;
+        const subCell = tr.querySelector('.ing-sub');
+        if (subCell) subCell.textContent = '$' + sub.toFixed(2);
+      });
+      document.getElementById('total-cost').textContent = '$' + total.toFixed(2);
+
+      const price = parseFloat(document.getElementById('selling-price').value) || 0;
+      const target = parseFloat(document.getElementById('target-margin').value) || 70;
+      const foodCostPct = price > 0 ? (total / price * 100) : 0;
+      const margin = 100 - foodCostPct;
+      document.getElementById('food-cost-pct').textContent = foodCostPct.toFixed(1) + '%';
+      document.getElementById('gross-margin-pct').textContent = margin.toFixed(1) + '%';
+
+      const pill = document.getElementById('margin-pill');
+      const agent = document.getElementById('margin-agent');
+      if (margin < target) {
+        pill.className = 'nb-pill risk';
+        pill.style.height = '20px';
+        pill.innerHTML = '<i class="ti ti-arrow-down" aria-hidden="true"></i>Below target';
+        agent.style.display = 'block';
+        document.getElementById('margin-agent-headline').textContent =
+          'This recipe sits ' + (target - margin).toFixed(1) + ' points below its ' + target + '% target margin';
+      } else {
+        pill.className = 'nb-pill ok';
+        pill.style.height = '20px';
+        pill.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i>On target';
+        agent.style.display = 'none';
+      }
+    }
+
+    /* ── Margin Agent actions (RC-6) ── */
+    function applyReprice() {
+      document.getElementById('selling-price').value = '18.90';
+      recompute();
+      const agent = document.getElementById('margin-agent');
+      const state = agent.querySelector('.agent-state');
+      state.className = 'agent-state done';
+      state.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>Done';
+      showToast('Repriced to $18.90 by Mara · POS syncing · margin restored');
+      addActivity('ti-currency-dollar', 'Repriced to $18.90 — margin restored', 'Just now · by Mara');
+      setTimeout(() => { agent.style.display = 'none'; }, 600);
+    }
+
+    /* ── Approval workflow (RC-7) ── */
+    function submitForApproval() {
+      dirtyCount = 0;
+      document.getElementById('save-bar').classList.remove('visible');
+      const pill = document.querySelector('.header-badges');
+      if (pill && !document.getElementById('approval-pill')) {
+        const p = document.createElement('span');
+        p.id = 'approval-pill';
+        p.className = 'nb-pill warn';
+        p.innerHTML = '<i class="ti ti-clock" aria-hidden="true"></i>Awaiting HQ Approver';
+        pill.appendChild(p);
+      }
+      showToast('Submitted to HQ Approver for sign-off');
+      addActivity('ti-user-check', 'Submitted for approval', 'Just now · Sarah Chen');
+    }
+
     function discardChanges() {
       dirtyCount = 0;
       document.getElementById('save-bar').classList.remove('visible');
@@ -793,6 +932,44 @@
     function saveChanges() {
       dirtyCount = 0;
       document.getElementById('save-bar').classList.remove('visible');
+      showToast('Recipe saved');
+      addActivity('ti-device-floppy', 'Recipe updated and saved', 'Just now · Sarah Chen');
+    }
+
+    /* ── Toast ── */
+    function showToast(msg) {
+      let wrap = document.getElementById('rd-toast');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'rd-toast';
+        wrap.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;';
+        document.body.appendChild(wrap);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;" aria-hidden="true"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3200);
+    }
+
+    /* ── Audit entry (RC-3 / §5.10) ── */
+    function addActivity(icon, action, meta) {
+      const tl = document.querySelector('.timeline');
+      if (!tl) return;
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.setAttribute('role', 'listitem');
+      item.innerHTML = '<div class="timeline-dot" aria-hidden="true"><i class="ti ' + icon + '"></i></div>' +
+        '<div class="timeline-body"><p class="timeline-action">' + action + '</p><p class="timeline-meta">' + meta + '</p></div>';
+      tl.insertBefore(item, tl.firstChild);
+    }
+
+    /* ── Rollback with confirm + audit (RC-3) ── */
+    function rollbackVersion(v) {
+      if (confirm('Roll back to ' + v + '? This will create a new version with ' + v + "'s ingredients and pricing.")) {
+        showToast('Rolled back to ' + v + ' — saved as new version');
+        addActivity('ti-history', 'Rolled back to ' + v, 'Just now · Sarah Chen');
+      }
     }
 
     function handleLockToggle(checkbox) {
