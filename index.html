@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nomni HQ — Prototype</title>
+  <link rel="stylesheet" href="shared/tokens.css">
+  <style>
+    body { background: var(--surface-soft); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .wrap { max-width: 480px; width: 100%; padding: var(--space-2xl); }
+    .logo { font-size: 22px; font-weight: 700; color: var(--fern); letter-spacing: -0.3px; margin-bottom: var(--space-xs); }
+    .sub  { font-size: 13px; color: var(--text-soft); margin-bottom: var(--space-3xl); }
+    h2 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); margin-bottom: var(--space-sm); }
+    .list { list-style: none; display: flex; flex-direction: column; gap: var(--space-xs); }
+    .list a {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); text-decoration: none;
+      color: var(--text); font-size: 14px; font-weight: 500;
+      transition: box-shadow var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard);
+    }
+    .list a:hover { box-shadow: var(--shadow-md); border-color: var(--fern); }
+    .list a:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .list a span { font-size: 12px; color: var(--text-soft); font-weight: 400; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">Nomni HQ</div>
+    <div class="sub">Prototype · Zeemart 2.0</div>
+    <h2>Screens</h2>
+    <ul class="list">
+      <li><a href="screens/dashboard.html">Overview <span>Morning briefing</span></a></li>
+      <li><a href="screens/venues.html">Venues <span>Outlet management</span></a></li>
+      <li><a href="screens/suppliers.html">Suppliers <span>Supplier directory</span></a></li>
+      <li><a href="screens/users.html">Users <span>Team & permissions</span></a></li>
+      <li><a href="screens/market-list.html">Market Lists <span>Price lists</span></a></li>
+      <li><a href="screens/recipes.html">Recipes <span>Recipe library</span></a></li>
+      <li><a href="screens/recipe-detail.html">Recipe Detail <span>Ingredients & costing</span></a></li>
+      <li><a href="screens/inventory.html">Inventory <span>Stock management</span></a></li>
+      <li><a href="screens/pos-mapping.html">POS Mapping <span>Item mapping</span></a></li>
+      <li><a href="screens/reporting.html">Reporting <span>Analytics</span></a></li>
+      <li><a href="screens/login.html">Login <span>Auth screen</span></a></li>
+    </ul>
+  </div>
+</body>
+</html>
