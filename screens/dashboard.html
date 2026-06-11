@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Overview — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
   <style>
     body { background: var(--surface-soft); }
 
@@ -15,12 +16,13 @@
       gap: var(--space-3xl);
     }
 
-    /* ── Greeting ── */
+    /* ── Greeting + ask bar ── */
     .greeting { display: flex; flex-direction: column; gap: var(--space-xs); }
     .greeting-eyebrow {
-      font-size: 11px; font-weight: 600;
+      font-size: 12px; font-weight: 600;
       text-transform: uppercase; letter-spacing: 0.08em;
       color: var(--text-accent);
+      font-feature-settings: 'tnum' 1;
     }
     .greeting-title {
       font-size: 35px; font-weight: 700;
@@ -30,103 +32,58 @@
       font-size: 15px; color: var(--text-soft);
       margin-top: var(--space-xs);
     }
+    .ask-block { margin-top: var(--space-lg); }
+    .ask-bar { max-width: 620px; }
+    .ask-suggestions {
+      display: flex; flex-wrap: wrap; gap: var(--space-sm);
+      margin-top: var(--space-sm); max-width: 620px;
+    }
+    .ask-chip {
+      font-size: 12px; color: var(--text-soft);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-pill); padding: 4px var(--space-md);
+      cursor: pointer;
+      transition: border-color var(--dur-1) var(--ease-standard),
+                  color var(--dur-1) var(--ease-standard);
+    }
+    .ask-chip:hover { border-color: var(--text-accent); color: var(--text); }
 
     /* ── Agent brief ── */
-    .agent-brief {
-      background: var(--surface);
-      border: 1.5px solid var(--agent-border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-sm), 0 0 0 4px var(--agent-glow);
-      overflow: hidden;
+    .brief-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: var(--space-md); margin-bottom: var(--space-lg);
     }
-    .agent-brief-header {
-      display: flex; align-items: center;
-      gap: var(--space-md);
-      padding: var(--space-lg) var(--space-xl);
-      border-bottom: 1px solid var(--border);
+    .brief-title { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+    .brief-meta { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .brief-feed { display: flex; flex-direction: column; gap: var(--space-lg); }
+
+    /* Each callout is its own agent surface card */
+    .brief-card { padding: var(--space-lg) var(--space-xl); }
+    .brief-card-top {
+      display: flex; align-items: center; gap: var(--space-md);
+      margin-bottom: var(--space-md);
     }
-    .agent-avatar {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: rgba(23,179,163,0.15);
-      border: 1.5px solid rgba(23,179,163,0.3);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      font-size: 12px; font-weight: 700;
-      color: var(--ordering);
+    .brief-card-top .agent-card-spacer { flex: 1; }
+    .brief-headline {
+      font-size: 15px; font-weight: 600; color: var(--text);
+      line-height: 1.4; margin-bottom: var(--space-xs);
     }
-    .agent-identity { flex: 1; min-width: 0; }
-    .agent-name {
-      font-size: 13px; font-weight: 600; color: var(--text);
-      display: flex; align-items: center; gap: var(--space-xs);
+    .brief-why { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+    .brief-why .spark { font-weight: 600; }
+    .brief-actions {
+      display: flex; align-items: center; gap: var(--space-sm);
+      margin-top: var(--space-md); flex-wrap: wrap;
     }
-    .agent-name .agent-spark {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent); flex-shrink: 0;
-    }
-    .agent-role { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
-    .agent-brief-meta {
-      font-size: 11px; color: var(--text-soft);
-      white-space: nowrap;
-    }
-    .agent-callouts {
-      display: flex; flex-direction: column;
-    }
-    .callout-item {
-      display: flex; align-items: flex-start;
-      gap: var(--space-lg);
-      padding: var(--space-lg) var(--space-xl);
-      border-bottom: 1px solid var(--border);
-      transition: background var(--dur-1) var(--ease-standard);
-    }
-    .callout-item:last-child { border-bottom: none; }
-    .callout-item:hover { background: var(--surface-soft); }
-    .callout-icon {
-      width: 36px; height: 36px; border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-top: 1px;
-    }
-    .callout-icon.warn { background: var(--status-warn-bg); }
-    .callout-icon.warn i { color: var(--status-warn-fg); font-size: 16px; }
-    .callout-icon.risk { background: var(--status-risk-bg); }
-    .callout-icon.risk i { color: var(--status-risk-fg); font-size: 16px; }
-    .callout-icon.info { background: var(--status-info-bg); }
-    .callout-icon.info i { color: var(--status-info-fg); font-size: 16px; }
-    .callout-body { flex: 1; min-width: 0; }
-    .callout-headline {
-      font-size: 13px; font-weight: 600;
-      color: var(--text); line-height: 1.4;
-    }
-    .callout-why {
-      font-size: 12px; color: var(--text-soft);
-      margin-top: var(--space-xs); line-height: 1.5;
-    }
-    .callout-actions {
-      display: flex; align-items: center;
-      gap: var(--space-sm); margin-top: var(--space-md);
-    }
-    .btn-sm {
-      display: inline-flex; align-items: center; gap: var(--space-xs);
-      padding: 5px var(--space-md);
-      border-radius: var(--radius-sm);
-      font-size: 12px; font-weight: 600;
-      cursor: pointer; border: none;
-      transition: background var(--dur-1) var(--ease-standard);
-    }
-    .btn-sm:focus-visible { outline: none; box-shadow: var(--focus-ring); }
-    .btn-sm.primary {
-      background: var(--btn-primary-bg); color: var(--btn-primary-fg);
-    }
-    .btn-sm.primary:hover { background: var(--btn-primary-hover); }
-    .btn-sm.ghost {
-      background: transparent; color: var(--text-link);
-      border: 1px solid var(--border);
-    }
-    .btn-sm.ghost:hover { background: var(--surface-soft); }
+    /* Resolved (approved/undone) state */
+    .brief-card.resolved { opacity: 0.62; }
+    .brief-card.resolved .brief-actions { display: none; }
+    .brief-resolved-line { display: none; margin-top: var(--space-md); }
+    .brief-card.resolved .brief-resolved-line { display: flex; }
 
     /* ── Network revenue pulse ── */
     .pulse-row {
       display: grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: 320px 1fr;
       gap: var(--space-lg);
       align-items: stretch;
     }
@@ -136,13 +93,28 @@
       padding: var(--space-xl);
       display: flex; flex-direction: column;
       justify-content: space-between;
-      gap: var(--space-xl);
+      gap: var(--space-lg);
+      color: var(--cream);
     }
     .pulse-eyebrow {
-      font-size: 11px; font-weight: 600;
+      font-size: 12px; font-weight: 600;
       text-transform: uppercase; letter-spacing: 0.08em;
-      color: rgba(250,247,233,0.5);
+      color: var(--chrome-fg-soft);
+      display: flex; align-items: center; gap: var(--space-sm);
     }
+    .live-pill {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+      color: var(--spring);
+      background: color-mix(in srgb, var(--spring) 16%, transparent);
+      border-radius: var(--radius-pill); padding: 2px var(--space-sm);
+    }
+    .live-pill .live-dot {
+      width: 6px; height: 6px; border-radius: var(--radius-pill);
+      background: var(--spring);
+      animation: livepulse 1.8s var(--ease-standard) infinite;
+    }
+    @keyframes livepulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
     .pulse-value {
       font-size: 44px; font-weight: 700;
       color: var(--cream); letter-spacing: -0.04em; line-height: 1;
@@ -151,29 +123,46 @@
     .pulse-value sup { font-size: 22px; vertical-align: super; }
     .pulse-delta {
       display: flex; align-items: center; gap: var(--space-xs);
-      font-size: 12px; font-weight: 600;
+      font-size: 12px; font-weight: 600; margin-top: var(--space-sm);
     }
     .pulse-delta.up { color: var(--spring); }
     .pulse-delta.down { color: var(--rose); }
     .pulse-context {
-      font-size: 11px; color: rgba(250,247,233,0.45);
+      font-size: 11px; color: var(--chrome-fg-soft);
       margin-top: var(--space-xs);
+      font-feature-settings: 'tnum' 1;
     }
+    /* live sub-stats: COGS + variance */
+    .pulse-substats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);
+      padding-top: var(--space-lg);
+      border-top: 1px solid color-mix(in srgb, var(--cream) 14%, transparent);
+    }
+    .pulse-substat-label {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--chrome-fg-soft); margin-bottom: 2px;
+    }
+    .pulse-substat-value {
+      font-size: 20px; font-weight: 700; color: var(--cream);
+      font-feature-settings: 'tnum' 1; letter-spacing: -0.02em;
+      display: flex; align-items: baseline; gap: var(--space-xs);
+    }
+    .pulse-substat-value .delta { font-size: 11px; font-weight: 600; }
+    .pulse-substat-value .delta.up   { color: var(--rose); }   /* COGS up = bad */
+    .pulse-substat-value .delta.down { color: var(--spring); }
     .pulse-sparkline {
       display: flex; align-items: flex-end;
       gap: 3px; height: 32px;
     }
     .spark-bar {
-      flex: 1; border-radius: 2px 2px 0 0;
-      background: rgba(42,200,100,0.3);
-      transition: background var(--dur-1) var(--ease-standard);
+      flex: 1; border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+      background: color-mix(in srgb, var(--spring) 30%, transparent);
     }
     .spark-bar.today { background: var(--spring); }
-    .spark-bar:hover { background: rgba(42,200,100,0.6); }
 
     .group-chart-panel {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       overflow: hidden;
     }
@@ -182,36 +171,33 @@
       padding: var(--space-lg) var(--space-xl);
       border-bottom: 1px solid var(--border);
     }
-    .group-chart-title {
-      font-size: 13px; font-weight: 600; color: var(--text);
-    }
-    .chart-period {
-      font-size: 11px; color: var(--text-soft);
-    }
-    .group-bars { padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-md); }
+    .group-chart-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .group-bars { padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); position: relative; }
     .group-bar-row { display: flex; align-items: center; gap: var(--space-md); }
     .group-bar-label {
-      font-size: 12px; font-weight: 500; color: var(--text);
-      width: 130px; flex-shrink: 0;
+      font-size: 13px; font-weight: 500; color: var(--text-soft);
+      width: 120px; flex-shrink: 0;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .group-bar-track {
-      flex: 1; height: 8px; background: var(--surface-soft);
-      border-radius: var(--radius-pill); overflow: hidden;
+      flex: 1; height: 22px; background: color-mix(in srgb, var(--border) 70%, transparent);
+      border-radius: 3px; overflow: hidden; position: relative;
     }
     .group-bar-fill {
-      height: 100%; border-radius: var(--radius-pill);
-      background: var(--text-accent);
-      transition: width var(--dur-3) var(--ease-emphasized);
+      height: 100%; border-radius: 3px 0 0 3px;
+      background: color-mix(in srgb, var(--fern) 58%, transparent);
+      transition: width var(--dur-4) var(--ease-emphasized);
     }
+    .group-bar-fill.highlight { background: var(--spinach); }
     .group-bar-amt {
-      font-size: 12px; font-weight: 600; color: var(--text);
+      font-size: 13px; font-weight: 600; color: var(--text);
       font-feature-settings: 'tnum' 1;
-      width: 64px; text-align: right; flex-shrink: 0;
+      width: 60px; text-align: right; flex-shrink: 0;
     }
     .group-bar-delta {
-      font-size: 11px; width: 44px; text-align: right; flex-shrink: 0;
-      font-feature-settings: 'tnum' 1; font-weight: 500;
+      font-size: 12px; width: 48px; text-align: right; flex-shrink: 0;
+      font-feature-settings: 'tnum' 1; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: flex-end; gap: 2px;
     }
     .group-bar-delta.up { color: var(--status-ok-fg); }
     .group-bar-delta.down { color: var(--status-risk-fg); }
@@ -224,17 +210,16 @@
     }
     .kpi-tile {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: var(--space-xl);
       display: flex; flex-direction: column; gap: var(--space-md);
       transition: box-shadow var(--dur-1) var(--ease-standard);
-      cursor: default;
+      text-decoration: none;
     }
     .kpi-tile:hover { box-shadow: var(--shadow-md); }
-    .kpi-tile-top { display: flex; align-items: flex-start; justify-content: space-between; }
     .kpi-label {
-      font-size: 11px; font-weight: 600;
+      font-size: 12px; font-weight: 600;
       text-transform: uppercase; letter-spacing: 0.06em;
       color: var(--text-soft);
     }
@@ -256,8 +241,8 @@
       gap: 2px; height: 24px; margin-top: var(--space-xs);
     }
     .kpi-spark-bar {
-      flex: 1; border-radius: 1px 1px 0 0;
-      background: rgba(18,155,65,0.2);
+      flex: 1; border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+      background: color-mix(in srgb, var(--fern) 22%, transparent);
     }
     .kpi-spark-bar.hi { background: var(--text-accent); }
 
@@ -267,7 +252,7 @@
       gap: var(--space-sm); flex-wrap: wrap;
     }
     .pending-label {
-      font-size: 11px; font-weight: 600;
+      font-size: 12px; font-weight: 600;
       text-transform: uppercase; letter-spacing: 0.07em;
       color: var(--text-soft); flex-shrink: 0;
       margin-right: var(--space-xs);
@@ -276,7 +261,7 @@
       display: inline-flex; align-items: center; gap: var(--space-xs);
       padding: 5px var(--space-md);
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-pill);
       font-size: 12px; font-weight: 500;
       color: var(--text);
@@ -288,7 +273,6 @@
       border-color: var(--text-accent);
       box-shadow: var(--shadow-sm);
     }
-    .pending-chip:focus-visible { outline: none; box-shadow: var(--focus-ring); }
     .pending-chip .chip-count {
       background: var(--status-warn-bg);
       color: var(--status-warn-fg);
@@ -313,7 +297,7 @@
     /* ── Panel ── */
     .panel {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       overflow: hidden;
     }
@@ -322,7 +306,7 @@
       padding: var(--space-lg) var(--space-xl);
       border-bottom: 1px solid var(--border);
     }
-    .panel-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .panel-title { font-size: 14px; font-weight: 600; color: var(--text); }
     .panel-action {
       font-size: 12px; font-weight: 500;
       color: var(--text-link); text-decoration: none; cursor: pointer;
@@ -341,15 +325,15 @@
     .activity-item:last-child { border-bottom: none; }
     .activity-item:hover { background: var(--surface-soft); }
     .activity-icon-wrap {
-      width: 32px; height: 32px; border-radius: 50%;
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
       background: var(--surface-soft); border: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; margin-top: 2px;
     }
     .activity-icon-wrap i { font-size: 14px; color: var(--text-soft); }
     .activity-icon-wrap.agent-icon {
-      background: rgba(42,200,100,0.1);
-      border-color: rgba(42,200,100,0.3);
+      background: color-mix(in srgb, var(--fern) 10%, transparent);
+      border-color: color-mix(in srgb, var(--fern) 30%, transparent);
     }
     .activity-icon-wrap.agent-icon i { color: var(--text-accent); }
     .activity-body { flex: 1; min-width: 0; }
@@ -369,8 +353,8 @@
     .activity-actor::before { content: '·'; color: var(--border); font-size: 14px; }
     .activity-actor.agent-actor { color: var(--text-accent); }
     .undo-link {
-      font-size: 11px; font-weight: 500; color: var(--text-link);
-      text-decoration: none; margin-left: var(--space-sm);
+      font-size: 11px; font-weight: 600; color: var(--text-link);
+      text-decoration: none; margin-left: var(--space-sm); cursor: pointer;
     }
     .undo-link:hover { text-decoration: underline; }
 
@@ -385,38 +369,31 @@
     }
     .group-health-item:last-child { border-bottom: none; }
     .group-health-item:hover { background: var(--surface-soft); }
+    /* dot now carries an icon — shape conveys state, not colour alone */
     .group-dot {
-      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+      width: 20px; height: 20px; border-radius: var(--radius-pill); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
     }
-    .group-dot.ok   { background: var(--status-ok-fg); }
-    .group-dot.warn { background: var(--status-warn-fg); }
-    .group-dot.risk { background: var(--status-risk-fg); }
+    .group-dot i { font-size: 12px; }
+    .group-dot.ok   { background: var(--status-ok-bg); }
+    .group-dot.ok i   { color: var(--status-ok-fg); }
+    .group-dot.warn { background: var(--status-warn-bg); }
+    .group-dot.warn i { color: var(--status-warn-fg); }
+    .group-dot.risk { background: var(--status-risk-bg); }
+    .group-dot.risk i { color: var(--status-risk-fg); }
     .group-info { flex: 1; min-width: 0; }
     .group-name {
       font-size: 13px; font-weight: 500; color: var(--text);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .group-count { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .group-count { font-size: 11px; color: var(--text-soft); margin-top: 1px; font-feature-settings: 'tnum' 1; }
     .group-issue {
-      font-size: 11px; font-weight: 500; color: var(--text-soft);
+      font-size: 11px; font-weight: 600; color: var(--text-soft);
       text-align: right; white-space: nowrap;
     }
     .group-issue.warn { color: var(--status-warn-fg); }
     .group-issue.risk { color: var(--status-risk-fg); }
-
-    /* ── Status pill ── */
-    .pill {
-      display: inline-flex; align-items: center; gap: var(--space-xs);
-      padding: 3px var(--space-sm); border-radius: 99px;
-      font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
-    }
-    .pill-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    .pill.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
-    .pill.ok   .pill-dot { background: var(--status-ok-fg); }
-    .pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
-    .pill.warn .pill-dot { background: var(--status-warn-fg); }
-    .pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
-    .pill.risk .pill-dot { background: var(--status-risk-fg); }
+    .group-issue.ok { color: var(--status-ok-fg); }
 
     /* ── Top-moving items ── */
     .mover-list { display: flex; flex-direction: column; }
@@ -432,8 +409,8 @@
       flex-shrink: 0;
     }
     .mover-info { flex: 1; min-width: 0; }
-    .mover-name { font-size: 13px; font-weight: 500; color: var(--text); }
-    .mover-category { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .mover-name { font-size: 13px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: var(--space-xs); }
+    .mover-category { font-size: 11px; color: var(--text-soft); margin-top: 1px; font-feature-settings: 'tnum' 1; }
     .mover-velocity {
       display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
     }
@@ -444,14 +421,26 @@
     .mover-trend {
       font-size: 11px; font-weight: 600;
       font-feature-settings: 'tnum' 1;
+      display: inline-flex; align-items: center; gap: 2px;
     }
     .mover-trend.up { color: var(--status-ok-fg); }
     .mover-trend.down { color: var(--status-risk-fg); }
-    .mover-alert-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--status-warn-fg); flex-shrink: 0;
+    .mover-alert {
+      font-size: 13px; color: var(--status-warn-fg); flex-shrink: 0;
       margin-left: var(--space-xs);
     }
+
+    /* ── Toast ── */
+    .toast-wrap { position: fixed; bottom: var(--space-xl); left: 50%; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: var(--space-sm); align-items: center; }
+    .toast {
+      display: flex; align-items: center; gap: var(--space-sm);
+      background: var(--surface-deep); color: var(--cream);
+      padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 500;
+      animation: toastin var(--dur-3) var(--ease-emphasized);
+    }
+    .toast i { color: var(--spring); font-size: 16px; }
+    @keyframes toastin { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ── Responsive ── */
     @media (max-width: 1024px) {
@@ -475,73 +464,122 @@
   <div class="page-body">
     <div class="napp-canvas" data-measure="content">
 
-      <!-- 1 · Greeting -->
+      <!-- 1 · Greeting + ask bar -->
       <header class="greeting">
         <p class="greeting-eyebrow" id="greeting-date">Tuesday, 10 June 2025</p>
         <h1 class="greeting-title" id="greeting-text">Good morning, Sarah.</h1>
-        <p class="greeting-sub">Here's where things stand across your 124 outlets.</p>
+        <p class="greeting-sub">Your agents worked overnight. Here's what needs you across your 124 outlets.</p>
+
+        <div class="ask-block">
+          <form class="ask-bar" onsubmit="askSubmit(event)" role="search" aria-label="Ask Nomni">
+            <span class="agent-mark" aria-hidden="true"></span>
+            <input type="text" id="ask-input" placeholder="Ask anything — “which outlets exceeded variance last week?”" aria-label="Ask Nomni a question"/>
+            <button type="submit" class="nb-btn primary" aria-label="Ask">
+              <i class="ti ti-arrow-up" aria-hidden="true"></i>
+            </button>
+          </form>
+          <div class="ask-suggestions" aria-label="Suggested questions">
+            <button class="ask-chip" onclick="askFill(this)">Where is food cost rising fastest?</button>
+            <button class="ask-chip" onclick="askFill(this)">Which outlets are below par on proteins?</button>
+            <button class="ask-chip" onclick="askFill(this)">Show invoice exceptions over $500</button>
+          </div>
+        </div>
       </header>
 
       <!-- 2 · Agent morning brief -->
-      <section aria-label="Agent morning brief" class="agent-brief">
-        <div class="agent-brief-header">
-          <div class="agent-avatar" aria-hidden="true">Cy</div>
-          <div class="agent-identity">
-            <span class="agent-name">
-              <span class="agent-spark" aria-hidden="true"></span>
-              Cyrus · Procurement intelligence
-            </span>
-            <p class="agent-role">3 items need your attention this morning</p>
-          </div>
-          <span class="agent-brief-meta">Updated 6:42 am</span>
+      <section aria-label="Agent morning brief">
+        <div class="brief-head">
+          <h2 class="brief-title">Your morning brief</h2>
+          <span class="brief-meta" id="brief-meta">4 agents reporting · updated 6:42 am</span>
         </div>
 
-        <div class="agent-callouts">
+        <div class="brief-feed">
 
-          <!-- Callout 1: stock depletion risk -->
-          <div class="callout-item">
-            <div class="callout-icon warn" aria-hidden="true">
-              <i class="ti ti-package"></i>
+          <!-- Otto · Ordering · Proposed -->
+          <article class="agent-surface brief-card" id="card-otto" aria-label="Ordering agent proposal">
+            <div class="brief-card-top">
+              <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
+              <span class="agent-id">
+                <span class="agent-name">Otto</span>
+                <span class="agent-role">Ordering agent</span>
+              </span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
             </div>
-            <div class="callout-body">
-              <p class="callout-headline">Chicken Breast 500g will deplete at 12 venues before Friday's delivery</p>
-              <p class="callout-why">Sales ran 22% above forecast this week. At current par levels, 12 outlets across NSW and VIC will hit zero stock by Thursday evening.</p>
-              <div class="callout-actions">
-                <button class="btn-sm primary" onclick="alert('Opening par level editor…')">Adjust par levels</button>
-                <button class="btn-sm ghost" onclick="alert('Viewing affected outlets…')">See 12 outlets</button>
-              </div>
+            <p class="brief-headline">Drafted replenishment POs for 12 outlets running short on Chicken Breast 500g</p>
+            <p class="brief-why">Sell-through ran <span class="spark">22% above forecast</span> this week. At current par levels these 12 NSW &amp; VIC outlets hit zero before Friday's delivery. I've staged 12 draft orders totalling <span class="spark">$8,240</span> to the preferred supplier — outlets approve with one tap.</p>
+            <div class="brief-actions">
+              <button class="nb-btn primary" onclick="approveCard('otto','Approved — 12 draft POs sent to outlets for confirmation')"><i class="ti ti-check" aria-hidden="true"></i>Approve all 12</button>
+              <button class="nb-btn" onclick="toast('Opening draft orders…')">Review drafts</button>
+              <button class="nb-btn ghost" onclick="dismissCard('otto')">Dismiss</button>
             </div>
-          </div>
+            <div class="brief-resolved-line agent-byline">
+              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Approved by you · 12 POs sent ·
+              <a class="undo-link" onclick="undoCard('otto')">Undo</a>
+            </div>
+          </article>
 
-          <!-- Callout 2: POS sync failure -->
-          <div class="callout-item">
-            <div class="callout-icon risk" aria-hidden="true">
-              <i class="ti ti-device-desktop"></i>
+          <!-- Sloan · Governance · Needs-you -->
+          <article class="agent-surface brief-card" id="card-sloan" aria-label="Governance agent — needs you">
+            <div class="brief-card-top">
+              <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
+              <span class="agent-id">
+                <span class="agent-name">Sloan</span>
+                <span class="agent-role">Governance agent</span>
+              </span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
             </div>
-            <div class="callout-body">
-              <p class="callout-headline">POS sync failed at Bondi Beach — Winter Menu mappings not applied</p>
-              <p class="callout-why">Outlet onboarded 3 days ago. POS integration is connected but the initial mapping push returned an auth error. Revenue data is live but menu items aren't mapped.</p>
-              <div class="callout-actions">
-                <button class="btn-sm primary" onclick="window.location.href='pos-mapping.html'">Go to POS mapping</button>
-                <button class="btn-sm ghost" onclick="alert('Viewing error log…')">View error</button>
-              </div>
+            <p class="brief-headline">POS sync failed at Bondi Beach — Winter Menu mappings not applied</p>
+            <p class="brief-why">Outlet onboarded 3 days ago. The POS is connected and revenue is flowing, but my initial mapping push returned an auth error, so 28 menu items are unmapped. I can't retry without a refreshed POS token — that needs you.</p>
+            <div class="brief-actions">
+              <button class="nb-btn primary" onclick="window.location.href='pos-mapping.html'"><i class="ti ti-arrow-right" aria-hidden="true"></i>Fix mapping</button>
+              <button class="nb-btn" onclick="toast('Opening error log…')">View error</button>
             </div>
-          </div>
+          </article>
 
-          <!-- Callout 3: market list pending -->
-          <div class="callout-item">
-            <div class="callout-icon info" aria-hidden="true">
-              <i class="ti ti-receipt"></i>
+          <!-- Mara · Margin · Proposed -->
+          <article class="agent-surface brief-card" id="card-mara" aria-label="Margin agent proposal">
+            <div class="brief-card-top">
+              <span class="agent-avatar" data-agent="mara" aria-hidden="true">Ma</span>
+              <span class="agent-id">
+                <span class="agent-name">Mara</span>
+                <span class="agent-role">Margin agent</span>
+              </span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
             </div>
-            <div class="callout-body">
-              <p class="callout-headline">4 outlets haven't confirmed Spring Menu delivery</p>
-              <p class="callout-why">The Spring Menu AU market list was pushed 2 days ago. These 4 outlets (3 × QLD, 1 × WA) show the list as received but haven't acknowledged delivery confirmation.</p>
-              <div class="callout-actions">
-                <button class="btn-sm primary" onclick="window.location.href='market-list.html'">Review market lists</button>
-                <button class="btn-sm ghost" onclick="alert('Sending reminder…')">Send reminder</button>
-              </div>
+            <p class="brief-headline">Avocado is up 14% — 3 recipes have dropped below their target margin</p>
+            <p class="brief-why">Yesterday's invoice from Fresh Produce Co lifted avocado to <span class="spark">$2.40/ea</span>. Smashed Avo, Avo Toast and the Poke Bowl now sit <span class="spark">2–4 points</span> under target. Quickest fix: reprice the three items <span class="spark">+$0.40</span> to restore margin — POS prices sync automatically.</p>
+            <div class="brief-actions">
+              <button class="nb-btn primary" onclick="approveCard('mara','Reprice approved — 3 recipes updated, POS prices syncing')"><i class="ti ti-check" aria-hidden="true"></i>Reprice +$0.40</button>
+              <button class="nb-btn" onclick="window.location.href='recipes.html'">See 3 recipes</button>
+              <button class="nb-btn ghost" onclick="toast('Showing rebuild &amp; re-source options…')">Other options</button>
             </div>
-          </div>
+            <div class="brief-resolved-line agent-byline">
+              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Repriced by you · 3 recipes · POS syncing ·
+              <a class="undo-link" onclick="undoCard('mara')">Undo</a>
+            </div>
+          </article>
+
+          <!-- Cyrus · Invoice · Needs-you -->
+          <article class="agent-surface brief-card" id="card-cyrus" aria-label="Invoice agent — needs you">
+            <div class="brief-card-top">
+              <span class="agent-avatar" data-agent="cyrus" aria-hidden="true">Cy</span>
+              <span class="agent-id">
+                <span class="agent-name">Cyrus</span>
+                <span class="agent-role">Invoice &amp; spend agent</span>
+              </span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
+            </div>
+            <p class="brief-headline">2 invoices failed 3-way match — overbilled by $312 in total</p>
+            <p class="brief-why">I auto-posted <span class="spark">38 of 40</span> invoices overnight. Two from Harbour Meats don't match their GRNs — billed quantities exceed what was received at Surry Hills and Newtown. I've held both for your call.</p>
+            <div class="brief-actions">
+              <button class="nb-btn primary" onclick="toast('Opening exception queue…')"><i class="ti ti-arrow-right" aria-hidden="true"></i>Review exceptions</button>
+              <button class="nb-btn" onclick="toast('Contacting Harbour Meats…')">Query supplier</button>
+            </div>
+          </article>
 
         </div>
       </section>
@@ -550,20 +588,28 @@
       <section aria-label="Network revenue">
         <div class="pulse-row">
 
-          <!-- Hero revenue tile -->
-          <div class="pulse-hero" aria-label="Yesterday's network revenue">
+          <!-- Hero revenue tile + live COGS / variance -->
+          <div class="pulse-hero" aria-label="Network revenue, live COGS and variance">
             <div>
-              <p class="pulse-eyebrow">Network revenue · Yesterday</p>
-              <p class="pulse-value tabular"><sup>$</sup>248,340</p>
-              <div style="margin-top: var(--space-sm);">
-                <span class="pulse-delta up" aria-label="Up 9% vs last week">
-                  <i class="ti ti-trending-up" aria-hidden="true"></i> +9% vs last week
-                </span>
-                <p class="pulse-context">vs $227,830 same day last week</p>
+              <p class="pulse-eyebrow">Network revenue · Yesterday <span class="live-pill"><span class="live-dot" aria-hidden="true"></span>LIVE</span></p>
+              <p class="pulse-value"><sup>$</sup>248,340</p>
+              <span class="pulse-delta up" aria-label="Up 9% vs last week">
+                <i class="ti ti-trending-up" aria-hidden="true"></i> +9% vs last week
+              </span>
+              <p class="pulse-context">vs $227,830 same day last week</p>
+            </div>
+            <div class="pulse-substats">
+              <div>
+                <p class="pulse-substat-label">Live COGS</p>
+                <p class="pulse-substat-value">28.4<sup style="font-size:11px;">%</sup> <span class="delta up" aria-label="up 1.4 points">▲1.4</span></p>
+              </div>
+              <div>
+                <p class="pulse-substat-label">Stock variance</p>
+                <p class="pulse-substat-value">3.2<sup style="font-size:11px;">%</sup> <span class="delta down" aria-label="down 0.6 points">▼0.6</span></p>
               </div>
             </div>
             <div>
-              <p style="font-size:10px;color:rgba(250,247,233,0.4);margin-bottom:var(--space-xs);text-transform:uppercase;letter-spacing:0.07em;">7-day trend</p>
+              <p class="pulse-substat-label" style="margin-bottom:var(--space-xs);">7-day revenue</p>
               <div class="pulse-sparkline" aria-hidden="true">
                 <div class="spark-bar" style="height:45%"></div>
                 <div class="spark-bar" style="height:60%"></div>
@@ -580,42 +626,40 @@
           <div class="group-chart-panel" aria-label="Revenue by outlet group">
             <div class="group-chart-header">
               <h2 class="group-chart-title">Revenue by outlet group · Yesterday</h2>
-              <span class="chart-period">
-                <a class="panel-action" href="reporting.html">Full report</a>
-              </span>
+              <a class="panel-action" href="reporting.html">Full report</a>
             </div>
             <div class="group-bars">
               <div class="group-bar-row">
                 <span class="group-bar-label">NSW Metro</span>
-                <div class="group-bar-track" role="progressbar" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100" aria-label="88% of top group">
-                  <div class="group-bar-fill" style="width:88%"></div>
+                <div class="group-bar-track" role="img" aria-label="NSW Metro $89.2k, up 11%, highest group">
+                  <div class="group-bar-fill highlight" style="width:100%"></div>
                 </div>
-                <span class="group-bar-amt tabular">$89.2k</span>
-                <span class="group-bar-delta up tabular">+11%</span>
+                <span class="group-bar-amt">$89.2k</span>
+                <span class="group-bar-delta up"><i class="ti ti-arrow-up" aria-hidden="true"></i>11%</span>
               </div>
               <div class="group-bar-row">
                 <span class="group-bar-label">VIC Metro</span>
-                <div class="group-bar-track" role="progressbar" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100" aria-label="72%">
-                  <div class="group-bar-fill" style="width:72%"></div>
+                <div class="group-bar-track" role="img" aria-label="VIC Metro $72.1k, up 7%">
+                  <div class="group-bar-fill" style="width:81%"></div>
                 </div>
-                <span class="group-bar-amt tabular">$72.1k</span>
-                <span class="group-bar-delta up tabular">+7%</span>
+                <span class="group-bar-amt">$72.1k</span>
+                <span class="group-bar-delta up"><i class="ti ti-arrow-up" aria-hidden="true"></i>7%</span>
               </div>
               <div class="group-bar-row">
                 <span class="group-bar-label">QLD Coastal</span>
-                <div class="group-bar-track" role="progressbar" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100" aria-label="58%">
+                <div class="group-bar-track" role="img" aria-label="QLD Coastal $51.4k, down 3%">
                   <div class="group-bar-fill" style="width:58%"></div>
                 </div>
-                <span class="group-bar-amt tabular">$51.4k</span>
-                <span class="group-bar-delta down tabular">−3%</span>
+                <span class="group-bar-amt">$51.4k</span>
+                <span class="group-bar-delta down"><i class="ti ti-arrow-down" aria-hidden="true"></i>3%</span>
               </div>
               <div class="group-bar-row">
                 <span class="group-bar-label">SA &amp; WA</span>
-                <div class="group-bar-track" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" aria-label="40%">
+                <div class="group-bar-track" role="img" aria-label="SA and WA $35.6k, up 4%">
                   <div class="group-bar-fill" style="width:40%"></div>
                 </div>
-                <span class="group-bar-amt tabular">$35.6k</span>
-                <span class="group-bar-delta up tabular">+4%</span>
+                <span class="group-bar-amt">$35.6k</span>
+                <span class="group-bar-delta up"><i class="ti ti-arrow-up" aria-hidden="true"></i>4%</span>
               </div>
             </div>
           </div>
@@ -627,11 +671,9 @@
       <section aria-label="Key metrics">
         <div class="kpi-strip">
 
-          <div class="kpi-tile">
-            <div class="kpi-tile-top">
-              <span class="kpi-label">Active outlets</span>
-            </div>
-            <span class="kpi-value tabular">124</span>
+          <a class="kpi-tile" href="venues.html">
+            <span class="kpi-label">Active outlets</span>
+            <span class="kpi-value">124</span>
             <span class="kpi-context">
               <i class="ti ti-arrow-up" aria-hidden="true"></i>
               <span class="ok">+3 this month</span>
@@ -645,13 +687,11 @@
               <div class="kpi-spark-bar" style="height:90%"></div>
               <div class="kpi-spark-bar hi" style="height:100%"></div>
             </div>
-          </div>
+          </a>
 
-          <div class="kpi-tile">
-            <div class="kpi-tile-top">
-              <span class="kpi-label">Market lists</span>
-            </div>
-            <span class="kpi-value tabular">18</span>
+          <a class="kpi-tile" href="market-list.html">
+            <span class="kpi-label">Market lists</span>
+            <span class="kpi-value">18</span>
             <span class="kpi-context">
               <i class="ti ti-clock" aria-hidden="true"></i>
               <span class="warn">2 pending sync</span>
@@ -665,13 +705,11 @@
               <div class="kpi-spark-bar" style="height:85%"></div>
               <div class="kpi-spark-bar hi" style="height:100%"></div>
             </div>
-          </div>
+          </a>
 
-          <div class="kpi-tile">
-            <div class="kpi-tile-top">
-              <span class="kpi-label">Avg food cost %</span>
-            </div>
-            <span class="kpi-value tabular">28<sup>%</sup></span>
+          <a class="kpi-tile" href="reporting.html">
+            <span class="kpi-label">Avg food cost %</span>
+            <span class="kpi-value">28<sup>%</sup></span>
             <span class="kpi-context">
               <i class="ti ti-trending-up" aria-hidden="true"></i>
               <span class="warn">+1.4% vs last month</span>
@@ -685,13 +723,11 @@
               <div class="kpi-spark-bar" style="height:85%"></div>
               <div class="kpi-spark-bar hi" style="height:100%"></div>
             </div>
-          </div>
+          </a>
 
-          <div class="kpi-tile">
-            <div class="kpi-tile-top">
-              <span class="kpi-label">POS coverage</span>
-            </div>
-            <span class="kpi-value tabular">89<sup>%</sup></span>
+          <a class="kpi-tile" href="pos-mapping.html">
+            <span class="kpi-label">POS coverage</span>
+            <span class="kpi-value">89<sup>%</sup></span>
             <span class="kpi-context">
               <i class="ti ti-device-desktop" aria-hidden="true"></i>
               <span class="risk">1 outlet failing</span>
@@ -705,7 +741,7 @@
               <div class="kpi-spark-bar" style="height:92%"></div>
               <div class="kpi-spark-bar hi" style="height:89%"></div>
             </div>
-          </div>
+          </a>
 
         </div>
       </section>
@@ -758,11 +794,24 @@
                 <i class="ti ti-sparkles"></i>
               </div>
               <div class="activity-body">
-                <p class="activity-desc">Cyrus adjusted par levels for <strong>Avocado</strong> across 18 QLD outlets based on sell-through velocity</p>
+                <p class="activity-desc">Otto adjusted par levels for <strong>Avocado</strong> across 18 QLD outlets based on sell-through velocity</p>
                 <div class="activity-meta">
                   <span class="activity-time">6:38 am</span>
+                  <span class="activity-actor agent-actor"><i class="ti ti-sparkles" aria-hidden="true"></i>by Otto</span>
+                  <a class="undo-link" role="button" onclick="toast('Reverted par levels')">Undo</a>
+                </div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon-wrap agent-icon" aria-hidden="true">
+                <i class="ti ti-sparkles"></i>
+              </div>
+              <div class="activity-body">
+                <p class="activity-desc">Cyrus auto-posted <strong>38 invoices</strong> after a clean 3-way match</p>
+                <div class="activity-meta">
+                  <span class="activity-time">6:05 am</span>
                   <span class="activity-actor agent-actor"><i class="ti ti-sparkles" aria-hidden="true"></i>by Cyrus</span>
-                  <a class="undo-link" href="#" role="button">Undo</a>
                 </div>
               </div>
             </li>
@@ -795,19 +844,6 @@
 
             <li class="activity-item">
               <div class="activity-icon-wrap" aria-hidden="true">
-                <i class="ti ti-package"></i>
-              </div>
-              <div class="activity-body">
-                <p class="activity-desc">Inventory par level updated for <strong>Chicken Breast 500g</strong></p>
-                <div class="activity-meta">
-                  <span class="activity-time">Yesterday</span>
-                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>Sarah Chen</span>
-                </div>
-              </div>
-            </li>
-
-            <li class="activity-item">
-              <div class="activity-icon-wrap" aria-hidden="true">
                 <i class="ti ti-building-store"></i>
               </div>
               <div class="activity-body">
@@ -833,15 +869,15 @@
             </div>
             <div class="group-health-list">
               <a class="group-health-item" href="venues.html" aria-label="NSW Metro — 38 outlets, all synced">
-                <span class="group-dot ok" aria-label="Healthy" aria-hidden="true"></span>
+                <span class="group-dot ok" aria-hidden="true"><i class="ti ti-check"></i></span>
                 <div class="group-info">
                   <p class="group-name">NSW Metro</p>
                   <p class="group-count">38 outlets</p>
                 </div>
-                <span class="group-issue">All synced</span>
+                <span class="group-issue ok">All synced</span>
               </a>
               <a class="group-health-item" href="venues.html" aria-label="VIC Metro — 29 outlets, 2 pending market list">
-                <span class="group-dot warn" aria-label="Warning" aria-hidden="true"></span>
+                <span class="group-dot warn" aria-hidden="true"><i class="ti ti-clock"></i></span>
                 <div class="group-info">
                   <p class="group-name">VIC Metro</p>
                   <p class="group-count">29 outlets</p>
@@ -849,15 +885,15 @@
                 <span class="group-issue warn">2 pending list</span>
               </a>
               <a class="group-health-item" href="venues.html" aria-label="QLD Coastal — 32 outlets, all synced">
-                <span class="group-dot ok" aria-label="Healthy" aria-hidden="true"></span>
+                <span class="group-dot ok" aria-hidden="true"><i class="ti ti-check"></i></span>
                 <div class="group-info">
                   <p class="group-name">QLD Coastal</p>
                   <p class="group-count">32 outlets</p>
                 </div>
-                <span class="group-issue">All synced</span>
+                <span class="group-issue ok">All synced</span>
               </a>
               <a class="group-health-item" href="venues.html" aria-label="SA and WA — 25 outlets, 1 POS failure">
-                <span class="group-dot risk" aria-label="Issue" aria-hidden="true"></span>
+                <span class="group-dot risk" aria-hidden="true"><i class="ti ti-alert-triangle"></i></span>
                 <div class="group-info">
                   <p class="group-name">SA &amp; WA</p>
                   <p class="group-count">25 outlets</p>
@@ -877,26 +913,24 @@
               <div class="mover-item">
                 <span class="mover-rank">1</span>
                 <div class="mover-info">
-                  <p class="mover-name">Chicken Breast 500g</p>
+                  <p class="mover-name">Chicken Breast 500g <i class="ti ti-alert-triangle mover-alert" aria-label="Stock alert"></i></p>
                   <p class="mover-category">Protein · 124 outlets</p>
                 </div>
                 <div class="mover-velocity">
-                  <span class="mover-volume tabular">4,820 units</span>
-                  <span class="mover-trend up tabular">↑ 22% vs avg</span>
+                  <span class="mover-volume">4,820 units</span>
+                  <span class="mover-trend up"><i class="ti ti-arrow-up" aria-hidden="true"></i>22% vs avg</span>
                 </div>
-                <span class="mover-alert-dot" aria-label="Stock alert"></span>
               </div>
               <div class="mover-item">
                 <span class="mover-rank">2</span>
                 <div class="mover-info">
-                  <p class="mover-name">Avocado (each)</p>
+                  <p class="mover-name">Avocado (each) <i class="ti ti-alert-triangle mover-alert" aria-label="Stock alert"></i></p>
                   <p class="mover-category">Produce · 98 outlets</p>
                 </div>
                 <div class="mover-velocity">
-                  <span class="mover-volume tabular">3,240 units</span>
-                  <span class="mover-trend up tabular">↑ 18% vs avg</span>
+                  <span class="mover-volume">3,240 units</span>
+                  <span class="mover-trend up"><i class="ti ti-arrow-up" aria-hidden="true"></i>18% vs avg</span>
                 </div>
-                <span class="mover-alert-dot" aria-label="Stock alert"></span>
               </div>
               <div class="mover-item">
                 <span class="mover-rank">3</span>
@@ -905,8 +939,8 @@
                   <p class="mover-category">Dairy alt · 112 outlets</p>
                 </div>
                 <div class="mover-velocity">
-                  <span class="mover-volume tabular">2,890 units</span>
-                  <span class="mover-trend down tabular">↓ 5% vs avg</span>
+                  <span class="mover-volume">2,890 units</span>
+                  <span class="mover-trend down"><i class="ti ti-arrow-down" aria-hidden="true"></i>5% vs avg</span>
                 </div>
               </div>
               <div class="mover-item">
@@ -916,8 +950,8 @@
                   <p class="mover-category">Bakery · 87 outlets</p>
                 </div>
                 <div class="mover-velocity">
-                  <span class="mover-volume tabular">1,960 units</span>
-                  <span class="mover-trend up tabular">↑ 9% vs avg</span>
+                  <span class="mover-volume">1,960 units</span>
+                  <span class="mover-trend up"><i class="ti ti-arrow-up" aria-hidden="true"></i>9% vs avg</span>
                 </div>
               </div>
             </div>
@@ -928,6 +962,8 @@
 
     </div><!-- /.napp-canvas -->
   </div><!-- /.page-body -->
+
+  <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
 
   <script>
     // Personalise greeting based on time of day
@@ -943,6 +979,48 @@
       const dateEl = document.getElementById('greeting-date');
       if (dateEl) dateEl.textContent = days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
     })();
+
+    // Toast helper
+    function toast(msg) {
+      const wrap = document.getElementById('toast-wrap');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3200);
+    }
+
+    // Agent card lifecycle
+    function approveCard(id, msg) {
+      const card = document.getElementById('card-' + id);
+      if (!card) return;
+      const state = card.querySelector('.agent-state');
+      if (state) { state.className = 'agent-state done'; state.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>Done'; }
+      card.classList.add('resolved');
+      toast(msg);
+    }
+    function undoCard(id) {
+      const card = document.getElementById('card-' + id);
+      if (!card) return;
+      const state = card.querySelector('.agent-state');
+      if (state) { state.className = 'agent-state proposed'; state.innerHTML = '<i class="ti ti-bulb" aria-hidden="true"></i>Proposed'; }
+      card.classList.remove('resolved');
+      toast('Reverted — back to you');
+    }
+    function dismissCard(id) {
+      const card = document.getElementById('card-' + id);
+      if (!card) return;
+      const state = card.querySelector('.agent-state');
+      if (state) { state.className = 'agent-state stepped-back'; state.innerHTML = '<i class="ti ti-player-pause" aria-hidden="true"></i>Stepped back'; }
+      card.classList.add('resolved');
+      const line = card.querySelector('.brief-resolved-line');
+      if (line) line.innerHTML = '<i class="ti ti-player-pause" aria-hidden="true"></i> Dismissed — I\'ll keep watching · <a class="undo-link" onclick="undoCard(\'' + id + '\')">Restore</a>';
+      toast('Dismissed — Otto will keep watching');
+    }
+
+    // Ask bar
+    function askSubmit(e) { e.preventDefault(); const v = document.getElementById('ask-input').value.trim(); if (v) toast('Sloan is looking into: “' + v + '”'); }
+    function askFill(btn) { const i = document.getElementById('ask-input'); i.value = btn.textContent; i.focus(); }
   </script>
 
   <script>

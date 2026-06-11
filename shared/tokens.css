@@ -141,3 +141,46 @@
   position: absolute; width: 1px; height: 1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
 }
+
+/* ──────────────────────────────────────────────────────────
+   Global focus contract (non-negotiable — keyboard-run at POS)
+   Layers a spring halo on keyboard focus for every interactive
+   element, regardless of any per-screen `outline: none`.
+   :focus-visible means it never shows on mouse click.
+   ────────────────────────────────────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="menuitem"]:focus-visible,
+[role="option"]:focus-visible,
+[contenteditable="true"]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+  position: relative;
+  z-index: 1;
+}
+
+/* Let elements opt into a radius that hugs their real shape. */
+[data-focus-radius="lg"]:focus-visible   { border-radius: var(--radius-lg); }
+[data-focus-radius="pill"]:focus-visible { border-radius: var(--radius-pill); }
+[data-focus-radius="none"]:focus-visible { border-radius: 0; }
+
+/* ──────────────────────────────────────────────────────────
+   Reduced motion (non-negotiable) — neutralises every animation
+   and transition, including raw-duration ones in screen styles.
+   ────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

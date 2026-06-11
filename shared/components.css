@@ -1,0 +1,291 @@
+/* ============================================================
+   Nomni HQ — shared component layer
+   Agent surfaces, chart primitives, and reusable patterns built
+   strictly from design-system tokens (tokens.css).
+   Import AFTER tokens.css:
+     <link rel="stylesheet" href="../shared/tokens.css"/>
+     <link rel="stylesheet" href="../shared/components.css"/>
+   ============================================================ */
+
+/* ─────────────────────────────────────────────
+   Named agent roster (canonical across the app)
+   Sloan  — Governance Agent (HQ)        · procurement magenta
+   Otto   — Ordering Agent               · ordering teal
+   Cyrus  — Invoice & spend intelligence · pos blue
+   Mara   — Margin & variance (cost)     · insights rose
+   ───────────────────────────────────────────── */
+:root {
+  --agent-sloan: var(--procurement);
+  --agent-otto:  var(--ordering);
+  --agent-cyrus: var(--pos);
+  --agent-mara:  var(--insights);
+}
+
+/* ── Agentic glow (only on agent-initiated surfaces) ── */
+.agent-surface {
+  position: relative;
+  background: var(--surface);
+  border: 1.5px solid var(--agent-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm), 0 0 0 4px var(--agent-glow);
+}
+
+/* ── Agent card (suggestion / proposal) ── */
+.agent-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+}
+.agent-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+.agent-avatar {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--agent-accent, var(--fern)) 14%, transparent);
+  color: var(--agent-accent, var(--fern));
+}
+.agent-avatar[data-agent="sloan"] { --agent-accent: var(--agent-sloan); }
+.agent-avatar[data-agent="otto"]  { --agent-accent: var(--agent-otto); }
+.agent-avatar[data-agent="cyrus"] { --agent-accent: var(--agent-cyrus); }
+.agent-avatar[data-agent="mara"]  { --agent-accent: var(--agent-mara); }
+
+.agent-id { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.agent-name {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.01em;
+}
+.agent-role {
+  font-size: 12px; color: var(--text-soft);
+  font-feature-settings: 'tnum' 1;
+}
+.agent-card-spacer { flex: 1; }
+
+/* ── Agent state token (icon + shape + label, never colour alone) ── */
+.agent-state {
+  display: inline-flex; align-items: center; gap: var(--space-xs);
+  height: 24px; padding-inline: var(--space-sm);
+  border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.agent-state i { font-size: 13px; }
+/* Proposed — agent suggests, awaiting decision */
+.agent-state.proposed {
+  background: color-mix(in srgb, var(--fern) 12%, transparent);
+  color: var(--spinach);
+  border-color: color-mix(in srgb, var(--fern) 30%, transparent);
+}
+/* Needs-you — human decision required */
+.agent-state.needs-you {
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
+  border-color: color-mix(in srgb, var(--sun) 45%, transparent);
+}
+/* Done — agent acted */
+.agent-state.done {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+}
+/* Stepped-back — paused / offline */
+.agent-state.stepped-back {
+  background: var(--surface-soft);
+  color: var(--text-soft);
+  border-color: var(--border);
+}
+
+/* ── Agent action row (Approve / Edit / Reject) ── */
+.agent-actions {
+  display: flex; align-items: center; gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+.agent-body { font-size: 14px; color: var(--text); line-height: 1.5; }
+.agent-why {
+  font-size: 13px; color: var(--text-soft); line-height: 1.5;
+}
+
+/* ── Inline "by [Agent] · Undo" done token ── */
+.agent-byline {
+  display: inline-flex; align-items: center; gap: var(--space-xs);
+  font-size: 12px; color: var(--text-soft);
+  font-feature-settings: 'tnum' 1;
+}
+.agent-byline .spark { color: var(--text-accent); font-size: 12px; }
+.agent-byline .undo-link {
+  color: var(--text-link); font-weight: 600; text-decoration: none;
+  cursor: pointer;
+}
+.agent-byline .undo-link:hover { text-decoration: underline; }
+
+/* ── The mark (orb) — "an agent can help here", ask bar only ── */
+.agent-mark {
+  width: 20px; height: 20px; flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background:
+    radial-gradient(circle at 32% 30%,
+      color-mix(in srgb, var(--spring) 90%, white) 0%,
+      var(--fern) 55%,
+      var(--spinach) 100%);
+  box-shadow: 0 0 0 3px var(--agent-glow);
+}
+
+/* ── The spark — "this value was agent-set" ── */
+.spark { color: var(--text-accent); }
+
+/* ── AI ask bar ── */
+.ask-bar {
+  display: flex; align-items: center; gap: var(--space-md);
+  height: var(--control-h); padding-inline: var(--space-md);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur-2) var(--ease-standard),
+              box-shadow var(--dur-2) var(--ease-standard);
+}
+.ask-bar:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: var(--focus-ring);
+}
+.ask-bar input {
+  flex: 1; border: none; outline: none; background: transparent;
+  font: inherit; font-size: 14px; color: var(--text);
+}
+.ask-bar input::placeholder { color: var(--text-soft); }
+
+/* ── Generic buttons (consistent with screens) ── */
+.nb-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--space-xs);
+  height: 32px; padding-inline: var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease-standard),
+              border-color var(--dur-1) var(--ease-standard);
+}
+.nb-btn i { font-size: 15px; }
+.nb-btn:hover { background: var(--surface-soft); }
+.nb-btn.primary {
+  background: var(--btn-primary-bg); color: var(--btn-primary-fg);
+  border-color: transparent;
+}
+.nb-btn.primary:hover { background: var(--btn-primary-hover); }
+.nb-btn.ghost { background: transparent; border-color: transparent; color: var(--text-link); }
+.nb-btn.ghost:hover { background: var(--surface-soft); }
+.nb-btn.danger { color: var(--status-risk-fg); border-color: color-mix(in srgb, var(--rose) 35%, transparent); }
+
+/* ─────────────────────────────────────────────
+   Chart primitives (design-system §3.8)
+   One series = one colour. Highlight = look here.
+   ───────────────────────────────────────────── */
+.nb-barchart {
+  display: grid;
+  gap: var(--space-md);
+  position: relative;
+}
+.nb-bar-row {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  align-items: center;
+  gap: var(--space-md);
+}
+.nb-bar-label { font-size: 13px; color: var(--text-soft); }
+.nb-bar-track {
+  position: relative;
+  height: 22px;
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.nb-bar-fill {
+  height: 100%;
+  background: color-mix(in srgb, var(--fern) 58%, transparent);
+  border-radius: 3px 0 0 3px;
+  transition: width var(--dur-4) var(--ease-emphasized);
+}
+.nb-bar-fill.highlight { background: var(--spinach); }
+.nb-bar-value {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  font-feature-settings: 'tnum' 1; min-width: 56px; text-align: right;
+}
+/* dashed target line overlaid on the plotting band */
+.nb-bar-target {
+  position: absolute; top: 0; bottom: 0; width: 0;
+  border-left: 1.4px dashed var(--seaweed);
+  pointer-events: none;
+}
+.nb-bar-target::after {
+  content: attr(data-label);
+  position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; color: var(--text-soft); white-space: nowrap;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Sparkline (bars) */
+.nb-spark {
+  display: flex; align-items: flex-end; gap: 2px; height: 28px;
+}
+.nb-spark span {
+  flex: 1; background: color-mix(in srgb, var(--fern) 45%, transparent);
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  min-height: 2px;
+}
+.nb-spark span.hi { background: var(--fern); }
+
+/* ── Right detail drawer ── */
+.nb-drawer-scrim {
+  position: fixed; inset: 0; z-index: 50;
+  background: color-mix(in srgb, var(--seaweed) 38%, transparent);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-3) var(--ease-standard);
+}
+.nb-drawer-scrim.open { opacity: 1; pointer-events: auto; }
+.nb-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 51;
+  width: min(440px, 92vw);
+  background: var(--surface);
+  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform var(--dur-3) var(--ease-emphasized);
+}
+.nb-drawer.open { transform: translateX(0); }
+.nb-drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-md);
+  height: 64px; flex-shrink: 0; padding-inline: var(--space-xl);
+  border-bottom: 1px solid var(--border);
+}
+.nb-drawer-title { font-size: 16px; font-weight: 600; color: var(--text); }
+.nb-drawer-body { flex: 1; overflow-y: auto; padding: var(--space-xl); }
+.nb-drawer-foot {
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--space-sm);
+  height: 68px; flex-shrink: 0; padding-inline: var(--space-xl);
+  border-top: 1px solid var(--border);
+}
+
+/* ── Status pill (verdict) ── */
+.nb-pill {
+  display: inline-flex; align-items: center; gap: var(--space-xs);
+  height: 24px; padding-inline: var(--space-sm);
+  border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 600;
+  font-feature-settings: 'tnum' 1;
+}
+.nb-pill i { font-size: 8px; }
+.nb-pill.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+.nb-pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+.nb-pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+.nb-pill.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+.nb-pill.neutral { background: var(--surface-soft); color: var(--text-soft); }
