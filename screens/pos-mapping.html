@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>POS mapping — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
   <style>
     body { background: var(--surface-soft); }
 
@@ -57,7 +58,7 @@
     }
     .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
     .btn-primary {
-      background: var(--fern);
+      background: var(--btn-primary-bg);
       color: var(--btn-primary-fg);
       border-color: var(--btn-primary-bg);
     }
@@ -74,14 +75,14 @@
       align-items: stretch;
       border-radius: var(--radius-md);
       overflow: hidden;
-      border: 1.5px solid var(--fern);
+      border: 1.5px solid var(--btn-primary-bg);
       position: relative;
     }
     .split-btn-main {
       display: inline-flex; align-items: center; gap: var(--space-xs);
       padding-inline: var(--space-lg);
       height: var(--control-h);
-      background: var(--fern);
+      background: var(--btn-primary-bg);
       color: var(--btn-primary-fg);
       font-size: 14px; font-weight: 600;
       border: none;
@@ -93,7 +94,7 @@
     .split-btn-arrow {
       display: inline-flex; align-items: center; justify-content: center;
       width: 36px;
-      background: var(--fern);
+      background: var(--btn-primary-bg);
       color: var(--btn-primary-fg);
       border: none;
       border-left: 1px solid rgba(255,255,255,0.25);
@@ -110,7 +111,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      box-shadow: 0 4px 20px rgba(14,55,39,0.12);
+      box-shadow: var(--shadow-md);
       min-width: 160px;
       z-index: 50;
       padding: var(--space-xs) 0;
@@ -202,7 +203,7 @@
     /* Table */
     .table-card {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -226,7 +227,7 @@
     .data-table td {
       padding: var(--space-md) var(--space-lg);
       color: var(--text);
-      border-bottom: 0.5px solid var(--border);
+      border-bottom: 1px solid var(--border);
       vertical-align: middle;
     }
     .data-table tbody tr:last-child td { border-bottom: none; }
@@ -242,7 +243,7 @@
     .status-pill {
       display: inline-flex; align-items: center; gap: var(--space-xs);
       padding: 2px var(--space-sm);
-      border-radius: 99px;
+      border-radius: var(--radius-pill);
       font-size: 11px; font-weight: 600;
       white-space: nowrap;
     }
@@ -303,7 +304,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      box-shadow: 0 4px 20px rgba(14,55,39,0.12);
+      box-shadow: var(--shadow-md);
       min-width: 160px;
       z-index: 50;
       padding: var(--space-xs) 0;
@@ -329,7 +330,7 @@
     /* Activity timeline */
     .timeline-card {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: var(--space-xl);
     }
@@ -370,7 +371,7 @@
       border: none;
       border-radius: var(--radius-lg);
       padding: 0;
-      box-shadow: 0 16px 48px rgba(14,55,39,0.18);
+      box-shadow: var(--shadow-lg);
       max-width: 440px;
       width: 90%;
     }
@@ -529,6 +530,38 @@
       flex-direction: column;
       gap: var(--space-3xl);
     }
+
+    /* Role switcher */
+    .role-switch { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .role-btn {
+      padding: 0 var(--space-md); height: var(--control-h);
+      background: var(--surface); border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-soft);
+      transition: background var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
+    }
+    .role-btn.active { background: var(--surface-deep); color: var(--cream); }
+
+    /* Health monitor strip */
+    .health-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-lg); }
+    .health-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); }
+    .health-num { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; line-height: 1; }
+    .health-num.ok { color: var(--status-ok-fg); }
+    .health-num.warn { color: var(--status-warn-fg); }
+    .health-num.risk { color: var(--status-risk-fg); }
+    .health-label { display: flex; align-items: center; gap: var(--space-xs); font-size: 12px; font-weight: 600; color: var(--text-soft); margin-top: var(--space-sm); }
+    .health-label i { font-size: 14px; }
+    @media (max-width: 768px) { .health-strip { grid-template-columns: 1fr 1fr; } }
+
+    /* Outlet read-only mode: hide HQ controls + checkboxes */
+    body[data-role="outlet"] .hq-only { display: none !important; }
+    body[data-role="outlet"] .row-actions { display: none; }
+    body[data-role="hq"] .outlet-only { display: none !important; }
+
+    .agent-surface.resolved { opacity: 0.62; }
+    .agent-surface.resolved .agent-actions { display: none; }
+
+    /* Row checkbox */
+    .row-check { width: 16px; height: 16px; accent-color: var(--fern); cursor: pointer; }
   </style>
 </head>
 <body>
@@ -549,19 +582,57 @@
           <h1 class="page-title">Master mapping set</h1>
         </div>
         <div class="page-actions">
-          <button class="btn btn-outline"><i class="ti ti-download"></i>Export</button>
-          <div class="split-btn" style="position:relative">
-            <button class="split-btn-main"><i class="ti ti-send"></i>Push to all</button>
+          <!-- Role switcher: preview the outlet (read-only) view (PM-2) -->
+          <div class="role-switch" role="group" aria-label="View as">
+            <button class="role-btn active" id="role-hq" onclick="setRole('hq')">HQ admin</button>
+            <button class="role-btn" id="role-outlet" onclick="setRole('outlet')">Outlet view</button>
+          </div>
+          <button class="btn btn-outline hq-only"><i class="ti ti-download"></i>Export</button>
+          <div class="split-btn hq-only" style="position:relative">
+            <button class="split-btn-main" onclick="pushAll()"><i class="ti ti-send"></i>Push to all</button>
             <button class="split-btn-arrow" onclick="toggleSplitMenu(this)" aria-label="More push options" aria-haspopup="true" aria-expanded="false">
               <i class="ti ti-chevron-down"></i>
             </button>
             <div class="split-dropdown" id="push-dropdown" role="menu">
-              <button class="split-dropdown-item" role="menuitem"><i class="ti ti-send"></i>Push to all</button>
-              <button class="split-dropdown-item" role="menuitem"><i class="ti ti-list-check"></i>Push to selection</button>
+              <button class="split-dropdown-item" role="menuitem" onclick="pushAll()"><i class="ti ti-send"></i>Push to all</button>
+              <button class="split-dropdown-item" role="menuitem" onclick="posToast('Select variants to push to partial-menu outlets')"><i class="ti ti-list-check"></i>Push selected variants</button>
             </div>
           </div>
         </div>
       </header>
+
+      <!-- Outlet read-only banner (PM-2) -->
+      <div class="page-banner info outlet-only" role="status">
+        <i class="ti ti-lock"></i>
+        Managed by HQ — POS mappings are set centrally and can't be edited here. Contact your administrator for changes.
+      </div>
+
+      <!-- Mapping health monitor (PM-5) -->
+      <div class="health-strip hq-only" aria-label="Mapping health">
+        <div class="health-tile"><div class="health-num ok">312</div><div class="health-label"><i class="ti ti-circle-check" aria-hidden="true"></i>Mapped</div></div>
+        <div class="health-tile"><div class="health-num warn">14</div><div class="health-label"><i class="ti ti-circle-dashed" aria-hidden="true"></i>Partial</div></div>
+        <div class="health-tile"><div class="health-num risk">6</div><div class="health-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Unmapped</div></div>
+        <div class="health-tile"><div class="health-num warn">3</div><div class="health-label"><i class="ti ti-clock-exclamation" aria-hidden="true"></i>Stale &gt; 90d</div></div>
+      </div>
+
+      <!-- Sloan agent: suggested mapping for unmapped item (PM-6) -->
+      <article class="agent-surface hq-only" id="sloan-pos">
+        <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
+          <div class="agent-card-head">
+            <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
+            <span class="agent-id"><span class="agent-name">Sloan</span><span class="agent-role">Governance agent</span></span>
+            <span class="agent-card-spacer" style="flex:1"></span>
+            <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+          </div>
+          <p style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">“Tiramisu” arrived from the POS unmapped — I found a likely match</p>
+          <p class="agent-why">A new POS item <strong>PST-020 “Tiramisu”</strong> at 18 outlets has no internal mapping. By name and recipe similarity it matches your internal item <strong>Tiramisu (Dessert)</strong> at <strong>96% confidence</strong>. Approve to map it across all 18 outlets.</p>
+          <div class="agent-actions">
+            <button class="nb-btn primary" onclick="approveMapping()"><i class="ti ti-check" aria-hidden="true"></i>Approve mapping</button>
+            <button class="nb-btn" onclick="posToast('Showing alternative matches…')">See alternatives</button>
+            <button class="nb-btn ghost" onclick="resolvePos('sloan-pos')">Dismiss</button>
+          </div>
+        </div>
+      </article>
 
       <!-- Filter bar -->
       <div class="filter-bar">
@@ -750,10 +821,10 @@
               <td class="cell-name">Tiramisu</td>
               <td>Desserts</td>
               <td class="cell-code">PST-020</td>
-              <td class="cell-dash">—</td>
+              <td class="cell-dash" id="tiramisu-variant">—</td>
               <td class="cell-price" style="text-align:right">$14.00</td>
               <td class="cell-outlets">18 outlets</td>
-              <td><span class="status-pill risk">Unmapped</span></td>
+              <td><span class="status-pill risk" id="tiramisu-status">Unmapped</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
                   <button class="link-action">Edit</button>
@@ -852,7 +923,73 @@
   </dialog>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => NomniShell.init('POS mapping'));
+    document.addEventListener('DOMContentLoaded', () => {
+      NomniShell.init('POS mapping');
+      document.body.setAttribute('data-role', 'hq');
+    });
+
+    /* Role switch (PM-2) */
+    function setRole(role) {
+      document.body.setAttribute('data-role', role);
+      document.getElementById('role-hq').classList.toggle('active', role === 'hq');
+      document.getElementById('role-outlet').classList.toggle('active', role === 'outlet');
+    }
+
+    /* Toast */
+    function posToast(msg) {
+      let wrap = document.getElementById('pos-toast');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'pos-toast';
+        wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;';
+        document.body.appendChild(wrap);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    /* Audit entry */
+    function addPosActivity(text, actor) {
+      const tl = document.querySelector('.timeline');
+      if (!tl) return;
+      const isAgent = (actor||'').startsWith('by ');
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.innerHTML = '<div class="timeline-dot"' + (isAgent ? ' style="border-color:var(--procurement)"' : '') + '></div>' +
+        '<div><div class="timeline-text">' + text + '</div><div class="timeline-meta">' + (actor||'HQ Administrator') + '</div></div>' +
+        '<div class="timeline-time">Just now</div>';
+      tl.insertBefore(item, tl.firstChild);
+    }
+
+    /* Push to all → overwrite confirm (PM-4) */
+    function pushAll() {
+      document.querySelectorAll('.split-dropdown.open').forEach(m => m.classList.remove('open'));
+      openOverwriteDialog('the full master mapping set', 124);
+    }
+
+    /* Agent mapping approval (PM-6) */
+    function approveMapping() {
+      const status = document.getElementById('tiramisu-status');
+      const variant = document.getElementById('tiramisu-variant');
+      if (status) { status.className = 'status-pill ok'; status.textContent = 'Mapped'; }
+      if (variant) { variant.className = ''; variant.textContent = 'Regular'; }
+      resolvePos('sloan-pos', true);
+      posToast('Tiramisu mapped across 18 outlets by Sloan');
+      addPosActivity('<strong>Tiramisu</strong> mapped to internal item across 18 outlets', 'by Sloan');
+    }
+    function resolvePos(id, done) {
+      const card = document.getElementById(id);
+      if (!card) return;
+      const state = card.querySelector('.agent-state');
+      if (state) {
+        if (done) { state.className = 'agent-state done'; state.innerHTML = '<i class="ti ti-circle-check"></i>Done'; }
+        else { state.className = 'agent-state stepped-back'; state.innerHTML = '<i class="ti ti-player-pause"></i>Stepped back'; posToast('Dismissed — Sloan keeps watching'); }
+      }
+      card.classList.add('resolved');
+    }
 
     function toggleMenu(btn) {
       const menu = btn.nextElementSibling;
@@ -890,7 +1027,11 @@
     document.getElementById('overwrite-dialog')?.addEventListener('click', e => {
       if (e.target === e.currentTarget) closeOverwriteDialog();
     });
-    document.getElementById('ow-confirm-btn')?.addEventListener('click', () => closeOverwriteDialog());
+    document.getElementById('ow-confirm-btn')?.addEventListener('click', () => {
+      closeOverwriteDialog();
+      posToast('Mappings pushed — outlets updated');
+      addPosActivity('Master mapping set pushed (overwrite confirmed)', 'HQ Administrator');
+    });
   </script>
 </body>
 </html>
