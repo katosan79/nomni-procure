@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Inventory — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
   <style>
     body { background: var(--surface-soft); }
 
@@ -57,15 +58,15 @@
     }
     .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
     .btn-primary {
-      background: var(--fern);
+      background: var(--btn-primary-bg);
       color: var(--btn-primary-fg);
       border-color: var(--btn-primary-bg);
     }
     .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
     .btn-danger {
-      background: var(--rose);
+      background: var(--status-risk-fg);
       color: var(--btn-primary-fg);
-      border-color: var(--rose);
+      border-color: var(--status-risk-fg);
     }
     .btn-danger:hover { opacity: 0.9; }
     .btn i { font-size: 15px; }
@@ -124,7 +125,7 @@
     /* Table card */
     .table-card {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -150,7 +151,7 @@
     .data-table td {
       padding: var(--space-md) var(--space-lg);
       color: var(--text);
-      border-bottom: 0.5px solid var(--border);
+      border-bottom: 1px solid var(--border);
       vertical-align: middle;
     }
     .data-table tbody tr:last-child td { border-bottom: none; }
@@ -208,7 +209,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      box-shadow: 0 4px 20px rgba(14,55,39,0.12);
+      box-shadow: var(--shadow-md);
       min-width: 160px;
       z-index: 50;
       padding: var(--space-xs) 0;
@@ -228,7 +229,7 @@
       font-family: inherit;
     }
     .overflow-menu-item:hover { background: var(--surface-soft); }
-    .overflow-menu-item.destructive { color: var(--rose); }
+    .overflow-menu-item.destructive { color: var(--status-risk-fg); }
     .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
     .overflow-menu-divider {
       height: 1px;
@@ -250,7 +251,7 @@
       cursor: pointer;
       user-select: none;
       padding: var(--space-lg) var(--space-xl);
-      border-bottom: 0.5px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
     .section-header-left {
       display: flex; align-items: center; gap: var(--space-sm);
@@ -273,7 +274,7 @@
 
     .import-card {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       overflow: hidden;
     }
@@ -327,21 +328,21 @@
     .progress-bar-track {
       height: 6px;
       background: var(--border);
-      border-radius: 99px;
+      border-radius: var(--radius-pill);
       overflow: hidden;
     }
     .progress-bar-fill {
       height: 100%;
       width: 64%;
-      background: var(--fern);
-      border-radius: 99px;
+      background: var(--btn-primary-bg);
+      border-radius: var(--radius-pill);
       transition: width 0.4s;
     }
 
     /* Activity timeline */
     .timeline-card {
       background: var(--surface);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: var(--space-xl);
     }
@@ -389,7 +390,7 @@
       border: none;
       border-radius: var(--radius-lg);
       padding: 0;
-      box-shadow: 0 16px 48px rgba(14,55,39,0.18);
+      box-shadow: var(--shadow-lg);
       max-width: 440px;
       width: 90%;
     }
@@ -508,6 +509,66 @@
       flex-direction: column;
       gap: var(--space-2xl);
     }
+
+    /* Agent strip */
+    .agent-strip { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .agent-strip .agent-surface.resolved { opacity: 0.62; }
+    .agent-strip .agent-surface.resolved .agent-actions { display: none; }
+    @media (max-width: 768px) { .agent-strip { grid-template-columns: 1fr; } }
+
+    /* Sub-module tabs */
+    .inv-tabs { display: flex; gap: var(--space-xs); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .inv-tab {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: var(--space-sm) var(--space-md);
+      background: none; border: none; border-bottom: 2px solid transparent;
+      font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text-soft);
+      cursor: pointer; margin-bottom: -1px;
+      transition: color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard);
+    }
+    .inv-tab i { font-size: 16px; }
+    .inv-tab:hover { color: var(--text); }
+    .inv-tab.active { color: var(--text-accent); border-bottom-color: var(--text-accent); }
+
+    /* Panels */
+    .inv-panel { display: none; flex-direction: column; gap: var(--space-2xl); }
+    .inv-panel.active { display: flex; }
+    .sub-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); }
+    .sub-card-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: var(--space-xs); }
+    .sub-card-sub { font-size: 13px; color: var(--text-soft); margin-bottom: var(--space-lg); }
+
+    /* Group tags */
+    .group-tags { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+    .group-tag {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: 2px var(--space-sm); border-radius: var(--radius-pill);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--text-soft); white-space: nowrap;
+    }
+    .par-below { color: var(--status-warn-fg); font-weight: 700; }
+
+    /* Import validation report */
+    .import-report { margin-top: var(--space-lg); display: none; }
+    .import-report.show { display: block; }
+    .import-stat-row { display: flex; gap: var(--space-lg); margin-bottom: var(--space-md); }
+    .import-stat { flex: 1; padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--border); }
+    .import-stat-num { font-size: 22px; font-weight: 700; font-feature-settings: 'tnum' 1; letter-spacing: -0.02em; }
+    .import-stat-num.ok { color: var(--status-ok-fg); }
+    .import-stat-num.risk { color: var(--status-risk-fg); }
+    .import-stat-label { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .import-error-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .import-error-row i { color: var(--status-risk-fg); font-size: 15px; flex-shrink: 0; }
+    .import-error-row .row-ref { font-feature-settings: 'tnum' 1; color: var(--text-soft); width: 56px; flex-shrink: 0; }
+
+    /* Variance mini-bars */
+    .var-row { display: grid; grid-template-columns: 130px 1fr 70px; align-items: center; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
+    .var-row:last-child { border-bottom: none; }
+    .var-label { font-size: 13px; color: var(--text); }
+    .var-track { height: 18px; background: color-mix(in srgb, var(--border) 70%, transparent); border-radius: 3px; overflow: hidden; }
+    .var-fill { height: 100%; background: color-mix(in srgb, var(--fern) 58%, transparent); border-radius: 3px; }
+    .var-fill.high { background: var(--status-risk-fg); }
+    .var-val { font-size: 13px; font-weight: 600; text-align: right; font-feature-settings: 'tnum' 1; }
+    .var-val.high { color: var(--status-risk-fg); }
   </style>
 </head>
 <body>
@@ -528,8 +589,55 @@
         </div>
       </header>
 
+      <!-- Agent strip: Otto (Ordering) + Mara (Variance) -->
+      <div class="agent-strip">
+        <article class="agent-surface" id="otto-card">
+          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+            <div class="agent-card-head">
+              <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
+              <span class="agent-id"><span class="agent-name">Otto</span><span class="agent-role">Ordering agent</span></span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+            </div>
+            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">8 items have fallen below par — I've drafted replenishment orders</p>
+            <p class="agent-why">Chicken Breast, Avocado and 6 others are below par across 14 outlets. Draft POs are staged to each outlet's preferred supplier for one-tap approval.</p>
+            <div class="agent-actions">
+              <button class="nb-btn primary" onclick="resolveAgent('otto-card','Approved — 8 replenishment drafts sent to outlets')"><i class="ti ti-check" aria-hidden="true"></i>Approve drafts</button>
+              <button class="nb-btn" onclick="invToast('Opening draft orders…')">Review</button>
+            </div>
+          </div>
+        </article>
+        <article class="agent-surface" id="mara-card">
+          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+            <div class="agent-card-head">
+              <span class="agent-avatar" data-agent="mara" aria-hidden="true">Ma</span>
+              <span class="agent-id"><span class="agent-name">Mara</span><span class="agent-role">Variance agent</span></span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
+            </div>
+            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">Olive Oil variance at Surry Hills is 3× the network average</p>
+            <p class="agent-why">Theoretical use says 4L this week; counts show 12L gone. No waste logged and no transfers — likely over-portioning or an unlogged count.</p>
+            <div class="agent-actions">
+              <button class="nb-btn primary" onclick="switchTab('variance')"><i class="ti ti-arrow-right" aria-hidden="true"></i>Investigate</button>
+              <button class="nb-btn" onclick="invToast('Dismissed — Mara keeps watching')">Dismiss</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Sub-module tabs (IN-6/7/9/10 entry points) -->
+      <div class="inv-tabs" role="tablist" aria-label="Inventory modules">
+        <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('items')"><i class="ti ti-package" aria-hidden="true"></i>Master items</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('counts')"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Stock counts</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('variance')"><i class="ti ti-chart-dots" aria-hidden="true"></i>Variance</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('transfers')"><i class="ti ti-transfer" aria-hidden="true"></i>Transfers</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('waste')"><i class="ti ti-trash-x" aria-hidden="true"></i>Waste</button>
+      </div>
+
+      <!-- ══ Panel: Master items ══ -->
+      <div class="inv-panel active" id="panel-items">
       <!-- Filter bar -->
-      <div class="filter-bar">
+      <div class="filter-bar" id="items-filter">
         <div class="search-wrap">
           <i class="ti ti-search"></i>
           <input class="search-input" type="search" placeholder="Search items…" aria-label="Search inventory items"/>
@@ -570,7 +678,7 @@
               <td><span class="cell-cat">Protein</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">10</td>
-              <td class="cell-groups">3 groups</td>
+              <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
               <td class="cell-timestamp">2h ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -593,7 +701,7 @@
               <td><span class="cell-cat">Produce</span></td>
               <td class="tabular">each</td>
               <td class="tabular" style="text-align:right">50</td>
-              <td class="cell-groups">2 groups</td>
+              <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
               <td class="cell-timestamp">1 day ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -616,7 +724,7 @@
               <td><span class="cell-cat">Dairy</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">5</td>
-              <td class="cell-groups">4 groups</td>
+              <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
               <td class="cell-timestamp">3 days ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -639,7 +747,7 @@
               <td><span class="cell-cat">Dry goods</span></td>
               <td class="tabular">loaf</td>
               <td class="tabular" style="text-align:right">20</td>
-              <td class="cell-groups">3 groups</td>
+              <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
               <td class="cell-timestamp">1 week ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -662,7 +770,7 @@
               <td><span class="cell-cat">Dry goods</span></td>
               <td class="tabular">bottle</td>
               <td class="tabular" style="text-align:right">8</td>
-              <td class="cell-groups">4 groups</td>
+              <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
               <td class="cell-timestamp">1 week ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -685,7 +793,7 @@
               <td><span class="cell-cat">Dairy</span></td>
               <td class="tabular">carton</td>
               <td class="tabular" style="text-align:right">15</td>
-              <td class="cell-groups">2 groups</td>
+              <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
               <td class="cell-timestamp">2 weeks ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -708,7 +816,7 @@
               <td><span class="cell-cat">Produce</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">12</td>
-              <td class="cell-groups">3 groups</td>
+              <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
               <td class="cell-timestamp">2 weeks ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -746,9 +854,95 @@
           </div>
           <a class="upload-link" href="#"><i class="ti ti-download"></i>Download the standard template</a>
           <div class="progress-wrap" id="upload-progress">
-            <div class="progress-label">Importing items… 64%</div>
-            <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
+            <div class="progress-label" id="upload-progress-label">Importing items… 0%</div>
+            <div class="progress-bar-track"><div class="progress-bar-fill" id="upload-progress-fill" style="width:0%"></div></div>
           </div>
+          <!-- Validation report (IN-5) -->
+          <div class="import-report" id="import-report">
+            <div class="import-stat-row">
+              <div class="import-stat"><div class="import-stat-num">142</div><div class="import-stat-label">Rows processed</div></div>
+              <div class="import-stat"><div class="import-stat-num ok">138</div><div class="import-stat-label">Accepted</div></div>
+              <div class="import-stat"><div class="import-stat-num risk">4</div><div class="import-stat-label">Rejected</div></div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:var(--space-sm);">4 rows need attention</div>
+            <div class="import-error-row"><i class="ti ti-alert-circle" aria-hidden="true"></i><span class="row-ref">Row 14</span><span>Unknown UOM “punnet” — not in unit list</span></div>
+            <div class="import-error-row"><i class="ti ti-alert-circle" aria-hidden="true"></i><span class="row-ref">Row 28</span><span>Duplicate of “Roma Tomatoes” (already in master)</span></div>
+            <div class="import-error-row"><i class="ti ti-alert-circle" aria-hidden="true"></i><span class="row-ref">Row 51</span><span>Missing category</span></div>
+            <div class="import-error-row"><i class="ti ti-alert-circle" aria-hidden="true"></i><span class="row-ref">Row 89</span><span>Par level is not a number</span></div>
+            <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-lg);">
+              <button class="btn btn-primary" onclick="invToast('138 items imported into master list')"><i class="ti ti-check"></i>Import 138 valid rows</button>
+              <button class="btn btn-outline"><i class="ti ti-download"></i>Download error report</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div><!-- /panel-items -->
+
+      <!-- ══ Panel: Stock counts (IN-6) ══ -->
+      <div class="inv-panel" id="panel-counts">
+        <div class="sub-card">
+          <div class="sub-card-title">Stock counts</div>
+          <p class="sub-card-sub">Scheduled and spot counts across outlets. Variance is computed against theoretical stock (recipe usage × POS sales).</p>
+          <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-lg);">
+            <button class="btn btn-primary"><i class="ti ti-clipboard-plus"></i>Start spot count</button>
+            <button class="btn btn-outline"><i class="ti ti-calendar"></i>Schedule count</button>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Outlet</th><th>Type</th><th>Status</th><th style="text-align:right">Variance</th><th>When</th></tr></thead>
+            <tbody>
+              <tr><td class="cell-name">Surry Hills</td><td>Weekly scheduled</td><td><span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span></td><td class="tabular" style="text-align:right;color:var(--status-risk-fg);font-weight:600;">8.1%</td><td class="cell-timestamp">Today 7:00 am</td></tr>
+              <tr><td class="cell-name">Circular Quay</td><td>Weekly scheduled</td><td><span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span></td><td class="tabular" style="text-align:right">2.3%</td><td class="cell-timestamp">Today 6:40 am</td></tr>
+              <tr><td class="cell-name">Newtown</td><td>Spot</td><td><span class="nb-pill warn"><i class="ti ti-clock"></i>In progress</span></td><td class="tabular" style="text-align:right">—</td><td class="cell-timestamp">Started 8:10 am</td></tr>
+              <tr><td class="cell-name">Melbourne CBD</td><td>Weekly scheduled</td><td><span class="nb-pill neutral"><i class="ti ti-clock"></i>Due today</span></td><td class="tabular" style="text-align:right">—</td><td class="cell-timestamp">Scheduled 5:00 pm</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ Panel: Variance (IN-7) ══ -->
+      <div class="inv-panel" id="panel-variance">
+        <div class="sub-card">
+          <div class="sub-card-title">Variance analysis</div>
+          <p class="sub-card-sub">Actual vs theoretical consumption by item, this week. Mara flags outliers above 2× the network average.</p>
+          <div class="var-row"><span class="var-label">Olive Oil 1L <span style="font-size:11px;color:var(--text-soft)">· Surry Hills</span></span><div class="var-track"><div class="var-fill high" style="width:92%"></div></div><span class="var-val high">+8.1%</span></div>
+          <div class="var-row"><span class="var-label">Chicken Breast</span><div class="var-track"><div class="var-fill" style="width:42%"></div></div><span class="var-val">+3.4%</span></div>
+          <div class="var-row"><span class="var-label">Avocado</span><div class="var-track"><div class="var-fill" style="width:30%"></div></div><span class="var-val">+2.6%</span></div>
+          <div class="var-row"><span class="var-label">Feta Cheese</span><div class="var-track"><div class="var-fill" style="width:18%"></div></div><span class="var-val">+1.5%</span></div>
+          <div class="var-row"><span class="var-label">Sourdough Bread</span><div class="var-track"><div class="var-fill" style="width:10%"></div></div><span class="var-val">+0.8%</span></div>
+        </div>
+      </div>
+
+      <!-- ══ Panel: Transfers (IN-9) ══ -->
+      <div class="inv-panel" id="panel-transfers">
+        <div class="sub-card">
+          <div class="sub-card-title">Inter-outlet transfers</div>
+          <p class="sub-card-sub">Request → approve → dispatch → receive, with full audit trail. Both stock positions update on receive.</p>
+          <button class="btn btn-primary" style="margin-bottom:var(--space-lg);"><i class="ti ti-plus"></i>New transfer request</button>
+          <table class="data-table">
+            <thead><tr><th>Item</th><th>From → To</th><th style="text-align:right">Qty</th><th>Stage</th></tr></thead>
+            <tbody>
+              <tr><td class="cell-name">Avocado</td><td>Bondi → Surry Hills</td><td class="tabular" style="text-align:right">20 each</td><td><span class="nb-pill info"><i class="ti ti-truck-delivery"></i>Dispatched</span></td></tr>
+              <tr><td class="cell-name">Olive Oil 1L</td><td>Newtown → Surry Hills</td><td class="tabular" style="text-align:right">6 bottle</td><td><span class="nb-pill warn"><i class="ti ti-clock"></i>Awaiting approval</span></td></tr>
+              <tr><td class="cell-name">Feta Cheese</td><td>Melbourne → St Kilda</td><td class="tabular" style="text-align:right">4 kg</td><td><span class="nb-pill ok"><i class="ti ti-check"></i>Received</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ Panel: Waste (IN-10) ══ -->
+      <div class="inv-panel" id="panel-waste">
+        <div class="sub-card">
+          <div class="sub-card-title">Waste log</div>
+          <p class="sub-card-sub">Log waste with reason codes. Entries feed variance and cost analytics.</p>
+          <button class="btn btn-primary" style="margin-bottom:var(--space-lg);"><i class="ti ti-plus"></i>Log waste</button>
+          <table class="data-table">
+            <thead><tr><th>Item</th><th>Outlet</th><th style="text-align:right">Qty</th><th>Reason</th><th style="text-align:right">Cost</th></tr></thead>
+            <tbody>
+              <tr><td class="cell-name">Roma Tomatoes</td><td>Surry Hills</td><td class="tabular" style="text-align:right">2.4 kg</td><td><span class="nb-pill neutral">Spoilage</span></td><td class="tabular" style="text-align:right">$8.40</td></tr>
+              <tr><td class="cell-name">Sourdough Bread</td><td>Circular Quay</td><td class="tabular" style="text-align:right">6 loaf</td><td><span class="nb-pill neutral">End of day</span></td><td class="tabular" style="text-align:right">$14.40</td></tr>
+              <tr><td class="cell-name">Whole Milk 2L</td><td>Newtown</td><td class="tabular" style="text-align:right">3 carton</td><td><span class="nb-pill neutral">Expired</span></td><td class="tabular" style="text-align:right">$11.70</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -818,7 +1012,9 @@
     });
 
     /* Remove dialog */
+    let removeName = '';
     function openRemoveDialog(name, outlets, recipes, pos) {
+      removeName = name;
       document.getElementById('dialog-title').textContent = `Remove ${name}?`;
       document.getElementById('dialog-desc').innerHTML =
         `This will remove the item from <strong>${outlets} outlet inventories</strong> and affect ` +
@@ -831,10 +1027,83 @@
     }
     document.getElementById('confirm-remove-btn')?.addEventListener('click', () => {
       closeRemoveDialog();
+      addInvActivity('<strong>' + removeName + '</strong> removed from master list', 'HQ Administrator');
+      invToast(removeName + ' removed');
     });
     document.getElementById('remove-dialog')?.addEventListener('click', e => {
       if (e.target === e.currentTarget) closeRemoveDialog();
     });
+
+    /* Tabs (IN-6/7/9/10) */
+    function switchTab(id) {
+      document.querySelectorAll('.inv-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + id)?.classList.add('active');
+      document.querySelectorAll('.inv-tab').forEach(t => {
+        const on = t.getAttribute('onclick')?.includes("'" + id + "'");
+        t.classList.toggle('active', !!on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+
+    /* Agent resolve */
+    function resolveAgent(cardId, msg) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const state = card.querySelector('.agent-state');
+      if (state) { state.className = 'agent-state done'; state.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>Done'; }
+      card.classList.add('resolved');
+      invToast(msg);
+      addInvActivity(msg, 'by Otto');
+    }
+
+    /* Toast */
+    function invToast(msg) {
+      let wrap = document.getElementById('inv-toast');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'inv-toast';
+        wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;';
+        document.body.appendChild(wrap);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    /* Audit entry */
+    function addInvActivity(text, actor) {
+      const tl = document.querySelector('.timeline');
+      if (!tl) return;
+      const isAgent = (actor||'').startsWith('by ');
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.innerHTML = '<div class="timeline-dot"' + (isAgent ? ' style="border-color:var(--insights)"' : '') + '></div>' +
+        '<div class="timeline-body"><div class="timeline-text">' + text + '</div><div class="timeline-meta">' + (actor||'HQ Administrator') + '</div></div>' +
+        '<div class="timeline-time">Just now</div>';
+      tl.insertBefore(item, tl.firstChild);
+    }
+
+    /* Simulate upload progress → validation report (IN-5) */
+    function simulateUpload() {
+      const wrap = document.getElementById('upload-progress');
+      const fill = document.getElementById('upload-progress-fill');
+      const label = document.getElementById('upload-progress-label');
+      const report = document.getElementById('import-report');
+      wrap.classList.add('show');
+      report.classList.remove('show');
+      let pct = 0;
+      const tick = () => {
+        pct += 8;
+        if (pct > 100) pct = 100;
+        fill.style.width = pct + '%';
+        label.textContent = 'Validating rows… ' + pct + '%';
+        if (pct < 100) setTimeout(tick, 70);
+        else { label.textContent = 'Validation complete'; report.classList.add('show'); }
+      };
+      tick();
+    }
 
     /* Import toggle */
     function toggleImport() {
