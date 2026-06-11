@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Venues — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
   <style>
     body { background: var(--surface-soft); }
 
@@ -96,7 +97,7 @@
     .section-count {
       font-size: 12px; font-weight: 600; color: var(--text-soft);
       background: var(--surface-soft); border: 1px solid var(--border);
-      border-radius: 99px; padding: 2px 10px;
+      border-radius: var(--radius-pill); padding: 2px 10px;
     }
 
     /* Groups strip */
@@ -110,7 +111,7 @@
       display: flex; flex-direction: column; gap: var(--space-sm);
       cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s;
     }
-    .group-card:hover { border-color: var(--text-accent); box-shadow: 0 2px 8px rgba(14,55,39,0.08); }
+    .group-card:hover { border-color: var(--text-accent); box-shadow: var(--shadow-md); }
     .group-card.active { border-color: var(--text-accent); background: var(--mint); }
     .group-card-header { display: flex; align-items: center; gap: var(--space-sm); }
     .group-icon {
@@ -139,7 +140,7 @@
 
     /* Table card */
     .table-card {
-      background: var(--surface); border: 0.5px solid var(--border);
+      background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
     .data-table {
@@ -153,7 +154,7 @@
     }
     .data-table td {
       padding: var(--space-md) var(--space-lg); color: var(--text);
-      border-bottom: 0.5px solid var(--border); vertical-align: middle;
+      border-bottom: 1px solid var(--border); vertical-align: middle;
     }
     .data-table tbody tr:last-child td { border-bottom: none; }
     .data-table tbody tr:hover td { background: var(--surface-soft); }
@@ -167,21 +168,30 @@
     .group-badge {
       display: inline-flex; align-items: center; gap: 4px;
       font-size: 12px; font-weight: 600;
-      padding: 3px 10px; border-radius: 99px;
+      padding: 3px 10px; border-radius: var(--radius-pill);
       white-space: nowrap;
     }
-    .group-badge.green  { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
-    .group-badge.purple { background: rgba(176,94,192,0.13); color: var(--procurement); }
-    .group-badge.blue   { background: rgba(63,138,251,0.13); color: var(--pos); }
-    .group-badge.amber  { background: rgba(23,179,163,0.13); color: var(--ordering); }
-    .group-badge.none   { background: var(--surface-soft); color: var(--text-soft); }
-    .group-badge i { font-size: 11px; }
+    /* Neutral badge text; the dot icon carries the group colour (fill, not rainbow text) */
+    .group-badge { background: var(--surface-soft); color: var(--text); }
+    .group-badge.none { background: var(--surface-soft); color: var(--text-soft); }
+    .group-badge i { font-size: 9px; }
+    .group-badge.purple i { color: var(--procurement); }
+    .group-badge.blue   i { color: var(--pos); }
+    .group-badge.amber  i { color: var(--ordering); }
+    .group-badge.green  i { color: var(--status-ok-fg); }
+
+    /* Operating mode + venue-type pills */
+    .mode-pill { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .mode-pill.hq { background: color-mix(in srgb, var(--procurement) 13%, transparent); color: var(--procurement); }
+    .mode-pill.hybrid { background: color-mix(in srgb, var(--ordering) 14%, transparent); color: var(--ordering); }
+    .mode-pill.standalone { background: var(--surface-soft); color: var(--text-soft); }
+    .ck-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 6px; border-radius:var(--radius-xs); background: color-mix(in srgb, var(--pos) 14%, transparent); color: var(--pos); margin-left: var(--space-xs); }
 
     /* Status pill */
     .status-pill {
       display: inline-flex; align-items: center; gap: 5px;
       font-size: 12px; font-weight: 600;
-      padding: 3px 10px; border-radius: 99px;
+      padding: 3px 10px; border-radius: var(--radius-pill);
     }
     .status-pill::before {
       content: ''; width: 6px; height: 6px; border-radius: 50%;
@@ -210,7 +220,7 @@
     .overflow-menu {
       display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 50;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-md); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-md);
       min-width: 160px; padding: var(--space-xs);
     }
     .overflow-menu.open { display: block; }
@@ -222,7 +232,7 @@
       border-radius: var(--radius-sm); font-family: inherit; text-align: left;
     }
     .overflow-menu-item:hover { background: var(--surface-soft); }
-    .overflow-menu-item.destructive { color: var(--rose); }
+    .overflow-menu-item.destructive { color: var(--status-risk-fg); }
     .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
     .overflow-menu-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
     .overflow-cell { width: 1%; white-space: nowrap; }
@@ -262,7 +272,7 @@
       <div class="page-header-left">
         <span class="page-eyebrow">Administration</span>
         <h1 class="page-title">Venues</h1>
-        <p class="page-desc">Manage your outlets and organise them into groups for shared configuration.</p>
+        <p class="page-desc">Organise outlets by brand, region and state. Each group runs in an operating mode — HQ-governed, Hybrid, or Standalone — and can include a Central Kitchen.</p>
       </div>
       <div class="page-actions">
         <button class="btn btn-outline"><i class="ti ti-adjustments-horizontal"></i>Manage groups</button>
@@ -294,21 +304,21 @@
             <div class="group-icon purple"><i class="ti ti-building"></i></div>
             <span class="group-name">CBD Cluster</span>
           </div>
-          <span class="group-meta">4 venues · City</span>
+          <span class="group-meta">4 venues · City · <span style="color:var(--procurement);font-weight:600;">HQ Mode</span></span>
         </div>
         <div class="group-card" onclick="filterByGroup('beachside')">
           <div class="group-card-header">
             <div class="group-icon blue"><i class="ti ti-wave-sine"></i></div>
             <span class="group-name">Beachside</span>
           </div>
-          <span class="group-meta">3 venues · Coastal</span>
+          <span class="group-meta">3 venues · Coastal · <span style="color:var(--ordering);font-weight:600;">Hybrid</span></span>
         </div>
         <div class="group-card" onclick="filterByGroup('suburban')">
           <div class="group-card-header">
             <div class="group-icon amber"><i class="ti ti-home"></i></div>
             <span class="group-name">Suburban</span>
           </div>
-          <span class="group-meta">5 venues · Various</span>
+          <span class="group-meta">5 venues · Various · <span style="color:var(--ordering);font-weight:600;">Hybrid</span></span>
         </div>
         <div class="group-card-add" onclick="openCreateGroupDialog()">
           <i class="ti ti-plus"></i>
@@ -349,7 +359,7 @@
             <tr>
               <th>Venue</th>
               <th>Location</th>
-              <th>Group</th>
+              <th>Group &amp; mode</th>
               <th>Procurement contact</th>
               <th>Status</th>
               <th class="overflow-cell"></th>
@@ -357,9 +367,9 @@
           </thead>
           <tbody>
             <tr>
-              <td><div class="cell-venue"><span class="cell-name">The Harbour Kitchen</span><span class="cell-sub">ID: VEN-001</span></div></td>
-              <td>Circular Quay, Sydney NSW</td>
-              <td><span class="group-badge purple"><i class="ti ti-circle-filled"></i>CBD Cluster</span></td>
+              <td><div class="cell-venue"><span class="cell-name">Sydney Central Kitchen<span class="ck-badge"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>Central Kitchen</span></span><span class="cell-sub">ID: VEN-001</span></div></td>
+              <td>Alexandria, Sydney NSW</td>
+              <td><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;"><span class="group-badge purple"><i class="ti ti-circle-filled"></i>CBD Cluster</span><span class="mode-pill hq"><i class="ti ti-shield-lock" aria-hidden="true"></i>HQ Mode</span></div></td>
               <td>Sarah Okonkwo</td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
@@ -381,7 +391,7 @@
             <tr>
               <td><div class="cell-venue"><span class="cell-name">Darling Street Bistro</span><span class="cell-sub">ID: VEN-002</span></div></td>
               <td>Darlinghurst, Sydney NSW</td>
-              <td><span class="group-badge purple"><i class="ti ti-circle-filled"></i>CBD Cluster</span></td>
+              <td><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;"><span class="group-badge purple"><i class="ti ti-circle-filled"></i>CBD Cluster</span><span class="mode-pill hq"><i class="ti ti-shield-lock" aria-hidden="true"></i>HQ Mode</span></div></td>
               <td>James Nguyen</td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
@@ -403,7 +413,7 @@
             <tr>
               <td><div class="cell-venue"><span class="cell-name">Bondi Rooftop</span><span class="cell-sub">ID: VEN-003</span></div></td>
               <td>Bondi Beach, Sydney NSW</td>
-              <td><span class="group-badge blue"><i class="ti ti-circle-filled"></i>Beachside</span></td>
+              <td><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;"><span class="group-badge blue"><i class="ti ti-circle-filled"></i>Beachside</span><span class="mode-pill hybrid"><i class="ti ti-git-merge" aria-hidden="true"></i>Hybrid</span></div></td>
               <td>Mia Chen</td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
@@ -425,7 +435,7 @@
             <tr>
               <td><div class="cell-venue"><span class="cell-name">Manly Wharf Bar</span><span class="cell-sub">ID: VEN-004</span></div></td>
               <td>Manly, Sydney NSW</td>
-              <td><span class="group-badge blue"><i class="ti ti-circle-filled"></i>Beachside</span></td>
+              <td><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;"><span class="group-badge blue"><i class="ti ti-circle-filled"></i>Beachside</span><span class="mode-pill hybrid"><i class="ti ti-git-merge" aria-hidden="true"></i>Hybrid</span></div></td>
               <td>Tom Walker</td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
@@ -447,7 +457,7 @@
             <tr>
               <td><div class="cell-venue"><span class="cell-name">Parramatta Table</span><span class="cell-sub">ID: VEN-005</span></div></td>
               <td>Parramatta, Sydney NSW</td>
-              <td><span class="group-badge amber"><i class="ti ti-circle-filled"></i>Suburban</span></td>
+              <td><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;"><span class="group-badge amber"><i class="ti ti-circle-filled"></i>Suburban</span><span class="mode-pill hybrid"><i class="ti ti-git-merge" aria-hidden="true"></i>Hybrid</span></div></td>
               <td>Aisha Patel</td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
@@ -469,7 +479,7 @@
             <tr>
               <td><div class="cell-venue"><span class="cell-name">Surry Hills Social</span><span class="cell-sub">ID: VEN-006</span></div></td>
               <td>Surry Hills, Sydney NSW</td>
-              <td><span class="group-badge none">Ungrouped</span></td>
+              <td><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;"><span class="group-badge none">Ungrouped</span><span class="mode-pill standalone"><i class="ti ti-building-store" aria-hidden="true"></i>Standalone</span></div></td>
               <td>—</td>
               <td><span class="status-pill inactive">Inactive</span></td>
               <td class="overflow-cell">
@@ -498,7 +508,7 @@
 
 <!-- Add venue dialog -->
 <div id="add-venue-dialog" role="dialog" aria-modal="true" aria-labelledby="add-venue-title" style="display:none;position:fixed;inset:0;z-index:200;display:none;">
-  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" onclick="closeAddVenueDialog()"></div>
+  <div style="position:absolute;inset:0;background:color-mix(in srgb, var(--seaweed) 40%, transparent);" onclick="closeAddVenueDialog()"></div>
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-lg);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <h2 id="add-venue-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Add venue</h2>
@@ -506,7 +516,7 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
       <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Venue name <span style="color:var(--rose);">*</span></label>
+        <label style="font-size:13px;font-weight:600;color:var(--text);">Venue name <span style="color:var(--status-risk-fg);">*</span></label>
         <input type="text" placeholder="e.g. The Harbour Kitchen" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
       </div>
       <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
