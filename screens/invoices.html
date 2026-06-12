@@ -69,6 +69,20 @@
     /* ── Empty state ── */
     .empty-state { text-align:center; padding:var(--space-5xl) var(--space-2xl); color:var(--text-soft); font-size:14px; }
 
+    /* ── Cyrus agent surface ── */
+    .cyrus-card { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-md) var(--space-lg); background:var(--surface); border:1.5px solid var(--agent-border,rgba(42,200,100,0.5)); border-radius:var(--radius-lg); box-shadow:0 0 0 4px var(--agent-glow,rgba(42,200,100,0.08)); margin-bottom:var(--space-xl); }
+    .cyrus-avatar { width:32px; height:32px; border-radius:50%; background:var(--mint); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--spinach); font-size:16px; }
+    .cyrus-name { font-size:12px; font-weight:700; color:var(--spinach); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px; }
+    .cyrus-summary { font-size:14px; color:var(--text); font-weight:500; line-height:1.5; margin-bottom:var(--space-sm); }
+    .cyrus-chips { display:flex; flex-wrap:wrap; gap:var(--space-xs); }
+    .cyrus-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); cursor:pointer; transition:opacity var(--dur-1); }
+    .cyrus-chip:hover { opacity:0.8; }
+    .cyrus-chip.risk   { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .cyrus-chip.warn   { background:var(--status-warn-bg); color:#7A5000; }
+    .cyrus-chip.ok     { background:var(--mint); color:var(--spinach); }
+    .cyrus-chip.info   { background:var(--status-info-bg); color:var(--status-info-fg); }
+    .cyrus-dismiss { margin-left:auto; background:none; border:none; font-size:16px; color:var(--text-soft); cursor:pointer; padding:4px; line-height:1; flex-shrink:0; }
+
     /* ── Match drawer ── */
     .drawer-scrim { position:fixed; inset:0; background:rgba(14,55,39,0.35); z-index:100; display:none; }
     .drawer-scrim.open { display:block; }
@@ -133,6 +147,17 @@
 
         <!-- KPI tiles -->
         <div class="kpi-row" id="kpi-row"></div>
+
+        <!-- Cyrus agent summary -->
+        <div class="cyrus-card" id="cyrus-card">
+          <div class="cyrus-avatar"><i class="ti ti-sparkles"></i></div>
+          <div style="flex:1;min-width:0;">
+            <div class="cyrus-name">Cyrus · Invoice Agent</div>
+            <div class="cyrus-summary" id="cyrus-summary"></div>
+            <div class="cyrus-chips" id="cyrus-chips"></div>
+          </div>
+          <button class="cyrus-dismiss" onclick="document.getElementById('cyrus-card').style.display='none'" title="Dismiss"><i class="ti ti-x"></i></button>
+        </div>
 
         <!-- Bulk action bar -->
         <div class="bulk-bar" id="bulk-bar">
@@ -667,9 +692,68 @@
       setTimeout(() => el.remove(), 3500);
     }
 
+    /* ── Cyrus agent insights ── */
+    function buildCyrusInsights() {
+      const failed   = INV_DATA.filter(i => i.status === 'failed');
+      const pending  = INV_DATA.filter(i => i.status === 'pending');
+      const approved = INV_DATA.filter(i => i.status === 'approved');
+      const total    = INV_DATA.reduce((s,i) => s + i.amount, 0);
+
+      const failedVariance = failed.reduce((s,inv) => {
+        const m = invMatchSummary(inv); return s + m.variance;
+      }, 0);
+
+      const failedSuppliers = [...new Set(failed.map(i => i.supplier))];
+
+      // Build summary sentence
+      let summary = '';
+      if (failed.length === 0 && pending.length === 0) {
+        summary = 'All invoices are matched and clear — nothing needs your attention today.';
+      } else {
+        const parts = [];
+        if (failed.length > 0) {
+          parts.push(`<strong>${failed.length} invoice${failed.length>1?'s':''} failed the 3-way match</strong> with $${failedVariance.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})} in dispute across ${failedSuppliers.join(' and ')}`);
+        }
+        if (pending.length > 0) {
+          parts.push(`<strong>${pending.length} invoice${pending.length>1?'s':''} pending match</strong> — Cyrus is processing`);
+        }
+        if (approved.length > 0) {
+          parts.push(`<strong>${approved.length} approved</strong> and ready to export to Xero`);
+        }
+        summary = parts.join(' · ') + '.';
+      }
+
+      // Build action chips
+      const chips = [];
+      if (failed.length > 0) {
+        chips.push(`<button class="cyrus-chip risk" onclick="filterByStatus('failed')"><i class="ti ti-alert-triangle"></i> ${failed.length} match failed — review</button>`);
+      }
+      if (approved.length > 0) {
+        const approvedTotal = INV_DATA.filter(i=>i.status==='approved').reduce((s,i)=>s+i.amount,0);
+        chips.push(`<button class="cyrus-chip ok" onclick="filterByStatus('approved')"><i class="ti ti-send"></i> $${approvedTotal.toLocaleString()} ready to export</button>`);
+      }
+      if (pending.length > 0) {
+        chips.push(`<button class="cyrus-chip info" onclick="filterByStatus('pending')"><i class="ti ti-loader"></i> ${pending.length} matching in progress</button>`);
+      }
+      chips.push(`<span class="cyrus-chip" style="background:var(--surface-soft);color:var(--text-soft);cursor:default;"><i class="ti ti-database"></i> $${total.toLocaleString()} total AP this period</span>`);
+
+      document.getElementById('cyrus-summary').innerHTML = summary;
+      document.getElementById('cyrus-chips').innerHTML = chips.join('');
+    }
+
+    function filterByStatus(status) {
+      const sel = document.getElementById('f-status');
+      if (sel) { sel.value = status; renderTable(); }
+      // highlight the matching KPI tile
+      document.querySelectorAll('.kpi-tile').forEach(t => {
+        t.classList.toggle('active', t.dataset.filter === status);
+      });
+    }
+
     /* ── Init ── */
     renderKPIs();
     renderTable();
+    buildCyrusInsights();
   </script>
 </body>
 </html>
