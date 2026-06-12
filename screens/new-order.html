@@ -294,6 +294,24 @@
       return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].filter((_,i)=>days.includes(i)).join(' / ');
     }
     function formatHour(h) { return h >= 12 ? (h===12?'12':h-12)+'pm' : h+'am'; }
+    function buildDeliveryOptions(supplier, count) {
+      count = count || 4;
+      const sched = SUPPLIER_SCHEDULES[supplier];
+      if (!sched) return '<option value="—">—</option>';
+      const now = new Date();
+      const hour = now.getHours() + now.getMinutes()/60;
+      const opts = [];
+      for (let i = 0; i < 60 && opts.length < count; i++) {
+        const d = new Date(now); d.setDate(d.getDate() + i);
+        if (!sched.days.includes(d.getDay())) continue;
+        if (i === 0 && hour >= sched.cutoff) continue;
+        const val = d.toLocaleDateString('en-AU', { day:'numeric', month:'short' });
+        const label = d.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' });
+        opts.push(`<option value="${val}">${label}${opts.length===0?' — next available':''}</option>`);
+      }
+      return opts.join('');
+    }
+
     function nextDelivery(supplier) {
       const sched = SUPPLIER_SCHEDULES[supplier];
       if (!sched) return null;
@@ -478,19 +496,34 @@
         sub.innerHTML = 'Requisition for <strong>'+outlet+'</strong> · '+basket.length+' items · est $'+total.toFixed(0)+'.';
         body.innerHTML = '<div class="info-note"><i class="ti ti-info-circle"></i><div>This requisition will be sent to <strong>HQ</strong> for review. HQ decides which supplier(s) it is routed to — you’ll see the resulting purchase orders once approved.</div></div>';
       } else {
-        // Direct PO → pick supplier + approval threshold
-        title.textContent = 'Confirm purchase order';
-        const cats = [...new Set(basket.map(b=>b.cat))];
-        const def = CAT_SUPPLIER[cats[0]] || 'Fresh Produce Co';
-        const opts = [...new Set([def,'Fresh Produce Co','Harbour Meats','Green Farmers Market','Pacific Drinks Wholesale','Artisan Bakehouse'])];
-        sub.innerHTML = 'Purchase order for <strong>'+outlet+'</strong> · '+basket.length+' items · est $'+total.toFixed(0)+'.';
-        const needsApproval = total > 500;
-        body.innerHTML =
-          '<label class="field-label" for="po-supplier">Send to supplier</label>'+
-          '<select class="select-input" id="po-supplier" style="max-width:none;margin-bottom:var(--space-lg);">'+opts.map(o=>`<option>${o}</option>`).join('')+'</select>'+
-          (needsApproval
-            ? '<div class="info-note warn"><i class="ti ti-user-check"></i><div>This order is <strong>$'+total.toFixed(0)+'</strong>, above the $500 policy threshold. It will be sent for <strong>manager approval</strong> before going to the supplier.</div></div>'
-            : '<div class="info-note"><i class="ti ti-bolt"></i><div>This order is within policy ($'+total.toFixed(0)+' ≤ $500) and will be <strong>auto-approved</strong> and sent to the supplier immediately.</div></div>');
+        // Direct PO → per-supplier groups with delivery date selector
+        title.textContent = 'Confirm purchase orders';
+        const poGroups = {};
+        basket.forEach(b => {
+          const sup = CAT_SUPPLIER[b.cat] || 'Fresh Produce Co';
+          if (!poGroups[sup]) poGroups[sup] = [];
+          poGroups[sup].push(b);
+        });
+        const poEntries = Object.entries(poGroups);
+        sub.innerHTML = 'Sending to <strong>'+poEntries.length+' supplier'+(poEntries.length!==1?'s':'')+'</strong> · '+basket.length+' items · est $'+total.toFixed(0)+'.';
+        body.innerHTML = poEntries.map(([sup, items]) => {
+          const v = items.reduce((s,b)=>s+b.qty*b.unit, 0);
+          const needsApproval = v > 500;
+          const safeId = 'del-' + sup.replace(/\W+/g,'-');
+          return `<div class="route-group">
+            <div class="route-head"><span class="route-title">${sup}</span><span class="item-meta">$${Math.round(v)}</span></div>
+            <div class="route-items">${items.map(i=>i.name+' ×'+i.qty).join(' · ')}</div>
+            <div style="display:flex;align-items:center;gap:var(--space-md);margin-top:var(--space-sm);">
+              <span style="font-size:12px;font-weight:600;color:var(--text-soft);white-space:nowrap;"><i class="ti ti-calendar-event"></i> Delivery</span>
+              <select class="select-input" id="${safeId}" style="max-width:none;flex:1;">${buildDeliveryOptions(sup)}</select>
+            </div>
+            ${needsApproval
+              ? '<div class="info-note warn" style="margin-top:var(--space-sm);"><i class="ti ti-user-check"></i><div>$'+Math.round(v)+' exceeds the $500 threshold — needs manager approval before sending.</div></div>'
+              : '<div class="info-note" style="margin-top:var(--space-sm);"><i class="ti ti-bolt"></i><div>Within policy ($'+Math.round(v)+' ≤ $500) — will be auto-approved and sent immediately.</div></div>'}
+          </div>`;
+        }).join('') + (poEntries.length > 1
+          ? '<div class="route-summary"><i class="ti ti-git-branch"></i> This will create '+poEntries.length+' purchase orders to '+poEntries.length+' suppliers</div>'
+          : '');
       }
     }
     function onRouteChange(sel) { routeSuppliers[sel.dataset.cat] = sel.value.replace(' — preferred',''); updateRouteSummary(); }
@@ -543,14 +576,29 @@
         done.innerHTML = '<span class="nb-pill warn"><i class="ti ti-clock"></i>'+pr+' · awaiting HQ</span>';
         records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'needs-review', poCount:0, expected:'—' });
       } else {
-        const po = 'PO-'+(poCounter++);
-        const needsApproval = total > 500;
-        const supplier = (document.getElementById('po-supplier')||{}).value || 'Fresh Produce Co';
-        const expected = nextDelivery(supplier)?.shortStr || '—';
-        title.textContent = needsApproval ? 'Order sent for approval' : 'Purchase order sent';
-        sub.innerHTML = needsApproval ? po+' is awaiting manager approval before it goes to the supplier.' : po+' was sent to the supplier.';
-        done.innerHTML = needsApproval ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>'+po+' · needs manager</span>' : '<span class="nb-pill info"><i class="ti ti-send"></i>'+po+' · sent</span>';
-        records.push({ kind:'po', id:po, supplier, outlet, value:Math.round(total), approval: needsApproval?'manager':'auto', delivery: needsApproval?'draft':'sent', expected });
+        const poGroups = {};
+        basket.forEach(b => {
+          const sup = CAT_SUPPLIER[b.cat] || 'Fresh Produce Co';
+          if (!poGroups[sup]) poGroups[sup] = [];
+          poGroups[sup].push(b);
+        });
+        const poEntries = Object.entries(poGroups);
+        const pos = poEntries.map(() => 'PO-'+(poCounter++));
+        const anyApproval = poEntries.some(([_,items]) => items.reduce((s,b)=>s+b.qty*b.unit,0) > 500);
+        title.textContent = anyApproval ? 'Orders sent for approval' : 'Purchase orders sent';
+        sub.innerHTML = pos.length+' purchase order'+(pos.length!==1?'s':'')+' created across '+poEntries.length+' supplier'+(poEntries.length!==1?'s':'');
+        done.innerHTML = pos.map((p,i) => {
+          const v = poEntries[i][1].reduce((s,b)=>s+b.qty*b.unit,0);
+          return v > 500
+            ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>'+p+' · needs manager</span>'
+            : '<span class="nb-pill info"><i class="ti ti-send"></i>'+p+' · sent</span>';
+        }).join('');
+        poEntries.forEach(([sup, items], i) => {
+          const v = Math.round(items.reduce((s,b)=>s+b.qty*b.unit,0));
+          const safeId = 'del-' + sup.replace(/\W+/g,'-');
+          const expected = (document.getElementById(safeId)||{}).value || nextDelivery(sup)?.shortStr || '—';
+          records.push({ kind:'po', id:pos[i], supplier:sup, outlet, value:v, approval: v>500?'manager':'auto', delivery: v>500?'draft':'sent', expected });
+        });
       }
       saveOrders(records);
     }
