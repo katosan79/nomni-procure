@@ -76,10 +76,11 @@
     .period-btn:hover { border-color:var(--text-accent); color:var(--text); }
     .period-btn.active { border-color:var(--text-accent); background:var(--mint); color:var(--spinach); }
 
-    /* ── Cyrus agent surface ── */
-    .cyrus-card { display:flex; align-items:flex-start; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); background:var(--surface); border:1.5px solid var(--agent-border,rgba(42,200,100,0.5)); border-radius:var(--radius-lg); box-shadow:0 0 0 4px var(--agent-glow,rgba(42,200,100,0.08)); margin-bottom:var(--space-xl); }
-    .cyrus-avatar { width:32px; height:32px; border-radius:50%; background:var(--mint); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--spinach); font-size:16px; margin-top:2px; }
-    .cyrus-name { font-size:11px; font-weight:700; color:var(--spinach); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-xs); }
+    /* ── Cyrus agent surface — extends shared .agent-surface from components.css ── */
+    #cyrus-card { padding:var(--space-lg) var(--space-xl); margin-bottom:var(--space-xl); }
+    .cyrus-body { flex:1; min-width:0; }
+    .cyrus-head { display:flex; align-items:center; gap:var(--space-md); margin-bottom:var(--space-md); }
+    .cyrus-dismiss { margin-left:auto; background:none; border:none; font-size:16px; color:var(--text-soft); cursor:pointer; padding:4px; line-height:1; flex-shrink:0; }
     .cyrus-summary { font-size:14px; color:var(--text); font-weight:400; line-height:1.6; margin-bottom:var(--space-md); }
     .cyrus-summary strong { font-weight:600; }
     .cyrus-chips { display:flex; flex-wrap:wrap; gap:var(--space-xs); margin-bottom:var(--space-md); }
@@ -89,7 +90,6 @@
     .cyrus-chip.warn   { background:var(--status-warn-bg); color:#7A5000; }
     .cyrus-chip.ok     { background:var(--mint); color:var(--spinach); }
     .cyrus-chip.info   { background:var(--status-info-bg); color:var(--status-info-fg); }
-    .cyrus-dismiss { margin-left:auto; background:none; border:none; font-size:16px; color:var(--text-soft); cursor:pointer; padding:4px; line-height:1; flex-shrink:0; }
 
     /* ── Outlet breakdown ── */
     .outlet-breakdown { display:flex; flex-wrap:wrap; gap:var(--space-xs); padding-top:var(--space-md); border-top:1px solid var(--border); }
@@ -173,15 +173,19 @@
         <div class="kpi-row" id="kpi-row"></div>
 
         <!-- Cyrus agent summary -->
-        <div class="cyrus-card" id="cyrus-card">
-          <div class="cyrus-avatar"><i class="ti ti-sparkles"></i></div>
-          <div style="flex:1;min-width:0;">
-            <div class="cyrus-name">Cyrus · Invoice Agent</div>
-            <div class="cyrus-summary" id="cyrus-summary"></div>
-            <div class="cyrus-chips" id="cyrus-chips"></div>
-            <div class="outlet-breakdown" id="outlet-breakdown"></div>
+        <div class="agent-surface" id="cyrus-card">
+          <div class="cyrus-head">
+            <span class="agent-avatar" data-agent="cyrus" aria-hidden="true">Cy</span>
+            <span class="agent-id">
+              <span class="agent-name">Cyrus</span>
+              <span class="agent-role">Invoice &amp; spend agent</span>
+            </span>
+            <span class="agent-state needs-you" id="cyrus-state" style="display:none;"><i class="ti ti-alert-triangle"></i>Needs you</span>
+            <button class="cyrus-dismiss" onclick="document.getElementById('cyrus-card').style.display='none'" title="Dismiss" aria-label="Dismiss"><i class="ti ti-x"></i></button>
           </div>
-          <button class="cyrus-dismiss" onclick="document.getElementById('cyrus-card').style.display='none'" title="Dismiss"><i class="ti ti-x"></i></button>
+          <div class="cyrus-summary" id="cyrus-summary"></div>
+          <div class="cyrus-chips" id="cyrus-chips"></div>
+          <div class="outlet-breakdown" id="outlet-breakdown"></div>
         </div>
 
         <!-- Bulk action bar -->
@@ -820,6 +824,27 @@
       document.getElementById('cyrus-chips').innerHTML = chips.join('');
       document.getElementById('outlet-breakdown').innerHTML = outletTags;
       document.getElementById('outlet-breakdown').style.display = Object.keys(outletMap).length > 0 ? '' : 'none';
+
+      // Agent state badge
+      const stateEl = document.getElementById('cyrus-state');
+      if (failed.length > 0) {
+        stateEl.className = 'agent-state needs-you';
+        stateEl.innerHTML = '<i class="ti ti-alert-triangle"></i>Needs you';
+        stateEl.style.display = '';
+      } else if (approved.length > 0) {
+        stateEl.className = 'agent-state proposed';
+        stateEl.innerHTML = '<i class="ti ti-send"></i>Ready to export';
+        stateEl.style.display = '';
+      } else if (pending.length > 0) {
+        stateEl.className = 'agent-state stepped-back';
+        stateEl.innerHTML = '<i class="ti ti-loader"></i>Matching…';
+        stateEl.style.display = '';
+      } else {
+        stateEl.className = 'agent-state done';
+        stateEl.innerHTML = '<i class="ti ti-circle-check"></i>All clear';
+        stateEl.style.display = '';
+      }
+
       // show card if previously dismissed on period change
       document.getElementById('cyrus-card').style.display = '';
     }
