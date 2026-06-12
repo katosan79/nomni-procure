@@ -158,12 +158,12 @@
 
       <!-- Tabs -->
       <div class="order-tabs" role="tablist" aria-label="Order type">
-        <button class="order-tab active" role="tab" aria-selected="true" onclick="switchTab('pr')"><i class="ti ti-clipboard-list"></i>Requisitions <span class="count">5</span></button>
-        <button class="order-tab" role="tab" aria-selected="false" onclick="switchTab('po')"><i class="ti ti-file-invoice"></i>Purchase orders <span class="count">12</span></button>
+        <button class="order-tab" role="tab" aria-selected="false" onclick="switchTab('pr')"><i class="ti ti-clipboard-list"></i>Requisitions <span class="count">5</span></button>
+        <button class="order-tab active" role="tab" aria-selected="true" onclick="switchTab('po')"><i class="ti ti-file-invoice"></i>Purchase orders <span class="count">12</span></button>
       </div>
 
       <!-- ══ Requisitions panel (PR → HQ → multiple POs) ══ -->
-      <div class="order-panel active" id="panel-pr">
+      <div class="order-panel" id="panel-pr">
         <div class="kpi-strip">
           <div class="kpi-tile"><span class="kpi-label">Awaiting HQ review</span><span class="kpi-value">3</span><span class="kpi-sub warn">Needs routing</span></div>
           <div class="kpi-tile"><span class="kpi-label">Routed today</span><span class="kpi-value">2</span><span class="kpi-sub">→ 5 POs created</span></div>
@@ -225,7 +225,7 @@
       </div>
 
       <!-- ══ Purchase orders panel (direct to supplier; full delivery lifecycle) ══ -->
-      <div class="order-panel" id="panel-po">
+      <div class="order-panel active" id="panel-po">
         <div class="kpi-strip">
           <div class="kpi-tile"><span class="kpi-label">Awaiting approval</span><span class="kpi-value">2</span><span class="kpi-sub risk">Over $500 threshold</span></div>
           <div class="kpi-tile"><span class="kpi-label">Awaiting confirmation</span><span class="kpi-value">2</span><span class="kpi-sub">Sent to suppliers</span></div>
@@ -409,8 +409,8 @@
             ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span>'
             : '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
           const action = rec.approval === 'manager'
-            ? '<button class="link-action" onclick="approveInjected(this)">Approve</button>'
-            : '<button class="link-action" onclick="ordToast(\'Opening ' + rec.id + '…\')">View</button>';
+            ? '<button class="link-action" onclick="location.href=\'order-detail.html?id=' + rec.id + '\'">Review</button>'
+            : '<button class="link-action" onclick="location.href=\'order-detail.html?id=' + rec.id + '\'">View</button>';
           const tr = document.createElement('tr');
           tr.className = 'row-new';
           tr.innerHTML = '<td class="cell-id">' + rec.id + '</td>' +
