@@ -69,6 +69,13 @@
     /* ── Empty state ── */
     .empty-state { text-align:center; padding:var(--space-5xl) var(--space-2xl); color:var(--text-soft); font-size:14px; }
 
+    /* ── Period switcher ── */
+    .period-bar { display:flex; align-items:center; gap:var(--space-xs); margin-bottom:var(--space-xl); }
+    .period-label { font-size:12px; font-weight:600; color:var(--text-soft); margin-right:var(--space-xs); text-transform:uppercase; letter-spacing:0.06em; }
+    .period-btn { height:30px; padding-inline:var(--space-md); border-radius:var(--radius-pill); border:1.5px solid var(--border); background:var(--surface); font-family:inherit; font-size:12px; font-weight:700; color:var(--text-soft); cursor:pointer; transition:border-color var(--dur-1),background var(--dur-1),color var(--dur-1); }
+    .period-btn:hover { border-color:var(--text-accent); color:var(--text); }
+    .period-btn.active { border-color:var(--text-accent); background:var(--mint); color:var(--spinach); }
+
     /* ── Cyrus agent surface ── */
     .cyrus-card { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-md) var(--space-lg); background:var(--surface); border:1.5px solid var(--agent-border,rgba(42,200,100,0.5)); border-radius:var(--radius-lg); box-shadow:0 0 0 4px var(--agent-glow,rgba(42,200,100,0.08)); margin-bottom:var(--space-xl); }
     .cyrus-avatar { width:32px; height:32px; border-radius:50%; background:var(--mint); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--spinach); font-size:16px; }
@@ -82,6 +89,13 @@
     .cyrus-chip.ok     { background:var(--mint); color:var(--spinach); }
     .cyrus-chip.info   { background:var(--status-info-bg); color:var(--status-info-fg); }
     .cyrus-dismiss { margin-left:auto; background:none; border:none; font-size:16px; color:var(--text-soft); cursor:pointer; padding:4px; line-height:1; flex-shrink:0; }
+
+    /* ── Outlet breakdown ── */
+    .outlet-breakdown { display:flex; flex-wrap:wrap; gap:var(--space-xs); margin-top:var(--space-sm); padding-top:var(--space-sm); border-top:1px solid var(--border); }
+    .outlet-tag { display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:2px 10px; border-radius:var(--radius-pill); background:var(--surface-soft); border:1px solid var(--border); color:var(--text-soft); }
+    .outlet-tag strong { color:var(--text); }
+    .outlet-tag.has-issue { background:var(--status-risk-bg); border-color:rgba(238,75,135,0.3); color:var(--status-risk-fg); }
+    .outlet-tag.has-issue strong { color:var(--status-risk-fg); }
 
     /* ── Match drawer ── */
     .drawer-scrim { position:fixed; inset:0; background:rgba(14,55,39,0.35); z-index:100; display:none; }
@@ -145,6 +159,15 @@
           </div>
         </div>
 
+        <!-- Period switcher -->
+        <div class="period-bar">
+          <span class="period-label">Showing</span>
+          <button class="period-btn" data-days="7"  onclick="setPeriod(7)">Last 7 days</button>
+          <button class="period-btn active" data-days="30" onclick="setPeriod(30)">Last 30 days</button>
+          <button class="period-btn" data-days="90" onclick="setPeriod(90)">Last 90 days</button>
+          <button class="period-btn" data-days="0"  onclick="setPeriod(0)">All time</button>
+        </div>
+
         <!-- KPI tiles -->
         <div class="kpi-row" id="kpi-row"></div>
 
@@ -155,6 +178,7 @@
             <div class="cyrus-name">Cyrus · Invoice Agent</div>
             <div class="cyrus-summary" id="cyrus-summary"></div>
             <div class="cyrus-chips" id="cyrus-chips"></div>
+            <div class="outlet-breakdown" id="outlet-breakdown"></div>
           </div>
           <button class="cyrus-dismiss" onclick="document.getElementById('cyrus-card').style.display='none'" title="Dismiss"><i class="ti ti-x"></i></button>
         </div>
@@ -329,9 +353,24 @@
       },
     ];
 
+    /* ── Date helpers (today = 12 Jun 2026 per prototype) ── */
+    const TODAY_DAYS = 20260612; // YYYYMMDD integer for comparison
+    function parseDateDaysAgo(dateStr) {
+      // dateStr like "12 Jun 2026"
+      const months = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+      const p = dateStr.split(' ');
+      const d = parseInt(p[0]), m = months[p[1]], y = parseInt(p[2]);
+      // days since that date relative to today (12 Jun 2026 = day 0)
+      const todayMs = new Date(2026, 5, 12).getTime();
+      const invMs   = new Date(y, m-1, d).getTime();
+      return Math.round((todayMs - invMs) / 86400000);
+    }
+    INV_DATA.forEach(inv => { inv.daysAgo = parseDateDaysAgo(inv.date); });
+
     /* ── State ── */
     let _selected = new Set();
     let _activeFilter = '';
+    let _period = 30; // default: last 30 days
 
     /* ── Status config ── */
     const STATUS_CFG = {
@@ -342,11 +381,27 @@
       exported: { label:'Exported',      pill:'<span class="nb-pill" style="background:var(--surface-soft);border:1px solid var(--border);color:var(--text-soft);"><i class="ti ti-send"></i>Exported</span>' },
     };
 
+    /* ── Period filter helper ── */
+    function periodData() {
+      if (!_period) return INV_DATA;
+      return INV_DATA.filter(inv => inv.daysAgo <= _period);
+    }
+
+    function setPeriod(days) {
+      _period = days;
+      document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.days) === days);
+      });
+      renderKPIs();
+      renderTable();
+      buildCyrusInsights();
+    }
+
     /* ── KPI tiles ── */
     function renderKPIs() {
       const counts = { all:0, pending:0, failed:0, approved:0, exported:0, matched:0 };
       let totalAP = 0, failedAmt = 0;
-      INV_DATA.forEach(inv => {
+      periodData().forEach(inv => {
         counts.all++;
         counts[inv.status]++;
         totalAP += inv.amount;
@@ -429,7 +484,7 @@
       const q  = document.getElementById('q').value.trim().toLowerCase();
       const fs = document.getElementById('f-supplier').value;
       const fst= document.getElementById('f-status').value || _activeFilter;
-      return INV_DATA.filter(inv => {
+      return periodData().filter(inv => {
         if (q && !inv.id.toLowerCase().includes(q) && !inv.supplier.toLowerCase().includes(q)) return false;
         if (fs && inv.supplier !== fs) return false;
         if (fst && inv.status !== fst) return false;
@@ -694,31 +749,35 @@
 
     /* ── Cyrus agent insights ── */
     function buildCyrusInsights() {
-      const failed   = INV_DATA.filter(i => i.status === 'failed');
-      const pending  = INV_DATA.filter(i => i.status === 'pending');
-      const approved = INV_DATA.filter(i => i.status === 'approved');
-      const total    = INV_DATA.reduce((s,i) => s + i.amount, 0);
+      const scope    = periodData();
+      const failed   = scope.filter(i => i.status === 'failed');
+      const pending  = scope.filter(i => i.status === 'pending');
+      const approved = scope.filter(i => i.status === 'approved');
+      const total    = scope.reduce((s,i) => s + i.amount, 0);
 
       const failedVariance = failed.reduce((s,inv) => {
         const m = invMatchSummary(inv); return s + m.variance;
       }, 0);
-
       const failedSuppliers = [...new Set(failed.map(i => i.supplier))];
 
       // Build summary sentence
       let summary = '';
-      if (failed.length === 0 && pending.length === 0) {
-        summary = 'All invoices are matched and clear — nothing needs your attention today.';
+      const periodLabel = _period ? `last ${_period} days` : 'all time';
+      if (scope.length === 0) {
+        summary = `No invoices received in the ${periodLabel}.`;
+      } else if (failed.length === 0 && pending.length === 0) {
+        summary = `All ${scope.length} invoices in the ${periodLabel} are matched and clear — nothing needs your attention.`;
       } else {
         const parts = [];
         if (failed.length > 0) {
-          parts.push(`<strong>${failed.length} invoice${failed.length>1?'s':''} failed the 3-way match</strong> with $${failedVariance.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})} in dispute across ${failedSuppliers.join(' and ')}`);
+          parts.push(`<strong>${failed.length} invoice${failed.length>1?'s':''} failed the 3-way match</strong> with $${failedVariance.toLocaleString(undefined,{maximumFractionDigits:0})} in dispute across ${failedSuppliers.join(' and ')}`);
         }
         if (pending.length > 0) {
           parts.push(`<strong>${pending.length} invoice${pending.length>1?'s':''} pending match</strong> — Cyrus is processing`);
         }
         if (approved.length > 0) {
-          parts.push(`<strong>${approved.length} approved</strong> and ready to export to Xero`);
+          const approvedTotal = approved.reduce((s,i)=>s+i.amount,0);
+          parts.push(`<strong>${approved.length} approved</strong> ($${approvedTotal.toLocaleString()}) ready to export to Xero`);
         }
         summary = parts.join(' · ') + '.';
       }
@@ -729,25 +788,47 @@
         chips.push(`<button class="cyrus-chip risk" onclick="filterByStatus('failed')"><i class="ti ti-alert-triangle"></i> ${failed.length} match failed — review</button>`);
       }
       if (approved.length > 0) {
-        const approvedTotal = INV_DATA.filter(i=>i.status==='approved').reduce((s,i)=>s+i.amount,0);
+        const approvedTotal = approved.reduce((s,i)=>s+i.amount,0);
         chips.push(`<button class="cyrus-chip ok" onclick="filterByStatus('approved')"><i class="ti ti-send"></i> $${approvedTotal.toLocaleString()} ready to export</button>`);
       }
       if (pending.length > 0) {
         chips.push(`<button class="cyrus-chip info" onclick="filterByStatus('pending')"><i class="ti ti-loader"></i> ${pending.length} matching in progress</button>`);
       }
-      chips.push(`<span class="cyrus-chip" style="background:var(--surface-soft);color:var(--text-soft);cursor:default;"><i class="ti ti-database"></i> $${total.toLocaleString()} total AP this period</span>`);
+      if (total > 0) {
+        chips.push(`<span class="cyrus-chip" style="background:var(--surface-soft);color:var(--text-soft);cursor:default;"><i class="ti ti-database"></i> $${total.toLocaleString()} total AP</span>`);
+      }
+
+      // Build outlet breakdown
+      const outletMap = {};
+      scope.forEach(inv => {
+        if (!outletMap[inv.outlet]) outletMap[inv.outlet] = { total:0, failed:0, pending:0 };
+        outletMap[inv.outlet].total++;
+        if (inv.status === 'failed')  outletMap[inv.outlet].failed++;
+        if (inv.status === 'pending') outletMap[inv.outlet].pending++;
+      });
+      const outletTags = Object.entries(outletMap).map(([name, o]) => {
+        const hasIssue = o.failed > 0;
+        const detail = [];
+        if (o.failed)  detail.push(`${o.failed} failed`);
+        if (o.pending) detail.push(`${o.pending} pending`);
+        const detailStr = detail.length ? ` · ${detail.join(', ')}` : ` · ${o.total} invoice${o.total!==1?'s':''}`;
+        return `<span class="outlet-tag${hasIssue?' has-issue':''}"><i class="ti ti-building-store" style="font-size:11px;"></i> <strong>${name}</strong>${detailStr}</span>`;
+      }).join('');
 
       document.getElementById('cyrus-summary').innerHTML = summary;
       document.getElementById('cyrus-chips').innerHTML = chips.join('');
+      document.getElementById('outlet-breakdown').innerHTML = outletTags;
+      document.getElementById('outlet-breakdown').style.display = Object.keys(outletMap).length > 0 ? '' : 'none';
+      // show card if previously dismissed on period change
+      document.getElementById('cyrus-card').style.display = '';
     }
 
     function filterByStatus(status) {
+      _activeFilter = status;
       const sel = document.getElementById('f-status');
-      if (sel) { sel.value = status; renderTable(); }
-      // highlight the matching KPI tile
-      document.querySelectorAll('.kpi-tile').forEach(t => {
-        t.classList.toggle('active', t.dataset.filter === status);
-      });
+      if (sel) sel.value = status;
+      renderKPIs();
+      renderTable();
     }
 
     /* ── Init ── */
