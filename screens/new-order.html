@@ -174,6 +174,11 @@
           </select>
           <p class="card-sub" id="outlet-note" style="margin:var(--space-sm) 0 0;">As HQ, you can raise this order on behalf of any outlet.</p>
         </div>
+        <div class="card">
+          <label class="field-label" for="delivery-date">Desired delivery date</label>
+          <input class="select-input" type="date" id="delivery-date"/>
+          <p class="card-sub" style="margin:var(--space-sm) 0 0;">Suppliers confirm against this date. If goods don't arrive by then, the order is flagged <strong>Delayed</strong>.</p>
+        </div>
       </div>
 
       <!-- ═══ Step 2: Items ═══ -->
@@ -453,6 +458,7 @@
       const cats = [...new Set(basket.map(b=>b.cat))];
       const itemsLabel = basket.length + ' items · ' + cats.join(', ').toLowerCase();
       const raisedBy = role === 'outlet' ? 'Keith Tan' : (basket.some(()=>true) ? 'Keith Tan' : 'HQ');
+      const expected = formatExpected(document.getElementById('delivery-date').value);
       const records = [];
 
       if (orderType === 'pr' && role === 'hq') {
@@ -468,14 +474,14 @@
         records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'routed', poCount:pos.length });
         suppliers.forEach((s,i) => {
           const v = Math.round(bySupplier[s]||0);
-          records.push({ kind:'po', id:pos[i], supplier:s, outlet, value:v, approval: v>500?'manager':'auto', delivery: v>500?'draft':'sent' });
+          records.push({ kind:'po', id:pos[i], supplier:s, outlet, value:v, approval: v>500?'manager':'auto', delivery: v>500?'draft':'sent', expected });
         });
       } else if (orderType === 'pr') {
         const pr = 'PR-'+(prCounter++);
         title.textContent = 'Requisition submitted';
         sub.innerHTML = pr+' was sent to HQ for review and supplier routing.';
         done.innerHTML = '<span class="nb-pill warn"><i class="ti ti-clock"></i>'+pr+' · awaiting HQ</span>';
-        records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'needs-review', poCount:0 });
+        records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'needs-review', poCount:0, expected });
       } else {
         const po = 'PO-'+(poCounter++);
         const needsApproval = total > 500;
@@ -483,7 +489,7 @@
         title.textContent = needsApproval ? 'Order sent for approval' : 'Purchase order sent';
         sub.innerHTML = needsApproval ? po+' is awaiting manager approval before it goes to the supplier.' : po+' was sent to the supplier.';
         done.innerHTML = needsApproval ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>'+po+' · needs manager</span>' : '<span class="nb-pill info"><i class="ti ti-send"></i>'+po+' · sent</span>';
-        records.push({ kind:'po', id:po, supplier, outlet, value:Math.round(total), approval: needsApproval?'manager':'auto', delivery: needsApproval?'draft':'sent' });
+        records.push({ kind:'po', id:po, supplier, outlet, value:Math.round(total), approval: needsApproval?'manager':'auto', delivery: needsApproval?'draft':'sent', expected });
       }
       saveOrders(records);
     }
@@ -534,7 +540,22 @@
       wrap.appendChild(t); setTimeout(()=>t.remove(),2600);
     }
 
+    function formatExpected(val) {
+      if (!val) return '—';
+      const d = new Date(val + 'T12:00:00');
+      return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+    }
+
     renderOtto(); renderMarket(); renderBasket();
+
+    // Default delivery date to tomorrow
+    (function() {
+      const dateEl = document.getElementById('delivery-date');
+      if (dateEl && !dateEl.value) {
+        const t = new Date(); t.setDate(t.getDate() + 1);
+        dateEl.value = t.toISOString().split('T')[0];
+      }
+    })();
   </script>
 </body>
 </html>

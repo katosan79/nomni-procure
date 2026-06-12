@@ -90,6 +90,16 @@
     .route-select { width: 100%; height: 36px; margin-top: var(--space-sm); padding-inline: var(--space-md) var(--space-2xl); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; background: var(--surface); color: var(--text); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-sm) center; }
     .route-summary { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-md); background: var(--mint); border-radius: var(--radius-md); font-size: 13px; font-weight: 600; color: var(--spinach); }
 
+    /* Receiving drawer */
+    .recv-head { display: grid; grid-template-columns: 1fr 80px 90px; gap: var(--space-sm); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-soft); padding-bottom: var(--space-xs); border-bottom: 1px solid var(--border); }
+    .recv-row { display: grid; grid-template-columns: 1fr 80px 90px; gap: var(--space-sm); align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
+    .recv-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .recv-ord { font-size: 13px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .recv-qty { width: 80px; height: 34px; padding-inline: var(--space-sm); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; text-align: right; font-feature-settings: 'tnum' 1; color: var(--text); }
+    .recv-flag { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-lg); font-size: 13px; color: var(--text); cursor: pointer; }
+    .recv-flag input { width: 16px; height: 16px; accent-color: var(--fern); }
+    .recv-note { width: 100%; margin-top: var(--space-sm); padding: var(--space-sm) var(--space-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 13px; color: var(--text); resize: vertical; }
+
     @media (max-width: 1024px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
     @media (max-width: 768px) { .page-header { flex-direction: column; align-items: flex-start; } .page-title { font-size: 24px; } }
     @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } }
@@ -214,71 +224,87 @@
         </div>
       </div>
 
-      <!-- ══ Purchase orders panel (direct to supplier, manager approval) ══ -->
+      <!-- ══ Purchase orders panel (direct to supplier; full delivery lifecycle) ══ -->
       <div class="order-panel" id="panel-po">
         <div class="kpi-strip">
           <div class="kpi-tile"><span class="kpi-label">Awaiting approval</span><span class="kpi-value">2</span><span class="kpi-sub risk">Over $500 threshold</span></div>
-          <div class="kpi-tile"><span class="kpi-label">Sent to suppliers</span><span class="kpi-value">7</span><span class="kpi-sub">Awaiting confirmation</span></div>
-          <div class="kpi-tile"><span class="kpi-label">Confirmed</span><span class="kpi-value">3</span><span class="kpi-sub">In delivery</span></div>
-          <div class="kpi-tile"><span class="kpi-label">PO value · June</span><span class="kpi-value">$48.2k</span><span class="kpi-sub">Across 12 POs</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Awaiting confirmation</span><span class="kpi-value">2</span><span class="kpi-sub">Sent to suppliers</span></div>
+          <div class="kpi-tile"><span class="kpi-label">In delivery</span><span class="kpi-value">3</span><span class="kpi-sub">Confirmed / in transit</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Delayed</span><span class="kpi-value" style="color:var(--status-risk-fg)">1</span><span class="kpi-sub risk">Past expected date</span></div>
         </div>
         <div class="table-card">
           <table class="data-table" aria-label="Purchase orders">
-            <thead><tr><th>PO</th><th>Supplier</th><th>Outlet</th><th class="num">Value</th><th>Approval</th><th>Delivery</th><th><span class="sr-only">Actions</span></th></tr></thead>
+            <thead><tr><th>PO</th><th>Supplier</th><th>Outlet</th><th class="num">Value</th><th>Expected</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
             <tbody>
               <tr id="po-5521">
-                <td class="cell-id">PO-5521</td>
-                <td class="cell-name">Harbour Meats</td>
-                <td class="cell-sub">Surry Hills</td>
+                <td class="cell-id">PO-5521</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$640</td>
+                <td class="cell-sub">14 Jun</td>
                 <td><span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span></td>
-                <td><span class="nb-pill neutral">Draft</span></td>
                 <td><button class="link-action" onclick="approvePO('po-5521')">Approve</button></td>
               </tr>
               <tr id="po-5519">
-                <td class="cell-id">PO-5519</td>
-                <td class="cell-name">Green Farmers Market</td>
-                <td class="cell-sub">Newtown</td>
+                <td class="cell-id">PO-5519</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Newtown</td>
                 <td class="num">$1,180</td>
+                <td class="cell-sub">15 Jun</td>
                 <td><span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span></td>
-                <td><span class="nb-pill neutral">Draft</span></td>
                 <td><button class="link-action" onclick="approvePO('po-5519')">Approve</button></td>
               </tr>
               <tr>
-                <td class="cell-id">PO-5520</td>
-                <td class="cell-name">Fresh Produce Co</td>
-                <td class="cell-sub">Surry Hills</td>
+                <td class="cell-id">PO-5520</td><td class="cell-name">Fresh Produce Co</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$420</td>
-                <td><span class="nb-pill ok"><i class="ti ti-bolt"></i>Auto-approved</span></td>
-                <td><span class="nb-pill info"><i class="ti ti-send"></i>Sent</span></td>
+                <td class="cell-sub">13 Jun</td>
+                <td><span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div></td>
                 <td><button class="link-action" onclick="ordToast('Opening PO-5520…')">View</button></td>
               </tr>
               <tr>
-                <td class="cell-id">PO-5518</td>
-                <td class="cell-name">Pacific Drinks Wholesale</td>
-                <td class="cell-sub">Melbourne CBD</td>
+                <td class="cell-id">PO-5517</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Bondi Beach</td>
+                <td class="num">$280</td>
+                <td class="cell-sub">13 Jun</td>
+                <td><span class="nb-pill info"><i class="ti ti-mail-opened"></i>Opened</span><div class="cell-sub" style="margin-top:2px;">Email opened 9:14 am · implicit</div></td>
+                <td><button class="link-action" onclick="ordToast('Opening PO-5517…')">View</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PO-5518</td><td class="cell-name">Pacific Drinks Wholesale</td><td class="cell-sub">Melbourne CBD</td>
                 <td class="num">$520</td>
-                <td><span class="nb-pill ok"><i class="ti ti-check"></i>Approved</span></td>
-                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Confirmed</span></td>
+                <td class="cell-sub">14 Jun</td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Confirmed</span><div class="cell-sub" style="margin-top:2px;">via Nomni Supply</div></td>
                 <td><button class="link-action" onclick="ordToast('Opening PO-5518…')">View</button></td>
               </tr>
               <tr>
-                <td class="cell-id">PO-5515</td>
-                <td class="cell-name">Sydney Butchers Co.</td>
-                <td class="cell-sub">Bondi Beach</td>
+                <td class="cell-id">PO-5516</td><td class="cell-name">Fresh Produce Co</td><td class="cell-sub">Circular Quay</td>
+                <td class="num">$360</td>
+                <td class="cell-sub">12 Jun</td>
+                <td><span class="nb-pill info"><i class="ti ti-truck-delivery"></i>In transit</span></td>
+                <td><button class="link-action" onclick="ordToast('Tracking PO-5516…')">Track</button></td>
+              </tr>
+              <tr id="po-5515">
+                <td class="cell-id">PO-5515</td><td class="cell-name">Sydney Butchers Co.</td><td class="cell-sub">Bondi Beach</td>
                 <td class="num">$310</td>
-                <td><span class="nb-pill ok"><i class="ti ti-bolt"></i>Auto-approved</span></td>
-                <td><span class="nb-pill warn"><i class="ti ti-truck-delivery"></i>Partial · 4 of 6</span></td>
-                <td><button class="link-action" onclick="ordToast('Opening receiving for PO-5515…')">Receive</button></td>
+                <td class="cell-sub">12 Jun</td>
+                <td><span class="nb-pill info"><i class="ti ti-package"></i>Delivered</span><div class="cell-sub" style="margin-top:2px;">Awaiting your receipt</div></td>
+                <td><button class="link-action" onclick="openReceive('po-5515','Sydney Butchers Co.')">Receive</button></td>
+              </tr>
+              <tr id="po-5512">
+                <td class="cell-id">PO-5512</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Surry Hills</td>
+                <td class="num">$540</td>
+                <td class="cell-sub" style="color:var(--status-risk-fg);font-weight:600;">10 Jun</td>
+                <td><span class="nb-pill risk"><i class="ti ti-alert-triangle"></i>Delayed</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">2 days overdue</div></td>
+                <td><button class="link-action" onclick="ordToast('Chasing Green Farmers on PO-5512…')">Chase</button> · <button class="link-action" onclick="openReceive('po-5512','Green Farmers Market')">Receive</button></td>
               </tr>
               <tr>
-                <td class="cell-id">PO-5510</td>
-                <td class="cell-name">Green Farmers Market</td>
-                <td class="cell-sub">Parramatta Table</td>
+                <td class="cell-id">PO-5510</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Parramatta Table</td>
                 <td class="num">$890</td>
-                <td><span class="nb-pill ok"><i class="ti ti-check"></i>Approved</span></td>
-                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Received</span></td>
+                <td class="cell-sub">9 Jun</td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span><div class="cell-sub" style="margin-top:2px;">9 Jun · on time</div></td>
                 <td><button class="link-action" onclick="ordToast('Opening PO-5510…')">View</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PO-5508</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Newtown</td>
+                <td class="num">$470</td>
+                <td class="cell-sub">8 Jun</td>
+                <td><span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">2 lines short on receipt</div></td>
+                <td><button class="link-action" onclick="ordToast('Opening 3-way match exception for PO-5508…')">Resolve</button></td>
               </tr>
             </tbody>
           </table>
@@ -334,6 +360,20 @@
     </div>
   </aside>
 
+  <!-- Receiving drawer (outlet action, PO-5) -->
+  <div class="nb-drawer-scrim" id="receive-scrim" onclick="closeReceive()"></div>
+  <aside class="nb-drawer" id="receive-drawer" aria-label="Receive goods" aria-hidden="true" style="width:min(480px,94vw);">
+    <div class="nb-drawer-head">
+      <span class="nb-drawer-title">Receive · <span id="receive-title">PO</span></span>
+      <button class="nb-btn ghost" onclick="closeReceive()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="nb-drawer-body" id="receive-body"></div>
+    <div class="nb-drawer-foot">
+      <button class="nb-btn" onclick="closeReceive()">Cancel</button>
+      <button class="nb-btn primary" onclick="confirmReceive()"><i class="ti ti-package-import"></i>Confirm receipt</button>
+    </div>
+  </aside>
+
   <div id="ord-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
 
   <script>
@@ -371,12 +411,9 @@
           if (prBody) prBody.insertBefore(tr, prBody.firstChild);
           prAdded++;
         } else {
-          const approval = rec.approval === 'manager'
+          const status = rec.approval === 'manager'
             ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span>'
-            : '<span class="nb-pill ok"><i class="ti ti-bolt"></i>Auto-approved</span>';
-          const delivery = rec.delivery === 'sent'
-            ? '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span>'
-            : '<span class="nb-pill neutral">Draft</span>';
+            : '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
           const action = rec.approval === 'manager'
             ? '<button class="link-action" onclick="approveInjected(this)">Approve</button>'
             : '<button class="link-action" onclick="ordToast(\'Opening ' + rec.id + '…\')">View</button>';
@@ -386,8 +423,8 @@
             '<td class="cell-name">' + rec.supplier + '</td>' +
             '<td class="cell-sub">' + rec.outlet + '</td>' +
             '<td class="num">$' + rec.value.toLocaleString() + '</td>' +
-            '<td>' + approval + '</td>' +
-            '<td>' + delivery + '</td>' +
+            '<td class="cell-sub">' + (rec.expected || '—') + '</td>' +
+            '<td>' + status + '</td>' +
             '<td>' + action + '</td>';
           if (poBody) poBody.insertBefore(tr, poBody.firstChild);
           poAdded++;
@@ -404,8 +441,7 @@
     function approveInjected(btn) {
       const row = btn.closest('tr');
       const cells = row.querySelectorAll('td');
-      cells[4].innerHTML = '<span class="nb-pill ok"><i class="ti ti-check"></i>Approved</span>';
-      cells[5].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span>';
+      cells[5].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
       cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
       ordToast('Approved and sent to supplier');
     }
@@ -464,10 +500,58 @@
       const row = document.getElementById(rowId);
       if (!row) return;
       const cells = row.querySelectorAll('td');
-      cells[4].innerHTML = '<span class="nb-pill ok"><i class="ti ti-check"></i>Approved</span>';
-      cells[5].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span>';
+      cells[5].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
       cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
       ordToast('Approved and sent to supplier');
+    }
+
+    /* ── Receiving (outlet action, PO-5) ── */
+    let receiveRowId = null;
+    const RECEIVE_ITEMS = {
+      'po-5515': [ {n:'Beef Mince 80/20', q:8, u:'kg'}, {n:'Pork Sausage', q:6, u:'kg'}, {n:'Chicken Thigh', q:10, u:'kg'} ],
+      'po-5512': [ {n:'Avocado', q:40, u:'ea'}, {n:'Mixed Leaf', q:6, u:'kg'}, {n:'Roma Tomatoes', q:10, u:'kg'} ],
+    };
+    function openReceive(rowId, supplier) {
+      receiveRowId = rowId;
+      document.getElementById('receive-title').textContent = (document.getElementById(rowId)?.querySelector('.cell-id')?.textContent || 'PO') + ' · ' + supplier;
+      const items = RECEIVE_ITEMS[rowId] || [ {n:'Item A', q:5, u:'ea'}, {n:'Item B', q:3, u:'kg'} ];
+      document.getElementById('receive-body').innerHTML =
+        '<p style="font-size:13px;color:var(--text-soft);line-height:1.5;margin-bottom:var(--space-lg);">Confirm what arrived. Adjust any quantities that differ from the order — a shortfall or damage flags a discrepancy for the 3-way match.</p>' +
+        '<div class="recv-head"><span>Item</span><span>Ordered</span><span>Received</span></div>' +
+        items.map((it,i) => '<div class="recv-row"><span class="recv-name">'+it.n+'</span>' +
+          '<span class="recv-ord">'+it.q+' '+it.u+'</span>' +
+          '<input class="recv-qty" id="recv-'+i+'" type="number" value="'+it.q+'" min="0" data-ord="'+it.q+'"/></div>').join('') +
+        '<label class="recv-flag"><input type="checkbox" id="recv-damage"/> Flag a quality issue / damage</label>' +
+        '<textarea class="recv-note" id="recv-note" rows="2" placeholder="Note (optional) — e.g. 2 trays short, one carton damaged"></textarea>';
+      document.getElementById('receive-scrim').classList.add('open');
+      document.getElementById('receive-drawer').classList.add('open');
+      document.getElementById('receive-drawer').setAttribute('aria-hidden','false');
+    }
+    function closeReceive() {
+      document.getElementById('receive-scrim').classList.remove('open');
+      document.getElementById('receive-drawer').classList.remove('open');
+      document.getElementById('receive-drawer').setAttribute('aria-hidden','true');
+    }
+    function confirmReceive() {
+      const row = document.getElementById(receiveRowId);
+      const items = RECEIVE_ITEMS[receiveRowId] || [];
+      let short = false;
+      items.forEach((it,i) => { const v = parseFloat(document.getElementById('recv-'+i)?.value); if (!isNaN(v) && v < it.q) short = true; });
+      const damage = document.getElementById('recv-damage')?.checked;
+      const discrepancy = short || damage;
+      if (row) {
+        const cells = row.querySelectorAll('td');
+        if (discrepancy) {
+          cells[5].innerHTML = '<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">Flagged on receipt</div>';
+          cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening 3-way match exception…\')">Resolve</button>';
+        } else {
+          cells[5].innerHTML = '<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span><div class="cell-sub" style="margin-top:2px;">Received today</div>';
+          cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
+        }
+        row.classList.add('row-new');
+      }
+      closeReceive();
+      ordToast(discrepancy ? 'Received with a discrepancy — flagged for review' : 'Goods received and confirmed');
     }
 
     function ordToast(msg) {
