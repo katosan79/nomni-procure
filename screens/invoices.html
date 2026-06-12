@@ -574,7 +574,7 @@
         return `<tr class="${sel?'row-selected':''}" id="row-${inv.id}">
           <td class="col-check" style="padding-inline:var(--space-md);"><input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${inv.id}',this.checked)" style="cursor:pointer;accent-color:var(--fern);"/></td>
           <td class="col-inv">
-            <div class="cell-id">${inv.id}</div>
+            <a href="invoice-detail.html?id=${inv.id}" class="cell-id" style="text-decoration:none;color:inherit;">${inv.id}</a>
             ${inv.po
               ? `<div class="cell-sub"><a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);text-decoration:none;">${inv.po}</a></div>`
               : `<div class="cell-sub" style="color:var(--status-warn-fg);"><i class="ti ti-unlink" style="font-size:10px;"></i> No PO</div>`}
