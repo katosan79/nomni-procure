@@ -35,8 +35,8 @@
     .bulk-bar.show { display:flex; }
 
     /* ── Invoice table ── */
-    .inv-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
-    .inv-table { width:100%; border-collapse:collapse; table-layout:fixed; }
+    .inv-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; overflow-x:auto; }
+    .inv-table { width:100%; min-width:860px; border-collapse:collapse; table-layout:fixed; }
     .inv-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); padding:var(--space-sm) var(--space-sm); background:var(--surface-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
     .inv-table td { font-size:13px; padding:8px var(--space-sm); border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden; }
     .inv-table tr:last-child td { border-bottom:none; }
@@ -44,15 +44,15 @@
     .inv-table tbody tr.row-selected td { background:rgba(42,200,100,0.07); }
     /* Column widths — explicit layout avoids overflow clipping */
     .col-check  { width:32px; }
-    .col-inv    { width:108px; }
-    .col-sup    { width:145px; }
-    .col-outlet { width:105px; }
-    .col-date   { width:68px; }
-    .col-amt    { width:74px; }
-    .col-src    { width:112px; }
-    .col-status { width:104px; }
-    .col-match  { width:186px; }
-    .col-act    { width:148px; }
+    .col-inv    { width:112px; }
+    .col-sup    { width:150px; }
+    .col-outlet { width:110px; }
+    .col-date   { width:70px; }
+    .col-amt    { width:76px; }
+    .col-src    { display:none; }
+    .col-status { width:110px; }
+    .col-match  { width:196px; }
+    .col-act    { width:152px; }
     .num { text-align:right; font-feature-settings:'tnum' 1; }
     .cell-id { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; }
     .cell-sub { font-size:11px; color:var(--text-soft); margin-top:2px; white-space:nowrap; }
@@ -252,7 +252,7 @@
         </div>
 
         <!-- Table -->
-        <div class="inv-wrap" style="overflow-x:auto;">
+        <div class="inv-wrap">
           <table class="inv-table">
             <thead>
               <tr>
