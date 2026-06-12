@@ -82,10 +82,19 @@
     .basket { position: sticky; top: var(--space-lg); }
     .basket-item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); font-size: 13px; }
     .basket-item:last-child { border-bottom: none; }
-    .basket-remove { background: none; border: none; color: var(--text-soft); cursor: pointer; font-size: 14px; }
-    .basket-remove:hover { color: var(--status-risk-fg); }
+    .basket-remove { background: none; border: none; color: var(--text-soft); cursor: pointer; font-size: 16px; padding: 4px; border-radius: var(--radius-sm); line-height: 1; }
+    .basket-remove:hover { color: var(--status-risk-fg); background: var(--status-risk-bg); }
     .basket-total { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; padding-top: var(--space-md); margin-top: var(--space-sm); border-top: 1.5px solid var(--border); font-feature-settings: 'tnum' 1; }
     .basket-empty { font-size: 13px; color: var(--text-soft); text-align: center; padding: var(--space-xl) 0; }
+    /* Basket supplier groups */
+    .basket-group { margin-bottom: var(--space-md); }
+    .basket-group:last-child { margin-bottom: 0; }
+    .basket-group-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--space-sm); border-bottom: 1.5px solid var(--border); margin-bottom: 2px; }
+    .basket-supplier { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .delivery-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--status-ok-bg); color: var(--status-ok-fg); white-space: nowrap; }
+    .delivery-chip.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .delivery-sched { font-size: 11px; color: var(--text-soft); padding: var(--space-xs) 0 2px; display: flex; align-items: center; gap: 4px; }
+    .delivery-sched.cutoff { color: var(--status-warn-fg); }
 
     .two-col { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-lg); align-items: start; }
     @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } .type-grid { grid-template-columns: 1fr; } }
@@ -174,11 +183,7 @@
           </select>
           <p class="card-sub" id="outlet-note" style="margin:var(--space-sm) 0 0;">As HQ, you can raise this order on behalf of any outlet.</p>
         </div>
-        <div class="card">
-          <label class="field-label" for="delivery-date">Desired delivery date</label>
-          <input class="select-input" type="date" id="delivery-date"/>
-          <p class="card-sub" style="margin:var(--space-sm) 0 0;">Suppliers confirm against this date. If goods don't arrive by then, the order is flagged <strong>Delayed</strong>.</p>
-        </div>
+
       </div>
 
       <!-- ═══ Step 2: Items ═══ -->
@@ -276,6 +281,39 @@
     let basket = []; // {name, qty, unit, cat}
     const CAT_SUPPLIER = { Proteins:'Harbour Meats', Produce:'Fresh Produce Co', 'Dry goods':'Fresh Produce Co', Dairy:'Green Farmers Market', Bakery:'Artisan Bakehouse', Beverages:'Pacific Drinks Wholesale' };
 
+    // days: 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat · cutoff: 24h hour
+    const SUPPLIER_SCHEDULES = {
+      'Harbour Meats':            { days:[1,3,5], cutoff:15 },
+      'Fresh Produce Co':         { days:[1,2,3,4,5], cutoff:14 },
+      'Green Farmers Market':     { days:[1,3,5], cutoff:15 },
+      'Pacific Drinks Wholesale': { days:[2,4], cutoff:16 },
+      'Artisan Bakehouse':        { days:[1,2,3,4,5,6], cutoff:8 },
+    };
+
+    function formatDays(days) {
+      return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].filter((_,i)=>days.includes(i)).join(' / ');
+    }
+    function formatHour(h) { return h >= 12 ? (h===12?'12':h-12)+'pm' : h+'am'; }
+    function nextDelivery(supplier) {
+      const sched = SUPPLIER_SCHEDULES[supplier];
+      if (!sched) return null;
+      const now = new Date();
+      const hour = now.getHours() + now.getMinutes()/60;
+      const todayCutoffPassed = sched.days.includes(now.getDay()) && hour >= sched.cutoff;
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(now); d.setDate(d.getDate() + i);
+        if (!sched.days.includes(d.getDay())) continue;
+        if (i === 0 && hour >= sched.cutoff) continue;
+        return {
+          shortStr:     d.toLocaleDateString('en-AU', { day:'numeric', month:'short' }),
+          dateStr:      d.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' }),
+          cutoffPassed: todayCutoffPassed,
+          schedLabel:   formatDays(sched.days) + ' · cutoff ' + formatHour(sched.cutoff),
+        };
+      }
+      return null;
+    }
+
     const OTTO = [
       { name:'Chicken Breast 500g', qty:20, unit:7.15, cat:'Proteins', par:true },
       { name:'Avocado (each)', qty:40, unit:2.40, cat:'Produce', par:true },
@@ -340,7 +378,7 @@
       if (existing) existing.qty += item.qty; else basket.push(item);
       renderBasket();
     }
-    function removeBasket(idx) { basket.splice(idx,1); renderBasket(); }
+    function removeBasket(name) { basket = basket.filter(b => b.name !== name); renderBasket(); }
     function basketTotal() { return basket.reduce((s,b)=>s+b.qty*b.unit,0); }
 
     function renderBasket() {
@@ -351,11 +389,34 @@
         wrap.innerHTML = '<div class="basket-empty">No items yet. Add from the sources on the left.</div>';
         document.getElementById('basket-total-row').hidden = true;
       } else {
-        wrap.innerHTML = basket.map((b,i)=>`
-          <div class="basket-item">
-            <div><div style="font-weight:600;color:var(--text);">${b.name}</div><div class="item-meta">${b.qty} × $${b.unit.toFixed(2)} · ${b.cat}</div></div>
-            <div style="display:flex;align-items:center;gap:var(--space-sm);"><span style="font-weight:600;font-feature-settings:'tnum' 1;">$${(b.qty*b.unit).toFixed(0)}</span><button class="basket-remove" aria-label="Remove ${b.name}" onclick="removeBasket(${i})"><i class="ti ti-x"></i></button></div>
-          </div>`).join('');
+        // Group by supplier
+        const groups = {};
+        basket.forEach(b => {
+          const sup = CAT_SUPPLIER[b.cat] || 'Fresh Produce Co';
+          if (!groups[sup]) groups[sup] = [];
+          groups[sup].push(b);
+        });
+        wrap.innerHTML = Object.entries(groups).map(([sup, items]) => {
+          const nd = nextDelivery(sup);
+          const chip = nd
+            ? `<span class="delivery-chip${nd.cutoffPassed?' warn':''}"><i class="ti ti-calendar-event"></i>${nd.dateStr}</span>`
+            : '';
+          const schedNote = nd
+            ? (nd.cutoffPassed
+                ? `<div class="delivery-sched cutoff"><i class="ti ti-alert-triangle"></i>Cutoff passed — order pushed to ${nd.dateStr}</div>`
+                : `<div class="delivery-sched"><i class="ti ti-clock"></i>${nd.schedLabel}</div>`)
+            : '';
+          const itemsHtml = items.map(b =>
+            `<div class="basket-item">
+              <div><div style="font-weight:600;color:var(--text);">${b.name}</div><div class="item-meta">${b.qty} × $${b.unit.toFixed(2)}</div></div>
+              <div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;font-feature-settings:'tnum' 1;">$${(b.qty*b.unit).toFixed(0)}</span><button class="basket-remove" aria-label="Remove ${b.name}" onclick="removeBasket(${JSON.stringify(b.name)})"><i class="ti ti-x"></i></button></div>
+            </div>`).join('');
+          return `<div class="basket-group">
+            <div class="basket-group-head"><span class="basket-supplier">${sup}</span>${chip}</div>
+            ${itemsHtml}
+            ${schedNote}
+          </div>`;
+        }).join('');
         const tr = document.getElementById('basket-total-row'); tr.hidden = false;
         document.getElementById('basket-total').textContent = '$'+basketTotal().toFixed(2);
       }
@@ -458,13 +519,11 @@
       const cats = [...new Set(basket.map(b=>b.cat))];
       const itemsLabel = basket.length + ' items · ' + cats.join(', ').toLowerCase();
       const raisedBy = role === 'outlet' ? 'Keith Tan' : (basket.some(()=>true) ? 'Keith Tan' : 'HQ');
-      const expected = formatExpected(document.getElementById('delivery-date').value);
       const records = [];
 
       if (orderType === 'pr' && role === 'hq') {
         const suppliers = [...new Set(Object.values(routeSuppliers))];
         const pr = 'PR-'+(prCounter++);
-        // per-supplier totals
         const bySupplier = {};
         basket.forEach(b => { const s = routeSuppliers[b.cat] || 'Fresh Produce Co'; bySupplier[s] = (bySupplier[s]||0) + b.qty*b.unit; });
         const pos = suppliers.map(()=>'PO-'+(poCounter++));
@@ -474,6 +533,7 @@
         records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'routed', poCount:pos.length });
         suppliers.forEach((s,i) => {
           const v = Math.round(bySupplier[s]||0);
+          const expected = nextDelivery(s)?.shortStr || '—';
           records.push({ kind:'po', id:pos[i], supplier:s, outlet, value:v, approval: v>500?'manager':'auto', delivery: v>500?'draft':'sent', expected });
         });
       } else if (orderType === 'pr') {
@@ -481,11 +541,12 @@
         title.textContent = 'Requisition submitted';
         sub.innerHTML = pr+' was sent to HQ for review and supplier routing.';
         done.innerHTML = '<span class="nb-pill warn"><i class="ti ti-clock"></i>'+pr+' · awaiting HQ</span>';
-        records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'needs-review', poCount:0, expected });
+        records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'needs-review', poCount:0, expected:'—' });
       } else {
         const po = 'PO-'+(poCounter++);
         const needsApproval = total > 500;
         const supplier = (document.getElementById('po-supplier')||{}).value || 'Fresh Produce Co';
+        const expected = nextDelivery(supplier)?.shortStr || '—';
         title.textContent = needsApproval ? 'Order sent for approval' : 'Purchase order sent';
         sub.innerHTML = needsApproval ? po+' is awaiting manager approval before it goes to the supplier.' : po+' was sent to the supplier.';
         done.innerHTML = needsApproval ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>'+po+' · needs manager</span>' : '<span class="nb-pill info"><i class="ti ti-send"></i>'+po+' · sent</span>';
@@ -540,22 +601,7 @@
       wrap.appendChild(t); setTimeout(()=>t.remove(),2600);
     }
 
-    function formatExpected(val) {
-      if (!val) return '—';
-      const d = new Date(val + 'T12:00:00');
-      return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
-    }
-
     renderOtto(); renderMarket(); renderBasket();
-
-    // Default delivery date to tomorrow
-    (function() {
-      const dateEl = document.getElementById('delivery-date');
-      if (dateEl && !dateEl.value) {
-        const t = new Date(); t.setDate(t.getDate() + 1);
-        dateEl.value = t.toISOString().split('T')[0];
-      }
-    })();
   </script>
 </body>
 </html>
