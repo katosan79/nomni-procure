@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
   <style>
     body { background:var(--surface); height:100vh; overflow:hidden; }
-    /* Full-height split pane: override shell-content wrapper */
+    /* Full-height split pane: clamp shell-layout to viewport, then let flex fill downward */
+    .shell-layout { height:100vh !important; min-height:0 !important; overflow:hidden !important; }
     .shell-content { padding:0 !important; overflow:hidden !important; display:flex; flex-direction:column; }
     .main { display:flex; flex-direction:column; overflow:hidden; flex:1; min-height:0; }
 
