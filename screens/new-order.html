@@ -365,21 +365,21 @@
     }
 
     const OTTO = [
-      { name:'Chicken Breast 500g', qty:20, unit:7.15, cat:'Proteins', par:true },
-      { name:'Avocado (each)', qty:40, unit:2.40, cat:'Produce', par:true },
-      { name:'Roma Tomatoes 5kg', qty:4, unit:16.50, cat:'Produce', par:true },
-      { name:'Olive Oil 1L', qty:6, unit:12.00, cat:'Dry goods', par:true },
-      { name:'Oat Milk 1L', qty:24, unit:3.20, cat:'Dairy', par:false },
+      { name:'Chicken Breast 500g', qty:20, unit:7.15, cat:'Proteins', uom:'pkg', par:true },
+      { name:'Avocado (each)', qty:40, unit:2.40, cat:'Produce', uom:'ea', par:true },
+      { name:'Roma Tomatoes 5kg', qty:4, unit:16.50, cat:'Produce', uom:'box', par:true },
+      { name:'Olive Oil 1L', qty:6, unit:12.00, cat:'Dry goods', uom:'btl', par:true },
+      { name:'Oat Milk 1L', qty:24, unit:3.20, cat:'Dairy', uom:'btl', par:false },
     ];
     const MARKET = [
-      { name:'Sourdough Loaf', qty:12, unit:4.20, cat:'Bakery' },
-      { name:'Feta Cheese 200g', qty:8, unit:3.80, cat:'Dairy' },
-      { name:'Buffalo Mozzarella 250g', qty:6, unit:4.20, cat:'Dairy' },
-      { name:'Free-range Eggs (dozen)', qty:10, unit:6.50, cat:'Produce' },
+      { name:'Sourdough Loaf', qty:12, unit:4.20, cat:'Bakery', uom:'ea' },
+      { name:'Feta Cheese 200g', qty:8, unit:3.80, cat:'Dairy', uom:'ea' },
+      { name:'Buffalo Mozzarella 250g', qty:6, unit:4.20, cat:'Dairy', uom:'ea' },
+      { name:'Free-range Eggs (dozen)', qty:10, unit:6.50, cat:'Produce', uom:'doz' },
     ];
     const REORDERS = {
-      '5510':[ {name:'Mixed Leaf 2kg',qty:6,unit:9.00,cat:'Produce'},{name:'Roma Tomatoes 5kg',qty:4,unit:16.50,cat:'Produce'},{name:'Avocado (each)',qty:30,unit:2.40,cat:'Produce'} ],
-      '1030':[ {name:'Olive Oil 1L',qty:6,unit:12.00,cat:'Dry goods'},{name:'Sea Salt 1kg',qty:3,unit:5.50,cat:'Dry goods'},{name:'Plain Flour 5kg',qty:4,unit:8.00,cat:'Dry goods'} ],
+      '5510':[ {name:'Mixed Leaf 2kg',qty:6,unit:9.00,cat:'Produce',uom:'bag'},{name:'Roma Tomatoes 5kg',qty:4,unit:16.50,cat:'Produce',uom:'box'},{name:'Avocado (each)',qty:30,unit:2.40,cat:'Produce',uom:'ea'} ],
+      '1030':[ {name:'Olive Oil 1L',qty:6,unit:12.00,cat:'Dry goods',uom:'btl'},{name:'Sea Salt 1kg',qty:3,unit:5.50,cat:'Dry goods',uom:'pkg'},{name:'Plain Flour 5kg',qty:4,unit:8.00,cat:'Dry goods',uom:'pkg'} ],
     };
 
     /* ── Render item sources ── */
@@ -387,7 +387,7 @@
       document.getElementById('otto-list').innerHTML = OTTO.map((it,i) => `
         <div class="item-row">
           <input type="checkbox" class="item-check" id="otto-${i}" ${it.par?'checked':''}/>
-          <div><div class="item-name">${it.name} ${it.par?'<span class="below-par">· below par</span>':''}</div><div class="item-meta">$${it.unit.toFixed(2)} / unit · ${it.cat}</div></div>
+          <div><div class="item-name">${it.name} ${it.par?'<span class="below-par">· below par</span>':''}</div><div class="item-meta">$${it.unit.toFixed(2)} / ${it.uom||'unit'} · ${it.cat}</div></div>
           <input type="number" class="qty-input" id="otto-qty-${i}" value="${it.qty}" min="0"/>
           <span class="item-meta">est $${(it.qty*it.unit).toFixed(0)}</span>
         </div>`).join('');
@@ -396,7 +396,7 @@
       document.getElementById('market-list').innerHTML = MARKET.map((it,i) => `
         <div class="item-row">
           <span></span>
-          <div><div class="item-name">${it.name}</div><div class="item-meta">$${it.unit.toFixed(2)} / unit · ${it.cat}</div></div>
+          <div><div class="item-name">${it.name}</div><div class="item-meta">$${it.unit.toFixed(2)} / ${it.uom||'unit'} · ${it.cat}</div></div>
           <input type="number" class="qty-input" id="mkt-qty-${i}" value="${it.qty}" min="0"/>
           <button class="add-btn" onclick="addMarket(${i}, this)"><i class="ti ti-plus"></i>Add</button>
         </div>`).join('');
@@ -407,7 +407,7 @@
       OTTO.forEach((it,i) => {
         if (document.getElementById('otto-'+i).checked) {
           const qty = parseFloat(document.getElementById('otto-qty-'+i).value) || 0;
-          if (qty > 0) { addToBasket({ name:it.name, qty, unit:it.unit, cat:it.cat }); n++; }
+          if (qty > 0) { addToBasket({ name:it.name, qty, unit:it.unit, cat:it.cat, uom:it.uom }); n++; }
         }
       });
       noToast(n + ' item' + (n!==1?'s':'') + ' added from Otto');
@@ -415,7 +415,7 @@
     function addMarket(i, btn) {
       const it = MARKET[i];
       const qty = parseFloat(document.getElementById('mkt-qty-'+i).value) || 0;
-      if (qty>0) { addToBasket({ name:it.name, qty, unit:it.unit, cat:it.cat }); btn.classList.add('added'); btn.innerHTML='<i class="ti ti-check"></i>Added'; }
+      if (qty>0) { addToBasket({ name:it.name, qty, unit:it.unit, cat:it.cat, uom:it.uom }); btn.classList.add('added'); btn.innerHTML='<i class="ti ti-check"></i>Added'; }
     }
     function reorder(id, btn) {
       REORDERS[id].forEach(it => addToBasket({...it}));
@@ -458,7 +458,7 @@
             : '';
           const itemsHtml = items.map(b =>
             `<div class="basket-item">
-              <div><div style="font-weight:600;color:var(--text);">${b.name}</div><div class="item-meta">${b.qty} × $${b.unit.toFixed(2)}</div></div>
+              <div><div style="font-weight:600;color:var(--text);">${b.name}</div><div class="item-meta">${b.qty}${b.uom?' '+b.uom:''} × $${b.unit.toFixed(2)}</div></div>
               <div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;font-feature-settings:'tnum' 1;">$${(b.qty*b.unit).toFixed(0)}</span><button class="basket-remove" aria-label="Remove ${b.name}" onclick="removeBasket(${JSON.stringify(b.name)})"><i class="ti ti-x"></i></button></div>
             </div>`).join('');
           return `<div class="basket-group">
@@ -517,7 +517,7 @@
           const opts = [...new Set([def,'Fresh Produce Co','Harbour Meats','Green Farmers Market','Pacific Drinks Wholesale','Artisan Bakehouse'])];
           return `<div class="route-group">
             <div class="route-head"><span class="route-title">${cat} · ${items.length} item${items.length!==1?'s':''}</span><span class="item-meta">$${sum.toFixed(0)}</span></div>
-            <div class="route-items">${items.map(i=>i.name+' ×'+i.qty).join(' · ')}</div>
+            <div class="route-items">${items.map(i=>i.name+' ×'+i.qty+(i.uom?' '+i.uom:'')).join(' · ')}</div>
             <select class="select-input" style="max-width:none;margin-top:var(--space-sm);" data-cat="${cat}" onchange="onRouteChange(this)">${opts.map(o=>`<option ${o===def?'selected':''}>${o}${o===def?' — preferred':''}</option>`).join('')}</select>
           </div>`;
         }).join('') + '<div class="route-summary" id="route-summary"></div>';
@@ -553,7 +553,7 @@
                 ? '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:var(--status-warn-bg);color:var(--status-warn-fg);white-space:nowrap;"><i class="ti ti-user-check"></i> Needs approval</span>'
                 : '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:var(--status-ok-bg);color:var(--status-ok-fg);white-space:nowrap;"><i class="ti ti-bolt"></i> Auto-approved</span>'}
             </div>
-            <div class="route-items" style="margin-bottom:var(--space-sm);">${items.map(i=>i.name+' ×'+i.qty).join(' · ')}</div>
+            <div class="route-items" style="margin-bottom:var(--space-sm);">${items.map(i=>i.name+' ×'+i.qty+(i.uom?' '+i.uom:'')).join(' · ')}</div>
             <div style="display:flex;align-items:center;gap:var(--space-md);">
               <span style="font-size:12px;font-weight:600;color:var(--text-soft);white-space:nowrap;"><i class="ti ti-calendar-event"></i> Delivery</span>
               <select class="select-input" id="${safeId}" style="max-width:none;flex:1;">${buildDeliveryOptions(sup)}</select>
