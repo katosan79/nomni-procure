@@ -36,15 +36,28 @@
 
     /* ── Invoice table ── */
     .inv-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
-    .inv-table { width:100%; border-collapse:collapse; }
+    .inv-table { width:100%; border-collapse:collapse; table-layout:fixed; }
     .inv-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); padding:var(--space-sm) var(--space-md); background:var(--surface-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
-    .inv-table td { font-size:13px; padding:10px var(--space-md); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .inv-table td { font-size:13px; padding:8px var(--space-md); border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden; }
     .inv-table tr:last-child td { border-bottom:none; }
     .inv-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
     .inv-table tbody tr.row-selected td { background:rgba(42,200,100,0.07); }
+    /* Column widths — explicit layout avoids overflow clipping */
+    .col-check  { width:36px; }
+    .col-inv    { width:110px; }
+    .col-sup    { width:160px; }
+    .col-outlet { width:120px; }
+    .col-date   { width:80px; }
+    .col-amt    { width:80px; }
+    .col-src    { width:130px; }
+    .col-status { width:110px; }
+    .col-match  { width:200px; }
+    .col-act    { width:120px; }
     .num { text-align:right; font-feature-settings:'tnum' 1; }
-    .cell-id { font-size:13px; font-weight:700; color:var(--text); }
-    .cell-sub { font-size:11px; color:var(--text-soft); margin-top:2px; }
+    .cell-id { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; }
+    .cell-sub { font-size:11px; color:var(--text-soft); margin-top:2px; white-space:nowrap; }
+    .cell-sup { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cell-outlet { font-size:13px; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .link-btn { background:none; border:none; color:var(--text-link); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:2px 4px; border-radius:var(--radius-sm); white-space:nowrap; }
     .link-btn:hover { text-decoration:underline; }
     .action-sep { color:var(--border); padding:0 2px; font-size:11px; }
@@ -56,10 +69,12 @@
     .src-badge.nomni   { background:var(--mint); color:var(--spinach); }
 
     /* ── Match badge ── */
-    .match-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; white-space:nowrap; }
+    .match-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; white-space:nowrap; }
     .match-badge.pass    { color:var(--status-ok-fg); }
     .match-badge.fail    { color:var(--status-risk-fg); }
     .match-badge.pending { color:var(--text-soft); }
+    /* Ensure all nb-pill status badges never wrap */
+    .nb-pill { white-space:nowrap; }
 
     /* ── Variance chip ── */
     .var-chip { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:var(--radius-pill); }
@@ -223,17 +238,16 @@
           <table class="inv-table">
             <thead>
               <tr>
-                <th style="width:36px;padding-inline:var(--space-md);"><input type="checkbox" id="sel-all" onchange="toggleAll(this.checked)" style="cursor:pointer;accent-color:var(--fern);"/></th>
-                <th>Invoice</th>
-                <th>Supplier</th>
-                <th>Outlet</th>
-                <th>Linked PO</th>
-                <th>Date received</th>
-                <th class="num">Amount</th>
-                <th>Source</th>
-                <th>Status</th>
-                <th>3-way match</th>
-                <th><span class="sr-only">Actions</span></th>
+                <th class="col-check" style="padding-inline:var(--space-md);"><input type="checkbox" id="sel-all" onchange="toggleAll(this.checked)" style="cursor:pointer;accent-color:var(--fern);"/></th>
+                <th class="col-inv">Invoice</th>
+                <th class="col-sup">Supplier</th>
+                <th class="col-outlet">Outlet</th>
+                <th class="col-date">Received</th>
+                <th class="col-amt num">Amount</th>
+                <th class="col-src">Source</th>
+                <th class="col-status">Status</th>
+                <th class="col-match">3-way match</th>
+                <th class="col-act"><span class="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody id="inv-tbody"></tbody>
@@ -512,23 +526,22 @@
 
       tbody.innerHTML = rows.map(inv => {
         const sel = _selected.has(inv.id);
+        // Short date: "12 Jun" (drop year — all same year in context)
+        const shortDate = inv.date.replace(/ \d{4}$/, '');
         return `<tr class="${sel?'row-selected':''}" id="row-${inv.id}">
-          <td style="padding-inline:var(--space-md);"><input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${inv.id}',this.checked)" style="cursor:pointer;accent-color:var(--fern);"/></td>
-          <td>
+          <td class="col-check" style="padding-inline:var(--space-md);"><input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${inv.id}',this.checked)" style="cursor:pointer;accent-color:var(--fern);"/></td>
+          <td class="col-inv">
             <div class="cell-id">${inv.id}</div>
-            <div class="cell-sub" style="margin-top:2px;"><a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);font-weight:600;text-decoration:none;">${inv.po}</a></div>
+            <div class="cell-sub"><a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);text-decoration:none;">${inv.po}</a></div>
           </td>
-          <td>
-            <div style="font-weight:600;color:var(--text);">${inv.supplier}</div>
-          </td>
-          <td><div style="font-size:13px;color:var(--text-soft);">${inv.outlet}</div></td>
-          <td><a href="order-detail.html?id=${inv.po}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--text-link);text-decoration:none;">${inv.po}</a></td>
-          <td><div style="font-size:13px;color:var(--text-soft);">${inv.date}</div></td>
-          <td class="num"><strong>$${inv.amount.toLocaleString()}</strong></td>
-          <td>${srcBadge(inv.source)}</td>
-          <td>${STATUS_CFG[inv.status]?.pill||''}</td>
-          <td>${matchBadge(inv)}</td>
-          <td style="white-space:nowrap;">${rowActions(inv)}</td>
+          <td class="col-sup" title="${inv.supplier}"><div class="cell-sup">${inv.supplier}</div></td>
+          <td class="col-outlet" title="${inv.outlet}"><div class="cell-outlet">${inv.outlet}</div></td>
+          <td class="col-date"><span style="font-size:13px;color:var(--text-soft);white-space:nowrap;">${shortDate}</span></td>
+          <td class="col-amt num"><strong style="font-feature-settings:'tnum' 1;">$${inv.amount.toLocaleString()}</strong></td>
+          <td class="col-src">${srcBadge(inv.source)}</td>
+          <td class="col-status">${STATUS_CFG[inv.status]?.pill||''}</td>
+          <td class="col-match">${matchBadge(inv)}</td>
+          <td class="col-act" style="white-space:nowrap;">${rowActions(inv)}</td>
         </tr>`;
       }).join('');
     }
