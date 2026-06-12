@@ -116,6 +116,34 @@
     .done-sub { font-size: 14px; color: var(--text-soft); line-height: 1.6; max-width: 440px; }
     .done-ids { display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: center; }
 
+    /* PO confirmation cards (Step 4) */
+    .po-cards-wrap { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: var(--space-sm); text-align: left; }
+    .po-card-anim { background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md); overflow: hidden; }
+    .po-card-row { display: flex; align-items: center; gap: var(--space-md); }
+    .po-init { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; flex-shrink: 0; }
+    .po-card-info { flex: 1; min-width: 0; }
+    .po-card-id { font-size: 13px; font-weight: 700; color: var(--text); }
+    .po-card-sup { font-size: 12px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .po-card-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); white-space: nowrap; flex-shrink: 0; }
+    .po-card-status.sending { background: var(--status-info-bg); color: var(--status-info-fg); }
+    .po-card-status.ok { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .po-card-status.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .po-progress-track { height: 3px; background: var(--border); border-radius: var(--radius-pill); overflow: hidden; margin-top: var(--space-sm); }
+    .po-progress-fill { height: 100%; background: var(--spring); border-radius: var(--radius-pill); width: 0%; animation: po-fill 1.4s var(--ease-standard) forwards; }
+    @keyframes po-fill { from { width: 0%; } to { width: 100%; } }
+
+    /* Supplier initial avatar colours */
+    .po-init[data-sup="Harbour Meats"]            { background: rgba(23,179,163,0.15); color: #0E7A6E; }
+    .po-init[data-sup="Fresh Produce Co"]         { background: rgba(42,200,100,0.15); color: var(--spinach); }
+    .po-init[data-sup="Green Farmers Market"]     { background: rgba(18,155,65,0.15);  color: var(--fern); }
+    .po-init[data-sup="Pacific Drinks Wholesale"] { background: rgba(63,195,251,0.15); color: #0A6B8A; }
+    .po-init[data-sup="Artisan Bakehouse"]        { background: rgba(245,194,25,0.15); color: #7A5000; }
+
+    /* Supplier header in Step 3 review */
+    .sup-review-head { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm); }
+    .sup-review-name { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .sup-review-meta { font-size: 12px; color: var(--text-soft); }
+
     /* Sticky footer nav */
     .wizard-foot { position: fixed; bottom: 0; left: var(--nav-width, 220px); right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-2xl); z-index: 40; }
     .wizard-foot .est { font-size: 13px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
@@ -294,6 +322,10 @@
       return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].filter((_,i)=>days.includes(i)).join(' / ');
     }
     function formatHour(h) { return h >= 12 ? (h===12?'12':h-12)+'pm' : h+'am'; }
+    function supInitials(name) {
+      return name.split(' ').filter(w=>w.length>2).map(w=>w[0]).slice(0,2).join('').toUpperCase() || name.slice(0,2).toUpperCase();
+    }
+
     function buildDeliveryOptions(supplier, count) {
       count = count || 4;
       const sched = SUPPLIER_SCHEDULES[supplier];
@@ -511,15 +543,21 @@
           const needsApproval = v > 500;
           const safeId = 'del-' + sup.replace(/\W+/g,'-');
           return `<div class="route-group">
-            <div class="route-head"><span class="route-title">${sup}</span><span class="item-meta">$${Math.round(v)}</span></div>
-            <div class="route-items">${items.map(i=>i.name+' ×'+i.qty).join(' · ')}</div>
-            <div style="display:flex;align-items:center;gap:var(--space-md);margin-top:var(--space-sm);">
+            <div class="sup-review-head">
+              <div class="po-init" data-sup="${sup}" style="width:44px;height:44px;font-size:13px;">${supInitials(sup)}</div>
+              <div style="flex:1;min-width:0;">
+                <div class="sup-review-name">${sup}</div>
+                <div class="sup-review-meta">${items.length} item${items.length!==1?'s':''} · $${Math.round(v)}</div>
+              </div>
+              ${needsApproval
+                ? '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:var(--status-warn-bg);color:var(--status-warn-fg);white-space:nowrap;"><i class="ti ti-user-check"></i> Needs approval</span>'
+                : '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:var(--status-ok-bg);color:var(--status-ok-fg);white-space:nowrap;"><i class="ti ti-bolt"></i> Auto-approved</span>'}
+            </div>
+            <div class="route-items" style="margin-bottom:var(--space-sm);">${items.map(i=>i.name+' ×'+i.qty).join(' · ')}</div>
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
               <span style="font-size:12px;font-weight:600;color:var(--text-soft);white-space:nowrap;"><i class="ti ti-calendar-event"></i> Delivery</span>
               <select class="select-input" id="${safeId}" style="max-width:none;flex:1;">${buildDeliveryOptions(sup)}</select>
             </div>
-            ${needsApproval
-              ? '<div class="info-note warn" style="margin-top:var(--space-sm);"><i class="ti ti-user-check"></i><div>$'+Math.round(v)+' exceeds the $500 threshold — needs manager approval before sending.</div></div>'
-              : '<div class="info-note" style="margin-top:var(--space-sm);"><i class="ti ti-bolt"></i><div>Within policy ($'+Math.round(v)+' ≤ $500) — will be auto-approved and sent immediately.</div></div>'}
           </div>`;
         }).join('') + (poEntries.length > 1
           ? '<div class="route-summary"><i class="ti ti-git-branch"></i> This will create '+poEntries.length+' purchase orders to '+poEntries.length+' suppliers</div>'
@@ -585,19 +623,40 @@
         const poEntries = Object.entries(poGroups);
         const pos = poEntries.map(() => 'PO-'+(poCounter++));
         const anyApproval = poEntries.some(([_,items]) => items.reduce((s,b)=>s+b.qty*b.unit,0) > 500);
-        title.textContent = anyApproval ? 'Orders sent for approval' : 'Purchase orders sent';
-        sub.innerHTML = pos.length+' purchase order'+(pos.length!==1?'s':'')+' created across '+poEntries.length+' supplier'+(poEntries.length!==1?'s':'');
-        done.innerHTML = pos.map((p,i) => {
-          const v = poEntries[i][1].reduce((s,b)=>s+b.qty*b.unit,0);
-          return v > 500
-            ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>'+p+' · needs manager</span>'
-            : '<span class="nb-pill info"><i class="ti ti-send"></i>'+p+' · sent</span>';
-        }).join('');
-        poEntries.forEach(([sup, items], i) => {
+        title.textContent = anyApproval ? 'Orders submitted' : 'Orders sent';
+        sub.innerHTML = pos.length+' purchase order'+(pos.length!==1?'s':'')+' across '+poEntries.length+' supplier'+(poEntries.length!==1?'s':'');
+        // Build animated PO cards
+        const cardData = poEntries.map(([sup, items], i) => {
           const v = Math.round(items.reduce((s,b)=>s+b.qty*b.unit,0));
+          const needsApproval = v > 500;
           const safeId = 'del-' + sup.replace(/\W+/g,'-');
           const expected = (document.getElementById(safeId)||{}).value || nextDelivery(sup)?.shortStr || '—';
-          records.push({ kind:'po', id:pos[i], supplier:sup, outlet, value:v, approval: v>500?'manager':'auto', delivery: v>500?'draft':'sent', expected });
+          records.push({ kind:'po', id:pos[i], supplier:sup, outlet, value:v, approval: needsApproval?'manager':'auto', delivery: needsApproval?'draft':'sent', expected });
+          return { id:pos[i], sup, v, needsApproval, delay: i*280 };
+        });
+        done.className = ''; // clear done-ids flex wrap for card layout
+        done.innerHTML = `<div class="po-cards-wrap">${cardData.map(d =>
+          `<div class="po-card-anim">
+            <div class="po-card-row">
+              <div class="po-init" data-sup="${d.sup}">${supInitials(d.sup)}</div>
+              <div class="po-card-info">
+                <div class="po-card-id">${d.id}</div>
+                <div class="po-card-sup">${d.sup} · $${d.v}</div>
+              </div>
+              <span class="po-card-status sending" id="pcs-${d.delay}">Sending…</span>
+            </div>
+            <div class="po-progress-track">
+              <div class="po-progress-fill" style="animation-delay:${d.delay}ms;"></div>
+            </div>
+          </div>`).join('')}</div>`;
+        // Transition each card to its final state after its progress bar finishes
+        cardData.forEach(d => {
+          setTimeout(() => {
+            const el = document.getElementById('pcs-'+d.delay);
+            if (!el) return;
+            el.className = 'po-card-status ' + (d.needsApproval ? 'warn' : 'ok');
+            el.innerHTML = d.needsApproval ? '<i class="ti ti-user-check"></i> Needs approval' : '<i class="ti ti-circle-check"></i> Sent';
+          }, d.delay + 1600);
         });
       }
       saveOrders(records);
