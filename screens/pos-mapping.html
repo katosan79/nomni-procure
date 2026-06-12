@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>POS mapping — Nomni HQ</title>
-  <link rel="stylesheet" href="../shared/tokens.css?v=2"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
   <style>
     body { background: var(--surface-soft); }
@@ -565,7 +565,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=3" data-active="pos-mapping"></script>
+  <script src="../shared/shell.js?v=4" data-active="pos-mapping"></script>
   <div class="page-body">
     <div class="napp-canvas" data-measure="wide">
 
@@ -616,7 +616,7 @@
       </div>
 
       <!-- Sloan agent: suggested mapping for unmapped item (PM-6) -->
-      <article class="agent-surface hq-only" id="sloan-pos">
+      <article class="agent-surface hq-only" id="sloan-pos" data-agent-fn="governance">
         <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
           <div class="agent-card-head">
             <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
@@ -633,6 +633,8 @@
           </div>
         </div>
       </article>
+
+      <div class="agent-fallback role-hq-only" data-fallback-fn="governance" style="align-items:center;gap:var(--space-md);padding:var(--space-lg) var(--space-xl);border:1px dashed var(--border);border-radius:var(--radius-lg);background:var(--surface);font-size:14px;color:var(--text);margin-bottom:var(--space-2xl);"><i class="ti ti-pencil-plus" style="font-size:20px;color:var(--text-accent);"></i><div style="flex:1;">Governance agent is off. Map new POS items manually using the table below.</div></div>
 
       <!-- Filter bar -->
       <div class="filter-bar">

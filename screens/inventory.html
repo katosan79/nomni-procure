@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Inventory — Nomni HQ</title>
-  <link rel="stylesheet" href="../shared/tokens.css?v=2"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
   <style>
     body { background: var(--surface-soft); }
@@ -572,7 +572,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=3" data-active="inventory"></script>
+  <script src="../shared/shell.js?v=4" data-active="inventory"></script>
   <div class="page-body">
     <div class="napp-canvas" data-measure="content">
 
@@ -591,7 +591,7 @@
 
       <!-- Agent strip: Otto (Ordering) + Mara (Variance) -->
       <div class="agent-strip">
-        <article class="agent-surface" id="otto-card">
+        <article class="agent-surface" id="otto-card" data-agent-fn="ordering">
           <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
             <div class="agent-card-head">
               <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
@@ -607,7 +607,7 @@
             </div>
           </div>
         </article>
-        <article class="agent-surface" id="mara-card">
+        <article class="agent-surface" id="mara-card" data-agent-fn="variance">
           <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
             <div class="agent-card-head">
               <span class="agent-avatar" data-agent="mara" aria-hidden="true">Ma</span>

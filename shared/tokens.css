@@ -207,3 +207,30 @@ html[data-role="supplier"]    .role-editor-only { display: none !important; }
 .role-readonly-note { display: none; }
 html[data-tier="outlet"]   .role-readonly-note,
 html[data-tier="external"] .role-readonly-note { display: flex; }
+
+/* ──────────────────────────────────────────────────────────
+   Agent layer visibility — driven by the Agents on/off control,
+   which sets data-agents (master) and data-fn-<function> on <html>.
+   Lets the prototype demo a staged rollout (some agents live, some not).
+   ────────────────────────────────────────────────────────── */
+/* Master OFF hides every agent surface + additive agent feature */
+html[data-agents="off"] [data-agent-fn],
+html[data-agents="off"] .agent-feature,
+html[data-agents="off"] .agent-byline,
+html[data-agents="off"] .agent-mark { display: none !important; }
+/* A specific agent OFF hides just that function's surfaces */
+html[data-fn-ordering="off"]   [data-agent-fn="ordering"],
+html[data-fn-invoice="off"]    [data-agent-fn="invoice"],
+html[data-fn-margin="off"]     [data-agent-fn="margin"],
+html[data-fn-variance="off"]   [data-agent-fn="variance"],
+html[data-fn-governance="off"] [data-agent-fn="governance"] { display: none !important; }
+
+/* Manual fallbacks — the pre-agent workflow, shown only when the owning
+   agent (or the master switch) is off. */
+.agent-fallback { display: none !important; }
+html[data-agents="off"]        .agent-fallback,
+html[data-fn-ordering="off"]   .agent-fallback[data-fallback-fn="ordering"],
+html[data-fn-invoice="off"]    .agent-fallback[data-fallback-fn="invoice"],
+html[data-fn-margin="off"]     .agent-fallback[data-fallback-fn="margin"],
+html[data-fn-variance="off"]   .agent-fallback[data-fallback-fn="variance"],
+html[data-fn-governance="off"] .agent-fallback[data-fallback-fn="governance"] { display: flex !important; }

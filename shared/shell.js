@@ -46,6 +46,21 @@
     return ROLES.find(r => r.id === id) || ROLES[0];
   }
 
+  /* ── Agents (the on/off + staged-rollout switcher) ── */
+  const AGENTS = [
+    { fn: 'ordering',   agent: 'otto',  short: 'Ot', name: 'Ordering',   who: 'Otto'  },
+    { fn: 'governance', agent: 'sloan', short: 'Sl', name: 'Governance', who: 'Sloan' },
+    { fn: 'invoice',    agent: 'cyrus', short: 'Cy', name: 'Invoice',    who: 'Cyrus' },
+    { fn: 'margin',     agent: 'mara',  short: 'Ma', name: 'Margin',     who: 'Mara'  },
+    { fn: 'variance',   agent: 'mara',  short: 'Ma', name: 'Variance',   who: 'Mara'  },
+  ];
+  function agentsMaster() {
+    try { return localStorage.getItem('nomni_agents') !== 'off'; } catch (e) { return true; }
+  }
+  function fnState() {
+    try { return JSON.parse(localStorage.getItem('nomni_fn') || '{}'); } catch (e) { return {}; }
+  }
+
   const script   = document.currentScript;
   const activeId = script ? script.getAttribute('data-active') : '';
 
@@ -262,6 +277,47 @@
     .shell-role-item[aria-checked="true"] .ra { background: var(--fern); color: var(--btn-primary-fg); }
     @media (max-width: 768px) { .shell-role-btn .va-label, .shell-role-btn .va-caret { display: none; } }
 
+    /* ── Agents on/off control (demo) ── */
+    .shell-agentswitch { position: relative; }
+    .shell-agents-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 32px; padding: 0 10px;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); color: var(--text);
+      font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: border-color var(--dur-1) var(--ease-standard);
+    }
+    .shell-agents-btn:hover { border-color: var(--text-accent); }
+    .shell-agents-btn .va-spark { color: var(--text-accent); font-size: 15px; }
+    .shell-agents-btn .agents-dot { width: 7px; height: 7px; border-radius: var(--radius-pill); background: var(--status-ok-fg); }
+    html[data-agents="off"] .shell-agents-btn .agents-dot { background: var(--stone); }
+    html[data-agents="off"] .shell-agents-btn .va-spark { color: var(--text-soft); }
+    .shell-agents-menu {
+      position: absolute; top: calc(100% + 6px); right: 0; min-width: 270px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+      padding: 6px; z-index: 60; display: none;
+    }
+    .shell-agents-menu.open { display: block; }
+    .shell-toggle-row {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      padding: 8px 10px; border: none; background: none; cursor: pointer;
+      font-family: inherit; text-align: left; border-radius: var(--radius-sm);
+    }
+    .shell-toggle-row:hover { background: var(--surface-soft); }
+    .shell-toggle-row .tg-icon { width: 26px; height: 26px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; background: var(--surface-soft); color: var(--text-soft); }
+    .shell-toggle-row[data-master] .tg-icon { background: color-mix(in srgb, var(--fern) 14%, transparent); color: var(--text-accent); }
+    .shell-toggle-row .tg-label { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+    .shell-toggle-row .tg-label strong { font-size: 13px; font-weight: 600; color: var(--text); }
+    .shell-toggle-row .tg-label small { font-size: 11px; color: var(--text-soft); }
+    .shell-toggle-row .tg-switch { width: 34px; height: 20px; border-radius: var(--radius-pill); background: var(--stone); position: relative; flex-shrink: 0; transition: background var(--dur-2) var(--ease-standard); }
+    .shell-toggle-row .tg-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: var(--radius-pill); background: var(--porcelain); box-shadow: var(--shadow-sm); transition: transform var(--dur-2) var(--ease-standard); }
+    .shell-toggle-row[aria-checked="true"] .tg-switch { background: var(--fern); }
+    .shell-toggle-row[aria-checked="true"] .tg-switch::after { transform: translateX(14px); }
+    .shell-agents-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+    .shell-agents-menu.master-off .shell-toggle-row:not([data-master]) { opacity: 0.4; pointer-events: none; }
+    @media (max-width: 768px) { .shell-agents-btn .va-label { display: none; } }
+
     /* Hamburger — hidden on desktop */
     .shell-hamburger { display: none; }
 
@@ -355,6 +411,13 @@
       return `<div class="shell-role-group">${g}</div>${items}`;
     }).join('');
 
+    const agentRows = AGENTS.map(a =>
+      `<button class="shell-toggle-row" role="menuitemcheckbox" data-fn="${a.fn}" aria-checked="true">
+         <span class="tg-icon">${a.short}</span>
+         <span class="tg-label"><strong>${a.name}</strong><small>${a.who}</small></span>
+         <span class="tg-switch" aria-hidden="true"></span>
+       </button>`).join('');
+
     return `
       <div class="shell-overlay" id="shell-overlay" aria-hidden="true"></div>
 
@@ -389,6 +452,23 @@
             <span class="shell-topbar-title">${pageTitle || 'HQ Module'}</span>
           </div>
           <div class="shell-topbar-actions">
+            <div class="shell-agentswitch">
+              <button class="shell-agents-btn" id="shell-agents-btn" aria-haspopup="menu" aria-expanded="false" title="Demo: turn the AI agent layer on or off">
+                <i class="ti ti-sparkles va-spark" aria-hidden="true"></i>
+                <span class="va-label">Agents</span>
+                <span class="agents-dot" aria-hidden="true"></span>
+              </button>
+              <div class="shell-agents-menu" id="shell-agents-menu" role="menu" aria-label="AI agents">
+                <div class="shell-role-hint">Demo control — simulate a staged agent rollout.</div>
+                <button class="shell-toggle-row" id="shell-agents-master" data-master role="menuitemcheckbox" aria-checked="true">
+                  <span class="tg-icon" aria-hidden="true"><i class="ti ti-robot"></i></span>
+                  <span class="tg-label"><strong>AI agents</strong><small>Master switch</small></span>
+                  <span class="tg-switch" aria-hidden="true"></span>
+                </button>
+                <div class="shell-agents-divider"></div>
+                ${agentRows}
+              </div>
+            </div>
             <div class="shell-roleswitch">
               <button class="shell-role-btn" id="shell-role-btn" aria-haspopup="menu" aria-expanded="false" title="Demo: switch the role you're viewing as">
                 <i class="ti ti-eye va-eye" aria-hidden="true"></i>
@@ -493,9 +573,55 @@
         roles: ROLES,
       };
 
+      // ── Agents on/off ──
+      const agentsBtn  = document.getElementById('shell-agents-btn');
+      const agentsMenu = document.getElementById('shell-agents-menu');
+      const masterRow  = document.getElementById('shell-agents-master');
+
+      function applyAgents() {
+        const master = agentsMaster();
+        const fns = fnState();
+        document.documentElement.setAttribute('data-agents', master ? 'on' : 'off');
+        AGENTS.forEach(a => {
+          const on = fns[a.fn] !== false;
+          document.documentElement.setAttribute('data-fn-' + a.fn, on ? 'on' : 'off');
+        });
+        // Reflect master switch + dim the per-agent rows when off
+        if (masterRow) masterRow.setAttribute('aria-checked', master ? 'true' : 'false');
+        if (agentsMenu) agentsMenu.classList.toggle('master-off', !master);
+        document.querySelectorAll('.shell-toggle-row[data-fn]').forEach(row => {
+          const on = fns[row.dataset.fn] !== false;
+          row.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
+      }
+      function setMaster(on) { try { localStorage.setItem('nomni_agents', on ? 'on' : 'off'); } catch (e) {} applyAgents(); }
+      function setFn(fn, on) {
+        const fns = fnState(); fns[fn] = on;
+        try { localStorage.setItem('nomni_fn', JSON.stringify(fns)); } catch (e) {}
+        applyAgents();
+      }
+      function toggleAgentsMenu(open) {
+        const show = open !== undefined ? open : !agentsMenu.classList.contains('open');
+        agentsMenu.classList.toggle('open', show);
+        if (agentsBtn) agentsBtn.setAttribute('aria-expanded', show ? 'true' : 'false');
+      }
+      if (agentsBtn) agentsBtn.addEventListener('click', e => { e.stopPropagation(); toggleAgentsMenu(); });
+      if (masterRow) masterRow.addEventListener('click', () => setMaster(masterRow.getAttribute('aria-checked') !== 'true'));
+      document.querySelectorAll('.shell-toggle-row[data-fn]').forEach(row =>
+        row.addEventListener('click', () => setFn(row.dataset.fn, row.getAttribute('aria-checked') !== 'true')));
+      document.addEventListener('click', e => {
+        if (agentsMenu && !e.target.closest('.shell-agentswitch')) toggleAgentsMenu(false);
+      });
+
+      applyAgents();
+      window.NomniAgents = {
+        get master() { return agentsMaster(); },
+        setMaster, setFn, agents: AGENTS,
+      };
+
       // Close on Escape
       document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { closeNav(); toggleRoleMenu(false); }
+        if (e.key === 'Escape') { closeNav(); toggleRoleMenu(false); toggleAgentsMenu(false); }
       });
     },
 
