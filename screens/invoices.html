@@ -37,22 +37,22 @@
     /* ── Invoice table ── */
     .inv-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
     .inv-table { width:100%; border-collapse:collapse; table-layout:fixed; }
-    .inv-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); padding:var(--space-sm) var(--space-md); background:var(--surface-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
-    .inv-table td { font-size:13px; padding:8px var(--space-md); border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden; }
+    .inv-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); padding:var(--space-sm) var(--space-sm); background:var(--surface-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .inv-table td { font-size:13px; padding:8px var(--space-sm); border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden; }
     .inv-table tr:last-child td { border-bottom:none; }
     .inv-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
     .inv-table tbody tr.row-selected td { background:rgba(42,200,100,0.07); }
     /* Column widths — explicit layout avoids overflow clipping */
-    .col-check  { width:36px; }
-    .col-inv    { width:110px; }
-    .col-sup    { width:160px; }
-    .col-outlet { width:120px; }
-    .col-date   { width:80px; }
-    .col-amt    { width:80px; }
-    .col-src    { width:130px; }
-    .col-status { width:110px; }
-    .col-match  { width:200px; }
-    .col-act    { width:120px; }
+    .col-check  { width:32px; }
+    .col-inv    { width:108px; }
+    .col-sup    { width:145px; }
+    .col-outlet { width:105px; }
+    .col-date   { width:68px; }
+    .col-amt    { width:74px; }
+    .col-src    { width:112px; }
+    .col-status { width:104px; }
+    .col-match  { width:186px; }
+    .col-act    { width:148px; }
     .num { text-align:right; font-feature-settings:'tnum' 1; }
     .cell-id { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; }
     .cell-sub { font-size:11px; color:var(--text-soft); margin-top:2px; white-space:nowrap; }
@@ -60,7 +60,8 @@
     .cell-outlet { font-size:13px; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .link-btn { background:none; border:none; color:var(--text-link); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:2px 4px; border-radius:var(--radius-sm); white-space:nowrap; }
     .link-btn:hover { text-decoration:underline; }
-    .action-sep { color:var(--border); padding:0 2px; font-size:11px; }
+    .action-sep { display:block; height:0; overflow:hidden; }
+    .inv-table td.col-act { white-space:normal; overflow:visible; line-height:1.8; }
 
     /* ── Source badge ── */
     .src-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
@@ -70,11 +71,26 @@
 
     /* ── Match badge ── */
     .match-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; white-space:nowrap; }
-    .match-badge.pass    { color:var(--status-ok-fg); }
-    .match-badge.fail    { color:var(--status-risk-fg); }
-    .match-badge.pending { color:var(--text-soft); }
+    .match-badge.pass     { color:var(--status-ok-fg); }
+    .match-badge.fail     { color:var(--status-risk-fg); }
+    .match-badge.pending  { color:var(--text-soft); }
+    .match-badge.unlinked { color:var(--status-warn-fg); }
     /* Ensure all nb-pill status badges never wrap */
     .nb-pill { white-space:nowrap; }
+
+    /* ── Unlinked PO suggestion card (inside drawer) ── */
+    .suggestion-card { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-md) var(--space-lg); background:color-mix(in srgb,var(--agent-cyrus,var(--fern)) 6%,transparent); border:1.5px solid var(--agent-border,rgba(42,200,100,0.4)); border-radius:var(--radius-md); margin-bottom:var(--space-lg); }
+    .suggestion-card .agent-avatar { width:28px; height:28px; font-size:12px; }
+    .suggestion-po { font-size:15px; font-weight:700; color:var(--text); font-family:'IBM Plex Mono',monospace; }
+    .suggestion-reason { font-size:13px; color:var(--text-soft); margin-top:2px; line-height:1.5; }
+    .confidence-chip { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); margin-top:var(--space-xs); }
+    .confidence-chip.high { background:var(--mint); color:var(--spinach); }
+    .confidence-chip.medium { background:var(--status-warn-bg); color:#7A5000; }
+    .no-suggestion-card { padding:var(--space-md) var(--space-lg); background:var(--status-warn-bg); border:1px solid rgba(245,194,25,0.4); border-radius:var(--radius-md); margin-bottom:var(--space-lg); font-size:13px; color:#5A3A00; line-height:1.5; }
+    .link-po-input { display:flex; gap:var(--space-sm); margin-top:var(--space-md); }
+    .link-po-input input { flex:1; height:var(--control-h); padding-inline:var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text); background:var(--surface); }
+    .link-po-input input:focus { outline:none; border-color:var(--text-accent); }
+    .link-po-input button { height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); border:none; background:var(--btn-primary-bg); color:#fff; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
 
     /* ── Variance chip ── */
     .var-chip { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:var(--radius-pill); }
@@ -221,9 +237,11 @@
             <option>Pacific Drinks Wholesale</option>
             <option>Fresh Produce Co</option>
             <option>Sydney Butchers Co.</option>
+            <option>Metro Bakery Supplies</option>
           </select>
           <select class="filter-sel" id="f-status" onchange="renderTable()">
             <option value="">All statuses</option>
+            <option value="unlinked">No PO linked</option>
             <option value="pending">Pending match</option>
             <option value="matched">Matched</option>
             <option value="failed">Failed</option>
@@ -370,6 +388,22 @@
           { name:'Pork Sausages 500g',  uom:'pkg', poQty:10, grnQty:10, invQty:10, poPrice:7.50, invPrice:7.50 },
         ]
       },
+      {
+        // Cyrus has a confident PO suggestion
+        id:'INV-00897', po:null, supplier:'Harbour Meats', outlet:null,
+        date:'12 Jun 2026', source:'email', amount:364, status:'unlinked',
+        agentNote:'Invoice arrived with no PO reference · Cyrus identified a likely match based on supplier, amount, and timing',
+        suggestion:{ po:'PO-5512', supplier:'Harbour Meats', amount:360, date:'10 Jun 2026', confidence:'high', reason:'Same supplier · invoice amount within 1% of PO value ($364 vs $360) · received 2 days after PO was sent' },
+        lines:[]
+      },
+      {
+        // Cyrus cannot suggest — unknown supplier
+        id:'INV-00894', po:null, supplier:'Metro Bakery Supplies', outlet:null,
+        date:'10 Jun 2026', source:'email', amount:145, status:'unlinked',
+        agentNote:'Invoice arrived from a supplier not found in the system · no matching PO could be identified · manual review required',
+        suggestion:null,
+        lines:[]
+      },
     ];
 
     /* ── Date helpers (today = 12 Jun 2026 per prototype) ── */
@@ -393,6 +427,7 @@
 
     /* ── Status config ── */
     const STATUS_CFG = {
+      unlinked: { label:'No PO linked',  pill:'<span class="nb-pill warn"><i class="ti ti-unlink"></i>No PO linked</span>' },
       pending:  { label:'Pending match', pill:'<span class="nb-pill info"><i class="ti ti-loader-2"></i>Pending match</span>' },
       matched:  { label:'Matched',       pill:'<span class="nb-pill ok"><i class="ti ti-circle-check"></i>Matched</span>' },
       failed:   { label:'Match failed',  pill:'<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Match failed</span>' },
@@ -418,17 +453,18 @@
 
     /* ── KPI tiles ── */
     function renderKPIs() {
-      const counts = { all:0, pending:0, failed:0, approved:0, exported:0, matched:0 };
+      const counts = { all:0, unlinked:0, pending:0, failed:0, approved:0, exported:0, matched:0 };
       let totalAP = 0, failedAmt = 0;
       periodData().forEach(inv => {
         counts.all++;
-        counts[inv.status]++;
+        counts[inv.status] = (counts[inv.status]||0) + 1;
         totalAP += inv.amount;
         if (inv.status === 'failed') failedAmt += inv.amount;
       });
       const tiles = [
         { key:'',         cls:'',      val: counts.all,      label:'All invoices',   sub:'$'+totalAP.toLocaleString()+' total AP' },
-        { key:'pending',  cls:'warn',  val: counts.pending,  label:'Pending match',  sub:'Cyrus matching' },
+        { key:'unlinked', cls:'warn',  val: counts.unlinked, label:'No PO linked',   sub:'Needs review' },
+        { key:'pending',  cls:'',      val: counts.pending,  label:'Pending match',  sub:'Cyrus matching' },
         { key:'failed',   cls:'risk',  val: counts.failed,   label:'Match failed',   sub:'$'+failedAmt.toLocaleString()+' in dispute' },
         { key:'approved', cls:'ok',    val: counts.approved, label:'Approved',       sub:'Ready to export' },
         { key:'exported', cls:'agent', val: counts.exported, label:'Exported',       sub:'This month' },
@@ -482,6 +518,7 @@
 
     /* ── Match badge (table cell) ── */
     function matchBadge(inv) {
+      if (inv.status==='unlinked') return '<span class="match-badge unlinked"><i class="ti ti-lock"></i>Blocked — no PO</span>';
       const s = invMatchSummary(inv);
       if (s.result==='pending') return '<span class="match-badge pending"><i class="ti ti-clock"></i>Pending</span>';
       if (s.result==='pass') return `<span class="match-badge pass"><i class="ti ti-circle-check"></i>${inv.lines.length}/${inv.lines.length} lines passed</span>`;
@@ -491,6 +528,12 @@
 
     /* ── Row actions ── */
     function rowActions(inv) {
+      if (inv.status==='unlinked') {
+        if (inv.suggestion) {
+          return `<button class="link-btn" style="color:var(--text-accent);" onclick="openDrawer('${inv.id}')"><i class="ti ti-sparkles" style="font-size:11px;"></i> ${inv.suggestion.po}</button><span class="action-sep">·</span><button class="link-btn" onclick="openDrawer('${inv.id}')" style="color:var(--text-soft);">Review</button>`;
+        }
+        return `<button class="link-btn" onclick="openDrawer('${inv.id}')">Link PO</button>`;
+      }
       const parts = [`<button class="link-btn" onclick="openDrawer('${inv.id}')">View match</button>`];
       if (inv.status==='matched')  parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="approveInv('${inv.id}',this)">Approve</button>`);
       if (inv.status==='failed')   parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="openDrawer('${inv.id}')" style="color:var(--status-risk-fg);">Raise credit note</button>`);
@@ -532,16 +575,18 @@
           <td class="col-check" style="padding-inline:var(--space-md);"><input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${inv.id}',this.checked)" style="cursor:pointer;accent-color:var(--fern);"/></td>
           <td class="col-inv">
             <div class="cell-id">${inv.id}</div>
-            <div class="cell-sub"><a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);text-decoration:none;">${inv.po}</a></div>
+            ${inv.po
+              ? `<div class="cell-sub"><a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);text-decoration:none;">${inv.po}</a></div>`
+              : `<div class="cell-sub" style="color:var(--status-warn-fg);"><i class="ti ti-unlink" style="font-size:10px;"></i> No PO</div>`}
           </td>
           <td class="col-sup" title="${inv.supplier}"><div class="cell-sup">${inv.supplier}</div></td>
-          <td class="col-outlet" title="${inv.outlet}"><div class="cell-outlet">${inv.outlet}</div></td>
+          <td class="col-outlet" title="${inv.outlet||''}"><div class="cell-outlet">${inv.outlet||'—'}</div></td>
           <td class="col-date"><span style="font-size:13px;color:var(--text-soft);white-space:nowrap;">${shortDate}</span></td>
           <td class="col-amt num"><strong style="font-feature-settings:'tnum' 1;">$${inv.amount.toLocaleString()}</strong></td>
           <td class="col-src">${srcBadge(inv.source)}</td>
           <td class="col-status">${STATUS_CFG[inv.status]?.pill||''}</td>
           <td class="col-match">${matchBadge(inv)}</td>
-          <td class="col-act" style="white-space:nowrap;">${rowActions(inv)}</td>
+          <td class="col-act">${rowActions(inv)}</td>
         </tr>`;
       }).join('');
     }
@@ -621,6 +666,29 @@
       clearSel(); renderTable(); renderKPIs();
     }
 
+    /* ── Unlinked invoice actions ── */
+    function confirmPOLink(id, po) {
+      if (!po) { toast('Please enter a PO number'); return; }
+      const inv = INV_DATA.find(i => i.id===id);
+      if (!inv) return;
+      inv.po = po;
+      inv.status = 'pending';
+      if (!inv.outlet) inv.outlet = '—';
+      closeDrawer();
+      toast(id + ' linked to ' + po + ' · Cyrus will begin matching');
+      renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
+    function rejectInvoice(id) {
+      const inv = INV_DATA.find(i => i.id===id);
+      if (!inv) return;
+      inv.status = 'failed';
+      inv.failReason = 'Invoice rejected — no matching PO found';
+      closeDrawer();
+      toast(id + ' rejected · supplier will be notified');
+      renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
     /* ── 3-way match drawer ── */
     function openDrawer(id) {
       const inv = INV_DATA.find(i => i.id===id);
@@ -639,7 +707,54 @@
       document.getElementById('match-drawer').setAttribute('aria-hidden','true');
     }
 
+    /* ── Unlinked invoice drawer ── */
+    function buildUnlinkedDrawerBody(inv) {
+      const agentLine = `<div class="agent-byline" style="margin-bottom:var(--space-lg);"><i class="ti ti-sparkles spark"></i>${inv.agentNote}</div>`;
+      const kvRows = [
+        ['Invoice ref', inv.id],
+        ['Supplier', `<strong>${inv.supplier}</strong>`],
+        ['Date received', inv.date],
+        ['Source', srcBadge(inv.source)],
+        ['Invoice amount', '<strong>$'+inv.amount.toLocaleString()+'</strong>'],
+        ['Purchase order', '<span style="color:var(--status-warn-fg);"><i class="ti ti-unlink"></i> Not linked</span>'],
+      ].map(([l,v]) => `<div class="dkv"><span class="dkv-label">${l}</span><span class="dkv-value">${v}</span></div>`).join('');
+
+      let bodyExtra = '';
+      if (inv.suggestion) {
+        const s = inv.suggestion;
+        bodyExtra = `
+          <div class="drawer-section-head">Cyrus suggestion</div>
+          <div class="suggestion-card">
+            <span class="agent-avatar" data-agent="cyrus" aria-hidden="true" style="width:28px;height:28px;font-size:12px;flex-shrink:0;">Cy</span>
+            <div>
+              <div class="suggestion-po">${s.po}</div>
+              <div class="suggestion-reason">${s.reason}</div>
+              <span class="confidence-chip ${s.confidence}"><i class="ti ti-${s.confidence==='high'?'circle-check':'adjustments-horizontal'}"></i> ${s.confidence.charAt(0).toUpperCase()+s.confidence.slice(1)} confidence</span>
+            </div>
+          </div>
+          <div class="dkv-list">
+            <div class="dkv"><span class="dkv-label">PO number</span><span class="dkv-value"><a href="order-detail.html?id=${s.po}" style="color:var(--text-link);font-weight:600;">${s.po}</a></span></div>
+            <div class="dkv"><span class="dkv-label">Supplier</span><span class="dkv-value">${s.supplier}</span></div>
+            <div class="dkv"><span class="dkv-label">PO amount</span><span class="dkv-value">$${s.amount.toLocaleString()}</span></div>
+            <div class="dkv"><span class="dkv-label">PO date</span><span class="dkv-value">${s.date}</span></div>
+          </div>`;
+      } else {
+        bodyExtra = `
+          <div class="drawer-section-head">Link purchase order</div>
+          <div class="no-suggestion-card">
+            <i class="ti ti-info-circle" style="margin-right:4px;"></i>
+            Cyrus could not identify a matching PO for this invoice. <strong>${inv.supplier}</strong> may not be registered in the system, or no open PO matches this amount and date.
+          </div>
+          <div class="link-po-input">
+            <input id="link-po-field" type="text" placeholder="Enter PO number e.g. PO-5520" />
+            <button onclick="confirmPOLink('${inv.id}', document.getElementById('link-po-field').value.trim())">Link PO</button>
+          </div>`;
+      }
+      return `${agentLine}<div class="dkv-list">${kvRows}</div>${bodyExtra}`;
+    }
+
     function buildDrawerBody(inv) {
+      if (inv.status === 'unlinked') return buildUnlinkedDrawerBody(inv);
       const s = invMatchSummary(inv);
 
       /* Result banner */
@@ -740,6 +855,17 @@
     }
 
     function buildDrawerFoot(inv) {
+      if (inv.status === 'unlinked') {
+        const parts = [
+          `<button onclick="closeDrawer()" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);">Close</button>`,
+          `<button onclick="toast('${inv.id} flagged for manual follow-up');closeDrawer();" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);"><i class="ti ti-flag"></i> Flag for follow-up</button>`,
+          `<button onclick="rejectInvoice('${inv.id}')" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid rgba(238,75,135,0.25);background:var(--status-risk-bg);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--status-risk-fg);"><i class="ti ti-trash"></i> Reject</button>`,
+        ];
+        if (inv.suggestion) {
+          parts.unshift(`<button onclick="confirmPOLink('${inv.id}','${inv.suggestion.po}')" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:none;background:var(--btn-primary-bg);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;"><i class="ti ti-link"></i> Confirm ${inv.suggestion.po}</button>`);
+        }
+        return parts.join('');
+      }
       const parts = [`<button onclick="closeDrawer()" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);">Close</button>`];
       if (inv.status==='matched') {
         parts.unshift(`<button onclick="approveInv('${inv.id}');closeDrawer();" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:none;background:var(--btn-primary-bg);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;"><i class="ti ti-circle-check"></i> Approve invoice</button>`);
@@ -771,6 +897,7 @@
       const failed   = scope.filter(i => i.status === 'failed');
       const pending  = scope.filter(i => i.status === 'pending');
       const approved = scope.filter(i => i.status === 'approved');
+      const unlinked = scope.filter(i => i.status === 'unlinked');
       const total    = scope.reduce((s,i) => s + i.amount, 0);
 
       const failedVariance = failed.reduce((s,inv) => {
@@ -783,10 +910,20 @@
       const periodLabel = _period ? `last ${_period} days` : 'all time';
       if (scope.length === 0) {
         summary = `No invoices received in the ${periodLabel}.`;
-      } else if (failed.length === 0 && pending.length === 0) {
+      } else if (failed.length === 0 && pending.length === 0 && unlinked.length === 0) {
         summary = `All ${scope.length} invoices in the ${periodLabel} are matched and clear — nothing needs your attention.`;
       } else {
         const parts = [];
+        if (unlinked.length > 0) {
+          const hasSuggestions = unlinked.filter(i => i.suggestion).length;
+          const noSuggestions  = unlinked.length - hasSuggestions;
+          const detail = hasSuggestions && noSuggestions
+            ? `${hasSuggestions} with a suggested PO, ${noSuggestions} need manual review`
+            : hasSuggestions
+            ? `Cyrus has suggested a PO for ${hasSuggestions === 1 ? 'one' : hasSuggestions}`
+            : 'manual review needed';
+          parts.push(`<strong>${unlinked.length} invoice${unlinked.length>1?'s':''} arrived without a PO reference</strong> — ${detail}`);
+        }
         if (failed.length > 0) {
           parts.push(`<strong>${failed.length} invoice${failed.length>1?'s':''} failed the 3-way match</strong> with $${failedVariance.toLocaleString(undefined,{maximumFractionDigits:0})} in dispute across ${failedSuppliers.join(' and ')}`);
         }
@@ -802,6 +939,9 @@
 
       // Build action chips
       const chips = [];
+      if (unlinked.length > 0) {
+        chips.push(`<button class="cyrus-chip warn" onclick="filterByStatus('unlinked')"><i class="ti ti-unlink"></i> ${unlinked.length} unlinked — review</button>`);
+      }
       if (failed.length > 0) {
         chips.push(`<button class="cyrus-chip risk" onclick="filterByStatus('failed')"><i class="ti ti-alert-triangle"></i> ${failed.length} match failed — review</button>`);
       }
@@ -816,13 +956,15 @@
         chips.push(`<span class="cyrus-chip" style="background:var(--surface-soft);color:var(--text-soft);cursor:default;"><i class="ti ti-database"></i> $${total.toLocaleString()} total AP</span>`);
       }
 
-      // Build outlet breakdown
+      // Build outlet breakdown — skip invoices with no outlet (unlinked)
       const outletMap = {};
       scope.forEach(inv => {
-        if (!outletMap[inv.outlet]) outletMap[inv.outlet] = { total:0, failed:0, pending:0 };
-        outletMap[inv.outlet].total++;
-        if (inv.status === 'failed')  outletMap[inv.outlet].failed++;
-        if (inv.status === 'pending') outletMap[inv.outlet].pending++;
+        const key = inv.outlet;
+        if (!key || key === '—') return;
+        if (!outletMap[key]) outletMap[key] = { total:0, failed:0, pending:0 };
+        outletMap[key].total++;
+        if (inv.status === 'failed')  outletMap[key].failed++;
+        if (inv.status === 'pending') outletMap[key].pending++;
       });
       const outletTags = Object.entries(outletMap).map(([name, o]) => {
         const hasIssue = o.failed > 0;
@@ -840,7 +982,7 @@
 
       // Agent state badge
       const stateEl = document.getElementById('cyrus-state');
-      if (failed.length > 0) {
+      if (failed.length > 0 || unlinked.length > 0) {
         stateEl.className = 'agent-state needs-you';
         stateEl.innerHTML = '<i class="ti ti-alert-triangle"></i>Needs you';
         stateEl.style.display = '';
