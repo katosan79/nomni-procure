@@ -51,10 +51,67 @@
   background: color-mix(in srgb, var(--agent-accent, var(--fern)) 14%, transparent);
   color: var(--agent-accent, var(--fern));
 }
-.agent-avatar[data-agent="sloan"] { --agent-accent: var(--agent-sloan); }
-.agent-avatar[data-agent="otto"]  { --agent-accent: var(--agent-otto); }
-.agent-avatar[data-agent="cyrus"] { --agent-accent: var(--agent-cyrus); }
-.agent-avatar[data-agent="mara"]  { --agent-accent: var(--agent-mara); }
+.agent-avatar[data-agent="sloan"] { --agent-accent: var(--agent-sloan); --agent-rhythm: 9s;   }
+.agent-avatar[data-agent="otto"]  { --agent-accent: var(--agent-otto);  --agent-rhythm: 6s;   }
+.agent-avatar[data-agent="cyrus"] { --agent-accent: var(--agent-cyrus); --agent-rhythm: 7.5s; }
+.agent-avatar[data-agent="mara"]  { --agent-accent: var(--agent-mara);  --agent-rhythm: 6.8s; }
+
+/* ─────────────────────────────────────────────
+   Agent identity motion ("magic dust") — design-system §2.5 compliant:
+   token-based, meaningful, and fully disabled under prefers-reduced-motion
+   (the global reset in tokens.css neutralises every animation below).
+   Each agent is differentiated by its own COLOUR and its own RHYTHM.
+   ───────────────────────────────────────────── */
+
+/* A soft aura ring in the agent's own colour, slowly orbiting the avatar.
+   This is the agent's "presence" — the one looping motion the system allows. */
+.agent-avatar { position: relative; overflow: visible; isolation: isolate; }
+.agent-avatar::before {
+  content: ''; position: absolute; inset: -3px; border-radius: calc(var(--radius-sm) + 2px);
+  padding: 2px; pointer-events: none;
+  background: conic-gradient(from 0deg,
+    color-mix(in srgb, var(--agent-accent, var(--fern)) 70%, transparent) 0deg,
+    transparent 70deg, transparent 290deg,
+    color-mix(in srgb, var(--agent-accent, var(--fern)) 70%, transparent) 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0.6;
+  animation: agent-orbit var(--agent-rhythm, 8s) linear infinite;
+}
+@keyframes agent-orbit { to { transform: rotate(360deg); } }
+
+/* A second, gentler breath so the aura feels alive, not mechanical */
+.agent-avatar::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--agent-accent, var(--fern)) 35%, transparent);
+  animation: agent-breath calc(var(--agent-rhythm, 8s) / 2.2) var(--ease-standard) infinite;
+}
+@keyframes agent-breath {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--agent-accent, var(--fern)) 30%, transparent); }
+  55%      { box-shadow: 0 0 0 5px color-mix(in srgb, var(--agent-accent, var(--fern)) 0%, transparent); }
+}
+
+/* Entrance: agent surfaces rise into view (the "Proposing" pattern, §2.5) */
+.agent-surface { animation: agent-rise var(--dur-4) var(--ease-emphasized) both; }
+@keyframes agent-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+/* Stagger when several agents report together (e.g. the morning brief) */
+.brief-feed > .agent-surface:nth-child(2) { animation-delay: 80ms; }
+.brief-feed > .agent-surface:nth-child(3) { animation-delay: 160ms; }
+.brief-feed > .agent-surface:nth-child(4) { animation-delay: 240ms; }
+.agent-strip > .agent-surface:nth-child(2) { animation-delay: 90ms; }
+
+/* Hover: a subtle lift that says "interactive" */
+.agent-surface { transition: box-shadow var(--dur-2) var(--ease-standard), transform var(--dur-2) var(--ease-standard); }
+.agent-surface:hover { transform: translateY(-1px); box-shadow: var(--shadow-md), 0 0 0 4px var(--agent-glow); }
+
+/* "Done" state token pops in when an agent acts (§2.5 Acted) */
+.agent-state.done { animation: agent-pop var(--dur-2) var(--ease-emphasized); }
+@keyframes agent-pop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* The spark ("agent-set this value") gives a soft twinkle */
+.spark { animation: spark-twinkle 3.2s var(--ease-standard) infinite; }
+@keyframes spark-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
 .agent-id { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .agent-name {
@@ -134,6 +191,11 @@
       var(--fern) 55%,
       var(--spinach) 100%);
   box-shadow: 0 0 0 3px var(--agent-glow);
+  animation: orb-breathe 2.8s var(--ease-standard) infinite;
+}
+@keyframes orb-breathe {
+  0%, 100% { box-shadow: 0 0 0 3px var(--agent-glow); }
+  50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--spring) 10%, transparent); }
 }
 
 /* ── The spark — "this value was agent-set" ── */
