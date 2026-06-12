@@ -290,7 +290,7 @@
               <path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z" opacity="0.9"/>
             </svg>
           </div>
-          <span class="shell-wordmark-text">nomni</span>
+          <span class="shell-wordmark-text">Nomni Procure</span>
         </a>
         <nav class="shell-nav" aria-label="Module navigation">
           ${navItems}

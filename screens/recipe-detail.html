@@ -921,7 +921,7 @@
         pill.appendChild(p);
       }
       showToast('Submitted to HQ Approver for sign-off');
-      addActivity('ti-user-check', 'Submitted for approval', 'Just now · Sarah Chen');
+      addActivity('ti-user-check', 'Submitted for approval', 'Just now · Keith Tan');
     }
 
     function discardChanges() {
@@ -933,7 +933,7 @@
       dirtyCount = 0;
       document.getElementById('save-bar').classList.remove('visible');
       showToast('Recipe saved');
-      addActivity('ti-device-floppy', 'Recipe updated and saved', 'Just now · Sarah Chen');
+      addActivity('ti-device-floppy', 'Recipe updated and saved', 'Just now · Keith Tan');
     }
 
     /* ── Toast ── */
@@ -968,7 +968,7 @@
     function rollbackVersion(v) {
       if (confirm('Roll back to ' + v + '? This will create a new version with ' + v + "'s ingredients and pricing.")) {
         showToast('Rolled back to ' + v + ' — saved as new version');
-        addActivity('ti-history', 'Rolled back to ' + v, 'Just now · Sarah Chen');
+        addActivity('ti-history', 'Rolled back to ' + v, 'Just now · Keith Tan');
       }
     }
 
