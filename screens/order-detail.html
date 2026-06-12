@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Order detail — Nomni Procure</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { padding-block: var(--space-2xl) var(--space-5xl); }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb { display:flex; align-items:center; gap:var(--space-xs); font-size:13px; color:var(--text-soft); margin-bottom:var(--space-xl); }
+    .breadcrumb a { color:var(--text-link); text-decoration:none; }
+    .breadcrumb a:hover { text-decoration:underline; }
+
+    /* ── Page header ── */
+    .order-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; margin-bottom:var(--space-xl); }
+    .page-eyebrow { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); }
+    .order-eyebrow { display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-xs); }
+    .order-id { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .order-meta-line { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; font-size:13px; color:var(--text-soft); margin-top:var(--space-sm); }
+    .meta-sep { width:1px; height:12px; background:var(--border); }
+    .head-actions { display:flex; gap:var(--space-sm); align-items:center; flex-shrink:0; padding-top:4px; }
+
+    /* ── Lifecycle timeline ── */
+    .lifecycle { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl) var(--space-md); margin-bottom:var(--space-lg); }
+    .lc-row { display:flex; align-items:flex-start; }
+    .lc-step { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; position:relative; }
+    .lc-connector { flex:1; display:flex; flex-direction:column; align-items:stretch; padding-top:14px; }
+    .lc-line { height:2px; background:var(--border); border-radius:1px; }
+    .lc-line.done { background:var(--status-ok-fg); }
+    .lc-dot { width:28px; height:28px; border-radius:var(--radius-pill); border:2px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text-soft); flex-shrink:0; }
+    .lc-label { font-size:11px; font-weight:600; color:var(--text-soft); text-align:center; white-space:nowrap; }
+    .lc-date  { font-size:10px; color:var(--text-soft); text-align:center; white-space:nowrap; min-height:14px; }
+    .lc-step.done .lc-dot  { background:var(--status-ok-bg); border-color:var(--status-ok-fg); color:var(--status-ok-fg); }
+    .lc-step.done .lc-label { color:var(--text); }
+    .lc-step.active .lc-dot { background:var(--btn-primary-bg); border-color:var(--btn-primary-bg); color:#fff; box-shadow:0 0 0 4px rgba(18,155,65,0.18); }
+    .lc-step.active .lc-label { color:var(--text); font-weight:700; }
+    .lc-step.risk .lc-dot  { background:var(--status-risk-bg); border-color:var(--status-risk-fg); color:var(--status-risk-fg); box-shadow:0 0 0 4px rgba(238,75,135,0.15); }
+    .lc-step.risk .lc-label { color:var(--status-risk-fg); font-weight:700; }
+
+    /* ── Action banner ── */
+    .action-banner { display:flex; align-items:center; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-radius:var(--radius-lg); border:1px solid var(--border); margin-bottom:var(--space-lg); }
+    .action-banner.approval { background:var(--status-warn-bg); border-color:rgba(245,194,25,0.5); }
+    .action-banner.info     { background:var(--status-info-bg); border-color:rgba(63,195,251,0.35); }
+    .action-banner.risk     { background:var(--status-risk-bg); border-color:rgba(238,75,135,0.35); }
+    .action-banner.ok       { background:var(--status-ok-bg);   border-color:rgba(42,200,100,0.35); }
+    .banner-icon { width:42px; height:42px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:21px; flex-shrink:0; }
+    .banner-icon.approval { background:rgba(245,194,25,0.22); color:#7A5000; }
+    .banner-icon.info     { background:rgba(63,195,251,0.22); color:var(--status-info-fg); }
+    .banner-icon.risk     { background:rgba(238,75,135,0.22); color:var(--status-risk-fg); }
+    .banner-icon.ok       { background:rgba(42,200,100,0.18); color:var(--status-ok-fg); }
+    .banner-body { flex:1; min-width:0; }
+    .banner-title { font-size:14px; font-weight:700; color:var(--text); }
+    .banner-sub   { font-size:13px; color:var(--text-soft); margin-top:2px; line-height:1.4; }
+    .banner-actions { display:flex; gap:var(--space-sm); flex-shrink:0; flex-wrap:wrap; }
+
+    /* ── Tab nav ── */
+    .detail-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:var(--space-lg); }
+    .detail-tab { padding:var(--space-sm) var(--space-lg); background:none; border:none; border-bottom:2px solid transparent; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-soft); cursor:pointer; margin-bottom:-1px; display:flex; align-items:center; gap:var(--space-xs); transition:color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard); white-space:nowrap; }
+    .detail-tab:hover { color:var(--text); }
+    .detail-tab.active { color:var(--text-accent); border-bottom-color:var(--text-accent); }
+    .detail-tab .tab-badge-ok  { font-size:10px; font-weight:700; background:var(--status-ok-bg);   color:var(--status-ok-fg);   border-radius:var(--radius-pill); padding:1px 6px; }
+    .detail-tab .tab-badge-inf { font-size:10px; font-weight:700; background:var(--status-info-bg); color:var(--status-info-fg); border-radius:var(--radius-pill); padding:1px 6px; }
+
+    /* ── Two-column grid ── */
+    .detail-grid { display:grid; grid-template-columns:1fr 308px; gap:var(--space-lg); align-items:start; }
+    @media (max-width:960px) { .detail-grid { grid-template-columns:1fr; } }
+    .detail-main { display:flex; flex-direction:column; gap:var(--space-lg); }
+    .detail-aside { display:flex; flex-direction:column; gap:var(--space-lg); }
+
+    /* ── Cards ── */
+    .detail-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+    .detail-card.agent-surface { border-color:var(--agent-border); box-shadow:0 0 0 1px var(--agent-border), var(--shadow-sm); }
+    .card-head { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); }
+    .card-head-title { font-size:14px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+
+    /* ── Line-items table ── */
+    .items-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+    .items-tbl th { padding:var(--space-sm) var(--space-lg); text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); background:var(--surface-soft); white-space:nowrap; }
+    .items-tbl th.num, .items-tbl td.num { text-align:right; font-feature-settings:'tnum' 1; }
+    .items-tbl td { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .items-tbl tr:last-child td { border-bottom:none; }
+    .items-tbl tbody tr:hover td { background:var(--surface-soft); }
+    .item-name { font-weight:600; color:var(--text); }
+    .item-cat  { font-size:11px; color:var(--text-soft); margin-top:2px; }
+    .total-row td { background:var(--surface-soft); font-weight:700; font-size:14px; color:var(--text); font-feature-settings:'tnum' 1; padding:var(--space-md) var(--space-lg); border-top:1.5px solid var(--border); }
+    .var-short { color:var(--status-risk-fg); font-weight:700; }
+    .var-ok    { color:var(--status-ok-fg); font-weight:600; }
+
+    /* ── GRN inputs ── */
+    .grn-input { width:60px; height:30px; padding-inline:var(--space-sm); border:1px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; text-align:right; font-feature-settings:'tnum' 1; color:var(--text); background:var(--surface); }
+    .grn-input:focus { outline:2px solid var(--text-accent); outline-offset:1px; }
+    .grn-text  { width:100%; height:30px; padding-inline:var(--space-sm); border:1px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:12px; color:var(--text); background:var(--surface); }
+    .grn-text:focus { outline:2px solid var(--text-accent); outline-offset:1px; }
+    .grn-checkbox { width:16px; height:16px; accent-color:var(--status-risk-fg); cursor:pointer; }
+    .grn-photo-btn { width:32px; height:30px; border:1px dashed var(--border); border-radius:var(--radius-sm); background:var(--surface-soft); display:inline-flex; align-items:center; justify-content:center; font-size:14px; color:var(--text-soft); cursor:pointer; border-collapse:separate; }
+    .grn-photo-btn:hover { border-color:var(--text-accent); color:var(--text-accent); }
+    .grn-temp  { width:52px; }
+
+    /* ── GRN summary bar ── */
+    .grn-summary { display:flex; align-items:center; gap:var(--space-lg); padding:var(--space-md) var(--space-xl); background:var(--surface-soft); border-top:1px solid var(--border); font-size:13px; flex-wrap:wrap; }
+
+    /* ── KV list ── */
+    .kv-list { display:flex; flex-direction:column; }
+    .kv-row  { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); font-size:13px; padding:var(--space-sm) 0; border-bottom:1px solid var(--border); }
+    .kv-row:last-child { border-bottom:none; }
+    .kv-label { color:var(--text-soft); flex-shrink:0; }
+    .kv-value { color:var(--text); font-weight:600; text-align:right; }
+
+    /* ── Supplier card ── */
+    .sup-avatar { width:44px; height:44px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0; }
+
+    /* ── Activity feed ── */
+    .act-feed { display:flex; flex-direction:column; }
+    .act-item { display:flex; gap:var(--space-md); padding:var(--space-md) var(--space-xl); position:relative; }
+    .act-item:not(:last-child)::before { content:''; position:absolute; left:calc(var(--space-xl) + 10px); top:calc(var(--space-md) + 22px); bottom:0; width:1.5px; background:var(--border); }
+    .act-dot { width:20px; height:20px; border-radius:var(--radius-pill); display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; margin-top:2px; z-index:1; }
+    .act-dot.ok      { background:var(--status-ok-bg);   color:var(--status-ok-fg); }
+    .act-dot.info    { background:var(--status-info-bg); color:var(--status-info-fg); }
+    .act-dot.warn    { background:var(--status-warn-bg); color:#7A5000; }
+    .act-dot.risk    { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .act-dot.neutral { background:var(--surface-soft); color:var(--text-soft); border:1.5px solid var(--border); }
+    .act-dot.agent   { background:var(--mint); color:var(--spinach); }
+    .act-body { flex:1; min-width:0; }
+    .act-text { font-size:13px; color:var(--text); line-height:1.4; }
+    .act-time { font-size:11px; color:var(--text-soft); margin-top:2px; }
+
+    /* ── Comms thread ── */
+    .comms-msg { margin:var(--space-md) var(--space-xl); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .comms-msg-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-md); padding:var(--space-sm) var(--space-md); border-bottom:1px solid var(--border); }
+    .comms-msg-from { font-size:12px; font-weight:700; color:var(--text); }
+    .comms-msg-time { font-size:11px; color:var(--text-soft); white-space:nowrap; }
+    .comms-msg-body { padding:var(--space-md); font-size:12px; color:var(--text); line-height:1.6; white-space:pre-wrap; }
+    .comms-attach { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:var(--text-link); padding:3px 10px; border:1px solid var(--border); border-radius:var(--radius-sm); margin:0 var(--space-md) var(--space-md); cursor:pointer; }
+    .comms-attach:hover { background:var(--surface-soft); }
+    .comms-reply { margin:var(--space-md) var(--space-xl) var(--space-xl); display:flex; gap:var(--space-sm); }
+    .comms-reply textarea { flex:1; padding:var(--space-sm) var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:13px; color:var(--text); resize:none; height:64px; background:var(--surface); }
+    .comms-reply textarea:focus { outline:2px solid var(--text-accent); outline-offset:1px; }
+
+    /* ── Agent byline ── */
+    .agent-byline-sm { display:flex; align-items:center; gap:var(--space-sm); font-size:12px; color:var(--text-accent); }
+
+    /* ── Modals ── */
+    .modal-scrim { position:fixed; inset:0; background:rgba(14,55,39,0.45); z-index:200; display:flex; align-items:center; justify-content:center; padding:var(--space-xl); }
+    .modal-box { background:var(--surface); border-radius:var(--radius-xl); padding:var(--space-2xl); width:100%; max-width:440px; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; gap:var(--space-lg); }
+    .modal-title { font-size:18px; font-weight:700; color:var(--text); }
+    .modal-sub { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .modal-foot { display:flex; justify-content:flex-end; gap:var(--space-sm); }
+    .photo-drop { border:2px dashed var(--border); border-radius:var(--radius-lg); padding:var(--space-3xl) var(--space-2xl); text-align:center; color:var(--text-soft); font-size:13px; cursor:pointer; }
+    .photo-drop:hover { border-color:var(--text-accent); color:var(--text-accent); }
+
+    /* ── GRN notice bar ── */
+    .grn-notice { display:flex; align-items:flex-start; gap:var(--space-sm); font-size:12px; color:var(--text-soft); line-height:1.5; padding:var(--space-md) var(--space-xl); background:var(--status-info-bg); border-bottom:1px solid rgba(63,195,251,0.25); }
+
+    /* ── Inline link ── */
+    .link-action { background:none; border:none; color:var(--text-link); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:0; }
+    .link-action:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=4" data-active="orders"></script>
+
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <nav class="breadcrumb">
+        <a href="orders.html">Orders</a>
+        <i class="ti ti-chevron-right"></i>
+        <span id="bc-id" aria-current="page">—</span>
+      </nav>
+
+      <!-- ── Page header ── -->
+      <div class="order-head">
+        <div>
+          <div class="order-eyebrow">
+            <span class="page-eyebrow">Purchase order</span>
+            <span id="status-pill"></span>
+          </div>
+          <h1 class="order-id" id="order-id">—</h1>
+          <div class="order-meta-line">
+            <span id="meta-supplier"></span><span class="meta-sep"></span>
+            <span id="meta-outlet"></span><span class="meta-sep"></span>
+            <span id="meta-value" style="font-feature-settings:'tnum' 1;font-weight:600;color:var(--text);"></span>
+            <span class="meta-sep"></span>
+            <span id="meta-expected"></span>
+          </div>
+        </div>
+        <div class="head-actions" id="head-actions"></div>
+      </div>
+
+      <!-- ── Lifecycle ── -->
+      <div class="lifecycle"><div class="lc-row" id="lc-row"></div></div>
+
+      <!-- ── Action banner ── -->
+      <div id="action-banner"></div>
+
+      <!-- ── Tab nav ── -->
+      <nav class="detail-tabs" id="detail-tabs"></nav>
+
+      <!-- ── Two-column grid ── -->
+      <div class="detail-grid">
+        <div class="detail-main" id="detail-main"></div>
+        <div class="detail-aside">
+          <div class="detail-card">
+            <div class="card-head"><span class="card-head-title"><i class="ti ti-info-circle"></i> Order info</span></div>
+            <div style="padding:0 var(--space-xl) var(--space-sm);"><div class="kv-list" id="order-meta-kv"></div></div>
+          </div>
+          <div class="detail-card">
+            <div class="card-head"><span class="card-head-title"><i class="ti ti-building-store"></i> Supplier</span></div>
+            <div style="padding:var(--space-lg) var(--space-xl);" id="supplier-card-body"></div>
+          </div>
+          <div class="detail-card">
+            <div class="card-head"><span class="card-head-title"><i class="ti ti-timeline"></i> Activity</span></div>
+            <div class="act-feed" id="activity-feed"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Reject modal -->
+  <div id="reject-modal" style="display:none;">
+    <div class="modal-scrim" onclick="closeReject()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-title">Reject order</div>
+        <div class="modal-sub">This PO will be returned to the requester with your reason. They can edit and resubmit.</div>
+        <textarea style="width:100%;min-height:80px;padding:var(--space-md);border:1px solid var(--border);border-radius:var(--radius-md);font-family:inherit;font-size:13px;color:var(--text);resize:vertical;" placeholder="Reason for rejection (optional)…"></textarea>
+        <div class="modal-foot">
+          <button class="nb-btn" style="height:40px;padding-inline:var(--space-lg);border:1px solid var(--border);border-radius:var(--radius-md);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text);" onclick="closeReject()">Cancel</button>
+          <button style="height:40px;background:var(--status-risk-bg);color:var(--status-risk-fg);border:1px solid rgba(238,75,135,0.35);border-radius:var(--radius-md);padding-inline:var(--space-lg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;" onclick="confirmReject()">Reject order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo modal -->
+  <div id="photo-modal" style="display:none;">
+    <div class="modal-scrim" onclick="closePhoto()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-title">Attach photo</div>
+        <div class="modal-sub" id="photo-modal-item">Item</div>
+        <div class="photo-drop" onclick="photoUploaded()">
+          <i class="ti ti-camera" style="font-size:32px;display:block;margin-bottom:var(--space-sm);"></i>
+          Tap to take photo or choose from library
+        </div>
+        <div class="modal-foot">
+          <button class="nb-btn" style="height:40px;padding-inline:var(--space-lg);border:1px solid var(--border);border-radius:var(--radius-md);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text);" onclick="closePhoto()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-wrap" style="position:fixed;bottom:var(--space-xl);left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Order detail'));
+
+    /* ── Reference data ── */
+    const SUP_SCHEDULES = {
+      'Harbour Meats':            'Mon / Wed / Fri · cutoff 3pm',
+      'Fresh Produce Co':         'Mon – Fri · cutoff 2pm',
+      'Green Farmers Market':     'Mon / Wed / Fri · cutoff 3pm',
+      'Pacific Drinks Wholesale': 'Tue / Thu · cutoff 4pm',
+      'Artisan Bakehouse':        'Mon – Sat · cutoff 8am',
+      'Sydney Butchers Co.':      'Mon / Wed / Fri · cutoff noon',
+    };
+    const SUP_COLORS = {
+      'Harbour Meats':            { bg:'rgba(23,179,163,0.14)', fg:'#0E7A6E' },
+      'Fresh Produce Co':         { bg:'rgba(42,200,100,0.14)', fg:'var(--spinach)' },
+      'Green Farmers Market':     { bg:'rgba(18,155,65,0.14)',  fg:'var(--fern)' },
+      'Pacific Drinks Wholesale': { bg:'rgba(63,195,251,0.14)', fg:'#0A6B8A' },
+      'Artisan Bakehouse':        { bg:'rgba(245,194,25,0.14)', fg:'#7A5000' },
+      'Sydney Butchers Co.':      { bg:'rgba(176,94,192,0.14)', fg:'#7A2090' },
+    };
+    const SUP_CONTACTS = {
+      'Harbour Meats':            'Jake Harding · jake@harbourmeats.com.au',
+      'Fresh Produce Co':         'Maria Santos · orders@freshproduce.com.au',
+      'Green Farmers Market':     'Tom Leung · tom@greenfarmers.com.au',
+      'Pacific Drinks Wholesale': 'Sarah Lin · sarah@pacificdrinks.com.au',
+      'Artisan Bakehouse':        'Dom Kovač · dom@artisanbakehouse.com.au',
+      'Sydney Butchers Co.':      'Pete Russo · pete@sydneybutchers.com.au',
+    };
+
+    /* ── PO data ── */
+    const PO_DATA = {
+      'PO-5521': {
+        id:'PO-5521', supplier:'Harbour Meats', outlet:'Surry Hills', outletAddr:'42 Crown St, Surry Hills NSW 2010',
+        value:640, expected:'14 Jun', created:'10 Jun 2026, 9:14am', createdBy:'Keith Tan',
+        approval:'manager', status:'needs-manager',
+        items:[
+          { name:'Chicken Breast 500g', cat:'Proteins', qty:20, unit:7.15 },
+          { name:'Beef Short Rib 500g', cat:'Proteins', qty:12, unit:12.50 },
+          { name:'Lamb Rack (each)',    cat:'Proteins', qty:6,  unit:28.00 },
+          { name:'Pork Belly 1kg',     cat:'Proteins', qty:5,  unit:18.00 },
+          { name:'Wagyu Chuck Roll 500g', cat:'Proteins', qty:4, unit:34.75 },
+        ],
+        comms:[
+          { dir:'out', from:'Keith Tan (Surry Hills)', time:'10 Jun, 9:14am',
+            body:'Hi Jake,\n\nPlease find purchase order PO-5521 attached. This is currently pending manager approval before it is formally sent. We will confirm shortly.\n\nThanks,\nKeith', attach:'PO-5521.pdf' },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Keith Tan</strong>', time:'10 Jun, 9:14am' },
+          { tone:'warn',    icon:'ti-user-check',  text:'Sent for manager approval — $640 exceeds $500 threshold', time:'10 Jun, 9:14am' },
+        ],
+      },
+      'PO-5519': {
+        id:'PO-5519', supplier:'Green Farmers Market', outlet:'Newtown', outletAddr:'88 King St, Newtown NSW 2042',
+        value:1180, expected:'15 Jun', created:'10 Jun 2026, 8:50am', createdBy:'Keith Tan',
+        approval:'manager', status:'needs-manager',
+        items:[
+          { name:'Mixed Leaf 2kg',        cat:'Produce', qty:12, unit:9.00 },
+          { name:'Avocado (each)',         cat:'Produce', qty:80, unit:2.40 },
+          { name:'Roma Tomatoes 5kg',     cat:'Produce', qty:10, unit:16.50 },
+          { name:'Baby Spinach 1kg',      cat:'Produce', qty:16, unit:12.00 },
+          { name:'Broccolini bunch',      cat:'Produce', qty:24, unit:4.50 },
+          { name:'Continental Cucumber',  cat:'Produce', qty:40, unit:2.50 },
+        ],
+        comms:[
+          { dir:'out', from:'Keith Tan (Newtown)', time:'10 Jun, 8:51am',
+            body:'Hi Tom,\n\nPO-5519 attached — pending manager approval. Will confirm by end of day.\n\nThanks,\nKeith', attach:'PO-5519.pdf' },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Keith Tan</strong>', time:'10 Jun, 8:50am' },
+          { tone:'warn',    icon:'ti-user-check',  text:'Sent for manager approval — $1,180 exceeds $500 threshold', time:'10 Jun, 8:51am' },
+        ],
+      },
+      'PO-5520': {
+        id:'PO-5520', supplier:'Fresh Produce Co', outlet:'Surry Hills', outletAddr:'42 Crown St, Surry Hills NSW 2010',
+        value:420, expected:'13 Jun', created:'9 Jun 2026, 2:05pm', createdBy:'Keith Tan',
+        approval:'auto', status:'sent', sentAt:'9 Jun, 2:05pm',
+        items:[
+          { name:'Avocado (each)',         cat:'Produce',   qty:40, unit:2.40 },
+          { name:'Roma Tomatoes 5kg',      cat:'Produce',   qty:4,  unit:16.50 },
+          { name:'Olive Oil 1L',           cat:'Dry goods', qty:6,  unit:12.00 },
+          { name:'Free-range Eggs (doz)',  cat:'Produce',   qty:10, unit:6.50 },
+        ],
+        comms:[
+          { dir:'out', from:'Nomni Procure (auto)', time:'9 Jun, 2:05pm',
+            body:'Hi Maria,\n\nPlease find purchase order PO-5520 attached for delivery to Surry Hills on 13 Jun.\n\nKindly confirm receipt of this order.\n\nRegards,\nNomni Procure on behalf of Surry Hills', attach:'PO-5520.pdf' },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Keith Tan</strong>', time:'9 Jun, 2:05pm' },
+          { tone:'info',    icon:'ti-send',         text:'PO auto-approved and emailed to Fresh Produce Co', time:'9 Jun, 2:05pm' },
+        ],
+      },
+      'PO-5517': {
+        id:'PO-5517', supplier:'Harbour Meats', outlet:'Bondi Beach', outletAddr:'56 Campbell Pde, Bondi Beach NSW 2026',
+        value:280, expected:'13 Jun', created:'9 Jun 2026, 11:30am', createdBy:'Priya Mendez',
+        approval:'auto', status:'opened', sentAt:'9 Jun, 11:30am', openedAt:'10 Jun, 9:14am',
+        items:[
+          { name:'Chicken Thigh 2kg', cat:'Proteins', qty:8, unit:11.50 },
+          { name:'Pork Belly 1kg',    cat:'Proteins', qty:5, unit:18.00 },
+          { name:'Beef Mince 500g',   cat:'Proteins', qty:8, unit:9.80 },
+        ],
+        comms:[
+          { dir:'out', from:'Nomni Procure (auto)', time:'9 Jun, 11:30am',
+            body:'Hi Jake,\n\nPlease find purchase order PO-5517 attached for delivery to Bondi Beach on 13 Jun.\n\nKindly confirm receipt at your earliest convenience.\n\nRegards,\nNomni Procure on behalf of Bondi Beach', attach:'PO-5517.pdf' },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Priya Mendez</strong>', time:'9 Jun, 11:30am' },
+          { tone:'info',    icon:'ti-send',         text:'PO emailed to Harbour Meats', time:'9 Jun, 11:30am' },
+          { tone:'info',    icon:'ti-mail-opened',  text:'Email opened by supplier · <em>implicit read receipt</em>', time:'10 Jun, 9:14am' },
+        ],
+      },
+      'PO-5518': {
+        id:'PO-5518', supplier:'Pacific Drinks Wholesale', outlet:'Melbourne CBD', outletAddr:'12 Flinders Lane, Melbourne VIC 3000',
+        value:520, expected:'14 Jun', created:'8 Jun 2026, 3:10pm', createdBy:'Lee Sung',
+        approval:'manager', status:'confirmed',
+        confirmedBy:'Sarah Lin (Pacific Drinks)', confirmedVia:'Nomni Supply', confirmedAt:'10 Jun, 9:00am',
+        items:[
+          { name:'Orange Juice 2L',        cat:'Beverages', qty:12, unit:8.50 },
+          { name:'Cold Brew Coffee 500ml', cat:'Beverages', qty:18, unit:7.50 },
+          { name:'Oat Milk 1L',            cat:'Dairy',     qty:24, unit:3.20 },
+          { name:'Sparkling Water 750ml',  cat:'Beverages', qty:24, unit:3.80 },
+          { name:'Kombucha 330ml',         cat:'Beverages', qty:24, unit:2.40 },
+        ],
+        comms:[
+          { dir:'out', from:'Nomni Procure', time:'9 Jun, 8:45am',
+            body:'Hi Sarah,\n\nPlease find PO-5518 attached for delivery to Melbourne CBD on 14 Jun.\n\nKindly confirm at your earliest convenience.\n\nRegards,\nNomni Procure on behalf of Melbourne CBD', attach:'PO-5518.pdf' },
+          { dir:'in', from:'Sarah Lin (Pacific Drinks)', time:'10 Jun, 9:00am',
+            body:'Hi,\n\nThank you for your order. We confirm receipt of PO-5518 and can fulfil the full order as specified.\n\nDelivery scheduled for 14 Jun, AM window.\n\nBest,\nSarah' },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Lee Sung</strong>', time:'8 Jun, 3:10pm' },
+          { tone:'warn',    icon:'ti-user-check',  text:'Sent for manager approval — $520 threshold', time:'8 Jun, 3:10pm' },
+          { tone:'ok',      icon:'ti-circle-check', text:'Approved by <strong>Keith Tan</strong>', time:'9 Jun, 8:45am' },
+          { tone:'info',    icon:'ti-send',         text:'PO sent to Pacific Drinks Wholesale', time:'9 Jun, 8:45am' },
+          { tone:'info',    icon:'ti-mail-opened',  text:'Email opened by supplier', time:'9 Jun, 10:30am' },
+          { tone:'ok',      icon:'ti-circle-check', text:'Confirmed by <strong>Sarah Lin</strong> via Nomni Supply', time:'10 Jun, 9:00am' },
+        ],
+      },
+      'PO-5515': {
+        id:'PO-5515', supplier:'Sydney Butchers Co.', outlet:'Bondi Beach', outletAddr:'56 Campbell Pde, Bondi Beach NSW 2026',
+        value:310, expected:'12 Jun', created:'8 Jun 2026, 11:20am', createdBy:'Priya Mendez',
+        approval:'auto', status:'delivered', deliveredAt:'12 Jun, 7:30am',
+        items:[
+          { name:'Chicken Thigh 2kg',  cat:'Proteins', qty:8,  unit:11.50 },
+          { name:'Beef Mince 500g',    cat:'Proteins', qty:10, unit:9.80 },
+          { name:'Pork Sausages 500g', cat:'Proteins', qty:12, unit:7.50 },
+          { name:'Duck Breast (each)', cat:'Proteins', qty:4,  unit:7.50 },
+        ],
+        comms:[
+          { dir:'out', from:'Nomni Procure (auto)', time:'8 Jun, 11:20am',
+            body:'Hi Pete,\n\nPlease find PO-5515 attached for delivery to Bondi Beach on 12 Jun.\n\nKindly confirm receipt.\n\nRegards,\nNomni Procure on behalf of Bondi Beach', attach:'PO-5515.pdf' },
+          { dir:'in', from:'Pete Russo (Sydney Butchers)', time:'9 Jun, 8:10am',
+            body:'Confirmed. Will deliver AM window on the 12th.\n\nThanks,\nPete' },
+          { dir:'in', from:'Pete Russo (Sydney Butchers)', time:'12 Jun, 7:32am',
+            body:'Delivered — left at back-of-house with your kitchen hand. Please sign the delivery docket.\n\nCheers,\nPete' },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Priya Mendez</strong>', time:'8 Jun, 11:20am' },
+          { tone:'info',    icon:'ti-send',         text:'PO sent to Sydney Butchers Co.', time:'8 Jun, 11:20am' },
+          { tone:'ok',      icon:'ti-circle-check', text:'Confirmed by supplier', time:'9 Jun, 8:10am' },
+          { tone:'ok',      icon:'ti-package',      text:'Delivery arrived at <strong>Bondi Beach</strong>', time:'12 Jun, 7:30am' },
+        ],
+      },
+      'PO-5512': {
+        id:'PO-5512', supplier:'Green Farmers Market', outlet:'Surry Hills', outletAddr:'42 Crown St, Surry Hills NSW 2010',
+        value:540, expected:'10 Jun', created:'7 Jun 2026, 9:00am', createdBy:'Keith Tan',
+        approval:'manager', status:'delayed', daysOverdue:2,
+        items:[
+          { name:'Mixed Leaf 2kg',         cat:'Produce', qty:8,  unit:9.00 },
+          { name:'Avocado (each)',          cat:'Produce', qty:40, unit:2.40 },
+          { name:'Roma Tomatoes 5kg',      cat:'Produce', qty:5,  unit:16.50 },
+          { name:'Heirloom Tomatoes 500g', cat:'Produce', qty:8,  unit:6.50 },
+          { name:'Baby Spinach 1kg',       cat:'Produce', qty:8,  unit:12.00 },
+          { name:'Broccolini bunch',       cat:'Produce', qty:10, unit:2.45 },
+        ],
+        comms:[
+          { dir:'out', from:'Nomni Procure', time:'7 Jun, 2:15pm',
+            body:'Hi Tom,\n\nPO-5512 attached for delivery to Surry Hills on 10 Jun.\n\nKindly confirm.\n\nRegards,\nNomni Procure', attach:'PO-5512.pdf' },
+          { dir:'in', from:'Tom Leung (Green Farmers)', time:'8 Jun, 8:30am',
+            body:"Confirmed, we'll have it out to you on the 10th.\n\nTom" },
+          { dir:'out', from:'Keith Tan (Surry Hills)', time:'11 Jun, 9:00am',
+            body:"Hi Tom,\n\nJust following up — PO-5512 was due yesterday but hasn't arrived yet. Can you give us an updated ETA?\n\nThanks,\nKeith" },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Keith Tan</strong>', time:'7 Jun, 9:00am' },
+          { tone:'warn',    icon:'ti-user-check',  text:'Sent for manager approval', time:'7 Jun, 9:00am' },
+          { tone:'ok',      icon:'ti-circle-check', text:'Approved by <strong>Keith Tan</strong>', time:'7 Jun, 2:15pm' },
+          { tone:'info',    icon:'ti-send',         text:'PO sent to Green Farmers Market', time:'7 Jun, 2:15pm' },
+          { tone:'ok',      icon:'ti-circle-check', text:'Confirmed by supplier', time:'8 Jun, 8:30am' },
+          { tone:'risk',    icon:'ti-alert-triangle', text:'Expected delivery <strong>10 Jun</strong> not received — flagged as delayed', time:'10 Jun, 6:00pm' },
+          { tone:'info',    icon:'ti-mail-forward', text:'Chase email sent by Keith Tan', time:'11 Jun, 9:00am' },
+        ],
+      },
+      'PO-5510': {
+        id:'PO-5510', supplier:'Green Farmers Market', outlet:'Parramatta Table', outletAddr:'1 Darcy St, Parramatta NSW 2150',
+        value:890, expected:'9 Jun', created:'5 Jun 2026, 10:45am', createdBy:'Sam Nguyen',
+        approval:'manager', status:'received', receivedAt:'9 Jun, 8:30am',
+        items:[
+          { name:'Mixed Leaf 2kg',        cat:'Produce', qty:16, unit:9.00,  recv:16 },
+          { name:'Avocado (each)',         cat:'Produce', qty:60, unit:2.40,  recv:60 },
+          { name:'Roma Tomatoes 5kg',     cat:'Produce', qty:10, unit:16.50, recv:10 },
+          { name:'Baby Spinach 1kg',      cat:'Produce', qty:12, unit:12.00, recv:12 },
+          { name:'Broccolini bunch',      cat:'Produce', qty:30, unit:4.50,  recv:30 },
+          { name:'Continental Cucumber',  cat:'Produce', qty:50, unit:2.50,  recv:50 },
+          { name:'Capsicum Red 500g',     cat:'Produce', qty:20, unit:6.00,  recv:20 },
+        ],
+        grn:{ receivedBy:'Sam Nguyen', temp:'4°C', note:'All items in good condition. Avocados slightly underripe — acceptable.' },
+        invoice:{ id:'INV-00891', status:'matched', amount:'$890', method:'Auto-matched by Cyrus · 3-way match passed' },
+        comms:[
+          { dir:'out', from:'Nomni Procure', time:'5 Jun, 3:00pm',
+            body:'Hi Tom,\n\nPO-5510 attached for delivery to Parramatta Table on 9 Jun.\n\nKindly confirm.\n\nRegards,\nNomni Procure', attach:'PO-5510.pdf' },
+          { dir:'in', from:'Tom Leung (Green Farmers)', time:'6 Jun, 9:00am',
+            body:'Confirmed, all 7 lines in stock. Delivery scheduled for 9 Jun, AM.\n\nTom' },
+          { dir:'in', from:'Tom Leung (Green Farmers)', time:'9 Jun, 7:55am',
+            body:"Delivered at 7:50am. Your team signed the docket.\n\nCheers,\nTom" },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Sam Nguyen</strong>', time:'5 Jun, 10:45am' },
+          { tone:'warn',    icon:'ti-user-check',  text:'Sent for manager approval', time:'5 Jun, 10:45am' },
+          { tone:'ok',      icon:'ti-circle-check', text:'Approved by <strong>Keith Tan</strong>', time:'5 Jun, 3:00pm' },
+          { tone:'info',    icon:'ti-send',         text:'PO sent to Green Farmers Market', time:'5 Jun, 3:00pm' },
+          { tone:'ok',      icon:'ti-circle-check', text:'Confirmed by supplier', time:'6 Jun, 9:00am' },
+          { tone:'ok',      icon:'ti-package',      text:'Delivery arrived at <strong>Parramatta Table</strong>', time:'9 Jun, 7:55am' },
+          { tone:'ok',      icon:'ti-circle-check-filled', text:'GRN submitted by <strong>Sam Nguyen</strong> — all items received', time:'9 Jun, 8:30am' },
+          { tone:'agent',   icon:'ti-sparkles', text:'Invoice INV-00891 auto-matched by <strong>Cyrus</strong> · 3-way match passed', time:'9 Jun, 9:01am' },
+        ],
+      },
+      'PO-5508': {
+        id:'PO-5508', supplier:'Harbour Meats', outlet:'Newtown', outletAddr:'88 King St, Newtown NSW 2042',
+        value:470, expected:'8 Jun', created:'4 Jun 2026, 2:30pm', createdBy:'Marcus Lee',
+        approval:'auto', status:'discrepancy',
+        discLines:2,
+        items:[
+          { name:'Chicken Breast 500g', cat:'Proteins', qty:20, unit:7.15,  recv:20, batch:'LOT-060424', dmg:false },
+          { name:'Beef Short Rib 500g', cat:'Proteins', qty:12, unit:12.50, recv:8,  batch:'LOT-060425', dmg:false },
+          { name:'Lamb Rack (each)',    cat:'Proteins', qty:6,  unit:28.00, recv:4,  batch:'LOT-060426', dmg:false },
+          { name:'Pork Belly 1kg',     cat:'Proteins', qty:5,  unit:18.00, recv:5,  batch:'LOT-060427', dmg:false },
+        ],
+        grn:{ receivedBy:'Marcus Lee', temp:'2°C', note:'Beef Short Rib and Lamb Rack short on delivery. Driver said balance follows Thursday — no confirmation received.' },
+        invoice:{ id:'INV-00887', status:'on-hold', amount:'$470', method:'On hold — discrepancy pending resolution' },
+        comms:[
+          { dir:'out', from:'Nomni Procure (auto)', time:'4 Jun, 2:30pm',
+            body:'Hi Jake,\n\nPO-5508 attached for delivery to Newtown on 8 Jun.\n\nKindly confirm.\n\nRegards,\nNomni Procure', attach:'PO-5508.pdf' },
+          { dir:'in', from:'Jake Harding (Harbour Meats)', time:'5 Jun, 9:00am',
+            body:"All confirmed, will deliver 8th June.\n\nJake" },
+          { dir:'in', from:'Jake Harding (Harbour Meats)', time:'8 Jun, 8:00am',
+            body:"Delivered. Note: Beef Short Rib and Lamb Rack are running short this week. The balance (4 × Short Rib, 2 × Lamb Rack) will follow with Thursday's run.\n\nJake" },
+          { dir:'out', from:'Marcus Lee (Newtown)', time:'8 Jun, 8:15am',
+            body:"Hi Jake,\n\nThanks for the heads-up, but we'll need the balance ASAP — Thursday is too late for the weekend menu. Can you confirm if we should raise a credit note for the short items?\n\nMarcus" },
+        ],
+        activity:[
+          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Marcus Lee</strong>', time:'4 Jun, 2:30pm' },
+          { tone:'info',    icon:'ti-send',         text:'PO sent to Harbour Meats', time:'4 Jun, 2:30pm' },
+          { tone:'ok',      icon:'ti-circle-check', text:'Confirmed by supplier', time:'5 Jun, 9:00am' },
+          { tone:'ok',      icon:'ti-package',      text:'Partial delivery arrived at <strong>Newtown</strong>', time:'8 Jun, 7:50am' },
+          { tone:'risk',    icon:'ti-alert-hexagon', text:'GRN submitted with discrepancy — Beef Short Rib (−4), Lamb Rack (−2)', time:'8 Jun, 8:10am' },
+          { tone:'warn',    icon:'ti-receipt',       text:'Invoice INV-00887 on hold pending discrepancy resolution', time:'8 Jun, 9:01am' },
+        ],
+      },
+    };
+
+    /* ── Status config ── */
+    const STATUS_PILL = {
+      'needs-manager': '<span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs approval</span>',
+      'sent':          '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span>',
+      'opened':        '<span class="nb-pill info"><i class="ti ti-mail-opened"></i>Opened</span>',
+      'confirmed':     '<span class="nb-pill ok"><i class="ti ti-circle-check"></i>Confirmed</span>',
+      'delivered':     '<span class="nb-pill info"><i class="ti ti-package"></i>Delivered</span>',
+      'received':      '<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span>',
+      'delayed':       '<span class="nb-pill risk"><i class="ti ti-alert-triangle"></i>Delayed</span>',
+      'discrepancy':   '<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span>',
+    };
+    const LC_NODES = ['Created','Sent','Confirmed','Delivered','Received'];
+    const LC_STATE = {
+      'needs-manager': { active:'Created', done:[] },
+      'sent':          { active:'Sent',       done:['Created'] },
+      'opened':        { active:'Sent',       done:['Created'] },
+      'confirmed':     { active:'Confirmed',  done:['Created','Sent'] },
+      'delivered':     { active:'Delivered',  done:['Created','Sent','Confirmed'] },
+      'received':      { active:'Received',   done:['Created','Sent','Confirmed','Delivered'] },
+      'delayed':       { active:'Delayed',    done:['Created','Sent','Confirmed'], risk:'Delayed',      replace:'Delivered' },
+      'discrepancy':   { active:'Discrepancy',done:['Created','Sent','Confirmed','Delivered'], risk:'Discrepancy', replace:'Received' },
+    };
+
+    function supInits(name) {
+      return name.split(' ').filter(w=>w.length>2).map(w=>w[0]).slice(0,2).join('').toUpperCase() || name.slice(0,2).toUpperCase();
+    }
+
+    /* ── Render: lifecycle ── */
+    function renderLifecycle(po) {
+      const lcs = LC_STATE[po.status] || LC_STATE['sent'];
+      const nodes = LC_NODES.map(n => (lcs.replace && n===lcs.replace) ? lcs.risk : n);
+      let html = '';
+      nodes.forEach((label, i) => {
+        const isDone  = lcs.done && lcs.done.includes(label);
+        const isRisk  = lcs.risk && label === lcs.risk;
+        const isActive= label === (lcs.risk || lcs.active);
+        const cls = isRisk ? 'risk' : isDone ? 'done' : isActive ? 'active' : '';
+        const icon = isDone ? '<i class="ti ti-check"></i>'
+                   : isRisk ? '<i class="ti ti-alert-triangle"></i>'
+                   : isActive && po.status==='needs-manager' ? '<i class="ti ti-clock"></i>'
+                   : (i+1);
+        const dateStr = label==='Created' ? po.created.split(',')[0]
+                      : label==='Sent' && po.sentAt ? po.sentAt.split(',')[0]
+                      : label==='Confirmed' && po.confirmedAt ? po.confirmedAt.split(',')[0]
+                      : label==='Delivered' && po.deliveredAt ? po.deliveredAt.split(',')[0]
+                      : label==='Received' && po.receivedAt ? po.receivedAt.split(',')[0]
+                      : isActive && po.expected ? po.expected
+                      : label==='Delayed' ? '<span style="color:var(--status-risk-fg)">'+po.expected+'</span>'
+                      : '';
+        html += `<div class="lc-step ${cls}"><div class="lc-dot">${icon}</div><div class="lc-label">${label}</div><div class="lc-date">${dateStr}</div></div>`;
+        if (i < nodes.length-1) html += `<div class="lc-connector"><div class="lc-line${isDone?' done':''}"></div></div>`;
+      });
+      document.getElementById('lc-row').innerHTML = html;
+    }
+
+    /* ── Render: action banner ── */
+    function renderActionBanner(po) {
+      const wrap = document.getElementById('action-banner');
+      const s = po.status;
+      let html = '';
+      if (s==='needs-manager') {
+        html = `<div class="action-banner approval">
+          <div class="banner-icon approval"><i class="ti ti-user-check"></i></div>
+          <div class="banner-body">
+            <div class="banner-title">Pending manager approval</div>
+            <div class="banner-sub">Order value <strong>$${po.value.toLocaleString()}</strong> exceeds the $500 policy threshold.</div>
+          </div>
+          <div class="banner-actions role-editor-only">
+            <button class="nb-btn primary" style="height:40px;" onclick="approveOrder()"><i class="ti ti-circle-check"></i> Approve</button>
+            <button class="nb-btn" style="height:40px;background:var(--surface);border:1px solid var(--border);" onclick="openReject()"><i class="ti ti-x"></i> Reject</button>
+          </div>
+        </div>`;
+      } else if (s==='sent'||s==='opened') {
+        const note = s==='opened'
+          ? `Supplier opened the PO email ${po.openedAt||''} — awaiting explicit confirmation`
+          : 'Sent to supplier — no response yet';
+        html = `<div class="action-banner info">
+          <div class="banner-icon info"><i class="ti ti-clock"></i></div>
+          <div class="banner-body"><div class="banner-title">Awaiting supplier confirmation</div><div class="banner-sub">${note} · Expected <strong>${po.expected}</strong></div></div>
+          <div class="banner-actions">
+            <button class="nb-btn" style="height:40px;background:var(--surface);border:1px solid var(--border);" id="chase-btn" onclick="sendChase()"><i class="ti ti-mail-forward"></i> Chase supplier</button>
+          </div>
+        </div>`;
+      } else if (s==='confirmed') {
+        html = `<div class="action-banner ok">
+          <div class="banner-icon ok"><i class="ti ti-circle-check"></i></div>
+          <div class="banner-body"><div class="banner-title">Confirmed — delivery on track</div><div class="banner-sub">Confirmed by <strong>${po.confirmedBy||'supplier'}</strong> via ${po.confirmedVia||'email'} · ${po.confirmedAt||''} · Expected <strong>${po.expected}</strong></div></div>
+        </div>`;
+      } else if (s==='delivered') {
+        html = `<div class="action-banner ok">
+          <div class="banner-icon ok"><i class="ti ti-package"></i></div>
+          <div class="banner-body"><div class="banner-title">Goods arrived — submit GRN to close order</div><div class="banner-sub">Delivery logged ${po.deliveredAt} · Confirm quantities, temperature, and condition per line.</div></div>
+          <div class="banner-actions">
+            <button class="nb-btn primary" style="height:40px;" onclick="switchTab('grn')"><i class="ti ti-clipboard-check"></i> Submit GRN</button>
+          </div>
+        </div>`;
+      } else if (s==='delayed') {
+        html = `<div class="action-banner risk">
+          <div class="banner-icon risk"><i class="ti ti-alert-triangle"></i></div>
+          <div class="banner-body"><div class="banner-title">Delivery ${po.daysOverdue||1} day${po.daysOverdue!==1?'s':''} overdue</div><div class="banner-sub">Expected <strong>${po.expected}</strong> · Chase for ETA or submit GRN if goods arrived.</div></div>
+          <div class="banner-actions">
+            <button class="nb-btn" style="height:40px;background:var(--surface);border:1px solid var(--border);" id="chase-btn" onclick="sendChase()"><i class="ti ti-mail-forward"></i> Chase supplier</button>
+            <button class="nb-btn primary" style="height:40px;" onclick="switchTab('grn')"><i class="ti ti-clipboard-check"></i> Submit GRN</button>
+          </div>
+        </div>`;
+      } else if (s==='discrepancy') {
+        html = `<div class="action-banner risk">
+          <div class="banner-icon risk"><i class="ti ti-alert-hexagon"></i></div>
+          <div class="banner-body"><div class="banner-title">GRN submitted with discrepancy — ${po.discLines||2} lines short</div><div class="banner-sub">Invoice on hold. Raise a credit note or contact the supplier to arrange re-delivery.</div></div>
+          <div class="banner-actions">
+            <button class="nb-btn primary" style="height:40px;" onclick="toast('Raising credit note for ${po.id}…')"><i class="ti ti-receipt-refund"></i> Raise credit note</button>
+            <button class="nb-btn" style="height:40px;background:var(--surface);border:1px solid var(--border);" onclick="switchTab('comms')"><i class="ti ti-message-circle"></i> View comms</button>
+          </div>
+        </div>`;
+      } else if (s==='received') {
+        html = `<div class="action-banner ok">
+          <div class="banner-icon ok"><i class="ti ti-circle-check-filled"></i></div>
+          <div class="banner-body"><div class="banner-title">Order complete</div><div class="banner-sub">GRN submitted ${po.receivedAt} by <strong>${po.grn?.receivedBy||'outlet staff'}</strong> · Invoice matched · No discrepancies.</div></div>
+        </div>`;
+      }
+      wrap.innerHTML = html;
+    }
+
+    /* ── Render: tabs ── */
+    let _tab = 'details';
+    function buildTabList(po) {
+      const s = po.status;
+      const tabs = [{ id:'details', icon:'ti-list-details', label:'Details' }];
+      if (s==='delivered'||s==='delayed') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'Receive goods', badgeOk:'Action needed' });
+      else if (s==='received'||s==='discrepancy') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'GRN' });
+      tabs.push({ id:'comms', icon:'ti-messages', label:'Comms', badgeInf: po.comms?.length||0 });
+      if (po.invoice) tabs.push({ id:'invoice', icon:'ti-receipt', label:'Invoice', agent:true });
+      return tabs;
+    }
+    function renderTabs(po) {
+      document.getElementById('detail-tabs').innerHTML = buildTabList(po).map(t => {
+        let badge = '';
+        if (t.badgeOk) badge = `<span class="tab-badge-ok">${t.badgeOk}</span>`;
+        if (t.badgeInf) badge = `<span class="tab-badge-inf">${t.badgeInf}</span>`;
+        if (t.agent) badge = `<span style="font-size:10px;color:var(--text-accent);margin-left:2px;">✦</span>`;
+        return `<button class="detail-tab${t.id===_tab?' active':''}" onclick="switchTab('${t.id}')"><i class="ti ${t.icon}"></i> ${t.label}${badge}</button>`;
+      }).join('');
+    }
+    function switchTab(id) {
+      _tab = id; renderTabs(_currentPO); renderMain(_currentPO);
+    }
+
+    /* ── Render: main panel ── */
+    let _currentPO = null;
+    function renderMain(po) {
+      const el = document.getElementById('detail-main');
+      el.innerHTML = '';
+      if (_tab==='details')  renderDetails(po, el);
+      else if (_tab==='grn')    renderGRN(po, el);
+      else if (_tab==='comms')  renderComms(po, el);
+      else if (_tab==='invoice') renderInvoice(po, el);
+    }
+
+    /* Details tab */
+    function renderDetails(po, el) {
+      const s = po.status;
+      const showRecv = s==='received'||s==='discrepancy';
+      let total = 0;
+      const trows = po.items.map(item => {
+        const lt = item.qty * item.unit; total += lt;
+        let recvCols = '';
+        if (showRecv) {
+          const recv = item.recv !== undefined ? item.recv : item.qty;
+          const diff = recv - item.qty;
+          recvCols = `<td class="num">${recv}</td><td class="num">${diff===0 ? '<span class="var-ok"><i class="ti ti-check"></i></span>' : '<span class="var-short">−'+Math.abs(diff)+'</span>'}</td>`;
+        }
+        const isShort = showRecv && item.recv!==undefined && item.recv<item.qty;
+        return `<tr${isShort?' style="background:rgba(238,75,135,0.04)"':''}>
+          <td><div class="item-name">${item.name}</div><div class="item-cat">${item.cat}</div></td>
+          <td class="num">${item.qty}</td><td class="num">$${item.unit.toFixed(2)}</td>
+          ${recvCols}<td class="num">$${lt.toFixed(2)}</td></tr>`;
+      }).join('');
+      const cols = showRecv ? 5 : 3;
+      const card = mkCard(`<i class="ti ti-list-details"></i> Line items`,
+        `<span style="font-size:12px;color:var(--text-soft);">${po.items.length} item${po.items.length!==1?'s':''}</span>`,
+        `<div style="overflow-x:auto;"><table class="items-tbl">
+          <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit</th>${showRecv?'<th class="num">Received</th><th class="num">Variance</th>':''}<th class="num">Total</th></tr></thead>
+          <tbody>${trows}</tbody>
+          <tfoot><tr class="total-row"><td colspan="${showRecv?3:2}" style="color:var(--text-soft);font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Order total</td>${showRecv?'<td class="num"></td><td class="num"></td>':''}<td class="num">$${total.toFixed(2)}</td></tr></tfoot>
+        </table></div>`);
+      el.appendChild(card);
+
+      const delivRows = [
+        kv('Expected delivery', s==='delayed'
+          ? `<span style="color:var(--status-risk-fg);font-weight:700;">${po.expected} <span style="font-size:11px;font-weight:400;">(${po.daysOverdue||1}d overdue)</span></span>`
+          : (po.expected||'—')),
+        kv('Outlet', po.outletAddr||po.outlet),
+        kv('Supplier schedule', SUP_SCHEDULES[po.supplier]||'—'),
+        kv('Confirmation', po.confirmedBy ? `${po.confirmedBy} via ${po.confirmedVia}` : s==='sent'||s==='opened' ? 'Pending' : '—'),
+        ...(po.grn ? [
+          kv('Received by', po.grn.receivedBy),
+          kv('Temp on arrival', po.grn.temp),
+          kv('GRN note', `<em style="font-size:12px;">${po.grn.note}</em>`),
+        ] : []),
+      ].join('');
+      el.appendChild(mkCard('<i class="ti ti-truck-delivery"></i> Delivery details', '', `<div style="padding:0 var(--space-xl) var(--space-sm);"><div class="kv-list">${delivRows}</div></div>`));
+    }
+
+    /* GRN tab */
+    function renderGRN(po, el) {
+      const isSubmitted = po.status==='received'||po.status==='discrepancy';
+      let headBadge = isSubmitted
+        ? `<span class="nb-pill ${po.status==='discrepancy'?'risk':'ok'}"><i class="ti ${po.status==='discrepancy'?'ti-alert-hexagon':'ti-circle-check-filled'}"></i>${po.status==='discrepancy'?'Discrepancy':'Submitted'}</span>`
+        : `<span class="nb-pill info"><i class="ti ti-edit"></i> Enter quantities</span>`;
+      let inner = '';
+      if (!isSubmitted) {
+        inner += `<div class="grn-notice"><i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px;"></i>Enter actual quantity received. Add batch/lot reference, temperature, damage flag, and photo per line if needed.</div>`;
+      }
+      // Table
+      const trows = po.items.map((item, i) => {
+        const recv = item.recv !== undefined ? item.recv : item.qty;
+        if (isSubmitted) {
+          const diff = recv - item.qty;
+          const varStr = diff===0 ? '<span class="var-ok"><i class="ti ti-check"></i> Full</span>' : `<span class="var-short">−${Math.abs(diff)}</span>`;
+          const isShort = recv < item.qty;
+          return `<tr${isShort?' style="background:rgba(238,75,135,0.04)"':''}>
+            <td><div class="item-name">${item.name}</div><div class="item-cat">${item.cat}</div></td>
+            <td class="num">${item.qty}</td><td class="num">${varStr}</td>
+            <td style="font-size:12px;color:var(--text-soft);">${item.batch||'—'}</td>
+            <td class="num" style="font-size:12px;">${po.grn?.temp||'—'}</td>
+            <td style="text-align:center;font-size:12px;">${item.dmg?'<span class="var-short"><i class="ti ti-flag"></i> Yes</span>':'—'}</td>
+            <td style="text-align:center;">—</td></tr>`;
+        }
+        return `<tr id="grn-r-${i}">
+          <td><div class="item-name">${item.name}</div><div class="item-cat">${item.cat}</div></td>
+          <td class="num" style="color:var(--text-soft);">${item.qty}</td>
+          <td class="num"><input class="grn-input" id="grn-q-${i}" type="number" value="${item.qty}" min="0" oninput="grnCheck(${i},${item.qty})"/></td>
+          <td><input class="grn-text" id="grn-l-${i}" type="text" placeholder="LOT-XXXXXX"/></td>
+          <td class="num"><input class="grn-input grn-temp" id="grn-t-${i}" type="number" value="4" step="0.1"/></td>
+          <td style="text-align:center;"><input class="grn-checkbox" id="grn-d-${i}" type="checkbox" onchange="grnCheck(${i},${item.qty})"/></td>
+          <td style="text-align:center;"><button class="grn-photo-btn" onclick="openPhoto('${item.name.replace(/'/g,'\\u0027')}')" title="Attach photo"><i class="ti ti-camera"></i></button></td></tr>`;
+      }).join('');
+      inner += `<div style="overflow-x:auto;"><table class="items-tbl">
+        <thead><tr>
+          <th>Item</th><th class="num">Ordered</th><th class="num">Received</th>
+          <th>Batch / Lot</th><th class="num" style="white-space:nowrap;">Temp °C</th>
+          <th style="text-align:center;">Damage</th><th style="text-align:center;">Photo</th>
+        </tr></thead><tbody id="grn-tbody">${trows}</tbody></table></div>`;
+      if (isSubmitted && po.grn?.note) {
+        inner += `<div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);font-size:13px;"><strong>Note:</strong> <span style="color:var(--text-soft);">${po.grn.note}</span></div>`;
+      }
+      if (!isSubmitted) {
+        inner += `<div class="grn-summary">
+          <span style="color:var(--text-soft);">Short:</span> <strong id="gs-short" style="color:var(--status-risk-fg);">0</strong>
+          <span style="color:var(--text-soft);margin-left:var(--space-md);">Damaged:</span> <strong id="gs-dmg" style="color:var(--status-risk-fg);">0</strong>
+          <div style="flex:1;"></div>
+          <button class="nb-btn" style="height:36px;background:var(--surface);border:1px solid var(--border);" onclick="switchTab('details')">Cancel</button>
+          <button class="nb-btn primary" style="height:36px;" onclick="submitGRN()"><i class="ti ti-circle-check"></i> Submit GRN</button>
+        </div>
+        <div style="padding:var(--space-md) var(--space-xl) var(--space-xl);border-top:1px solid var(--border);">
+          <label style="font-size:12px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:var(--space-xs);">Delivery note (optional)</label>
+          <textarea id="grn-note-field" style="width:100%;height:60px;padding:var(--space-sm) var(--space-md);border:1px solid var(--border);border-radius:var(--radius-md);font-family:inherit;font-size:13px;color:var(--text);resize:none;background:var(--surface);" placeholder="e.g. 2 trays short on Short Rib. Driver noted backorder — to follow Thursday."></textarea>
+        </div>`;
+      }
+      const card = mkCard('<i class="ti ti-clipboard-check"></i> Goods received note', headBadge, inner);
+      el.appendChild(card);
+    }
+
+    function grnCheck(i, ordQty) {
+      const q = document.getElementById('grn-q-'+i);
+      const row = document.getElementById('grn-r-'+i);
+      if (q && row) row.style.background = parseFloat(q.value) < ordQty ? 'rgba(238,75,135,0.05)' : '';
+      // update summary
+      let sh=0, dm=0;
+      _currentPO.items.forEach((_,j) => {
+        const qe = document.getElementById('grn-q-'+j);
+        const de = document.getElementById('grn-d-'+j);
+        if (qe && parseFloat(qe.value) < _currentPO.items[j].qty) sh++;
+        if (de && de.checked) dm++;
+      });
+      const gs = document.getElementById('gs-short');
+      const gd = document.getElementById('gs-dmg');
+      if (gs) gs.textContent = sh;
+      if (gd) gd.textContent = dm;
+    }
+    function submitGRN() {
+      let hasDisc = false;
+      _currentPO.items.forEach((_,j) => {
+        const q = document.getElementById('grn-q-'+j);
+        const d = document.getElementById('grn-d-'+j);
+        if ((q && parseFloat(q.value) < _currentPO.items[j].qty) || (d && d.checked)) hasDisc = true;
+      });
+      toast(hasDisc ? 'GRN submitted with discrepancy — invoice held for review' : 'GRN submitted · order received');
+      setTimeout(() => location.href = 'orders.html', 2300);
+    }
+
+    /* Comms tab */
+    function renderComms(po, el) {
+      let inner = '';
+      (po.comms||[]).forEach(msg => {
+        const isOut = msg.dir==='out';
+        inner += `<div class="comms-msg" style="margin:var(--space-md) var(--space-xl);">
+          <div class="comms-msg-head" style="background:${isOut?'var(--surface-soft)':'var(--mint)'};">
+            <div><div class="comms-msg-from"><i class="ti ${isOut?'ti-send':'ti-inbox'}" style="font-size:11px;margin-right:3px;${isOut?'':'color:var(--spinach);'}"></i>${msg.from}</div></div>
+            <span class="comms-msg-time">${msg.time}</span>
+          </div>
+          <div class="comms-msg-body">${msg.body}</div>
+          ${msg.attach ? `<button class="comms-attach" onclick="toast('Downloading ${msg.attach}…')"><i class="ti ti-paperclip"></i> ${msg.attach}</button>` : ''}
+        </div>`;
+      });
+      inner += `<div class="comms-reply">
+        <textarea id="comms-reply-txt" placeholder="Reply to ${po.supplier}…"></textarea>
+        <button class="nb-btn primary" style="height:40px;align-self:flex-end;padding-inline:var(--space-md);" onclick="sendReply()"><i class="ti ti-send"></i></button>
+      </div>`;
+      el.appendChild(mkCard(`<i class="ti ti-messages"></i> Supplier communications`,
+        `<span style="font-size:12px;color:var(--text-soft);">${po.comms?.length||0} message${po.comms?.length!==1?'s':''}</span>`,
+        inner));
+    }
+
+    /* Invoice tab */
+    function renderInvoice(po, el) {
+      if (!po.invoice) return;
+      const inv = po.invoice;
+      const isMatched = inv.status==='matched';
+      const rows = [
+        kv('Invoice ref', inv.id),
+        kv('Invoice amount', inv.amount),
+        kv('PO amount', '$'+po.value.toLocaleString()),
+        kv('3-way match', isMatched
+          ? '<span class="nb-pill ok" style="font-size:11px;"><i class="ti ti-circle-check"></i>Passed</span>'
+          : '<span class="nb-pill risk" style="font-size:11px;"><i class="ti ti-alert-hexagon"></i>Failed — on hold</span>'),
+        kv('Method', inv.method),
+      ].join('');
+      let extra = '';
+      if (!isMatched) extra = `<div style="padding:var(--space-md) var(--space-xl) var(--space-lg);border-top:1px solid var(--border);display:flex;gap:var(--space-sm);">
+        <button class="nb-btn primary" style="height:38px;" onclick="toast('Raising credit note…')"><i class="ti ti-receipt-refund"></i> Raise credit note</button>
+        <button class="nb-btn" style="height:38px;background:var(--surface);border:1px solid var(--border);" onclick="switchTab('comms')"><i class="ti ti-message-circle"></i> Reply to supplier</button>
+      </div>`;
+      const card = mkCard('<i class="ti ti-receipt"></i> Invoice match',
+        '<div class="agent-byline-sm"><i class="ti ti-sparkles spark"></i> Cyrus</div>',
+        `<div style="padding:0 var(--space-xl) var(--space-sm);"><div class="kv-list">${rows}</div></div>${extra}`);
+      card.classList.add('agent-surface');
+      el.appendChild(card);
+    }
+
+    /* ── DOM helpers ── */
+    function mkCard(titleHtml, rightHtml, bodyHtml) {
+      const d = document.createElement('div');
+      d.className = 'detail-card';
+      d.innerHTML = `<div class="card-head"><span class="card-head-title">${titleHtml}</span>${rightHtml}</div>${bodyHtml}`;
+      return d;
+    }
+    function kv(label, value) {
+      return `<div class="kv-row"><span class="kv-label">${label}</span><span class="kv-value">${value}</span></div>`;
+    }
+
+    /* ── Sidebar ── */
+    function renderOrderMeta(po) {
+      const approvalBadge = po.approval==='manager'
+        ? '<span style="color:var(--status-warn-fg);font-weight:700;">Manager required</span>'
+        : '<span style="color:var(--status-ok-fg);font-weight:700;">Auto-approved</span>';
+      document.getElementById('order-meta-kv').innerHTML = [
+        kv('Raised by', po.createdBy),
+        kv('Created', po.created),
+        kv('Type', 'Purchase Order'),
+        kv('Approval', approvalBadge),
+      ].join('');
+    }
+    function renderSupplier(po) {
+      const sc = SUP_COLORS[po.supplier] || { bg:'var(--surface-soft)', fg:'var(--text-soft)' };
+      const [cn] = (SUP_CONTACTS[po.supplier]||'—').split(' · ');
+      document.getElementById('supplier-card-body').innerHTML = `
+        <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);">
+          <div class="sup-avatar" style="background:${sc.bg};color:${sc.fg};">${supInits(po.supplier)}</div>
+          <div><div style="font-size:15px;font-weight:700;color:var(--text);">${po.supplier}</div><div style="font-size:12px;color:var(--text-soft);">Verified supplier</div></div>
+        </div>
+        <div class="kv-list">
+          ${kv('Schedule', `<span style="font-size:12px;">${SUP_SCHEDULES[po.supplier]||'—'}</span>`)}
+          ${kv('Contact', `<span style="font-size:12px;">${cn||'—'}</span>`)}
+          ${kv('Nomni Supply', '<span style="color:var(--status-ok-fg);"><i class="ti ti-circle-check"></i> Connected</span>')}
+        </div>`;
+    }
+    function renderActivity(po) {
+      document.getElementById('activity-feed').innerHTML = [...po.activity].reverse().map(a =>
+        `<div class="act-item">
+          <div class="act-dot ${a.tone}"><i class="ti ${a.icon}" style="font-size:10px;"></i></div>
+          <div class="act-body"><div class="act-text">${a.text}</div><div class="act-time">${a.time}</div></div>
+        </div>`
+      ).join('');
+    }
+
+    /* ── Actions ── */
+    function approveOrder() {
+      document.getElementById('action-banner').innerHTML = `<div class="action-banner ok" style="margin-bottom:var(--space-lg);">
+        <div class="banner-icon ok"><i class="ti ti-circle-check"></i></div>
+        <div class="banner-body"><div class="banner-title">Approved — sending to supplier</div><div class="banner-sub">PO is being dispatched now.</div></div>
+      </div>`;
+      toast('Approved and sent to ' + _currentPO.supplier);
+      setTimeout(() => location.href = 'orders.html', 2200);
+    }
+    function openReject()  { document.getElementById('reject-modal').style.display = ''; }
+    function closeReject() { document.getElementById('reject-modal').style.display = 'none'; }
+    function confirmReject() {
+      closeReject();
+      toast('Order rejected — returned to ' + (_currentPO.createdBy||'requester'));
+      setTimeout(() => location.href = 'orders.html', 2200);
+    }
+    function sendChase() {
+      const btn = document.getElementById('chase-btn');
+      if (btn) { btn.innerHTML = '<i class="ti ti-clock"></i> Sent'; btn.disabled = true; }
+      toast('Chase email sent to ' + _currentPO.supplier);
+      _currentPO.comms.push({ dir:'out', from:'You', time:'Just now',
+        body:'Hi,\n\nFollowing up on '+_currentPO.id+' — expected '+_currentPO.expected+' and hasn\'t arrived. Please provide an updated ETA.\n\nThanks' });
+      _currentPO.activity.push({ tone:'info', icon:'ti-mail-forward', text:'Chase email sent to <strong>'+_currentPO.supplier+'</strong>', time:'Just now' });
+      renderActivity(_currentPO);
+    }
+    function sendReply() {
+      const txt = document.getElementById('comms-reply-txt');
+      if (!txt || !txt.value.trim()) return;
+      _currentPO.comms.push({ dir:'out', from:'You', time:'Just now', body:txt.value });
+      txt.value = '';
+      renderMain(_currentPO);
+      toast('Reply sent to ' + _currentPO.supplier);
+    }
+    let _photoItem = '';
+    function openPhoto(name) { _photoItem = name; document.getElementById('photo-modal-item').textContent = name; document.getElementById('photo-modal').style.display = ''; }
+    function closePhoto() { document.getElementById('photo-modal').style.display = 'none'; }
+    function photoUploaded() { closePhoto(); toast('Photo attached for ' + _photoItem); }
+
+    /* ── Toast ── */
+    function toast(msg) {
+      const wrap = document.getElementById('toast-wrap');
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 18px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 2800);
+    }
+
+    /* ── Init ── */
+    (function() {
+      const id = new URLSearchParams(location.search).get('id') || 'PO-5521';
+      const po = PO_DATA[id] || PO_DATA['PO-5521'];
+      _currentPO = po;
+      // Default tab: GRN for delivered/delayed, else details
+      _tab = (po.status==='delivered'||po.status==='delayed') ? 'grn' : 'details';
+
+      document.title = po.id + ' — Nomni Procure';
+      document.getElementById('bc-id').textContent = po.id;
+      document.getElementById('order-id').textContent = po.id;
+      document.getElementById('status-pill').innerHTML = STATUS_PILL[po.status]||'';
+      document.getElementById('meta-supplier').textContent = po.supplier;
+      document.getElementById('meta-outlet').textContent = po.outlet;
+      document.getElementById('meta-value').textContent = '$' + po.value.toLocaleString();
+      document.getElementById('meta-expected').innerHTML = po.status==='delayed'
+        ? `<span style="color:var(--status-risk-fg);font-weight:600;">Expected ${po.expected} · overdue</span>`
+        : `Expected ${po.expected}`;
+      document.getElementById('head-actions').innerHTML = `
+        <button class="nb-btn" style="height:40px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding-inline:var(--space-lg);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:var(--space-xs);" onclick="toast('Downloading PO PDF…')"><i class="ti ti-download"></i> Export PDF</button>
+        <button class="nb-btn" style="height:40px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding-inline:var(--space-lg);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:var(--space-xs);" onclick="toast('Resending PO email…')"><i class="ti ti-mail-forward"></i> Resend PO</button>`;
+
+      renderLifecycle(po);
+      renderActionBanner(po);
+      renderTabs(po);
+      renderMain(po);
+      renderOrderMeta(po);
+      renderSupplier(po);
+      renderActivity(po);
+    })();
+  </script>
+</body>
+</html>
