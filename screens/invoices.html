@@ -40,7 +40,8 @@
     .inv-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); padding:var(--space-sm) var(--space-sm); background:var(--surface-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
     .inv-table td { font-size:13px; padding:8px var(--space-sm); border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden; }
     .inv-table tr:last-child td { border-bottom:none; }
-    .inv-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .inv-table tbody tr { cursor:pointer; }
+    .inv-table tbody tr:hover td { background:rgba(42,200,100,0.05); }
     .inv-table tbody tr.row-selected td { background:rgba(42,200,100,0.07); }
     /* Column widths — explicit layout avoids overflow clipping */
     .col-check  { width:32px; }
@@ -571,12 +572,12 @@
         const sel = _selected.has(inv.id);
         // Short date: "12 Jun" (drop year — all same year in context)
         const shortDate = inv.date.replace(/ \d{4}$/, '');
-        return `<tr class="${sel?'row-selected':''}" id="row-${inv.id}">
-          <td class="col-check" style="padding-inline:var(--space-md);"><input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${inv.id}',this.checked)" style="cursor:pointer;accent-color:var(--fern);"/></td>
+        return `<tr class="${sel?'row-selected':''}" id="row-${inv.id}" style="cursor:pointer;" onclick="rowClick(event,'${inv.id}')">
+          <td class="col-check" style="padding-inline:var(--space-md);"><input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${inv.id}',this.checked)" style="cursor:pointer;accent-color:var(--fern);" onclick="event.stopPropagation()"/></td>
           <td class="col-inv">
-            <a href="invoice-detail.html?id=${inv.id}" class="cell-id" style="text-decoration:none;color:inherit;">${inv.id}</a>
+            <div class="cell-id">${inv.id}</div>
             ${inv.po
-              ? `<div class="cell-sub"><a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);text-decoration:none;">${inv.po}</a></div>`
+              ? `<div class="cell-sub"><a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);text-decoration:none;" onclick="event.stopPropagation()">${inv.po}</a></div>`
               : `<div class="cell-sub" style="color:var(--status-warn-fg);"><i class="ti ti-unlink" style="font-size:10px;"></i> No PO</div>`}
           </td>
           <td class="col-sup" title="${inv.supplier}"><div class="cell-sup">${inv.supplier}</div></td>
@@ -586,9 +587,14 @@
           <td class="col-src">${srcBadge(inv.source)}</td>
           <td class="col-status">${STATUS_CFG[inv.status]?.pill||''}</td>
           <td class="col-match">${matchBadge(inv)}</td>
-          <td class="col-act">${rowActions(inv)}</td>
+          <td class="col-act" onclick="event.stopPropagation()">${rowActions(inv)}</td>
         </tr>`;
       }).join('');
+    }
+
+    /* ── Row click → detail page (actions column and checkbox stop propagation) ── */
+    function rowClick(e, id) {
+      window.location.href = 'invoice-detail.html?id=' + id;
     }
 
     /* ── Selection ── */
