@@ -73,7 +73,8 @@
     .data-table th.num, .data-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
     .data-table td { padding: var(--space-md) var(--space-lg); color: var(--text); border-bottom: 1px solid var(--border); vertical-align: middle; }
     .data-table tbody tr:last-child td { border-bottom: none; }
-    .data-table tbody tr:hover td { background: var(--surface-soft); }
+    .data-table tbody tr { cursor: pointer; }
+    .data-table tbody tr:hover td { background: rgba(42,200,100,0.05); }
     .cell-id { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
     .data-table tbody tr.row-new td { background: color-mix(in srgb, var(--spring) 9%, transparent); }
     .data-table tbody tr.row-new td:first-child { box-shadow: inset 3px 0 0 var(--fern); }
@@ -256,69 +257,69 @@
             </div>
             <thead><tr><th>PO</th><th>Supplier</th><th>Outlet</th><th class="num">Value</th><th>Expected</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
             <tbody>
-              <tr id="po-5521">
+              <tr id="po-5521" onclick="location.href='order-detail.html?id=PO-5521'">
                 <td class="cell-id">PO-5521</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$640</td>
                 <td class="cell-sub">14 Jun</td>
                 <td><span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span></td>
-                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5521'">Review</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5521'">Review</button></td>
               </tr>
-              <tr id="po-5519">
+              <tr id="po-5519" onclick="location.href='order-detail.html?id=PO-5519'">
                 <td class="cell-id">PO-5519</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Newtown</td>
                 <td class="num">$1,180</td>
                 <td class="cell-sub">15 Jun</td>
                 <td><span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span></td>
-                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5519'">Review</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5519'">Review</button></td>
               </tr>
-              <tr>
+              <tr onclick="location.href='order-detail.html?id=PO-5520'">
                 <td class="cell-id">PO-5520</td><td class="cell-name">Fresh Produce Co</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$420</td>
                 <td class="cell-sub">13 Jun</td>
                 <td><span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div></td>
-                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5520'">View</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5520'">View</button></td>
               </tr>
-              <tr>
+              <tr onclick="location.href='order-detail.html?id=PO-5517'">
                 <td class="cell-id">PO-5517</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Bondi Beach</td>
                 <td class="num">$280</td>
                 <td class="cell-sub">13 Jun</td>
                 <td><span class="nb-pill info"><i class="ti ti-mail-opened"></i>Opened</span><div class="cell-sub" style="margin-top:2px;">Email opened 9:14 am · implicit</div></td>
-                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5517'">View</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5517'">View</button></td>
               </tr>
-              <tr>
+              <tr onclick="location.href='order-detail.html?id=PO-5518'">
                 <td class="cell-id">PO-5518</td><td class="cell-name">Pacific Drinks Wholesale</td><td class="cell-sub">Melbourne CBD</td>
                 <td class="num">$520</td>
                 <td class="cell-sub">14 Jun</td>
                 <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Confirmed</span><div class="cell-sub" style="margin-top:2px;">via Nomni Supply</div></td>
-                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5518'">View</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5518'">View</button></td>
               </tr>
 
-              <tr id="po-5515">
+              <tr id="po-5515" onclick="location.href='order-detail.html?id=PO-5515&amp;tab=grn'">
                 <td class="cell-id">PO-5515</td><td class="cell-name">Sydney Butchers Co.</td><td class="cell-sub">Bondi Beach</td>
                 <td class="num">$310</td>
                 <td class="cell-sub">12 Jun</td>
                 <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Confirmed</span><div class="cell-sub" style="margin-top:2px;">Delivery notified by supplier · awaiting GRN</div><div><span class="inv-flag warn"><i class="ti ti-receipt-off"></i>Invoice missing</span></div></td>
-                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5515&amp;tab=grn'">Receive</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5515&amp;tab=grn'">Receive</button></td>
               </tr>
-              <tr id="po-5512">
+              <tr id="po-5512" onclick="location.href='order-detail.html?id=PO-5512'">
                 <td class="cell-id">PO-5512</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$540</td>
                 <td class="cell-sub" style="color:var(--status-risk-fg);font-weight:600;">10 Jun</td>
                 <td><span class="nb-pill risk"><i class="ti ti-alert-triangle"></i>Delayed</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">2 days overdue</div></td>
-                <td><button class="link-action" onclick="ordToast('Chasing Green Farmers on PO-5512…')">Chase</button> · <button class="link-action" onclick="openReceive('po-5512','Green Farmers Market')">Receive</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="ordToast('Chasing Green Farmers on PO-5512…')">Chase</button> · <button class="link-action" onclick="openReceive('po-5512','Green Farmers Market')">Receive</button></td>
               </tr>
-              <tr>
+              <tr onclick="location.href='order-detail.html?id=PO-5510'">
                 <td class="cell-id">PO-5510</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Parramatta Table</td>
                 <td class="num">$890</td>
                 <td class="cell-sub">9 Jun</td>
                 <td><span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span><div class="cell-sub" style="margin-top:2px;">9 Jun · on time</div><div><span class="inv-flag ok"><i class="ti ti-circle-check"></i>Invoice matched</span></div></td>
-                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5510'">View</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5510'">View</button></td>
               </tr>
-              <tr>
+              <tr onclick="location.href='order-detail.html?id=PO-5508'">
                 <td class="cell-id">PO-5508</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Newtown</td>
                 <td class="num">$470</td>
                 <td class="cell-sub">8 Jun</td>
                 <td><span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">2 lines short on receipt</div><div><span class="inv-flag risk"><i class="ti ti-receipt-off"></i>Invoice on hold</span></div></td>
-                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5508'">Resolve</button></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5508'">Resolve</button></td>
               </tr>
             </tbody>
           </table>
