@@ -433,6 +433,15 @@
       document.getElementById('route-summary').innerHTML = '<i class="ti ti-git-branch"></i> This requisition will create '+n+' purchase order'+(n!==1?'s':'')+' to '+n+' supplier'+(n!==1?'s':'');
     }
 
+    /* ── Persist created orders so they appear in the Orders tables ── */
+    function saveOrders(records) {
+      try {
+        const key = 'nomni_new_orders';
+        const existing = JSON.parse(sessionStorage.getItem(key) || '[]');
+        sessionStorage.setItem(key, JSON.stringify(existing.concat(records)));
+      } catch (e) { /* sessionStorage unavailable — non-fatal for the demo */ }
+    }
+
     /* ── Finish ── */
     let prCounter = 1043, poCounter = 5522;
     function finish() {
@@ -440,25 +449,43 @@
       const sub = document.getElementById('done-sub');
       const title = document.getElementById('done-title');
       const total = basketTotal();
+      const outlet = document.getElementById('outlet-select').value;
+      const cats = [...new Set(basket.map(b=>b.cat))];
+      const itemsLabel = basket.length + ' items · ' + cats.join(', ').toLowerCase();
+      const raisedBy = role === 'outlet' ? 'Keith Tan' : (basket.some(()=>true) ? 'Keith Tan' : 'HQ');
+      const records = [];
+
       if (orderType === 'pr' && role === 'hq') {
         const suppliers = [...new Set(Object.values(routeSuppliers))];
         const pr = 'PR-'+(prCounter++);
+        // per-supplier totals
+        const bySupplier = {};
+        basket.forEach(b => { const s = routeSuppliers[b.cat] || 'Fresh Produce Co'; bySupplier[s] = (bySupplier[s]||0) + b.qty*b.unit; });
         const pos = suppliers.map(()=>'PO-'+(poCounter++));
         title.textContent = 'Requisition routed';
         sub.innerHTML = pr+' created and split into '+pos.length+' purchase order'+(pos.length!==1?'s':'')+' across '+suppliers.length+' supplier'+(suppliers.length!==1?'s':'')+'.';
         done.innerHTML = '<span class="nb-pill info"><i class="ti ti-clipboard-list"></i>'+pr+'</span>' + pos.map(p=>'<span class="nb-pill ok"><i class="ti ti-file-invoice"></i>'+p+'</span>').join('');
+        records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'routed', poCount:pos.length });
+        suppliers.forEach((s,i) => {
+          const v = Math.round(bySupplier[s]||0);
+          records.push({ kind:'po', id:pos[i], supplier:s, outlet, value:v, approval: v>500?'manager':'auto', delivery: v>500?'draft':'sent' });
+        });
       } else if (orderType === 'pr') {
         const pr = 'PR-'+(prCounter++);
         title.textContent = 'Requisition submitted';
         sub.innerHTML = pr+' was sent to HQ for review and supplier routing.';
         done.innerHTML = '<span class="nb-pill warn"><i class="ti ti-clock"></i>'+pr+' · awaiting HQ</span>';
+        records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'needs-review', poCount:0 });
       } else {
         const po = 'PO-'+(poCounter++);
         const needsApproval = total > 500;
+        const supplier = (document.getElementById('po-supplier')||{}).value || 'Fresh Produce Co';
         title.textContent = needsApproval ? 'Order sent for approval' : 'Purchase order sent';
         sub.innerHTML = needsApproval ? po+' is awaiting manager approval before it goes to the supplier.' : po+' was sent to the supplier.';
         done.innerHTML = needsApproval ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>'+po+' · needs manager</span>' : '<span class="nb-pill info"><i class="ti ti-send"></i>'+po+' · sent</span>';
+        records.push({ kind:'po', id:po, supplier, outlet, value:Math.round(total), approval: needsApproval?'manager':'auto', delivery: needsApproval?'draft':'sent' });
       }
+      saveOrders(records);
     }
 
     /* ── Stepper navigation ── */

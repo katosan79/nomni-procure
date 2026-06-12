@@ -75,6 +75,8 @@
     .data-table tbody tr:last-child td { border-bottom: none; }
     .data-table tbody tr:hover td { background: var(--surface-soft); }
     .cell-id { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
+    .data-table tbody tr.row-new td { background: color-mix(in srgb, var(--spring) 9%, transparent); }
+    .data-table tbody tr.row-new td:first-child { box-shadow: inset 3px 0 0 var(--fern); }
     .cell-name { font-weight: 600; color: var(--text); }
     .cell-sub { font-size: 12px; color: var(--text-soft); }
     .link-action { font-size: 13px; font-weight: 600; color: var(--text-accent); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
@@ -333,7 +335,78 @@
   <div id="ord-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Orders'));
+    document.addEventListener('DOMContentLoaded', () => { NomniShell.init('Orders'); injectNewOrders(); });
+
+    /* ── Inject orders created via the New Order flow (sessionStorage) ── */
+    function injectNewOrders() {
+      let records = [];
+      try { records = JSON.parse(sessionStorage.getItem('nomni_new_orders') || '[]'); } catch (e) { return; }
+      if (!records.length) return;
+      const prBody = document.querySelector('#panel-pr tbody');
+      const poBody = document.querySelector('#panel-po tbody');
+      let prAdded = 0, poAdded = 0;
+
+      records.forEach(rec => {
+        if (rec.kind === 'pr') {
+          const status = rec.status === 'routed'
+            ? '<span class="nb-pill info"><i class="ti ti-git-branch"></i>Routed → ' + rec.poCount + ' POs</span>'
+            : '<span class="nb-pill warn"><i class="ti ti-clock"></i>Needs HQ review</span>';
+          const raised = (rec.raisedBy || '').startsWith('by ')
+            ? '<span class="agent-byline"><i class="ti ti-sparkles spark"></i>' + rec.raisedBy.slice(3) + '</span>'
+            : (rec.raisedBy || 'HQ');
+          const action = rec.status === 'routed'
+            ? '<button class="link-action" onclick="ordToast(\'' + rec.id + ' routed to suppliers\')">View</button>'
+            : '<button class="link-action" onclick="ordToast(\'Routing ' + rec.id + '…\')">Review &amp; route</button>';
+          const tr = document.createElement('tr');
+          tr.className = 'row-new';
+          tr.innerHTML = '<td class="cell-id">' + rec.id + '</td>' +
+            '<td class="cell-name">' + rec.outlet + '</td>' +
+            '<td class="cell-sub">' + rec.itemsLabel + '</td>' +
+            '<td class="num">$' + rec.value.toLocaleString() + '</td>' +
+            '<td>' + raised + '</td>' +
+            '<td>' + status + '</td>' +
+            '<td>' + action + '</td>';
+          if (prBody) prBody.insertBefore(tr, prBody.firstChild);
+          prAdded++;
+        } else {
+          const approval = rec.approval === 'manager'
+            ? '<span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span>'
+            : '<span class="nb-pill ok"><i class="ti ti-bolt"></i>Auto-approved</span>';
+          const delivery = rec.delivery === 'sent'
+            ? '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span>'
+            : '<span class="nb-pill neutral">Draft</span>';
+          const action = rec.approval === 'manager'
+            ? '<button class="link-action" onclick="approveInjected(this)">Approve</button>'
+            : '<button class="link-action" onclick="ordToast(\'Opening ' + rec.id + '…\')">View</button>';
+          const tr = document.createElement('tr');
+          tr.className = 'row-new';
+          tr.innerHTML = '<td class="cell-id">' + rec.id + '</td>' +
+            '<td class="cell-name">' + rec.supplier + '</td>' +
+            '<td class="cell-sub">' + rec.outlet + '</td>' +
+            '<td class="num">$' + rec.value.toLocaleString() + '</td>' +
+            '<td>' + approval + '</td>' +
+            '<td>' + delivery + '</td>' +
+            '<td>' + action + '</td>';
+          if (poBody) poBody.insertBefore(tr, poBody.firstChild);
+          poAdded++;
+        }
+      });
+
+      // Bump tab counts
+      const tabs = document.querySelectorAll('.order-tab .count');
+      if (tabs[0]) tabs[0].textContent = (parseInt(tabs[0].textContent) || 0) + prAdded;
+      if (tabs[1]) tabs[1].textContent = (parseInt(tabs[1].textContent) || 0) + poAdded;
+    }
+
+    /* Approve an injected PO row (manager threshold) */
+    function approveInjected(btn) {
+      const row = btn.closest('tr');
+      const cells = row.querySelectorAll('td');
+      cells[4].innerHTML = '<span class="nb-pill ok"><i class="ti ti-check"></i>Approved</span>';
+      cells[5].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span>';
+      cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
+      ordToast('Approved and sent to supplier');
+    }
 
     function switchTab(id) {
       document.querySelectorAll('.order-panel').forEach(p => p.classList.remove('active'));
