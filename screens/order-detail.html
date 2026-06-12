@@ -272,6 +272,9 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => NomniShell.init('Order detail'));
 
+    /* Suppliers connected via Nomni Supply — only these can push a "delivered" status */
+    const NOMNI_SUPPLY = new Set(['Pacific Drinks Wholesale']);
+
     /* ── Reference data ── */
     const SUP_SCHEDULES = {
       'Harbour Meats':            'Mon / Wed / Fri · cutoff 3pm',
@@ -409,7 +412,7 @@
       'PO-5515': {
         id:'PO-5515', supplier:'Sydney Butchers Co.', outlet:'Bondi Beach', outletAddr:'56 Campbell Pde, Bondi Beach NSW 2026',
         value:310, expected:'12 Jun', created:'8 Jun 2026, 11:20am', createdBy:'Priya Mendez',
-        approval:'auto', status:'delivered', deliveredAt:'12 Jun, 7:30am',
+        approval:'auto', status:'confirmed', confirmedBy:'Pete Russo', confirmedVia:'email', confirmedAt:'9 Jun, 8:10am',
         items:[
           { name:'Chicken Thigh 2kg',  cat:'Proteins', uom:'pkg', qty:8,  unit:11.50 },
           { name:'Beef Mince 500g',    cat:'Proteins', uom:'pkg', qty:10, unit:9.80 },
@@ -541,16 +544,17 @@
       'delayed':       '<span class="nb-pill risk"><i class="ti ti-alert-triangle"></i>Delayed</span>',
       'discrepancy':   '<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span>',
     };
-    const LC_NODES = ['Created','Sent','Confirmed','Delivered','Received'];
+    const LC_NODES_FULL    = ['Created','Sent','Confirmed','Delivered','Received'];
+    const LC_NODES_SIMPLE  = ['Created','Sent','Confirmed','Received'];
     const LC_STATE = {
-      'needs-manager': { active:'Created', done:[] },
-      'sent':          { active:'Sent',       done:['Created'] },
-      'opened':        { active:'Sent',       done:['Created'] },
-      'confirmed':     { active:'Confirmed',  done:['Created','Sent'] },
-      'delivered':     { active:'Delivered',  done:['Created','Sent','Confirmed'] },
-      'received':      { active:'Received',   done:['Created','Sent','Confirmed','Delivered'] },
-      'delayed':       { active:'Delayed',    done:['Created','Sent','Confirmed'], risk:'Delayed',      replace:'Delivered' },
-      'discrepancy':   { active:'Discrepancy',done:['Created','Sent','Confirmed','Delivered'], risk:'Discrepancy', replace:'Received' },
+      'needs-manager': { active:'Created',     done:[] },
+      'sent':          { active:'Sent',         done:['Created'] },
+      'opened':        { active:'Sent',         done:['Created'] },
+      'confirmed':     { active:'Confirmed',    done:['Created','Sent'] },
+      'delivered':     { active:'Delivered',    done:['Created','Sent','Confirmed'] },
+      'received':      { active:'Received',     done:['Created','Sent','Confirmed','Delivered'] },
+      'delayed':       { active:'Delayed',      done:['Created','Sent','Confirmed'], risk:'Delayed',     replace:'Delivered' },
+      'discrepancy':   { active:'Discrepancy',  done:['Created','Sent','Confirmed','Delivered'], risk:'Discrepancy', replace:'Received' },
     };
 
     function supInits(name) {
@@ -559,23 +563,27 @@
 
     /* ── Render: lifecycle ── */
     function renderLifecycle(po) {
+      const onNomniSupply = NOMNI_SUPPLY.has(po.supplier);
+      const baseNodes = onNomniSupply ? LC_NODES_FULL : LC_NODES_SIMPLE;
       const lcs = LC_STATE[po.status] || LC_STATE['sent'];
-      const nodes = LC_NODES.map(n => (lcs.replace && n===lcs.replace) ? lcs.risk : n);
+      /* Strip 'Delivered' from done list for non-Nomni-Supply suppliers */
+      const done = onNomniSupply ? (lcs.done||[]) : (lcs.done||[]).filter(d => d!=='Delivered');
+      const nodes = baseNodes.map(n => (lcs.replace && n===lcs.replace) ? lcs.risk : n);
       let html = '';
       nodes.forEach((label, i) => {
-        const isDone  = lcs.done && lcs.done.includes(label);
-        const isRisk  = lcs.risk && label === lcs.risk;
-        const isActive= label === (lcs.risk || lcs.active);
+        const isDone   = done.includes(label);
+        const isRisk   = lcs.risk && label === lcs.risk;
+        const isActive = label === (lcs.risk || lcs.active);
         const cls = isRisk ? 'risk' : isDone ? 'done' : isActive ? 'active' : '';
         const icon = isDone ? '<i class="ti ti-check"></i>'
                    : isRisk ? '<i class="ti ti-alert-triangle"></i>'
                    : isActive && po.status==='needs-manager' ? '<i class="ti ti-clock"></i>'
                    : (i+1);
-        const dateStr = label==='Created' ? po.created.split(',')[0]
-                      : label==='Sent' && po.sentAt ? po.sentAt.split(',')[0]
+        const dateStr = label==='Created'   ? po.created.split(',')[0]
+                      : label==='Sent'      && po.sentAt      ? po.sentAt.split(',')[0]
                       : label==='Confirmed' && po.confirmedAt ? po.confirmedAt.split(',')[0]
                       : label==='Delivered' && po.deliveredAt ? po.deliveredAt.split(',')[0]
-                      : label==='Received' && po.receivedAt ? po.receivedAt.split(',')[0]
+                      : label==='Received'  && po.receivedAt  ? po.receivedAt.split(',')[0]
                       : isActive && po.expected ? po.expected
                       : label==='Delayed' ? '<span style="color:var(--status-risk-fg)">'+po.expected+'</span>'
                       : '';
@@ -616,12 +624,15 @@
       } else if (s==='confirmed') {
         html = `<div class="action-banner ok">
           <div class="banner-icon ok"><i class="ti ti-circle-check"></i></div>
-          <div class="banner-body"><div class="banner-title">Confirmed — delivery on track</div><div class="banner-sub">Confirmed by <strong>${po.confirmedBy||'supplier'}</strong> via ${po.confirmedVia||'email'} · ${po.confirmedAt||''} · Expected <strong>${po.expected}</strong></div></div>
+          <div class="banner-body"><div class="banner-title">Confirmed — delivery on track</div><div class="banner-sub">Confirmed by <strong>${po.confirmedBy||'supplier'}</strong> via ${po.confirmedVia||'email'} · ${po.confirmedAt||''} · Expected <strong>${po.expected}</strong> · Submit GRN when goods arrive.</div></div>
+          <div class="banner-actions">
+            <button class="nb-btn primary" style="height:40px;" onclick="switchTab('grn')"><i class="ti ti-clipboard-check"></i> Submit GRN</button>
+          </div>
         </div>`;
       } else if (s==='delivered') {
         html = `<div class="action-banner ok">
           <div class="banner-icon ok"><i class="ti ti-package"></i></div>
-          <div class="banner-body"><div class="banner-title">Goods arrived — submit GRN to close order</div><div class="banner-sub">Delivery logged ${po.deliveredAt} · Confirm quantities, temperature, and condition per line.</div></div>
+          <div class="banner-body"><div class="banner-title">Delivery confirmed via Nomni Supply — submit GRN to close order</div><div class="banner-sub">Delivery logged ${po.deliveredAt} by <strong>${po.supplier}</strong> · Confirm quantities, temperature, and condition per line.</div></div>
           <div class="banner-actions">
             <button class="nb-btn primary" style="height:40px;" onclick="switchTab('grn')"><i class="ti ti-clipboard-check"></i> Submit GRN</button>
           </div>
@@ -658,10 +669,10 @@
     function buildTabList(po) {
       const s = po.status;
       const tabs = [{ id:'details', icon:'ti-list-details', label:'Details' }];
-      if (s==='delivered'||s==='delayed') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'Receive goods', badgeOk:'Action needed' });
+      if (s==='confirmed'||s==='delivered'||s==='delayed') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'Receive goods', badgeOk:'Action needed' });
       else if (s==='received'||s==='discrepancy') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'GRN' });
       tabs.push({ id:'comms', icon:'ti-messages', label:'Comms', badgeInf: po.comms?.length||0 });
-      if (['delivered','received','discrepancy'].includes(po.status)) tabs.push({ id:'invoice', icon:'ti-receipt', label:'Invoice', agent:true });
+      if (['confirmed','delivered','received','discrepancy'].includes(po.status)) tabs.push({ id:'invoice', icon:'ti-receipt', label:'Invoice', agent:true });
       return tabs;
     }
     function renderTabs(po) {
@@ -1021,11 +1032,12 @@
 
     /* ── Init ── */
     (function() {
-      const id = new URLSearchParams(location.search).get('id') || 'PO-5521';
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id') || 'PO-5521';
       const po = PO_DATA[id] || PO_DATA['PO-5521'];
       _currentPO = po;
-      // Default tab: GRN for delivered/delayed, else details
-      _tab = (po.status==='delivered'||po.status==='delayed') ? 'grn' : 'details';
+      // Default tab: honour ?tab= param, else GRN for delivered/delayed, else details
+      _tab = params.get('tab') || ((po.status==='delivered'||po.status==='delayed') ? 'grn' : 'details');
 
       document.title = po.id + ' — Nomni Procure';
       document.getElementById('bc-id').textContent = po.id;
