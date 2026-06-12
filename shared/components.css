@@ -30,6 +30,15 @@
   box-shadow: var(--shadow-sm), 0 0 0 4px var(--agent-glow);
 }
 
+/* Proposed state: FYI only — neutral border, no glow ring */
+.agent-surface:has(.agent-state.proposed) {
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.agent-surface:has(.agent-state.proposed):hover {
+  box-shadow: var(--shadow-md);
+}
+
 /* ── Agent card (suggestion / proposal) ── */
 .agent-card {
   display: flex;

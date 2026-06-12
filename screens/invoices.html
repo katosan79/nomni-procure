@@ -123,12 +123,6 @@
     .cyrus-chip.ok     { background:var(--mint); color:var(--spinach); }
     .cyrus-chip.info   { background:var(--status-info-bg); color:var(--status-info-fg); }
 
-    /* ── Outlet breakdown ── */
-    .outlet-breakdown { display:flex; flex-wrap:wrap; gap:var(--space-xs); padding-top:var(--space-md); border-top:1px solid var(--border); }
-    .outlet-tag { display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:400; padding:3px 12px; border-radius:var(--radius-pill); background:var(--surface-soft); border:1px solid var(--border); color:var(--text-soft); }
-    .outlet-tag .outlet-name { font-weight:600; color:var(--text); }
-    .outlet-tag.has-issue { background:var(--status-risk-bg); border-color:rgba(238,75,135,0.3); color:var(--status-risk-fg); }
-    .outlet-tag.has-issue .outlet-name { color:var(--status-risk-fg); }
 
     /* ── Match drawer ── */
     .drawer-scrim { position:fixed; inset:0; background:rgba(14,55,39,0.35); z-index:100; display:none; }
@@ -217,7 +211,6 @@
           </div>
           <div class="cyrus-summary" id="cyrus-summary"></div>
           <div class="cyrus-chips" id="cyrus-chips"></div>
-          <div class="outlet-breakdown" id="outlet-breakdown"></div>
         </div>
 
         <!-- Bulk action bar -->
@@ -962,29 +955,8 @@
         chips.push(`<span class="cyrus-chip" style="background:var(--surface-soft);color:var(--text-soft);cursor:default;"><i class="ti ti-database"></i> $${total.toLocaleString()} total AP</span>`);
       }
 
-      // Build outlet breakdown — skip invoices with no outlet (unlinked)
-      const outletMap = {};
-      scope.forEach(inv => {
-        const key = inv.outlet;
-        if (!key || key === '—') return;
-        if (!outletMap[key]) outletMap[key] = { total:0, failed:0, pending:0 };
-        outletMap[key].total++;
-        if (inv.status === 'failed')  outletMap[key].failed++;
-        if (inv.status === 'pending') outletMap[key].pending++;
-      });
-      const outletTags = Object.entries(outletMap).map(([name, o]) => {
-        const hasIssue = o.failed > 0;
-        const detail = [];
-        if (o.failed)  detail.push(`${o.failed} failed`);
-        if (o.pending) detail.push(`${o.pending} pending`);
-        const detailStr = detail.length ? ` · ${detail.join(', ')}` : ` · ${o.total} invoice${o.total!==1?'s':''}`;
-        return `<span class="outlet-tag${hasIssue?' has-issue':''}"><i class="ti ti-building-store" style="font-size:11px;"></i><span class="outlet-name">${name}</span>${detailStr}</span>`;
-      }).join('');
-
       document.getElementById('cyrus-summary').innerHTML = summary;
       document.getElementById('cyrus-chips').innerHTML = chips.join('');
-      document.getElementById('outlet-breakdown').innerHTML = outletTags;
-      document.getElementById('outlet-breakdown').style.display = Object.keys(outletMap).length > 0 ? '' : 'none';
 
       // Agent state badge
       const stateEl = document.getElementById('cyrus-state');
