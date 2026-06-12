@@ -12,13 +12,15 @@
    Sloan  — Governance Agent (HQ)        · procurement magenta
    Otto   — Ordering Agent               · ordering teal
    Cyrus  — Invoice & spend intelligence · pos blue
-   Mara   — Margin & variance (cost)     · insights rose
+   Mara   — Margin agent (cost)          · insights rose
+   Vera   — Variance agent               · insights rose
    ───────────────────────────────────────────── */
 :root {
   --agent-sloan: var(--procurement);
   --agent-otto:  var(--ordering);
   --agent-cyrus: var(--pos);
   --agent-mara:  var(--insights);
+  --agent-vera:  var(--insights);
 }
 
 /* ── Agentic glow (only on agent-initiated surfaces) ── */
@@ -64,6 +66,7 @@
 .agent-avatar[data-agent="otto"]  { --agent-accent: var(--agent-otto);  --agent-rhythm: 6s;   }
 .agent-avatar[data-agent="cyrus"] { --agent-accent: var(--agent-cyrus); --agent-rhythm: 7.5s; }
 .agent-avatar[data-agent="mara"]  { --agent-accent: var(--agent-mara);  --agent-rhythm: 6.8s; }
+.agent-avatar[data-agent="vera"]  { --agent-accent: var(--agent-vera);  --agent-rhythm: 7.2s; }
 
 /* ─────────────────────────────────────────────
    Agent identity motion ("magic dust") — design-system §2.5 compliant:

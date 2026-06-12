@@ -53,7 +53,7 @@
     { fn: 'governance', agent: 'sloan', short: 'Sl', name: 'Governance', who: 'Sloan' },
     { fn: 'invoice',    agent: 'cyrus', short: 'Cy', name: 'Invoice',    who: 'Cyrus' },
     { fn: 'margin',     agent: 'mara',  short: 'Ma', name: 'Margin',     who: 'Mara'  },
-    { fn: 'variance',   agent: 'mara',  short: 'Ma', name: 'Variance',   who: 'Mara'  },
+    { fn: 'variance',   agent: 'vera',  short: 'Ve', name: 'Variance',   who: 'Vera'  },
   ];
   function agentsMaster() {
     try { return localStorage.getItem('nomni_agents') !== 'off'; } catch (e) { return true; }
