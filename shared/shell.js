@@ -17,6 +17,35 @@
     { id: 'users',       icon: 'ti-users',              label: 'Users',        href: 'users.html' },
   ];
 
+  /* ── Roles (the View-as switcher) ── */
+  const ROLES = [
+    { id: 'hq-admin',    tier: 'hq',       group: 'HQ',       label: 'HQ Administrator', short: 'HQ' },
+    { id: 'hq-approver', tier: 'hq',       group: 'HQ',       label: 'HQ Approver',      short: 'AP' },
+    { id: 'finance',     tier: 'hq',       group: 'HQ',       label: 'Finance User',     short: 'FN' },
+    { id: 'outlet-mgr',  tier: 'outlet',   group: 'Outlet',   label: 'Outlet Manager',   short: 'OM' },
+    { id: 'outlet-user', tier: 'outlet',   group: 'Outlet',   label: 'Outlet Staff',     short: 'OS' },
+    { id: 'supplier',    tier: 'external', group: 'External', label: 'Supplier User',    short: 'SP' },
+  ];
+  const ALL = ROLES.map(r => r.id);
+  /* Which roles may see each nav section */
+  const NAV_ROLES = {
+    dashboard:     ALL,
+    orders:        ['hq-admin','hq-approver','finance','outlet-mgr','outlet-user','supplier'],
+    inventory:     ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
+    'market-list': ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
+    recipes:       ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
+    'pos-mapping': ['hq-admin','hq-approver','outlet-mgr'],
+    reporting:     ['hq-admin','hq-approver','finance'],
+    venues:        ['hq-admin','hq-approver'],
+    suppliers:     ['hq-admin','hq-approver','finance'],
+    users:         ['hq-admin'],
+  };
+  function currentRole() {
+    let id = 'hq-admin';
+    try { id = localStorage.getItem('nomni_role') || 'hq-admin'; } catch (e) {}
+    return ROLES.find(r => r.id === id) || ROLES[0];
+  }
+
   const script   = document.currentScript;
   const activeId = script ? script.getAttribute('data-active') : '';
 
@@ -196,6 +225,43 @@
     .shell-icon-btn:hover { background: var(--surface-soft); color: var(--text); }
     .shell-icon-btn i { font-size: 18px; }
 
+    /* ── View-as role switcher (demo control) ── */
+    .shell-roleswitch { position: relative; }
+    .shell-role-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 32px; padding: 0 10px;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); color: var(--text);
+      font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: border-color var(--dur-1) var(--ease-standard), background var(--dur-1) var(--ease-standard);
+    }
+    .shell-role-btn:hover { border-color: var(--text-accent); }
+    .shell-role-btn .va-eye { color: var(--text-accent); font-size: 15px; }
+    .shell-role-btn .va-caret { color: var(--text-soft); font-size: 14px; }
+    .shell-role-btn .va-label { white-space: nowrap; }
+    .shell-role-menu {
+      position: absolute; top: calc(100% + 6px); right: 0; min-width: 240px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+      padding: 6px; z-index: 60; display: none;
+    }
+    .shell-role-menu.open { display: block; }
+    .shell-role-hint { font-size: 11px; color: var(--text-soft); padding: 6px 10px 8px; line-height: 1.4; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+    .shell-role-group { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); padding: 8px 10px 4px; }
+    .shell-role-item {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 8px 10px; border: none; background: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text);
+      text-align: left; border-radius: var(--radius-sm);
+    }
+    .shell-role-item:hover { background: var(--surface-soft); }
+    .shell-role-item .ra { width: 24px; height: 24px; border-radius: var(--radius-pill); background: var(--surface-soft); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--text-soft); flex-shrink: 0; }
+    .shell-role-item .tick { margin-left: auto; color: var(--text-accent); visibility: hidden; font-size: 16px; }
+    .shell-role-item[aria-checked="true"] { background: var(--mint); }
+    .shell-role-item[aria-checked="true"] .tick { visibility: visible; }
+    .shell-role-item[aria-checked="true"] .ra { background: var(--fern); color: var(--btn-primary-fg); }
+    @media (max-width: 768px) { .shell-role-btn .va-label, .shell-role-btn .va-caret { display: none; } }
+
     /* Hamburger — hidden on desktop */
     .shell-hamburger { display: none; }
 
@@ -274,10 +340,19 @@
         dividerInserted = true;
       }
       return `${prefix}
-      <a class="shell-nav-item${n.id === activeId ? ' active' : ''}" href="${n.href}" aria-current="${n.id === activeId ? 'page' : 'false'}">
+      <a class="shell-nav-item${n.id === activeId ? ' active' : ''}" href="${n.href}" data-nav="${n.id}" aria-current="${n.id === activeId ? 'page' : 'false'}">
         <i class="ti ${n.icon}" aria-hidden="true"></i>
         ${n.label}
       </a>`;
+    }).join('');
+
+    const roleMenu = ['HQ','Outlet','External'].map(g => {
+      const items = ROLES.filter(r => r.group === g).map(r =>
+        `<button class="shell-role-item" role="menuitemradio" data-role="${r.id}" aria-checked="false">
+           <span class="ra" aria-hidden="true">${r.short}</span>${r.label}
+           <i class="ti ti-check tick" aria-hidden="true"></i>
+         </button>`).join('');
+      return `<div class="shell-role-group">${g}</div>${items}`;
     }).join('');
 
     return `
@@ -314,6 +389,17 @@
             <span class="shell-topbar-title">${pageTitle || 'HQ Module'}</span>
           </div>
           <div class="shell-topbar-actions">
+            <div class="shell-roleswitch">
+              <button class="shell-role-btn" id="shell-role-btn" aria-haspopup="menu" aria-expanded="false" title="Demo: switch the role you're viewing as">
+                <i class="ti ti-eye va-eye" aria-hidden="true"></i>
+                <span class="va-label" id="shell-role-label">HQ Administrator</span>
+                <i class="ti ti-chevron-down va-caret" aria-hidden="true"></i>
+              </button>
+              <div class="shell-role-menu" id="shell-role-menu" role="menu" aria-label="View as role">
+                <div class="shell-role-hint">Demo control — preview what each role sees.</div>
+                ${roleMenu}
+              </div>
+            </div>
             <button class="shell-icon-btn shell-search-btn" aria-label="Search (⌘K)">
               <i class="ti ti-search" aria-hidden="true"></i>
             </button>
@@ -356,9 +442,60 @@
       if (hamburger) hamburger.addEventListener('click', openNav);
       if (overlay)   overlay.addEventListener('click', closeNav);
 
+      // ── Role switcher ──
+      const roleBtn  = document.getElementById('shell-role-btn');
+      const roleMenu = document.getElementById('shell-role-menu');
+
+      function applyRole(roleId) {
+        const role = ROLES.find(r => r.id === roleId) || ROLES[0];
+        document.documentElement.setAttribute('data-role', role.id);
+        document.documentElement.setAttribute('data-tier', role.tier);
+        try { localStorage.setItem('nomni_role', role.id); } catch (e) {}
+
+        // Filter nav per role
+        document.querySelectorAll('[data-nav]').forEach(a => {
+          const allowed = NAV_ROLES[a.getAttribute('data-nav')] || ALL;
+          a.style.display = allowed.includes(role.id) ? '' : 'none';
+        });
+        // Hide the admin divider when no admin items are visible
+        const adminVisible = ['venues','suppliers','users'].some(id => (NAV_ROLES[id] || []).includes(role.id));
+        const divider = document.querySelector('.shell-nav-divider');
+        if (divider) divider.style.display = adminVisible ? '' : 'none';
+
+        // Reflect in the switcher + avatar
+        const lbl = document.getElementById('shell-role-label');
+        if (lbl) lbl.textContent = role.label;
+        const av = document.querySelector('.shell-avatar');
+        if (av) { av.textContent = role.short; av.setAttribute('aria-label', role.label); }
+        document.querySelectorAll('.shell-role-item').forEach(it =>
+          it.setAttribute('aria-checked', it.dataset.role === role.id ? 'true' : 'false'));
+      }
+
+      function toggleRoleMenu(open) {
+        const show = open !== undefined ? open : !roleMenu.classList.contains('open');
+        roleMenu.classList.toggle('open', show);
+        if (roleBtn) roleBtn.setAttribute('aria-expanded', show ? 'true' : 'false');
+      }
+      if (roleBtn) roleBtn.addEventListener('click', e => { e.stopPropagation(); toggleRoleMenu(); });
+      document.querySelectorAll('.shell-role-item').forEach(it =>
+        it.addEventListener('click', () => { applyRole(it.dataset.role); toggleRoleMenu(false); }));
+      document.addEventListener('click', e => {
+        if (roleMenu && !e.target.closest('.shell-roleswitch')) toggleRoleMenu(false);
+      });
+
+      // Apply persisted role on load
+      applyRole(currentRole().id);
+
+      // Public role API
+      window.NomniRole = {
+        get current() { return currentRole(); },
+        set(id) { applyRole(id); },
+        roles: ROLES,
+      };
+
       // Close on Escape
       document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeNav();
+        if (e.key === 'Escape') { closeNav(); toggleRoleMenu(false); }
       });
     },
 

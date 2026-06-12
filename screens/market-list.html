@@ -4,8 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Market lists — Nomni HQ</title>
-  <link rel="stylesheet" href="../shared/tokens.css"/>
-  <link rel="stylesheet" href="../shared/components.css"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=2"/>
+  <link rel="stylesheet" href="../shared/components.css?v=2"/>
   <style>
     /* ── Page body layout ── */
     .page-body {
@@ -1108,7 +1108,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=2" data-active="market-list"></script>
+  <script src="../shared/shell.js?v=3" data-active="market-list"></script>
 
   <div class="page-body">
 
@@ -1222,14 +1222,20 @@
               <span class="page-eyebrow">Market List Assignment</span>
               <h1 class="page-h1">Market lists</h1>
             </div>
-            <button class="btn btn-primary" onclick="openNewListModal()">
+            <button class="btn btn-primary role-hqadmin-only" onclick="openNewListModal()">
               <i class="ti ti-plus" aria-hidden="true"></i>
               New market list
             </button>
           </header>
 
+          <!-- Read-only note for non-HQ roles -->
+          <div class="role-readonly-note" style="align-items:center;gap:var(--space-sm);padding:var(--space-md) var(--space-lg);background:var(--status-info-bg);color:var(--status-info-fg);border-radius:var(--radius-md);font-size:13px;font-weight:500;margin-bottom:var(--space-xl);">
+            <i class="ti ti-lock" aria-hidden="true"></i>
+            Market lists are managed by HQ. You can view them, but creating, editing and pushing is restricted to HQ.
+          </div>
+
           <!-- ══ Governance Agent (Sloan) — ML-7 ══ -->
-          <article class="agent-surface gov-card" id="gov-card" aria-label="Governance agent proposal">
+          <article class="agent-surface gov-card role-hq-only" id="gov-card" aria-label="Governance agent proposal">
             <div class="gov-card-head">
               <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
               <span class="agent-id">

@@ -184,3 +184,26 @@ summary:focus-visible,
     scroll-behavior: auto !important;
   }
 }
+
+/* ──────────────────────────────────────────────────────────
+   Role-based visibility — driven by the View-as switcher,
+   which sets data-role / data-tier on <html>.
+   Tiers: hq (admin/approver/finance) · outlet (mgr/staff) · external (supplier)
+   ────────────────────────────────────────────────────────── */
+/* HQ-only surfaces (governance, spend controls, admin panels) */
+html[data-tier="outlet"]   .role-hq-only,
+html[data-tier="external"] .role-hq-only { display: none !important; }
+/* Only the HQ Administrator (user mgmt, role templates, etc.) */
+html:not([data-role="hq-admin"]) .role-hqadmin-only { display: none !important; }
+/* Outlet-tier-only surfaces (outlet operational widgets) */
+html[data-tier="hq"]       .role-outlet-only,
+html[data-tier="external"] .role-outlet-only { display: none !important; }
+/* Editor/approver controls — hidden for outlet staff and suppliers
+   (managers + HQ keep them) */
+html[data-role="outlet-user"] .role-editor-only,
+html[data-role="supplier"]    .role-editor-only { display: none !important; }
+
+/* Read-only banner: shows only for roles that can't edit HQ-governed content */
+.role-readonly-note { display: none; }
+html[data-tier="outlet"]   .role-readonly-note,
+html[data-tier="external"] .role-readonly-note { display: flex; }

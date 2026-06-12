@@ -4,8 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Orders — Nomni HQ</title>
-  <link rel="stylesheet" href="../shared/tokens.css"/>
-  <link rel="stylesheet" href="../shared/components.css"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=2"/>
+  <link rel="stylesheet" href="../shared/components.css?v=2"/>
   <style>
     body { background: var(--surface-soft); }
     .page-body { display: flex; flex-direction: column; padding-block: var(--space-2xl); }
@@ -96,7 +96,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=2" data-active="orders"></script>
+  <script src="../shared/shell.js?v=3" data-active="orders"></script>
   <div class="page-body">
     <div class="napp-canvas" data-measure="wide">
 
@@ -108,7 +108,7 @@
           <p class="page-desc">Requisitions routed to HQ, and purchase orders sent to suppliers — with approvals and spend controls.</p>
         </div>
         <div class="page-actions">
-          <button class="btn btn-outline" onclick="ordToast('Consolidating demand across outlets for volume pricing…')"><i class="ti ti-arrows-join"></i>Consolidate</button>
+          <button class="btn btn-outline role-hq-only" onclick="ordToast('Consolidating demand across outlets for volume pricing…')"><i class="ti ti-arrows-join"></i>Consolidate</button>
           <button class="btn btn-primary" onclick="window.location.href='new-order.html'"><i class="ti ti-plus"></i>New order</button>
         </div>
       </header>
@@ -124,7 +124,7 @@
           </div>
           <p style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">I drafted 6 requisitions from par levels and sales velocity</p>
           <p class="agent-why">14 outlets are below par on fast-movers. I've grouped each outlet's needs into a draft requisition — approve to send them to HQ for supplier routing, or push the in-policy ones straight to their preferred suppliers.</p>
-          <div class="agent-actions">
+          <div class="agent-actions role-editor-only">
             <button class="nb-btn primary" onclick="resolveOtto('Approved — 6 requisitions submitted to HQ for routing')"><i class="ti ti-check" aria-hidden="true"></i>Approve all 6</button>
             <button class="nb-btn" onclick="ordToast('Opening Otto’s draft requisitions…')">Review drafts</button>
             <button class="nb-btn ghost" onclick="ordToast('Dismissed — Otto keeps watching par levels')">Dismiss</button>
