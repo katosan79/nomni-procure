@@ -6,10 +6,10 @@
 (function () {
   const NAV = [
     { id: 'dashboard',   icon: 'ti-layout-dashboard',  label: 'Overview',     href: 'dashboard.html' },
+    { id: 'orders',      icon: 'ti-shopping-cart',      label: 'Orders',       href: 'orders.html' },
+    { id: 'inventory',   icon: 'ti-package',            label: 'Inventory',    href: 'inventory.html' },
     { id: 'market-list', icon: 'ti-receipt',            label: 'Market lists', href: 'market-list.html' },
     { id: 'recipes',     icon: 'ti-tools-kitchen-2',    label: 'Recipes',      href: 'recipes.html' },
-    { id: 'inventory',   icon: 'ti-package',            label: 'Inventory',    href: 'inventory.html' },
-    { id: 'orders',      icon: 'ti-shopping-cart',      label: 'Orders',       href: 'orders.html' },
     { id: 'pos-mapping', icon: 'ti-device-desktop',     label: 'POS mapping',  href: 'pos-mapping.html' },
     { id: 'reporting',   icon: 'ti-chart-bar',          label: 'Reporting',    href: 'reporting.html' },
     { id: 'venues',      icon: 'ti-building-store',     label: 'Venues',       href: 'venues.html' },
