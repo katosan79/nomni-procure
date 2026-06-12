@@ -158,6 +158,19 @@
     /* ── Inline link ── */
     .link-action { background:none; border:none; color:var(--text-link); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:0; }
     .link-action:hover { text-decoration:underline; }
+
+    /* ── Invoice upload ── */
+    .invoice-upload-zone { border:2px dashed var(--border); border-radius:var(--radius-lg); padding:var(--space-3xl) var(--space-2xl); text-align:center; color:var(--text-soft); font-size:13px; cursor:pointer; transition:border-color var(--dur-1) var(--ease-standard),color var(--dur-1) var(--ease-standard); }
+    .invoice-upload-zone:hover { border-color:var(--text-accent); color:var(--text-accent); }
+    .inv-thumb { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-xl); background:var(--surface-soft); border-bottom:1px solid var(--border); }
+    .inv-thumb-img { width:52px; height:68px; border-radius:var(--radius-sm); background:var(--border); display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--text-soft); flex-shrink:0; border:1px solid var(--border); }
+    /* ── Per-line photo badge ── */
+    .photo-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); background:var(--status-ok-bg); color:var(--status-ok-fg); white-space:nowrap; }
+    /* ── Spinner ── */
+    @keyframes ti-spin { to { transform:rotate(360deg); } }
+    .ti-spin { display:inline-block; animation:ti-spin 0.9s linear infinite; }
+    /* ── Summary alert banner ── */
+    .attention-bar { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; padding:var(--space-md) var(--space-xl); background:var(--status-warn-bg); border:1px solid rgba(245,194,25,0.5); border-radius:var(--radius-lg); margin-bottom:var(--space-lg); font-size:13px; }
   </style>
 </head>
 <body>
@@ -417,6 +430,7 @@
           { tone:'ok',      icon:'ti-circle-check', text:'Confirmed by supplier', time:'9 Jun, 8:10am' },
           { tone:'ok',      icon:'ti-package',      text:'Delivery arrived at <strong>Bondi Beach</strong>', time:'12 Jun, 7:30am' },
         ],
+        invoice:{ status:'missing' },
       },
       'PO-5512': {
         id:'PO-5512', supplier:'Green Farmers Market', outlet:'Surry Hills', outletAddr:'42 Crown St, Surry Hills NSW 2010',
@@ -647,7 +661,7 @@
       if (s==='delivered'||s==='delayed') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'Receive goods', badgeOk:'Action needed' });
       else if (s==='received'||s==='discrepancy') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'GRN' });
       tabs.push({ id:'comms', icon:'ti-messages', label:'Comms', badgeInf: po.comms?.length||0 });
-      if (po.invoice) tabs.push({ id:'invoice', icon:'ti-receipt', label:'Invoice', agent:true });
+      if (['delivered','received','discrepancy'].includes(po.status)) tabs.push({ id:'invoice', icon:'ti-receipt', label:'Invoice', agent:true });
       return tabs;
     }
     function renderTabs(po) {
@@ -752,7 +766,7 @@
           <td><input class="grn-text" id="grn-l-${i}" type="text" placeholder="LOT-XXXXXX"/></td>
           <td class="num"><input class="grn-input grn-temp" id="grn-t-${i}" type="number" value="4" step="0.1"/></td>
           <td style="text-align:center;"><input class="grn-checkbox" id="grn-d-${i}" type="checkbox" onchange="grnCheck(${i},${item.qty})"/></td>
-          <td style="text-align:center;"><button class="grn-photo-btn" onclick="openPhoto('${item.name.replace(/'/g,'\\u0027')}')" title="Attach photo"><i class="ti ti-camera"></i></button></td></tr>`;
+          <td style="text-align:center;"><button class="grn-photo-btn" id="grn-photo-${i}" onclick="openPhoto('${item.name.replace(/'/g,'\\u0027')}',${i})" title="Attach photo"><i class="ti ti-camera"></i></button></td></tr>`;
       }).join('');
       inner += `<div style="overflow-x:auto;"><table class="items-tbl">
         <thead><tr>
@@ -833,9 +847,37 @@
 
     /* Invoice tab */
     function renderInvoice(po, el) {
-      if (!po.invoice) return;
+      const invStatus = po.invoice?.status || 'missing';
+
+      if (invStatus === 'missing') {
+        const card = mkCard('<i class="ti ti-receipt"></i> Invoice',
+          '<span class="nb-pill warn" style="font-size:11px;"><i class="ti ti-alert-circle"></i>Not uploaded</span>',
+          `<div style="padding:var(--space-xl);">
+            <div class="invoice-upload-zone" id="inv-upload-zone" onclick="simulateInvUpload(this, '${po.id}')">
+              <i class="ti ti-cloud-upload" style="font-size:36px;display:block;margin-bottom:var(--space-sm);"></i>
+              <div style="font-weight:700;margin-bottom:6px;color:var(--text);">Upload paper invoice</div>
+              <div style="font-size:12px;">Take a photo or attach a file &middot; PDF, JPG, PNG</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:var(--space-md);">
+              <div style="font-size:12px;color:var(--text-soft);display:flex;align-items:center;gap:6px;"><i class="ti ti-sparkles spark"></i>Cyrus will auto-match once uploaded</div>
+              <button class="nb-btn" style="height:34px;padding-inline:var(--space-md);border:1px solid var(--border);border-radius:var(--radius-md);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text-soft);" onclick="toast('Invoice marked as pending · Upload from this screen when you have it')"><i class="ti ti-clock"></i> Upload later</button>
+            </div>
+          </div>`);
+        el.appendChild(card);
+        return;
+      }
+
       const inv = po.invoice;
-      const isMatched = inv.status==='matched';
+      const isMatched = invStatus === 'matched';
+
+      let thumbHtml = '';
+      if (isMatched) {
+        thumbHtml = `<div class="inv-thumb">
+          <div class="inv-thumb-img"><i class="ti ti-file-invoice"></i></div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text);">${inv.id}.pdf</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px;">Uploaded by outlet · scanned paper invoice</div></div>
+        </div>`;
+      }
+
       const rows = [
         kv('Invoice ref', inv.id),
         kv('Invoice amount', inv.amount),
@@ -852,9 +894,26 @@
       </div>`;
       const card = mkCard('<i class="ti ti-receipt"></i> Invoice match',
         '<div class="agent-byline-sm"><i class="ti ti-sparkles spark"></i> Cyrus</div>',
-        `<div style="padding:0 var(--space-xl) var(--space-sm);"><div class="kv-list">${rows}</div></div>${extra}`);
+        `${thumbHtml}<div style="padding:0 var(--space-xl) var(--space-sm);"><div class="kv-list">${rows}</div></div>${extra}`);
       card.classList.add('agent-surface');
       el.appendChild(card);
+    }
+
+    function simulateInvUpload(zone) {
+      zone.onclick = null;
+      zone.innerHTML = `<i class="ti ti-loader-2 ti-spin" style="font-size:28px;display:block;margin-bottom:var(--space-sm);"></i><div style="font-weight:700;color:var(--text);margin-bottom:4px;">Uploading…</div><div style="font-size:12px;">Cyrus is extracting invoice details</div>`;
+      setTimeout(() => {
+        toast('Invoice uploaded · Cyrus matched 3 of 3 lines · match passed');
+        const head = zone.closest('.detail-card')?.querySelector('.card-head');
+        if (head) {
+          const pill = head.querySelector('.nb-pill');
+          if (pill) { pill.className = 'nb-pill ok'; pill.innerHTML = '<i class="ti ti-circle-check"></i>Matched'; }
+        }
+        zone.innerHTML = `<div class="inv-thumb-img" style="margin:0 auto var(--space-md);"><i class="ti ti-file-invoice"></i></div><div style="font-weight:700;color:var(--text);margin-bottom:4px;">Invoice matched</div><div style="font-size:12px;">Cyrus performed 3-way match · all lines passed</div>`;
+        zone.style.cursor = 'default';
+        zone.style.borderColor = 'var(--status-ok-fg)';
+        zone.style.color = 'var(--status-ok-fg)';
+      }, 1800);
     }
 
     /* ── DOM helpers ── */
@@ -936,10 +995,19 @@
       renderMain(_currentPO);
       toast('Reply sent to ' + _currentPO.supplier);
     }
-    let _photoItem = '';
-    function openPhoto(name) { _photoItem = name; document.getElementById('photo-modal-item').textContent = name; document.getElementById('photo-modal').style.display = ''; }
+    let _photoItem = '', _photoIdx = -1;
+    const _linePhotos = {};
+    function openPhoto(name, idx) { _photoItem = name; _photoIdx = idx; document.getElementById('photo-modal-item').textContent = name; document.getElementById('photo-modal').style.display = ''; }
     function closePhoto() { document.getElementById('photo-modal').style.display = 'none'; }
-    function photoUploaded() { closePhoto(); toast('Photo attached for ' + _photoItem); }
+    function photoUploaded() {
+      _linePhotos[_photoItem] = (_linePhotos[_photoItem] || 0) + 1;
+      closePhoto();
+      toast('Photo attached for ' + _photoItem);
+      const btn = document.getElementById('grn-photo-'+_photoIdx);
+      if (btn) {
+        btn.outerHTML = `<span class="photo-badge" id="grn-photo-${_photoIdx}"><i class="ti ti-camera"></i> ${_linePhotos[_photoItem]} photo</span>`;
+      }
+    }
 
     /* ── Toast ── */
     function toast(msg) {

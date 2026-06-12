@@ -103,6 +103,19 @@
     @media (max-width: 1024px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
     @media (max-width: 768px) { .page-header { flex-direction: column; align-items: flex-start; } .page-title { font-size: 24px; } }
     @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } }
+
+    /* ── Attention summary bar ── */
+    .attn-bar { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; padding:var(--space-md) var(--space-xl); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:var(--space-md); }
+    .attn-chip { display:inline-flex; align-items:center; gap:var(--space-sm); font-size:13px; font-weight:600; padding:var(--space-xs) var(--space-md); border-radius:var(--radius-pill); cursor:pointer; }
+    .attn-chip.warn { background:var(--status-warn-bg); color:#7A5000; }
+    .attn-chip.risk { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .attn-chip.info { background:var(--status-info-bg); color:var(--status-info-fg); }
+    .attn-label { font-size:12px; color:var(--text-soft); margin-left:auto; }
+    /* invoice status sub-line */
+    .inv-flag { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:600; padding:1px 7px; border-radius:var(--radius-pill); margin-top:3px; }
+    .inv-flag.ok { background:var(--status-ok-bg); color:var(--status-ok-fg); }
+    .inv-flag.warn { background:var(--status-warn-bg); color:#7A5000; }
+    .inv-flag.risk { background:var(--status-risk-bg); color:var(--status-risk-fg); }
   </style>
 </head>
 <body>
@@ -234,6 +247,13 @@
         </div>
         <div class="table-card">
           <table class="data-table" aria-label="Purchase orders">
+            <div class="attn-bar role-hq-only" style="margin-bottom:var(--space-md);">
+              <span style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;"><i class="ti ti-eye" style="margin-right:4px;"></i>Needs attention</span>
+              <span class="attn-chip warn" onclick="ordToast('Filtering: awaiting GRN…')"><i class="ti ti-package"></i> 1 awaiting GRN</span>
+              <span class="attn-chip risk" onclick="ordToast('Filtering: invoice on hold…')"><i class="ti ti-receipt-off"></i> 1 invoice on hold</span>
+              <span class="attn-chip info" onclick="ordToast('Filtering: invoice not yet uploaded…')"><i class="ti ti-upload"></i> 1 invoice missing</span>
+              <span class="attn-label">Showing all open orders</span>
+            </div>
             <thead><tr><th>PO</th><th>Supplier</th><th>Outlet</th><th class="num">Value</th><th>Expected</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
             <tbody>
               <tr id="po-5521">
@@ -276,8 +296,8 @@
                 <td class="cell-id">PO-5515</td><td class="cell-name">Sydney Butchers Co.</td><td class="cell-sub">Bondi Beach</td>
                 <td class="num">$310</td>
                 <td class="cell-sub">12 Jun</td>
-                <td><span class="nb-pill info"><i class="ti ti-package"></i>Delivered</span><div class="cell-sub" style="margin-top:2px;">Awaiting your receipt</div></td>
-                <td><button class="link-action" onclick="openReceive('po-5515','Sydney Butchers Co.')">Receive</button></td>
+                <td><span class="nb-pill info"><i class="ti ti-package"></i>Delivered</span><div class="cell-sub" style="margin-top:2px;">Awaiting your receipt</div><div><span class="inv-flag warn"><i class="ti ti-receipt-off"></i>Invoice missing</span></div></td>
+                <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5515'">Receive</button></td>
               </tr>
               <tr id="po-5512">
                 <td class="cell-id">PO-5512</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Surry Hills</td>
@@ -290,14 +310,14 @@
                 <td class="cell-id">PO-5510</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Parramatta Table</td>
                 <td class="num">$890</td>
                 <td class="cell-sub">9 Jun</td>
-                <td><span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span><div class="cell-sub" style="margin-top:2px;">9 Jun · on time</div></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span><div class="cell-sub" style="margin-top:2px;">9 Jun · on time</div><div><span class="inv-flag ok"><i class="ti ti-circle-check"></i>Invoice matched</span></div></td>
                 <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5510'">View</button></td>
               </tr>
               <tr>
                 <td class="cell-id">PO-5508</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Newtown</td>
                 <td class="num">$470</td>
                 <td class="cell-sub">8 Jun</td>
-                <td><span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">2 lines short on receipt</div></td>
+                <td><span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">2 lines short on receipt</div><div><span class="inv-flag risk"><i class="ti ti-receipt-off"></i>Invoice on hold</span></div></td>
                 <td><button class="link-action" onclick="location.href='order-detail.html?id=PO-5508'">Resolve</button></td>
               </tr>
             </tbody>
