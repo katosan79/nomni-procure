@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Orders — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css"/>
+  <link rel="stylesheet" href="../shared/components.css"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display: flex; flex-direction: column; padding-block: var(--space-2xl); }
+    .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-2xl); }
+
+    /* Header */
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent); }
+    .page-title { font-size: 35px; font-weight: 700; color: var(--text); letter-spacing: -0.025em; line-height: 1.1; }
+    .page-desc { font-size: 14px; color: var(--text-soft); margin-top: var(--space-xs); }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard);
+      border: 1.5px solid transparent; font-family: inherit; white-space: nowrap; color: var(--text);
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
+    .btn i { font-size: 15px; }
+
+    /* Spend control bar (PO-7) */
+    .budget-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); display: flex; align-items: center; gap: var(--space-xl); flex-wrap: wrap; }
+    .budget-info { flex: 1; min-width: 200px; }
+    .budget-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .budget-figures { font-size: 14px; color: var(--text); margin-top: 2px; font-feature-settings: 'tnum' 1; }
+    .budget-figures strong { font-weight: 700; }
+    .budget-track { flex: 2; min-width: 240px; height: 10px; background: var(--surface-soft); border-radius: var(--radius-pill); overflow: hidden; position: relative; }
+    .budget-fill { height: 100%; background: color-mix(in srgb, var(--fern) 60%, transparent); border-radius: var(--radius-pill); }
+    .budget-fill.warn { background: var(--sun); }
+    .budget-soft { position: absolute; top: 0; bottom: 0; border-left: 1.4px dashed var(--seaweed); }
+
+    /* Tabs */
+    .order-tabs { display: flex; gap: var(--space-xs); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .order-tab { display: inline-flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); background: none; border: none; border-bottom: 2px solid transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text-soft); cursor: pointer; margin-bottom: -1px; transition: color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard); }
+    .order-tab i { font-size: 16px; }
+    .order-tab .count { font-size: 11px; font-weight: 700; background: var(--surface-soft); color: var(--text-soft); border-radius: var(--radius-pill); padding: 1px 7px; }
+    .order-tab:hover { color: var(--text); }
+    .order-tab.active { color: var(--text-accent); border-bottom-color: var(--text-accent); }
+    .order-tab.active .count { background: var(--mint); color: var(--spinach); }
+
+    /* KPI strip */
+    .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-lg); }
+    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-xs); }
+    .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .kpi-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
+    .kpi-sub { font-size: 12px; color: var(--text-soft); }
+    .kpi-sub.warn { color: var(--status-warn-fg); }
+    .kpi-sub.risk { color: var(--status-risk-fg); }
+
+    /* Panels */
+    .order-panel { display: none; flex-direction: column; gap: var(--space-2xl); }
+    .order-panel.active { display: flex; }
+
+    /* Table */
+    .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; }
+    .data-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
+    .data-table thead tr { border-bottom: 1px solid var(--border); }
+    .data-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap; }
+    .data-table th.num, .data-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
+    .data-table td { padding: var(--space-md) var(--space-lg); color: var(--text); border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+    .cell-id { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
+    .cell-name { font-weight: 600; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--text-soft); }
+    .link-action { font-size: 13px; font-weight: 600; color: var(--text-accent); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* Drawer routing rows */
+    .route-group { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); }
+    .route-group-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); margin-bottom: var(--space-sm); }
+    .route-group-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .route-items { font-size: 12px; color: var(--text-soft); line-height: 1.6; }
+    .route-select { width: 100%; height: 36px; margin-top: var(--space-sm); padding-inline: var(--space-md) var(--space-2xl); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; background: var(--surface); color: var(--text); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-sm) center; }
+    .route-summary { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-md); background: var(--mint); border-radius: var(--radius-md); font-size: 13px; font-weight: 600; color: var(--spinach); }
+
+    @media (max-width: 1024px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 768px) { .page-header { flex-direction: column; align-items: flex-start; } .page-title { font-size: 24px; } }
+    @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js" data-active="orders"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <!-- Header -->
+      <header class="page-header">
+        <div class="page-header-left">
+          <span class="page-eyebrow">Procure to pay</span>
+          <h1 class="page-title">Orders</h1>
+          <p class="page-desc">Requisitions routed to HQ, and purchase orders sent to suppliers — with approvals and spend controls.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline" onclick="ordToast('Consolidating demand across outlets for volume pricing…')"><i class="ti ti-arrows-join"></i>Consolidate</button>
+          <button class="btn btn-primary" onclick="ordToast('New order — choose requisition or direct PO')"><i class="ti ti-plus"></i>New order</button>
+        </div>
+      </header>
+
+      <!-- Otto ordering agent (PO-1) -->
+      <article class="agent-surface" id="otto-orders">
+        <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
+          <div class="agent-card-head">
+            <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
+            <span class="agent-id"><span class="agent-name">Otto</span><span class="agent-role">Ordering agent</span></span>
+            <span class="agent-card-spacer" style="flex:1"></span>
+            <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+          </div>
+          <p style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">I drafted 6 requisitions from par levels and sales velocity</p>
+          <p class="agent-why">14 outlets are below par on fast-movers. I've grouped each outlet's needs into a draft requisition — approve to send them to HQ for supplier routing, or push the in-policy ones straight to their preferred suppliers.</p>
+          <div class="agent-actions">
+            <button class="nb-btn primary" onclick="resolveOtto('Approved — 6 requisitions submitted to HQ for routing')"><i class="ti ti-check" aria-hidden="true"></i>Approve all 6</button>
+            <button class="nb-btn" onclick="ordToast('Opening Otto’s draft requisitions…')">Review drafts</button>
+            <button class="nb-btn ghost" onclick="ordToast('Dismissed — Otto keeps watching par levels')">Dismiss</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Spend control (PO-7) -->
+      <div class="budget-card" aria-label="Spend against budget">
+        <div class="budget-info">
+          <div class="budget-label">Procurement spend · June · All outlets</div>
+          <div class="budget-figures"><strong>$684,200</strong> of $820,000 budget · <span style="color:var(--status-ok-fg);font-weight:600;">$135,800 left</span></div>
+        </div>
+        <div class="budget-track" role="img" aria-label="83% of budget used, soft limit at 90%">
+          <div class="budget-fill" style="width:83%"></div>
+          <div class="budget-soft" style="left:90%" title="Soft limit 90%"></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="order-tabs" role="tablist" aria-label="Order type">
+        <button class="order-tab active" role="tab" aria-selected="true" onclick="switchTab('pr')"><i class="ti ti-clipboard-list"></i>Requisitions <span class="count">5</span></button>
+        <button class="order-tab" role="tab" aria-selected="false" onclick="switchTab('po')"><i class="ti ti-file-invoice"></i>Purchase orders <span class="count">12</span></button>
+      </div>
+
+      <!-- ══ Requisitions panel (PR → HQ → multiple POs) ══ -->
+      <div class="order-panel active" id="panel-pr">
+        <div class="kpi-strip">
+          <div class="kpi-tile"><span class="kpi-label">Awaiting HQ review</span><span class="kpi-value">3</span><span class="kpi-sub warn">Needs routing</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Routed today</span><span class="kpi-value">2</span><span class="kpi-sub">→ 5 POs created</span></div>
+          <div class="kpi-tile"><span class="kpi-label">From Otto</span><span class="kpi-value">6</span><span class="kpi-sub">Agent-drafted</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Est. value</span><span class="kpi-value">$5,370</span><span class="kpi-sub">Open requisitions</span></div>
+        </div>
+        <div class="table-card">
+          <table class="data-table" aria-label="Purchase requisitions">
+            <thead><tr><th>Requisition</th><th>Outlet</th><th>Items</th><th class="num">Est. value</th><th>Raised by</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="cell-id">PR-1042</td>
+                <td class="cell-name">Surry Hills</td>
+                <td class="cell-sub">8 items · proteins, produce, dry goods</td>
+                <td class="num">$1,240</td>
+                <td><span class="agent-byline"><i class="ti ti-sparkles spark"></i>Otto draft</span></td>
+                <td><span class="nb-pill warn"><i class="ti ti-clock"></i>Needs HQ review</span></td>
+                <td><button class="link-action" onclick="openRoute('PR-1042','Surry Hills')">Review &amp; route</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PR-1041</td>
+                <td class="cell-name">Bondi Beach</td>
+                <td class="cell-sub">5 items · beverages, dairy</td>
+                <td class="num">$680</td>
+                <td>Mia Chen</td>
+                <td><span class="nb-pill warn"><i class="ti ti-clock"></i>Needs HQ review</span></td>
+                <td><button class="link-action" onclick="openRoute('PR-1041','Bondi Beach')">Review &amp; route</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PR-1039</td>
+                <td class="cell-name">Newtown</td>
+                <td class="cell-sub">12 items · proteins, produce</td>
+                <td class="num">$2,100</td>
+                <td><span class="agent-byline"><i class="ti ti-sparkles spark"></i>Otto draft</span></td>
+                <td><span class="nb-pill warn"><i class="ti ti-clock"></i>Needs HQ review</span></td>
+                <td><button class="link-action" onclick="openRoute('PR-1039','Newtown')">Review &amp; route</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PR-1036</td>
+                <td class="cell-name">Melbourne CBD</td>
+                <td class="cell-sub">6 items · beverages, produce</td>
+                <td class="num">$940</td>
+                <td>James Nguyen</td>
+                <td><span class="nb-pill info"><i class="ti ti-git-branch"></i>Routed → 2 POs</span></td>
+                <td><button class="link-action" onclick="ordToast('PR-1036 routed to Pacific Drinks + Fresh Produce Co')">View</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PR-1030</td>
+                <td class="cell-name">Parramatta Table</td>
+                <td class="cell-sub">3 items · dry goods</td>
+                <td class="num">$410</td>
+                <td>Aisha Patel</td>
+                <td><span class="nb-pill ok"><i class="ti ti-check"></i>Routed → 1 PO</span></td>
+                <td><button class="link-action" onclick="ordToast('PR-1030 routed to Clean Pack Solutions')">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ Purchase orders panel (direct to supplier, manager approval) ══ -->
+      <div class="order-panel" id="panel-po">
+        <div class="kpi-strip">
+          <div class="kpi-tile"><span class="kpi-label">Awaiting approval</span><span class="kpi-value">2</span><span class="kpi-sub risk">Over $500 threshold</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Sent to suppliers</span><span class="kpi-value">7</span><span class="kpi-sub">Awaiting confirmation</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Confirmed</span><span class="kpi-value">3</span><span class="kpi-sub">In delivery</span></div>
+          <div class="kpi-tile"><span class="kpi-label">PO value · June</span><span class="kpi-value">$48.2k</span><span class="kpi-sub">Across 12 POs</span></div>
+        </div>
+        <div class="table-card">
+          <table class="data-table" aria-label="Purchase orders">
+            <thead><tr><th>PO</th><th>Supplier</th><th>Outlet</th><th class="num">Value</th><th>Approval</th><th>Delivery</th><th><span class="sr-only">Actions</span></th></tr></thead>
+            <tbody>
+              <tr id="po-5521">
+                <td class="cell-id">PO-5521</td>
+                <td class="cell-name">Harbour Meats</td>
+                <td class="cell-sub">Surry Hills</td>
+                <td class="num">$640</td>
+                <td><span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span></td>
+                <td><span class="nb-pill neutral">Draft</span></td>
+                <td><button class="link-action" onclick="approvePO('po-5521')">Approve</button></td>
+              </tr>
+              <tr id="po-5519">
+                <td class="cell-id">PO-5519</td>
+                <td class="cell-name">Green Farmers Market</td>
+                <td class="cell-sub">Newtown</td>
+                <td class="num">$1,180</td>
+                <td><span class="nb-pill warn"><i class="ti ti-user-check"></i>Needs manager</span></td>
+                <td><span class="nb-pill neutral">Draft</span></td>
+                <td><button class="link-action" onclick="approvePO('po-5519')">Approve</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PO-5520</td>
+                <td class="cell-name">Fresh Produce Co</td>
+                <td class="cell-sub">Surry Hills</td>
+                <td class="num">$420</td>
+                <td><span class="nb-pill ok"><i class="ti ti-bolt"></i>Auto-approved</span></td>
+                <td><span class="nb-pill info"><i class="ti ti-send"></i>Sent</span></td>
+                <td><button class="link-action" onclick="ordToast('Opening PO-5520…')">View</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PO-5518</td>
+                <td class="cell-name">Pacific Drinks Wholesale</td>
+                <td class="cell-sub">Melbourne CBD</td>
+                <td class="num">$520</td>
+                <td><span class="nb-pill ok"><i class="ti ti-check"></i>Approved</span></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Confirmed</span></td>
+                <td><button class="link-action" onclick="ordToast('Opening PO-5518…')">View</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PO-5515</td>
+                <td class="cell-name">Sydney Butchers Co.</td>
+                <td class="cell-sub">Bondi Beach</td>
+                <td class="num">$310</td>
+                <td><span class="nb-pill ok"><i class="ti ti-bolt"></i>Auto-approved</span></td>
+                <td><span class="nb-pill warn"><i class="ti ti-truck-delivery"></i>Partial · 4 of 6</span></td>
+                <td><button class="link-action" onclick="ordToast('Opening receiving for PO-5515…')">Receive</button></td>
+              </tr>
+              <tr>
+                <td class="cell-id">PO-5510</td>
+                <td class="cell-name">Green Farmers Market</td>
+                <td class="cell-sub">Parramatta Table</td>
+                <td class="num">$890</td>
+                <td><span class="nb-pill ok"><i class="ti ti-check"></i>Approved</span></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Received</span></td>
+                <td><button class="link-action" onclick="ordToast('Opening PO-5510…')">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <!-- Requisition routing drawer (PR → multiple POs, PO-8) -->
+  <div class="nb-drawer-scrim" id="route-scrim" onclick="closeRoute()"></div>
+  <aside class="nb-drawer" id="route-drawer" aria-label="Route requisition" aria-hidden="true" style="width:min(520px,94vw);">
+    <div class="nb-drawer-head">
+      <span class="nb-drawer-title"><span id="route-id">PR-1042</span> · <span id="route-outlet">Surry Hills</span></span>
+      <button class="nb-btn ghost" onclick="closeRoute()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="nb-drawer-body">
+      <p style="font-size:13px;color:var(--text-soft);line-height:1.5;margin-bottom:var(--space-lg);">Assign each line group to a supplier. HQ routing can split one requisition into several purchase orders.</p>
+
+      <div class="route-group">
+        <div class="route-group-head"><span class="route-group-title">Proteins · 3 items</span><span class="cell-sub" style="font-feature-settings:'tnum' 1;">$640</span></div>
+        <div class="route-items">Chicken Breast 500g ×20 · Beef Mince 80/20 ×8kg · Pork Sausage ×6kg</div>
+        <select class="route-select" onchange="updateRouteCount()">
+          <option>Harbour Meats — preferred · 1 day</option>
+          <option>Sydney Butchers Co. — 1 day</option>
+          <option>NSW Seafood Direct</option>
+        </select>
+      </div>
+
+      <div class="route-group">
+        <div class="route-group-head"><span class="route-group-title">Produce · 3 items</span><span class="cell-sub" style="font-feature-settings:'tnum' 1;">$420</span></div>
+        <div class="route-items">Avocado ×40 · Roma Tomatoes ×10kg · Mixed Leaf ×5kg</div>
+        <select class="route-select" onchange="updateRouteCount()">
+          <option>Fresh Produce Co — preferred · 1 day</option>
+          <option>Green Farmers Market · 1 day</option>
+        </select>
+      </div>
+
+      <div class="route-group">
+        <div class="route-group-head"><span class="route-group-title">Dry goods · 2 items</span><span class="cell-sub" style="font-feature-settings:'tnum' 1;">$180</span></div>
+        <div class="route-items">Olive Oil 1L ×6 · Sourdough flour ×10kg</div>
+        <select class="route-select" onchange="updateRouteCount()">
+          <option>Fresh Produce Co — consolidate with produce</option>
+          <option>Artisan Bakehouse · 2 days</option>
+        </select>
+      </div>
+
+      <div class="route-summary" id="route-summary"><i class="ti ti-git-branch"></i> This requisition will create 3 purchase orders</div>
+    </div>
+    <div class="nb-drawer-foot">
+      <button class="nb-btn" onclick="closeRoute()">Cancel</button>
+      <button class="nb-btn primary" onclick="confirmRoute()"><i class="ti ti-send"></i>Create purchase orders</button>
+    </div>
+  </aside>
+
+  <div id="ord-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Orders'));
+
+    function switchTab(id) {
+      document.querySelectorAll('.order-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + id).classList.add('active');
+      document.querySelectorAll('.order-tab').forEach(t => {
+        const on = t.getAttribute('onclick').includes("'" + id + "'");
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+
+    function resolveOtto(msg) {
+      const card = document.getElementById('otto-orders');
+      const st = card.querySelector('.agent-state');
+      st.className = 'agent-state done'; st.innerHTML = '<i class="ti ti-circle-check"></i>Done';
+      card.style.opacity = '0.62';
+      card.querySelector('.agent-actions').style.display = 'none';
+      ordToast(msg);
+    }
+
+    /* Requisition routing (PR → multiple POs) */
+    function openRoute(id, outlet) {
+      document.getElementById('route-id').textContent = id;
+      document.getElementById('route-outlet').textContent = outlet;
+      updateRouteCount();
+      document.getElementById('route-scrim').classList.add('open');
+      document.getElementById('route-drawer').classList.add('open');
+      document.getElementById('route-drawer').setAttribute('aria-hidden','false');
+    }
+    function closeRoute() {
+      document.getElementById('route-scrim').classList.remove('open');
+      document.getElementById('route-drawer').classList.remove('open');
+      document.getElementById('route-drawer').setAttribute('aria-hidden','true');
+    }
+    function updateRouteCount() {
+      // distinct suppliers chosen across the 3 groups = number of POs
+      const sels = Array.from(document.querySelectorAll('.route-select'));
+      const suppliers = new Set(sels.map(s => s.value.split('—')[0].split('·')[0].trim().replace(' consolidate with produce','')));
+      // "consolidate with produce" maps to Fresh Produce Co
+      const norm = new Set(sels.map(s => s.value.includes('consolidate') ? 'Fresh Produce Co' : s.value.split('—')[0].split('·')[0].trim()));
+      const n = norm.size;
+      document.getElementById('route-summary').innerHTML = '<i class="ti ti-git-branch"></i> This requisition will create ' + n + ' purchase order' + (n>1?'s':'');
+    }
+    function confirmRoute() {
+      const id = document.getElementById('route-id').textContent;
+      closeRoute();
+      const n = document.getElementById('route-summary').textContent.match(/\d+/)[0];
+      ordToast(id + ' routed — ' + n + ' purchase orders created');
+    }
+
+    /* Manager approval (PO-2) */
+    function approvePO(rowId) {
+      const row = document.getElementById(rowId);
+      if (!row) return;
+      const cells = row.querySelectorAll('td');
+      cells[4].innerHTML = '<span class="nb-pill ok"><i class="ti ti-check"></i>Approved</span>';
+      cells[5].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span>';
+      cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
+      ordToast('Approved and sent to supplier');
+    }
+
+    function ordToast(msg) {
+      const wrap = document.getElementById('ord-toast-wrap');
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+  </script>
+</body>
+</html>
