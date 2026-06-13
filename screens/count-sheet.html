@@ -263,6 +263,7 @@
     });
 
     let html = '';
+    let tabIdx = 1;
     seenCats.forEach(cat => {
       html += '<tr class="cat-row"><td colspan="5">' + cat + '</td></tr>';
       bycat[cat].forEach(item => {
@@ -276,13 +277,19 @@
           + '<td class="num">' + item.expected + '</td>'
           + '<td class="num">'
           +   '<input class="count-input' + inputCls + '" type="number" min="0" step="1" placeholder="—" value="' + inputVal + '"'
+          +   ' tabindex="' + tabIdx + '"'
           +   ' oninput="onCountInput(this,\'' + item.id + '\')" onfocus="this.select()"/>'
           + '</td>'
           + '<td class="num" id="var-' + item.id + '">' + varCellHTML(item) + '</td>'
           + '</tr>';
+        tabIdx++;
       });
     });
     tbody.innerHTML = html;
+
+    // Autofocus first uncounted input
+    const firstUncounted = tbody.querySelector('input.count-input:not(.has-value)');
+    if (firstUncounted) firstUncounted.focus();
   }
 
   function onCountInput(input, id) {
