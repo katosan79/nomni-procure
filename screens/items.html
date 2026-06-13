@@ -192,6 +192,20 @@
     .par-item { display:flex; justify-content:space-between; align-items:center; padding:var(--space-sm) var(--space-md); background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-sm); }
     .par-group { font-size:13px; color:var(--text); font-weight:500; }
     .par-value { font-size:13px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; }
+    .recipe-summary-btn { display:flex; align-items:center; justify-content:space-between; width:100%; background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md) var(--space-lg); cursor:pointer; font-family:inherit; transition:border-color 0.12s,background 0.12s; }
+    .recipe-summary-btn:hover { border-color:var(--fern); background:var(--mint); }
+    .recipe-summary-left { display:flex; align-items:center; gap:var(--space-sm); font-size:14px; font-weight:600; color:var(--text); }
+    .recipe-summary-left i { font-size:16px; color:var(--text-accent); }
+    .recipe-count-badge { font-size:12px; font-weight:700; background:var(--surface); border:1px solid var(--border); color:var(--text-soft); padding:1px var(--space-sm); border-radius:var(--radius-pill); font-feature-settings:'tnum' 1; }
+    .recipe-chevron { font-size:14px; color:var(--text-soft); transition:transform 0.18s; }
+    .recipe-chevron.open { transform:rotate(180deg); }
+    .recipe-list { display:none; flex-direction:column; gap:var(--space-xs); margin-top:var(--space-sm); }
+    .recipe-list.open { display:flex; }
+    .recipe-row { display:flex; align-items:center; justify-content:space-between; padding:var(--space-sm) var(--space-md); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); }
+    .recipe-name { font-size:13px; font-weight:600; color:var(--text); }
+    .recipe-qty { font-size:12px; color:var(--text-soft); font-feature-settings:'tnum' 1; }
+    .recipe-link { font-size:12px; font-weight:600; color:var(--text-accent); background:none; border:none; cursor:pointer; padding:0; font-family:inherit; }
+    .recipe-link:hover { color:var(--spinach); text-decoration:underline; }
     .drawer-footer { padding:var(--space-lg) var(--space-2xl); border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:var(--space-sm); flex-shrink:0; }
 
     /* Dialog */
@@ -396,8 +410,8 @@
                 <th>Name</th>
                 <th>Category</th>
                 <th>UOM</th>
-                <th style="text-align:right">Par level</th>
                 <th>Linked suppliers</th>
+                <th style="text-align:right">Recipes</th>
                 <th>Assigned groups</th>
                 <th>Last updated</th>
                 <th><span class="sr-only">Actions</span></th>
@@ -408,8 +422,9 @@
                 <td class="cell-name">Chicken Breast 500g</td>
                 <td><span class="cell-cat">Protein</span></td>
                 <td class="tabular">kg</td>
-                <td class="tabular" style="text-align:right">10</td>
+                
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Sydney Butchers</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('chicken-breast')">4</button></td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
                 <td class="cell-timestamp">2h ago</td>
                 <td class="overflow-cell"><div class="row-actions">
@@ -423,8 +438,9 @@
                 <td class="cell-name">Avocado</td>
                 <td><span class="cell-cat">Produce</span></td>
                 <td class="tabular">each</td>
-                <td class="tabular" style="text-align:right">50</td>
+                
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+2</span></div></td>
+                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('avocado')">2</button></td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
                 <td class="cell-timestamp">1 day ago</td>
                 <td class="overflow-cell"><div class="row-actions">
@@ -438,8 +454,9 @@
                 <td class="cell-name">Feta Cheese</td>
                 <td><span class="cell-cat">Dairy</span></td>
                 <td class="tabular">kg</td>
-                <td class="tabular" style="text-align:right">5</td>
+                
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Dairy Direct</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('feta')">3</button></td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
                 <td class="cell-timestamp">3 days ago</td>
                 <td class="overflow-cell"><div class="row-actions">
@@ -453,8 +470,9 @@
                 <td class="cell-name">Sourdough Bread</td>
                 <td><span class="cell-cat">Dry goods</span></td>
                 <td class="tabular">loaf</td>
-                <td class="tabular" style="text-align:right">20</td>
+                
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Bread &amp; Co</span></div></td>
+                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('sourdough')">2</button></td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
                 <td class="cell-timestamp">1 week ago</td>
                 <td class="overflow-cell"><div class="row-actions">
@@ -468,8 +486,9 @@
                 <td class="cell-name">Olive Oil 1L</td>
                 <td><span class="cell-cat">Dry goods</span></td>
                 <td class="tabular">bottle</td>
-                <td class="tabular" style="text-align:right">8</td>
+                
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Mediterranean Foods</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('olive-oil')">5</button></td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
                 <td class="cell-timestamp">1 week ago</td>
                 <td class="overflow-cell"><div class="row-actions">
@@ -483,8 +502,9 @@
                 <td class="cell-name">Whole Milk 2L</td>
                 <td><span class="cell-cat">Dairy</span></td>
                 <td class="tabular">carton</td>
-                <td class="tabular" style="text-align:right">15</td>
+                
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Farm Fresh</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
                 <td class="cell-timestamp">2 weeks ago</td>
                 <td class="overflow-cell"><div class="row-actions">
@@ -498,8 +518,9 @@
                 <td class="cell-name">Roma Tomatoes</td>
                 <td><span class="cell-cat">Produce</span></td>
                 <td class="tabular">kg</td>
-                <td class="tabular" style="text-align:right">12</td>
+                
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('tomatoes')">3</button></td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
                 <td class="cell-timestamp">2 weeks ago</td>
                 <td class="overflow-cell"><div class="row-actions">
@@ -552,6 +573,17 @@
       <div>
         <div class="drawer-section-label">Par levels by group</div>
         <div class="par-grid" id="drawer-pars"></div>
+      </div>
+      <div id="drawer-recipes-section">
+        <div class="drawer-section-label">Used in recipes</div>
+        <button class="recipe-summary-btn" onclick="toggleRecipes()" id="recipe-toggle-btn">
+          <span class="recipe-summary-left">
+            <i class="ti ti-tools-kitchen-2"></i>
+            <span id="recipe-summary-text">0 recipes</span>
+          </span>
+          <span class="recipe-chevron" id="recipe-chevron"><i class="ti ti-chevron-down"></i></span>
+        </button>
+        <div class="recipe-list" id="recipe-list"></div>
       </div>
     </div>
     <div class="drawer-footer">
@@ -672,13 +704,13 @@
 
     /* ── Item drawer ── */
     const ITEM_DATA = {
-      'chicken-breast': { id:'INT-0001', name:'Chicken Breast 500g', category:'Protein', uom:'kg', description:'Fresh chicken breast, 500g portions. Used across main dishes and salads.', skus:[{id:'s1',supplier:'Sydney Butchers Co.',sku:'SB-CHK-500',pack:'500g',price:'$8.40/kg',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0441',pack:'1kg',price:'$9.10/kg',preferred:false}], pars:[{group:'NSW Metro',value:'10 kg'},{group:'VIC Metro',value:'8 kg'},{group:'QLD Metro',value:'6 kg'}] },
-      'avocado':        { id:'INT-0002', name:'Avocado', category:'Produce', uom:'each', description:'Ripe Hass avocados. Multiple sourcing options available for price benchmarking.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-AVOC',pack:'each',price:'$1.20/ea',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0092',pack:'each',price:'$1.35/ea',preferred:false},{id:'s3',supplier:'Premium Produce',sku:'PP-AVO-01',pack:'each',price:'$1.55/ea',preferred:false}], pars:[{group:'NSW Metro',value:'50 each'},{group:'VIC Metro',value:'40 each'}] },
-      'feta':           { id:'INT-0003', name:'Feta Cheese', category:'Dairy', uom:'kg', description:'Crumbled feta for salads and pastries.', skus:[{id:'s1',supplier:'Dairy Direct',sku:'DD-FTA-1KG',pack:'1kg block',price:'$18.50/kg',preferred:true},{id:'s2',supplier:'Artisan Dairy',sku:'AD-FETA',pack:'500g',price:'$22.00/kg',preferred:false}], pars:[{group:'NSW Metro',value:'5 kg'},{group:'VIC Metro',value:'4 kg'},{group:'QLD Metro',value:'3 kg'},{group:'SA Metro',value:'2 kg'}] },
-      'sourdough':      { id:'INT-0004', name:'Sourdough Bread', category:'Dry goods', uom:'loaf', description:'Artisan sourdough loaf. Bread & Co is the sole approved supplier.', skus:[{id:'s1',supplier:'Bread & Co',sku:'BC-SDGH',pack:'800g loaf',price:'$4.20/loaf',preferred:true}], pars:[{group:'NSW Metro',value:'20 loaf'},{group:'VIC Metro',value:'16 loaf'},{group:'QLD Metro',value:'12 loaf'}] },
-      'olive-oil':      { id:'INT-0005', name:'Olive Oil 1L', category:'Dry goods', uom:'bottle', description:'Extra virgin olive oil, 1L. Used in cooking and dressings.', skus:[{id:'s1',supplier:'Mediterranean Foods',sku:'MF-OO-1L',pack:'1L bottle',price:'$12.80/btl',preferred:true},{id:'s2',supplier:'Gourmet Direct',sku:'GD-OLV1L',pack:'1L bottle',price:'$14.50/btl',preferred:false}], pars:[{group:'NSW Metro',value:'8 bottle'},{group:'VIC Metro',value:'6 bottle'},{group:'QLD Metro',value:'5 bottle'},{group:'SA Metro',value:'4 bottle'}] },
-      'milk':           { id:'INT-0006', name:'Whole Milk 2L', category:'Dairy', uom:'carton', description:'Full-cream whole milk in 2L cartons.', skus:[{id:'s1',supplier:'Farm Fresh',sku:'FF-MLK-2L',pack:'2L carton',price:'$3.10/ctn',preferred:true},{id:'s2',supplier:'Dairy Direct',sku:'DD-MLK-2L',pack:'2L carton',price:'$2.95/ctn',preferred:false}], pars:[{group:'NSW Metro',value:'15 carton'},{group:'VIC Metro',value:'12 carton'}] },
-      'tomatoes':       { id:'INT-0007', name:'Roma Tomatoes', category:'Produce', uom:'kg', description:'Roma tomatoes for sauces, salads and garnish.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-TOMA',pack:'loose kg',price:'$3.20/kg',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-TOM-01',pack:'loose kg',price:'$2.80/kg',preferred:false}], pars:[{group:'NSW Metro',value:'12 kg'},{group:'VIC Metro',value:'10 kg'},{group:'QLD Metro',value:'8 kg'}] }
+      'chicken-breast': { id:'INT-0001', name:'Chicken Breast 500g', category:'Protein', uom:'kg', description:'Fresh chicken breast, 500g portions. Used across main dishes and salads.', skus:[{id:'s1',supplier:'Sydney Butchers Co.',sku:'SB-CHK-500',pack:'500g',price:'$8.40/kg',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0441',pack:'1kg',price:'$9.10/kg',preferred:false}], pars:[{group:'NSW Metro',value:'10 kg'},{group:'VIC Metro',value:'8 kg'},{group:'QLD Metro',value:'6 kg'}], recipes:[{name:'Grilled Chicken Salad',qty:'180g per serve'},{name:'Chicken Parmigiana',qty:'200g per serve'},{name:'Caesar Salad',qty:'120g per serve'},{name:'Chicken Burger',qty:'150g per serve'}] },
+      'avocado':        { id:'INT-0002', name:'Avocado', category:'Produce', uom:'each', description:'Ripe Hass avocados. Multiple sourcing options available for price benchmarking.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-AVOC',pack:'each',price:'$1.20/ea',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0092',pack:'each',price:'$1.35/ea',preferred:false},{id:'s3',supplier:'Premium Produce',sku:'PP-AVO-01',pack:'each',price:'$1.55/ea',preferred:false}], pars:[{group:'NSW Metro',value:'50 each'},{group:'VIC Metro',value:'40 each'}], recipes:[{name:'Avocado Toast',qty:'½ each per serve'},{name:'Smashed Avo Salad',qty:'¼ each per serve'}] },
+      'feta':           { id:'INT-0003', name:'Feta Cheese', category:'Dairy', uom:'kg', description:'Crumbled feta for salads and pastries.', skus:[{id:'s1',supplier:'Dairy Direct',sku:'DD-FTA-1KG',pack:'1kg block',price:'$18.50/kg',preferred:true},{id:'s2',supplier:'Artisan Dairy',sku:'AD-FETA',pack:'500g',price:'$22.00/kg',preferred:false}], pars:[{group:'NSW Metro',value:'5 kg'},{group:'VIC Metro',value:'4 kg'},{group:'QLD Metro',value:'3 kg'},{group:'SA Metro',value:'2 kg'}], recipes:[{name:'Greek Salad',qty:'40g per serve'},{name:'Spinach & Feta Pastry',qty:'60g per serve'},{name:'Beet & Feta Bowl',qty:'35g per serve'}] },
+      'sourdough':      { id:'INT-0004', name:'Sourdough Bread', category:'Dry goods', uom:'loaf', description:'Artisan sourdough loaf. Bread & Co is the sole approved supplier.', skus:[{id:'s1',supplier:'Bread & Co',sku:'BC-SDGH',pack:'800g loaf',price:'$4.20/loaf',preferred:true}], pars:[{group:'NSW Metro',value:'20 loaf'},{group:'VIC Metro',value:'16 loaf'},{group:'QLD Metro',value:'12 loaf'}], recipes:[{name:'Avocado Toast',qty:'2 slices per serve'},{name:'Bruschetta',qty:'3 slices per serve'}] },
+      'olive-oil':      { id:'INT-0005', name:'Olive Oil 1L', category:'Dry goods', uom:'bottle', description:'Extra virgin olive oil, 1L. Used in cooking and dressings.', skus:[{id:'s1',supplier:'Mediterranean Foods',sku:'MF-OO-1L',pack:'1L bottle',price:'$12.80/btl',preferred:true},{id:'s2',supplier:'Gourmet Direct',sku:'GD-OLV1L',pack:'1L bottle',price:'$14.50/btl',preferred:false}], pars:[{group:'NSW Metro',value:'8 bottle'},{group:'VIC Metro',value:'6 bottle'},{group:'QLD Metro',value:'5 bottle'},{group:'SA Metro',value:'4 bottle'}], recipes:[{name:'Greek Salad',qty:'15ml dressing'},{name:'Grilled Chicken Salad',qty:'10ml dressing'},{name:'Bruschetta',qty:'20ml per serve'},{name:'Pasta Napolitana',qty:'30ml per serve'},{name:'Roasted Vegetables',qty:'25ml per serve'}] },
+      'milk':           { id:'INT-0006', name:'Whole Milk 2L', category:'Dairy', uom:'carton', description:'Full-cream whole milk in 2L cartons.', skus:[{id:'s1',supplier:'Farm Fresh',sku:'FF-MLK-2L',pack:'2L carton',price:'$3.10/ctn',preferred:true},{id:'s2',supplier:'Dairy Direct',sku:'DD-MLK-2L',pack:'2L carton',price:'$2.95/ctn',preferred:false}], pars:[{group:'NSW Metro',value:'15 carton'},{group:'VIC Metro',value:'12 carton'}], recipes:[] },
+      'tomatoes':       { id:'INT-0007', name:'Roma Tomatoes', category:'Produce', uom:'kg', description:'Roma tomatoes for sauces, salads and garnish.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-TOMA',pack:'loose kg',price:'$3.20/kg',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-TOM-01',pack:'loose kg',price:'$2.80/kg',preferred:false}], pars:[{group:'NSW Metro',value:'12 kg'},{group:'VIC Metro',value:'10 kg'},{group:'QLD Metro',value:'8 kg'}], recipes:[{name:'Pasta Napolitana',qty:'120g per serve'},{name:'Bruschetta',qty:'80g per serve'},{name:'Greek Salad',qty:'60g per serve'}] }
     };
 
     let activeItemKey = null;
@@ -707,6 +739,13 @@
       document.getElementById('drawer-d-desc').textContent = item.description;
       renderSkuTable(item.skus);
       document.getElementById('drawer-pars').innerHTML = item.pars.map(p => `<div class="par-item"><span class="par-group">${p.group}</span><span class="par-value">${p.value}</span></div>`).join('');
+      const recipes = item.recipes || [];
+      document.getElementById('recipe-summary-text').textContent = recipes.length === 0 ? 'Not used in any recipes' : recipes.length + (recipes.length === 1 ? ' recipe' : ' recipes');
+      document.getElementById('recipe-toggle-btn').style.cursor = recipes.length ? 'pointer' : 'default';
+      document.getElementById('recipe-list').innerHTML = recipes.map(r => `<div class="recipe-row"><span class="recipe-name">${r.name}</span><span class="recipe-qty">${r.qty}</span></div>`).join('');
+      document.getElementById('recipe-list').classList.remove('open');
+      document.getElementById('recipe-chevron').classList.remove('open');
+      document.getElementById('recipe-chevron').style.display = recipes.length ? '' : 'none';
       document.getElementById('item-drawer').classList.add('open');
       document.getElementById('drawer-backdrop').classList.add('open');
       document.body.style.overflow = 'hidden';
@@ -717,6 +756,15 @@
       document.getElementById('drawer-backdrop').classList.remove('open');
       document.body.style.overflow = '';
       activeItemKey = null;
+    }
+
+    function toggleRecipes() {
+      const item = activeItemKey ? ITEM_DATA[activeItemKey] : null;
+      if (!item || !item.recipes || !item.recipes.length) return;
+      const list = document.getElementById('recipe-list');
+      const chevron = document.getElementById('recipe-chevron');
+      list.classList.toggle('open');
+      chevron.classList.toggle('open');
     }
 
     function setPreferred(skuId) {
