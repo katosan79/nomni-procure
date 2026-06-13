@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Spot count — Nomni HQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    /* ── Page structure ── */
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    /* ── Back nav ── */
+    .back-nav { display:inline-flex; align-items:center; gap:var(--space-xs); font-size:13px; font-weight:600; color:var(--text-accent); text-decoration:none; }
+    .back-nav:hover { color:var(--spinach); text-decoration:underline; }
+
+    /* ── Page header ── */
+    .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; }
+    .page-header-left { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .page-eyebrow { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-subtitle { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); line-height:1.5; }
+    .page-actions { display:flex; align-items:center; gap:var(--space-sm); }
+
+    /* ── Buttons ── */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; transition:background 0.12s,color 0.12s,border-color 0.12s; text-decoration:none; white-space:nowrap; border:1.5px solid transparent; font-family:inherit; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--spinach); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--spinach); border-color:var(--spinach); }
+    .btn i { font-size:15px; }
+
+    /* ── Stepper ── */
+    .stepper { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; }
+    .step { display:flex; align-items:center; gap:var(--space-sm); }
+    .step-dot { width:28px; height:28px; border-radius:var(--radius-pill); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-feature-settings:'tnum' 1; background:var(--surface); border:1.5px solid var(--border); color:var(--text-soft); flex-shrink:0; transition:background 0.18s,border-color 0.18s,color 0.18s; }
+    .step.active .step-dot { background:var(--btn-primary-bg); border-color:var(--btn-primary-bg); color:var(--btn-primary-fg); }
+    .step.done .step-dot { background:var(--status-ok-bg); border-color:var(--status-ok-fg); color:var(--status-ok-fg); }
+    .step-label { font-size:13px; font-weight:600; color:var(--text-soft); }
+    .step.active .step-label { color:var(--text); }
+    .step.done .step-label { color:var(--text-soft); }
+    .step-line { width:32px; height:1.5px; background:var(--border); flex-shrink:0; }
+
+    /* ── Step panels ── */
+    .step-panel { display:none; flex-direction:column; gap:var(--space-xl); }
+    .step-panel.active { display:flex; }
+
+    /* ── Form cards ── */
+    .form-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-2xl); display:flex; flex-direction:column; gap:var(--space-xl); }
+    .form-card-title { font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
+    .form-card-desc { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); line-height:1.5; }
+
+    /* ── Scope grid: outlet + what to count side by side ── */
+    .scope-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:var(--space-lg); align-items:start; }
+    @media (max-width:760px) { .scope-grid { grid-template-columns:1fr; } }
+
+    /* ── Form fields ── */
+    .field { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .field label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .field label .req { color:var(--status-risk-fg); margin-left:2px; }
+    .field-select, .field-input { height:var(--control-h); padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; transition:border-color 0.12s; width:100%; box-sizing:border-box; }
+    .field-select:focus, .field-input:focus { border-color:var(--fern); }
+    .field-select.error, .field-input.error { border-color:var(--status-risk-fg); }
+    .field-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; padding-right:var(--space-3xl); cursor:pointer; }
+    .field-error { font-size:12px; color:var(--status-risk-fg); display:none; }
+    .field-error.show { display:block; }
+    .field-hint { font-size:12px; color:var(--text-soft); }
+
+    /* ── Sub-card inside scope card ── */
+    .scope-sub { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-md); }
+    .scope-sub-title { font-size:13px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:0.05em; }
+
+    /* ── Radio group ── */
+    .radio-group { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .radio-option { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; transition:border-color 0.12s, background 0.12s; }
+    .radio-option:hover { border-color:var(--fern); background:var(--mint); }
+    .radio-option.selected { border-color:var(--fern); background:var(--mint); }
+    .radio-option input[type="radio"] { accent-color:var(--fern); width:15px; height:15px; cursor:pointer; flex-shrink:0; }
+    .radio-option-text { font-size:14px; font-weight:600; color:var(--text); }
+    .radio-option-sub { font-size:12px; color:var(--text-soft); margin-top:1px; }
+
+    /* ── Checkbox group ── */
+    .checkbox-group { display:flex; flex-direction:column; gap:var(--space-xs); margin-top:var(--space-xs); padding-left:var(--space-xl); }
+    .checkbox-option { display:flex; align-items:center; gap:var(--space-sm); cursor:pointer; }
+    .checkbox-option input[type="checkbox"] { accent-color:var(--fern); width:14px; height:14px; cursor:pointer; flex-shrink:0; }
+    .checkbox-option-label { font-size:14px; color:var(--text); }
+    .checkbox-option-badge { font-size:11px; color:var(--text-soft); margin-left:auto; font-feature-settings:'tnum' 1; }
+    .checkbox-error { font-size:12px; color:var(--status-risk-fg); display:none; padding-left:var(--space-xl); }
+    .checkbox-error.show { display:block; }
+
+    /* ── Search items typeahead ── */
+    .search-items-wrap { position:relative; margin-top:var(--space-xs); padding-left:var(--space-xl); }
+    .search-items-wrap i { position:absolute; left:calc(var(--space-xl) + var(--space-md)); top:50%; transform:translateY(-50%); font-size:14px; color:var(--text-soft); pointer-events:none; }
+    .search-items-input { height:var(--control-h); padding-inline:var(--space-3xl) var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; width:100%; box-sizing:border-box; transition:border-color 0.12s; }
+    .search-items-input:focus { border-color:var(--fern); }
+    .search-hint { font-size:12px; color:var(--text-soft); padding-left:var(--space-xl); margin-top:var(--space-xs); }
+
+    /* ── Who is counting ── */
+    .counter-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-xl); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); align-items:end; }
+    @media (max-width:600px) { .counter-section { grid-template-columns:1fr; } }
+    .counter-section-head { grid-column:1/-1; }
+    .counter-section-head-title { font-size:15px; font-weight:700; color:var(--text); }
+    .counter-section-head-sub { font-size:13px; color:var(--text-soft); margin-top:var(--space-xs); }
+
+    /* ── Step footer ── */
+    .step-footer { display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); flex-wrap:wrap; }
+    .step-footer-right { display:flex; align-items:center; gap:var(--space-md); }
+
+    /* ── Info banner (spot count notice) ── */
+    .info-banner { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-lg) var(--space-xl); background:var(--mint); border:1.5px solid var(--fern); border-radius:var(--radius-lg); }
+    .info-banner i { font-size:18px; color:var(--text-accent); flex-shrink:0; margin-top:1px; }
+    .info-banner-body {}
+    .info-banner-title { font-size:14px; font-weight:700; color:var(--text); }
+    .info-banner-desc { font-size:13px; color:var(--text-soft); margin-top:var(--space-xs); line-height:1.5; }
+
+    /* ── Context header for step 2 ── */
+    .count-context { display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); flex-wrap:wrap; }
+    .count-context-left { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .count-context-title { font-size:20px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
+    .count-context-meta { font-size:13px; color:var(--text-soft); display:flex; align-items:center; gap:var(--space-sm); }
+    .count-context-meta .dot { width:4px; height:4px; border-radius:50%; background:var(--border); display:inline-block; }
+
+    /* ── Progress indicator ── */
+    .count-progress { display:flex; align-items:center; gap:var(--space-md); }
+    .progress-text { font-size:13px; font-weight:600; color:var(--text-soft); font-feature-settings:'tnum' 1; white-space:nowrap; }
+    .progress-bar-track { width:120px; height:6px; background:var(--border); border-radius:var(--radius-pill); overflow:hidden; }
+    .progress-bar-fill { height:100%; background:var(--fern); border-radius:var(--radius-pill); transition:width 0.3s ease; }
+
+    /* ── Table card ── */
+    .table-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow-x:auto; }
+    .data-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .data-table th { padding:var(--space-md) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .data-table td { padding:var(--space-md) var(--space-lg); color:var(--text); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table tbody tr:hover td { background:rgba(42,200,100,0.04); }
+    .data-table th.num, .data-table td.num { text-align:right; font-feature-settings:'tnum' 1; }
+
+    /* ── Table category divider ── */
+    .cat-row td { background:var(--surface-soft); padding-block:var(--space-xs) var(--space-xs); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); }
+
+    /* ── Item name + code ── */
+    .item-name { font-size:14px; font-weight:600; color:var(--text); }
+    .item-code { font-size:11px; color:var(--text-soft); font-family:'IBM Plex Mono',monospace; margin-top:1px; }
+
+    /* ── nb-pill ── */
+    .nb-pill { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:var(--radius-pill); font-size:12px; font-weight:600; white-space:nowrap; }
+    .nb-pill.ok { background:var(--status-ok-bg); color:var(--status-ok-fg); }
+    .nb-pill.warn { background:var(--status-warn-bg); color:var(--status-warn-fg); }
+    .nb-pill.risk { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .nb-pill.info { background:var(--mint); color:var(--fern); }
+    .nb-pill.neutral { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); }
+
+    /* ── Count input cell ── */
+    .count-input-wrap { position:relative; display:inline-flex; align-items:center; gap:var(--space-xs); }
+    .count-input { width:76px; height:34px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-weight:600; font-family:'IBM Plex Mono',monospace; font-feature-settings:'tnum' 1; background:var(--surface); color:var(--text); outline:none; text-align:right; transition:border-color 0.12s; box-sizing:border-box; }
+    .count-input:focus { border-color:var(--fern); box-shadow:0 0 0 2px rgba(18,155,65,0.12); }
+    .count-input.has-variance { border-color:var(--status-warn-fg); background:var(--status-warn-bg); color:var(--text); }
+    .count-input.is-over { border-color:var(--status-risk-fg); background:var(--status-risk-bg); color:var(--text); }
+    .count-input::placeholder { color:var(--text-soft); font-weight:400; font-family:inherit; }
+    .count-uom { font-size:12px; color:var(--text-soft); }
+
+    /* ── Variance delta ── */
+    .var-delta { font-size:12px; font-weight:600; font-feature-settings:'tnum' 1; white-space:nowrap; }
+    .var-delta.over { color:var(--status-risk-fg); }
+    .var-delta.under { color:var(--status-warn-fg); }
+    .var-delta.ok { color:var(--status-ok-fg); }
+    .var-delta.pending { color:var(--text-soft); }
+
+    /* ── Expected value ── */
+    .expected-val { font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-soft); font-feature-settings:'tnum' 1; }
+
+    /* ── Agent surface card ── */
+    .agent-surface { background:var(--surface); border:1.5px solid var(--agent-border, var(--fern)); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); display:flex; align-items:center; gap:var(--space-md); box-shadow:0 0 0 4px var(--agent-glow, rgba(18,155,65,0.08)); }
+    .agent-avatar { width:36px; height:36px; border-radius:var(--radius-pill); background:var(--mint); border:1.5px solid var(--fern); display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--text-accent); flex-shrink:0; }
+    .agent-body { flex:1; }
+    .agent-name { font-size:13px; font-weight:700; color:var(--text-accent); }
+    .agent-desc { font-size:13px; color:var(--text-soft); margin-top:2px; }
+    .agent-state { display:flex; align-items:center; gap:var(--space-xs); margin-top:var(--space-xs); }
+    .agent-state-dot { width:6px; height:6px; border-radius:50%; background:var(--fern); animation:pulse 1.8s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .agent-state-label { font-size:12px; font-weight:600; color:var(--text-accent); }
+
+    /* ── Done / success state ── */
+    .done-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-3xl) var(--space-2xl); display:flex; flex-direction:column; align-items:center; gap:var(--space-xl); text-align:center; }
+    .done-icon { width:64px; height:64px; border-radius:var(--radius-pill); background:var(--mint); display:flex; align-items:center; justify-content:center; font-size:28px; color:var(--status-ok-fg); }
+    .done-title { font-size:24px; font-weight:700; color:var(--text); letter-spacing:-0.02em; }
+    .done-desc { font-size:15px; color:var(--text-soft); line-height:1.6; max-width:440px; }
+    .done-meta { font-size:13px; color:var(--text-soft); }
+    .done-note { font-size:13px; color:var(--text-soft); max-width:420px; line-height:1.6; background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md) var(--space-lg); }
+    .done-actions { display:flex; gap:var(--space-md); flex-wrap:wrap; justify-content:center; }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=5" data-active="inventory"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <!-- ── Back + page header ── -->
+      <div>
+        <a class="back-nav" href="inventory.html">← Inventory</a>
+        <div class="page-header" style="margin-top:var(--space-md)">
+          <div class="page-header-left">
+            <span class="page-eyebrow">Inventory Management</span>
+            <h1 class="page-title">Spot count</h1>
+            <p class="page-subtitle">Update stock levels for specific items. No period close or COGS.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Stepper ── -->
+      <nav class="stepper" id="stepper" aria-label="Spot count steps">
+        <div class="step active" data-step="1">
+          <span class="step-dot">1</span>
+          <span class="step-label">Select scope</span>
+        </div>
+        <span class="step-line"></span>
+        <div class="step" data-step="2">
+          <span class="step-dot">2</span>
+          <span class="step-label">Count items</span>
+        </div>
+        <span class="step-line"></span>
+        <div class="step" data-step="done">
+          <span class="step-dot"><i class="ti ti-check" style="font-size:11px"></i></span>
+          <span class="step-label">Done</span>
+        </div>
+      </nav>
+
+      <!-- ══════════════════════════════════════
+           STEP 1: Select scope
+      ══════════════════════════════════════ -->
+      <div class="step-panel active" id="panel-1">
+
+        <div class="scope-grid">
+
+          <!-- Left: Outlet -->
+          <div class="scope-sub">
+            <div class="scope-sub-title">Outlet</div>
+            <div class="field">
+              <label>Select outlet <span class="req">*</span></label>
+              <select class="field-select" id="f-outlet">
+                <option value="Surry Hills" selected>Surry Hills</option>
+                <option value="Newtown">Newtown</option>
+                <option value="Bondi Beach">Bondi Beach</option>
+                <option value="Melbourne CBD">Melbourne CBD</option>
+                <option value="Parramatta">Parramatta</option>
+              </select>
+              <span class="field-error" id="err-outlet">Please select an outlet</span>
+            </div>
+          </div>
+
+          <!-- Right: What to count -->
+          <div class="scope-sub">
+            <div class="scope-sub-title">What to count</div>
+
+            <div class="radio-group" id="scope-radios">
+
+              <!-- By sheet -->
+              <label class="radio-option selected" id="opt-sheet">
+                <input type="radio" name="count-scope" value="sheet" checked onchange="onScopeChange('sheet')"/>
+                <div>
+                  <div class="radio-option-text">By sheet</div>
+                  <div class="radio-option-sub">Count one or more named count sheets</div>
+                </div>
+              </label>
+
+              <!-- Sheet checkboxes -->
+              <div id="sheet-checkboxes" class="checkbox-group">
+                <label class="checkbox-option">
+                  <input type="checkbox" class="sheet-cb" value="Dry Store"/>
+                  <span class="checkbox-option-label">Dry Store</span>
+                  <span class="checkbox-option-badge">24 items</span>
+                </label>
+                <label class="checkbox-option">
+                  <input type="checkbox" class="sheet-cb" value="Freezer"/>
+                  <span class="checkbox-option-label">Freezer</span>
+                  <span class="checkbox-option-badge">18 items</span>
+                </label>
+                <label class="checkbox-option">
+                  <input type="checkbox" class="sheet-cb" value="Bar" checked/>
+                  <span class="checkbox-option-label">Bar</span>
+                  <span class="checkbox-option-badge">31 items</span>
+                </label>
+                <label class="checkbox-option">
+                  <input type="checkbox" class="sheet-cb" value="FOH"/>
+                  <span class="checkbox-option-label">FOH</span>
+                  <span class="checkbox-option-badge">12 items</span>
+                </label>
+                <span class="checkbox-error" id="err-sheet">Select at least one sheet</span>
+              </div>
+
+              <!-- By category -->
+              <label class="radio-option" id="opt-category">
+                <input type="radio" name="count-scope" value="category" onchange="onScopeChange('category')"/>
+                <div>
+                  <div class="radio-option-text">By category</div>
+                  <div class="radio-option-sub">Count all items within selected categories</div>
+                </div>
+              </label>
+
+              <!-- Category checkboxes -->
+              <div id="category-checkboxes" class="checkbox-group" style="display:none">
+                <label class="checkbox-option"><input type="checkbox" class="cat-cb" value="Proteins"/><span class="checkbox-option-label">Proteins</span></label>
+                <label class="checkbox-option"><input type="checkbox" class="cat-cb" value="Produce"/><span class="checkbox-option-label">Produce</span></label>
+                <label class="checkbox-option"><input type="checkbox" class="cat-cb" value="Dairy"/><span class="checkbox-option-label">Dairy</span></label>
+                <label class="checkbox-option"><input type="checkbox" class="cat-cb" value="Beverages"/><span class="checkbox-option-label">Beverages</span></label>
+                <label class="checkbox-option"><input type="checkbox" class="cat-cb" value="Dry goods"/><span class="checkbox-option-label">Dry goods</span></label>
+                <label class="checkbox-option"><input type="checkbox" class="cat-cb" value="Cleaning"/><span class="checkbox-option-label">Cleaning</span></label>
+                <span class="checkbox-error" id="err-category">Select at least one category</span>
+              </div>
+
+              <!-- Specific items -->
+              <label class="radio-option" id="opt-items">
+                <input type="radio" name="count-scope" value="items" onchange="onScopeChange('items')"/>
+                <div>
+                  <div class="radio-option-text">Specific items</div>
+                  <div class="radio-option-sub">Search and select individual items to count</div>
+                </div>
+              </label>
+
+              <!-- Item search -->
+              <div id="item-search" class="search-items-wrap" style="display:none">
+                <i class="ti ti-search"></i>
+                <input type="text" class="search-items-input" placeholder="Search items… e.g. Chicken Breast, Avocado" autocomplete="off" id="item-search-input"/>
+                <span class="checkbox-error show" id="err-items" style="display:none">Add at least one item to count</span>
+              </div>
+              <p id="search-hint" class="search-hint" style="display:none">Type to search from your outlet's item list. Selected items will appear here.</p>
+
+            </div><!-- /radio-group -->
+          </div><!-- /scope-sub right -->
+        </div><!-- /scope-grid -->
+
+        <!-- Who is counting -->
+        <div class="counter-section">
+          <div class="counter-section-head">
+            <div class="counter-section-head-title">Who is counting?</div>
+            <div class="counter-section-head-sub">This will appear on the count record and variance report.</div>
+          </div>
+          <div class="field">
+            <label>Counter name <span class="req">*</span></label>
+            <input class="field-input" id="f-counter" type="text" value="Sarah Kim" autocomplete="off"/>
+            <span class="field-error" id="err-counter">Counter name is required</span>
+          </div>
+          <div class="field">
+            <label>Notes <span style="font-weight:400;opacity:0.7">(optional)</span></label>
+            <input class="field-input" id="f-notes" type="text" placeholder="e.g. After lunch service" autocomplete="off"/>
+          </div>
+        </div>
+
+        <!-- Step footer -->
+        <div class="step-footer">
+          <a class="btn btn-outline" href="inventory.html"><i class="ti ti-x"></i>Cancel</a>
+          <div class="step-footer-right">
+            <button class="btn btn-primary" onclick="goStep2()">Start counting <i class="ti ti-arrow-right"></i></button>
+          </div>
+        </div>
+
+      </div><!-- /panel-1 -->
+
+
+      <!-- ══════════════════════════════════════
+           STEP 2: Count items
+      ══════════════════════════════════════ -->
+      <div class="step-panel" id="panel-2">
+
+        <!-- Context header -->
+        <div class="count-context">
+          <div class="count-context-left">
+            <div class="count-context-title" id="count-heading">Bar — Spot count</div>
+            <div class="count-context-meta">
+              <span id="count-outlet-label">Surry Hills</span>
+              <span class="dot"></span>
+              <span id="count-counter-label">Sarah Kim</span>
+              <span class="dot"></span>
+              <span>13 Jun 2026</span>
+            </div>
+          </div>
+          <div class="count-progress">
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="progress-fill" style="width:50%"></div>
+            </div>
+            <span class="progress-text" id="progress-text">7 / 14 items counted</span>
+          </div>
+        </div>
+
+        <!-- Info banner — spot count notice -->
+        <div class="info-banner">
+          <i class="ti ti-info-circle"></i>
+          <div class="info-banner-body">
+            <div class="info-banner-title">Spot count — stock levels updated on submit</div>
+            <div class="info-banner-desc">These quantities will update current stock levels immediately when you submit. No period close is triggered and no COGS is posted. Partial counts are allowed — only counted items will be updated.</div>
+          </div>
+        </div>
+
+        <!-- Count table -->
+        <div class="table-card">
+          <table class="data-table" id="count-table">
+            <thead>
+              <tr>
+                <th style="width:36%">Item</th>
+                <th class="num" style="width:14%">Expected</th>
+                <th style="width:17%">Physical count</th>
+                <th class="num" style="width:13%">Variance</th>
+                <th style="width:20%">Status</th>
+              </tr>
+            </thead>
+            <tbody id="count-tbody">
+              <!-- Beverages category -->
+              <tr class="cat-row"><td colspan="5" style="padding-left:var(--space-lg)"><i class="ti ti-droplet" style="font-size:11px;margin-right:5px"></i>Beverages</td></tr>
+              <tr data-id="i01">
+                <td><div class="item-name">Orange Juice 2L</div><div class="item-code">i01</div></td>
+                <td class="num"><span class="expected-val">10 btl</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input has-variance" type="number" min="0" step="1" value="12" data-expected="10" data-id="i01" oninput="onCountInput(this)"/>
+                    <span class="count-uom">btl</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta over" id="var-i01">+2</span></td>
+                <td><span class="nb-pill warn"><i class="ti ti-alert-triangle"></i>Over</span></td>
+              </tr>
+              <tr data-id="i02">
+                <td><div class="item-name">Sparkling Water 750ml</div><div class="item-code">i02</div></td>
+                <td class="num"><span class="expected-val">24 btl</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input ok" type="number" min="0" step="1" value="24" data-expected="24" data-id="i02" oninput="onCountInput(this)"/>
+                    <span class="count-uom">btl</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta ok" id="var-i02">0</span></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Exact</span></td>
+              </tr>
+              <tr data-id="i03">
+                <td><div class="item-name">Cold Brew Coffee 500ml</div><div class="item-code">i03</div></td>
+                <td class="num"><span class="expected-val">18 btl</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input has-variance" type="number" min="0" step="1" value="16" data-expected="18" data-id="i03" oninput="onCountInput(this)"/>
+                    <span class="count-uom">btl</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta under" id="var-i03">−2</span></td>
+                <td><span class="nb-pill warn"><i class="ti ti-alert-triangle"></i>Under</span></td>
+              </tr>
+              <tr data-id="i04">
+                <td><div class="item-name">Kombucha 330ml</div><div class="item-code">i04</div></td>
+                <td class="num"><span class="expected-val">24 btl</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input ok" type="number" min="0" step="1" value="24" data-expected="24" data-id="i04" oninput="onCountInput(this)"/>
+                    <span class="count-uom">btl</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta ok" id="var-i04">0</span></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Exact</span></td>
+              </tr>
+
+              <!-- Dairy category -->
+              <tr class="cat-row"><td colspan="5" style="padding-left:var(--space-lg)"><i class="ti ti-glass" style="font-size:11px;margin-right:5px"></i>Dairy</td></tr>
+              <tr data-id="i05">
+                <td><div class="item-name">Oat Milk 1L</div><div class="item-code">i05</div></td>
+                <td class="num"><span class="expected-val">12 btl</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input is-over" type="number" min="0" step="1" value="15" data-expected="12" data-id="i05" oninput="onCountInput(this)"/>
+                    <span class="count-uom">btl</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta over" id="var-i05">+3</span></td>
+                <td><span class="nb-pill risk"><i class="ti ti-alert-circle"></i>Over +25%</span></td>
+              </tr>
+              <tr data-id="i06">
+                <td><div class="item-name">Whole Milk 2L</div><div class="item-code">i06</div></td>
+                <td class="num"><span class="expected-val">8 ctn</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input ok" type="number" min="0" step="1" value="8" data-expected="8" data-id="i06" oninput="onCountInput(this)"/>
+                    <span class="count-uom">ctn</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta ok" id="var-i06">0</span></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Exact</span></td>
+              </tr>
+              <tr data-id="i07">
+                <td><div class="item-name">Feta Cheese 200g</div><div class="item-code">i07</div></td>
+                <td class="num"><span class="expected-val">6 ea</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input" type="number" min="0" step="1" placeholder="—" data-expected="6" data-id="i07" oninput="onCountInput(this)"/>
+                    <span class="count-uom">ea</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta pending" id="var-i07">—</span></td>
+                <td><span class="nb-pill neutral">Not counted</span></td>
+              </tr>
+              <tr data-id="i08">
+                <td><div class="item-name">Buffalo Mozzarella</div><div class="item-code">i08</div></td>
+                <td class="num"><span class="expected-val">4 ea</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input" type="number" min="0" step="1" placeholder="—" data-expected="4" data-id="i08" oninput="onCountInput(this)"/>
+                    <span class="count-uom">ea</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta pending" id="var-i08">—</span></td>
+                <td><span class="nb-pill neutral">Not counted</span></td>
+              </tr>
+
+              <!-- Produce category -->
+              <tr class="cat-row"><td colspan="5" style="padding-left:var(--space-lg)"><i class="ti ti-leaf" style="font-size:11px;margin-right:5px"></i>Produce</td></tr>
+              <tr data-id="i09">
+                <td><div class="item-name">Lemons</div><div class="item-code">i09</div></td>
+                <td class="num"><span class="expected-val">30 ea</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input" type="number" min="0" step="1" placeholder="—" data-expected="30" data-id="i09" oninput="onCountInput(this)"/>
+                    <span class="count-uom">ea</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta pending" id="var-i09">—</span></td>
+                <td><span class="nb-pill neutral">Not counted</span></td>
+              </tr>
+              <tr data-id="i10">
+                <td><div class="item-name">Limes</div><div class="item-code">i10</div></td>
+                <td class="num"><span class="expected-val">20 ea</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input" type="number" min="0" step="1" placeholder="—" data-expected="20" data-id="i10" oninput="onCountInput(this)"/>
+                    <span class="count-uom">ea</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta pending" id="var-i10">—</span></td>
+                <td><span class="nb-pill neutral">Not counted</span></td>
+              </tr>
+              <tr data-id="i11">
+                <td><div class="item-name">Mint bunch</div><div class="item-code">i11</div></td>
+                <td class="num"><span class="expected-val">5 bunch</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input" type="number" min="0" step="1" placeholder="—" data-expected="5" data-id="i11" oninput="onCountInput(this)"/>
+                    <span class="count-uom">bunch</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta pending" id="var-i11">—</span></td>
+                <td><span class="nb-pill neutral">Not counted</span></td>
+              </tr>
+
+              <!-- Condiments category -->
+              <tr class="cat-row"><td colspan="5" style="padding-left:var(--space-lg)"><i class="ti ti-bottle" style="font-size:11px;margin-right:5px"></i>Condiments</td></tr>
+              <tr data-id="i12">
+                <td><div class="item-name">Simple Syrup 1L</div><div class="item-code">i12</div></td>
+                <td class="num"><span class="expected-val">4 btl</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input ok" type="number" min="0" step="1" value="4" data-expected="4" data-id="i12" oninput="onCountInput(this)"/>
+                    <span class="count-uom">btl</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta ok" id="var-i12">0</span></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Exact</span></td>
+              </tr>
+              <tr data-id="i13">
+                <td><div class="item-name">Grenadine 750ml</div><div class="item-code">i13</div></td>
+                <td class="num"><span class="expected-val">2 btl</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input ok" type="number" min="0" step="1" value="2" data-expected="2" data-id="i13" oninput="onCountInput(this)"/>
+                    <span class="count-uom">btl</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta ok" id="var-i13">0</span></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Exact</span></td>
+              </tr>
+              <tr data-id="i14">
+                <td><div class="item-name">Worcestershire Sauce</div><div class="item-code">i14</div></td>
+                <td class="num"><span class="expected-val">3 btl</span></td>
+                <td>
+                  <div class="count-input-wrap">
+                    <input class="count-input" type="number" min="0" step="1" placeholder="—" data-expected="3" data-id="i14" oninput="onCountInput(this)"/>
+                    <span class="count-uom">btl</span>
+                  </div>
+                </td>
+                <td class="num"><span class="var-delta pending" id="var-i14">—</span></td>
+                <td><span class="nb-pill neutral">Not counted</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Step 2 footer -->
+        <div class="step-footer">
+          <button class="btn btn-outline" onclick="goStep(1)"><i class="ti ti-arrow-left"></i>Back</button>
+          <div class="step-footer-right">
+            <button class="btn btn-outline" onclick="saveDraft()"><i class="ti ti-device-floppy"></i>Save draft</button>
+            <button class="btn btn-primary" onclick="submitSpotCount()"><i class="ti ti-circle-check"></i>Submit spot count</button>
+          </div>
+        </div>
+
+      </div><!-- /panel-2 -->
+
+
+      <!-- ══════════════════════════════════════
+           DONE: Success state
+      ══════════════════════════════════════ -->
+      <div class="step-panel" id="panel-done">
+        <div class="done-card">
+          <div class="done-icon"><i class="ti ti-circle-check"></i></div>
+          <div>
+            <div class="done-title">Spot count submitted</div>
+            <div class="done-desc">Stock levels updated for <strong>14 items</strong> at <strong>Surry Hills · Bar</strong></div>
+          </div>
+          <div class="done-meta">13 Jun 2026, 9:47 am</div>
+          <div class="done-note">
+            <i class="ti ti-info-circle" style="color:var(--text-accent);margin-right:var(--space-xs);font-size:14px"></i>
+            Vera (variance agent) will analyse this against theoretical usage and notify you of any anomalies.
+          </div>
+
+          <!-- Agent surface -->
+          <div class="agent-surface" style="width:100%;max-width:520px;box-sizing:border-box;">
+            <div class="agent-avatar"><i class="ti ti-robot"></i></div>
+            <div class="agent-body">
+              <div class="agent-name">Vera · Variance Agent</div>
+              <div class="agent-desc">Analysing spot count against theoretical usage…</div>
+              <div class="agent-state">
+                <span class="agent-state-dot"></span>
+                <span class="agent-state-label">Will notify if variance detected</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="done-actions">
+            <a class="btn btn-primary" href="inventory.html"><i class="ti ti-arrow-left"></i>Back to inventory</a>
+          </div>
+        </div>
+      </div><!-- /panel-done -->
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Spot count'));
+
+    /* ── Scope radio toggle ── */
+    function onScopeChange(val) {
+      document.getElementById('sheet-checkboxes').style.display = val === 'sheet' ? 'flex' : 'none';
+      document.getElementById('category-checkboxes').style.display = val === 'category' ? 'flex' : 'none';
+      document.getElementById('item-search').style.display = val === 'items' ? 'block' : 'none';
+      document.getElementById('search-hint').style.display = val === 'items' ? 'block' : 'none';
+
+      // Update radio option highlight
+      document.querySelectorAll('.radio-option').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('input').value === val && el.querySelector('input').checked);
+      });
+    }
+
+    // Sync radio selected class on native change too
+    document.querySelectorAll('.radio-option input[type="radio"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.querySelectorAll('.radio-option').forEach(el => {
+          el.classList.toggle('selected', el.querySelector('input[type="radio"]').checked);
+        });
+      });
+    });
+
+    /* ── Validate step 1 ── */
+    function validateStep1() {
+      let ok = true;
+      const outlet = document.getElementById('f-outlet').value;
+      if (!outlet) {
+        document.getElementById('err-outlet').classList.add('show');
+        document.getElementById('f-outlet').classList.add('error');
+        ok = false;
+      } else {
+        document.getElementById('err-outlet').classList.remove('show');
+        document.getElementById('f-outlet').classList.remove('error');
+      }
+
+      const scope = document.querySelector('input[name="count-scope"]:checked')?.value;
+      if (scope === 'sheet') {
+        const checked = document.querySelectorAll('.sheet-cb:checked').length;
+        document.getElementById('err-sheet').classList.toggle('show', checked === 0);
+        if (checked === 0) ok = false;
+      } else if (scope === 'category') {
+        const checked = document.querySelectorAll('.cat-cb:checked').length;
+        document.getElementById('err-category').classList.toggle('show', checked === 0);
+        if (checked === 0) ok = false;
+      }
+
+      const counter = document.getElementById('f-counter').value.trim();
+      if (!counter) {
+        document.getElementById('err-counter').classList.add('show');
+        document.getElementById('f-counter').classList.add('error');
+        ok = false;
+      } else {
+        document.getElementById('err-counter').classList.remove('show');
+        document.getElementById('f-counter').classList.remove('error');
+      }
+
+      return ok;
+    }
+
+    /* ── Navigate to step 2 ── */
+    function goStep2() {
+      if (!validateStep1()) return;
+
+      // Update step 2 context header
+      const outlet = document.getElementById('f-outlet').value;
+      const counter = document.getElementById('f-counter').value.trim();
+      const scope = document.querySelector('input[name="count-scope"]:checked')?.value;
+      let scopeLabel = 'Bar';
+      if (scope === 'sheet') {
+        const checked = [...document.querySelectorAll('.sheet-cb:checked')].map(c => c.value);
+        scopeLabel = checked.join(', ');
+      } else if (scope === 'category') {
+        const checked = [...document.querySelectorAll('.cat-cb:checked')].map(c => c.value);
+        scopeLabel = checked.join(', ');
+      } else {
+        scopeLabel = 'Selected items';
+      }
+
+      document.getElementById('count-heading').textContent = scopeLabel + ' — Spot count';
+      document.getElementById('count-outlet-label').textContent = outlet;
+      document.getElementById('count-counter-label').textContent = counter;
+
+      goStep(2);
+      updateProgress();
+    }
+
+    /* ── Generic step nav ── */
+    function goStep(n) {
+      const stepMap = { 1: '1', 2: '2', done: 'done' };
+      document.querySelectorAll('.step').forEach(s => {
+        s.classList.remove('active', 'done');
+      });
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+
+      if (n === 1) {
+        document.querySelector('.step[data-step="1"]').classList.add('active');
+        document.getElementById('panel-1').classList.add('active');
+      } else if (n === 2) {
+        document.querySelector('.step[data-step="1"]').classList.add('done');
+        document.querySelector('.step[data-step="2"]').classList.add('active');
+        document.getElementById('panel-2').classList.add('active');
+      } else if (n === 'done') {
+        document.querySelector('.step[data-step="1"]').classList.add('done');
+        document.querySelector('.step[data-step="2"]').classList.add('done');
+        document.querySelector('.step[data-step="done"]').classList.add('active');
+        document.getElementById('panel-done').classList.add('active');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ── Count input: compute variance + update status cell ── */
+    function onCountInput(input) {
+      const id = input.dataset.id;
+      const expected = parseFloat(input.dataset.expected);
+      const val = input.value === '' ? null : parseFloat(input.value);
+      const row = input.closest('tr');
+      const varEl = document.getElementById('var-' + id);
+      const statusCell = row.querySelector('td:last-child');
+
+      // Remove all state classes
+      input.classList.remove('ok', 'has-variance', 'is-over');
+
+      if (val === null || input.value === '') {
+        varEl.textContent = '—';
+        varEl.className = 'var-delta pending';
+        statusCell.innerHTML = '<span class="nb-pill neutral">Not counted</span>';
+      } else {
+        const diff = val - expected;
+        const pct = Math.abs(diff / expected * 100);
+
+        if (diff === 0) {
+          input.classList.add('ok');
+          varEl.textContent = '0';
+          varEl.className = 'var-delta ok';
+          statusCell.innerHTML = '<span class="nb-pill ok"><i class="ti ti-circle-check"></i>Exact</span>';
+        } else if (diff > 0) {
+          if (pct >= 20) {
+            input.classList.add('is-over');
+            varEl.textContent = '+' + diff;
+            varEl.className = 'var-delta over';
+            statusCell.innerHTML = `<span class="nb-pill risk"><i class="ti ti-alert-circle"></i>Over +${Math.round(pct)}%</span>`;
+          } else {
+            input.classList.add('has-variance');
+            varEl.textContent = '+' + diff;
+            varEl.className = 'var-delta over';
+            statusCell.innerHTML = '<span class="nb-pill warn"><i class="ti ti-alert-triangle"></i>Over</span>';
+          }
+        } else {
+          input.classList.add('has-variance');
+          varEl.textContent = '−' + Math.abs(diff);
+          varEl.className = 'var-delta under';
+          statusCell.innerHTML = '<span class="nb-pill warn"><i class="ti ti-alert-triangle"></i>Under</span>';
+        }
+      }
+
+      updateProgress();
+    }
+
+    /* ── Progress indicator ── */
+    function updateProgress() {
+      const inputs = document.querySelectorAll('#count-tbody .count-input');
+      const total = inputs.length;
+      const counted = [...inputs].filter(i => i.value !== '').length;
+      const pct = total > 0 ? Math.round(counted / total * 100) : 0;
+      document.getElementById('progress-text').textContent = counted + ' / ' + total + ' items counted';
+      document.getElementById('progress-fill').style.width = pct + '%';
+    }
+
+    /* ── Save draft ── */
+    function saveDraft() {
+      const btn = event.target.closest('button');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<i class="ti ti-circle-check"></i>Draft saved';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+      }, 2000);
+    }
+
+    /* ── Submit spot count ── */
+    function submitSpotCount() {
+      goStep('done');
+    }
+
+    /* ── Init progress on load ── */
+    updateProgress();
+  </script>
+</body>
+</html>

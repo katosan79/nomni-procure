@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CS-002 · Count Session Detail — Nomni</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+    .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; }
+    .page-header-left { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .page-eyebrow { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-actions { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; }
+    .back-nav { font-size:13px; font-weight:600; color:var(--text-accent); text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
+    .back-nav:hover { color:var(--spinach); text-decoration:underline; }
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; text-decoration:none; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--spinach); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--spinach); border-color:var(--spinach); }
+    .btn i { font-size:15px; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+    .card-head { display:flex; align-items:center; justify-content:space-between; padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .card-title { font-size:14px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .data-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .data-table th { padding:var(--space-md) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; background:var(--surface-soft); }
+    .data-table td { padding:var(--space-md) var(--space-lg); color:var(--text); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table th.num,.data-table td.num { text-align:right; font-feature-settings:'tnum' 1; }
+    .kv-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .kv-row { display:flex; justify-content:space-between; align-items:baseline; gap:var(--space-md); font-size:13px; padding:var(--space-xs) 0; border-bottom:1px solid var(--border); }
+    .kv-row:last-child { border-bottom:none; }
+    .kv-label { color:var(--text-soft); flex-shrink:0; }
+    .kv-value { font-weight:500; color:var(--text); text-align:right; }
+
+    /* Two-column layout */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: var(--space-2xl);
+      align-items: start;
+    }
+    .detail-main { display:flex; flex-direction:column; gap:var(--space-2xl); }
+    .detail-aside { display:flex; flex-direction:column; gap:var(--space-lg); }
+
+    /* Status pills */
+    .nb-pill {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:12px; font-weight:700; padding:4px 10px;
+      border-radius:var(--radius-pill);
+    }
+    .nb-pill.ok   { background:var(--status-ok-bg);   color:var(--status-ok-fg); }
+    .nb-pill.info { background:var(--mint); color:var(--spinach); }
+    .nb-pill.warn { background:var(--status-warn-bg); color:var(--status-warn-fg); }
+    .nb-pill i { font-size:12px; }
+
+    /* Page sub */
+    .page-sub { font-size:14px; color:var(--text-soft); margin-top:2px; }
+
+    /* Sheet cards */
+    .sheets-section-head {
+      display:flex; align-items:center; gap:var(--space-sm);
+      font-size:14px; font-weight:700; color:var(--text);
+      margin-bottom:var(--space-md);
+    }
+    .sheet-cards { display:flex; flex-direction:column; gap:var(--space-md); }
+    .sheet-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      display:flex; align-items:center; gap:var(--space-lg);
+      padding:var(--space-lg) var(--space-xl);
+    }
+    .sheet-icon {
+      width:36px; height:36px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; font-size:17px;
+    }
+    .sheet-meta { flex:1; min-width:0; }
+    .sheet-name { font-size:15px; font-weight:700; color:var(--text); }
+    .sheet-details { display:flex; align-items:center; gap:var(--space-sm); margin-top:3px; }
+    .cadence-badge {
+      font-size:11px; font-weight:600; padding:2px 7px;
+      border-radius:var(--radius-pill); background:var(--surface-soft);
+      border:1px solid var(--border); color:var(--text-soft);
+    }
+    .sheet-assignee { font-size:12px; color:var(--text-soft); }
+    .sheet-actions { display:flex; align-items:center; gap:var(--space-sm); flex-shrink:0; }
+
+    /* Variance section */
+    .section-head {
+      font-size:14px; font-weight:700; color:var(--text);
+      margin-bottom:var(--space-lg);
+      display:flex; align-items:center; gap:var(--space-xs);
+    }
+    .var-cat-row {
+      display:grid;
+      grid-template-columns:110px 1fr 130px;
+      align-items:center;
+      gap:var(--space-lg);
+      padding:var(--space-md) var(--space-lg);
+      cursor:pointer;
+      border-radius:var(--radius-md);
+      user-select:none;
+    }
+    .var-cat-row:hover { background:var(--surface-soft); }
+    .var-cat-name { font-size:13px; font-weight:600; color:var(--text); }
+    .var-bar-track {
+      height:6px; background:var(--border); border-radius:var(--radius-pill);
+      overflow:hidden;
+    }
+    .var-bar-fill { height:100%; border-radius:var(--radius-pill); }
+    .var-right { display:flex; flex-direction:column; align-items:flex-end; gap:1px; }
+    .var-amount { font-size:13px; font-weight:700; font-feature-settings:'tnum' 1; }
+    .var-pct { font-size:11px; font-weight:600; }
+
+    /* Variance item list */
+    .var-item-list { display:none; }
+    .var-item-list.open { display:block; }
+    .var-item {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:4px var(--space-lg) 4px 120px;
+      font-size:12px; color:var(--text-soft);
+      gap:var(--space-md);
+    }
+    .var-item-name { color:var(--text); font-weight:500; }
+    .var-item-qty { font-feature-settings:'tnum' 1; display:flex; align-items:center; gap:6px; }
+    .var-item-cost { font-weight:700; color:var(--status-risk-fg); font-size:12px; }
+    .var-item-empty {
+      padding:6px var(--space-lg) 6px 120px;
+      font-size:12px; color:var(--text-soft); font-style:italic;
+    }
+
+    /* COGS Summary */
+    .cogs-body { padding:var(--space-xl); }
+    .cogs-row { display:flex; justify-content:space-between; align-items:baseline; font-size:13px; padding:var(--space-xs) 0; }
+    .cogs-label { color:var(--text-soft); }
+    .cogs-value { font-weight:500; color:var(--text); font-feature-settings:'tnum' 1; }
+    .cogs-divider { border:none; border-top:1px solid var(--border); margin:var(--space-sm) 0; }
+    .cogs-total-row { display:flex; justify-content:space-between; align-items:baseline; padding:var(--space-xs) 0; }
+    .cogs-total-label { font-size:14px; font-weight:700; color:var(--text); }
+    .cogs-total-value { font-size:16px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; }
+    .cogs-theory-row { display:flex; justify-content:space-between; align-items:baseline; padding:var(--space-xs) 0; }
+    .cogs-theory-label { font-size:13px; color:var(--text-soft); }
+    .cogs-theory-value { font-size:13px; color:var(--text-soft); font-feature-settings:'tnum' 1; }
+    .cogs-variance-row {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:var(--space-sm); padding:var(--space-sm) var(--space-md);
+      background:var(--status-warn-bg); border-radius:var(--radius-md);
+    }
+    .cogs-variance-label { font-size:13px; font-weight:700; color:var(--status-warn-fg); }
+    .cogs-variance-value { font-size:14px; font-weight:700; color:var(--status-warn-fg); font-feature-settings:'tnum' 1; }
+
+    /* Activity */
+    .activity-body { padding:var(--space-lg) var(--space-xl); }
+    .activity-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .activity-item { display:flex; align-items:flex-start; gap:var(--space-sm); }
+    .activity-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:var(--fern); flex-shrink:0; margin-top:4px;
+    }
+    .activity-text { flex:1; font-size:12px; color:var(--text); line-height:1.5; }
+    .activity-time { font-size:11px; color:var(--text-soft); }
+  </style>
+</head>
+<body>
+<script src="../shared/shell.js?v=5" data-active="inventory"></script>
+
+<div class="page-body">
+  <div class="napp-canvas">
+
+    <!-- Header -->
+    <div>
+      <a class="back-nav" href="inventory.html"><i class="ti ti-chevron-left"></i> Inventory</a>
+      <div class="page-header" style="margin-top:var(--space-md);">
+        <div class="page-header-left">
+          <div class="page-eyebrow">INVENTORY MANAGEMENT</div>
+          <div class="page-title">Week ending 8 Jun 2026</div>
+          <div class="page-sub">Newtown · Count session CS-002</div>
+        </div>
+        <div class="page-actions">
+          <span class="nb-pill info" id="session-status"><i class="ti ti-send"></i>Pending approval</span>
+          <button class="btn btn-primary" id="approve-btn" onclick="approveSession()">Approve &amp; lock</button>
+          <button class="btn btn-outline" onclick="requestRecount()">Request re-count</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="detail-grid">
+
+      <!-- Main column -->
+      <div class="detail-main">
+
+        <!-- Sheet cards -->
+        <div>
+          <div class="sheets-section-head">
+            Count sheets
+            <span style="font-size:12px;font-weight:700;padding:2px 10px;border-radius:var(--radius-pill);background:var(--mint);color:var(--spinach);">4 / 4 submitted</span>
+          </div>
+          <div class="sheet-cards">
+
+            <!-- Dry Store -->
+            <div class="sheet-card">
+              <div class="sheet-icon" style="background:var(--mint);color:var(--spinach);">
+                <i class="ti ti-package"></i>
+              </div>
+              <div class="sheet-meta">
+                <div class="sheet-name">Dry Store</div>
+                <div class="sheet-details">
+                  <span class="cadence-badge">Weekly</span>
+                  <span class="sheet-assignee">Marcus Lee</span>
+                </div>
+              </div>
+              <div class="sheet-actions">
+                <span class="nb-pill ok"><i class="ti ti-check"></i>Submitted</span>
+                <a class="btn btn-outline" style="height:32px;font-size:12px;" href="count-sheet.html">View sheet</a>
+              </div>
+            </div>
+
+            <!-- Freezer -->
+            <div class="sheet-card">
+              <div class="sheet-icon" style="background:#E0F2FE;color:#0369A1;">
+                <i class="ti ti-snowflake"></i>
+              </div>
+              <div class="sheet-meta">
+                <div class="sheet-name">Freezer</div>
+                <div class="sheet-details">
+                  <span class="cadence-badge">Weekly</span>
+                  <span class="sheet-assignee">Marcus Lee</span>
+                </div>
+              </div>
+              <div class="sheet-actions">
+                <span class="nb-pill ok"><i class="ti ti-check"></i>Submitted</span>
+                <a class="btn btn-outline" style="height:32px;font-size:12px;" href="count-sheet.html">View sheet</a>
+              </div>
+            </div>
+
+            <!-- Bar -->
+            <div class="sheet-card">
+              <div class="sheet-icon" style="background:#F3E8FF;color:#7C3AED;">
+                <i class="ti ti-glass"></i>
+              </div>
+              <div class="sheet-meta">
+                <div class="sheet-name">Bar</div>
+                <div class="sheet-details">
+                  <span class="cadence-badge">Weekly</span>
+                  <span class="sheet-assignee">Jake Chen</span>
+                </div>
+              </div>
+              <div class="sheet-actions">
+                <span class="nb-pill ok"><i class="ti ti-check"></i>Submitted</span>
+                <a class="btn btn-outline" style="height:32px;font-size:12px;" href="count-sheet.html">View sheet</a>
+              </div>
+            </div>
+
+            <!-- FOH -->
+            <div class="sheet-card">
+              <div class="sheet-icon" style="background:#FEF3C7;color:#B45309;">
+                <i class="ti ti-layout-grid"></i>
+              </div>
+              <div class="sheet-meta">
+                <div class="sheet-name">FOH</div>
+                <div class="sheet-details">
+                  <span class="cadence-badge">Weekly</span>
+                  <span class="sheet-assignee">Jake Chen</span>
+                </div>
+              </div>
+              <div class="sheet-actions">
+                <span class="nb-pill ok"><i class="ti ti-check"></i>Submitted</span>
+                <a class="btn btn-outline" style="height:32px;font-size:12px;" href="count-sheet.html">View sheet</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Variance by category -->
+        <div>
+          <div class="section-head">
+            Variance by category
+            <span style="font-size:11px;color:var(--text-soft);font-weight:400;">· Double-click to expand items</span>
+          </div>
+          <div class="card" style="padding:var(--space-lg);">
+
+            <!-- Proteins 11.8% — 100% bar width (max) -->
+            <div class="var-cat-row" ondblclick="toggleVarItems('var-proteins')">
+              <div class="var-cat-name">Proteins</div>
+              <div class="var-bar-track">
+                <div class="var-bar-fill" style="width:100%;background:var(--status-risk-fg);"></div>
+              </div>
+              <div class="var-right">
+                <span class="var-amount" style="color:var(--status-risk-fg);">$400</span>
+                <span class="var-pct" style="color:var(--status-risk-fg);">11.8%</span>
+              </div>
+            </div>
+            <div class="var-item-list" id="var-proteins">
+              <div class="var-item">
+                <span class="var-item-name">Chicken Breast 500g</span>
+                <span class="var-item-qty">1.2 kg <i class="ti ti-arrow-right" style="font-size:11px;"></i> 1.8 kg</span>
+                <span class="var-item-cost">+$180</span>
+              </div>
+              <div class="var-item">
+                <span class="var-item-name">Beef Short Rib</span>
+                <span class="var-item-qty">0.8 kg <i class="ti ti-arrow-right" style="font-size:11px;"></i> 1.1 kg</span>
+                <span class="var-item-cost">+$110</span>
+              </div>
+            </div>
+
+            <!-- Produce 9.1% — 77% bar width -->
+            <div class="var-cat-row" ondblclick="toggleVarItems('var-produce')">
+              <div class="var-cat-name">Produce</div>
+              <div class="var-bar-track">
+                <div class="var-bar-fill" style="width:77%;background:var(--status-risk-fg);"></div>
+              </div>
+              <div class="var-right">
+                <span class="var-amount" style="color:var(--status-risk-fg);">$200</span>
+                <span class="var-pct" style="color:var(--status-risk-fg);">9.1%</span>
+              </div>
+            </div>
+            <div class="var-item-list" id="var-produce">
+              <div class="var-item">
+                <span class="var-item-name">Avocado</span>
+                <span class="var-item-qty">40 ea <i class="ti ti-arrow-right" style="font-size:11px;"></i> 52 ea</span>
+                <span class="var-item-cost">+$96</span>
+              </div>
+              <div class="var-item">
+                <span class="var-item-name">Roma Tomatoes</span>
+                <span class="var-item-qty">15 kg <i class="ti ti-arrow-right" style="font-size:11px;"></i> 19 kg</span>
+                <span class="var-item-cost">+$66</span>
+              </div>
+            </div>
+
+            <!-- Dairy 4.4% — 37% bar width -->
+            <div class="var-cat-row" ondblclick="toggleVarItems('var-dairy')">
+              <div class="var-cat-name">Dairy</div>
+              <div class="var-bar-track">
+                <div class="var-bar-fill" style="width:37%;background:var(--status-warn-fg);"></div>
+              </div>
+              <div class="var-right">
+                <span class="var-amount" style="color:var(--status-warn-fg);">$80</span>
+                <span class="var-pct" style="color:var(--status-warn-fg);">4.4%</span>
+              </div>
+            </div>
+            <div class="var-item-list" id="var-dairy">
+              <div class="var-item">
+                <span class="var-item-name">Whole Milk 2L</span>
+                <span class="var-item-qty">24 ctn <i class="ti ti-arrow-right" style="font-size:11px;"></i> 27 ctn</span>
+                <span class="var-item-cost">+$48</span>
+              </div>
+            </div>
+
+            <!-- Beverages 1.7% — 14% bar width -->
+            <div class="var-cat-row" ondblclick="toggleVarItems('var-beverages')">
+              <div class="var-cat-name">Beverages</div>
+              <div class="var-bar-track">
+                <div class="var-bar-fill" style="width:14%;background:var(--fern);"></div>
+              </div>
+              <div class="var-right">
+                <span class="var-amount" style="color:var(--fern);">$20</span>
+                <span class="var-pct" style="color:var(--fern);">1.7%</span>
+              </div>
+            </div>
+            <div class="var-item-list" id="var-beverages">
+              <div class="var-item">
+                <span class="var-item-name">Orange Juice 2L</span>
+                <span class="var-item-qty">10 btl <i class="ti ti-arrow-right" style="font-size:11px;"></i> 11 btl</span>
+                <span class="var-item-cost">+$20</span>
+              </div>
+            </div>
+
+            <!-- Dry goods 0% -->
+            <div class="var-cat-row" ondblclick="toggleVarItems('var-dry')">
+              <div class="var-cat-name">Dry goods</div>
+              <div class="var-bar-track">
+                <div class="var-bar-fill" style="width:0%;background:var(--fern);"></div>
+              </div>
+              <div class="var-right">
+                <span class="var-amount" style="color:var(--fern);">$0</span>
+                <span class="var-pct" style="color:var(--fern);">0%</span>
+              </div>
+            </div>
+            <div class="var-item-list" id="var-dry">
+              <div class="var-item-empty">No significant variance in this category</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /detail-main -->
+
+      <!-- Aside -->
+      <div class="detail-aside">
+
+        <!-- Session info -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="ti ti-info-circle"></i>Session info</div>
+          </div>
+          <div style="padding:var(--space-lg) var(--space-xl);">
+            <div class="kv-list">
+              <div class="kv-row">
+                <span class="kv-label">Period</span>
+                <span class="kv-value">Week ending 8 Jun 2026</span>
+              </div>
+              <div class="kv-row">
+                <span class="kv-label">Outlet</span>
+                <span class="kv-value">Newtown</span>
+              </div>
+              <div class="kv-row">
+                <span class="kv-label">Type</span>
+                <span class="kv-value">Full count</span>
+              </div>
+              <div class="kv-row">
+                <span class="kv-label">Created by</span>
+                <span class="kv-value">Marcus Lee</span>
+              </div>
+              <div class="kv-row">
+                <span class="kv-label">Created</span>
+                <span class="kv-value">8 Jun 2026</span>
+              </div>
+              <div class="kv-row">
+                <span class="kv-label">Submitted</span>
+                <span class="kv-value">9 Jun, 8:30 am</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COGS Summary -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="ti ti-calculator"></i>COGS Summary</div>
+          </div>
+          <div class="cogs-body">
+            <div class="cogs-row">
+              <span class="cogs-label">Opening stock</span>
+              <span class="cogs-value">$12,800</span>
+            </div>
+            <div class="cogs-row">
+              <span class="cogs-label">+ Purchases</span>
+              <span class="cogs-value">$6,900</span>
+            </div>
+            <div class="cogs-row">
+              <span class="cogs-label">&#8722; Closing stock</span>
+              <span class="cogs-value">$9,800</span>
+            </div>
+            <hr class="cogs-divider"/>
+            <div class="cogs-total-row">
+              <span class="cogs-total-label">Actual COGS</span>
+              <span class="cogs-total-value">$9,900</span>
+            </div>
+            <div class="cogs-theory-row">
+              <span class="cogs-theory-label">Theoretical COGS</span>
+              <span class="cogs-theory-value">$9,200</span>
+            </div>
+            <hr class="cogs-divider"/>
+            <div class="cogs-variance-row">
+              <span class="cogs-variance-label">Variance</span>
+              <span class="cogs-variance-value">$700 &nbsp;&nbsp;7.6%</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-soft);margin-top:8px;">Based on 4/4 required sheets</div>
+          </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="ti ti-activity"></i>Activity</div>
+          </div>
+          <div class="activity-body">
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">Created by Marcus Lee <span class="activity-time">· 8 Jun 2026</span></div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">Dry Store submitted by Marcus Lee <span class="activity-time">· 8 Jun, 4:15 pm</span></div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">Freezer submitted by Marcus Lee <span class="activity-time">· 8 Jun, 5:30 pm</span></div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">Bar submitted by Jake Chen <span class="activity-time">· 9 Jun, 7:00 am</span></div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">FOH submitted by Jake Chen <span class="activity-time">· 9 Jun, 8:20 am</span></div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">Session submitted for approval by Marcus Lee <span class="activity-time">· 9 Jun, 8:30 am</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /detail-aside -->
+
+    </div><!-- /detail-grid -->
+
+  </div><!-- /napp-canvas -->
+</div><!-- /page-body -->
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof NomniShell !== 'undefined') {
+      NomniShell.init('Count Session CS-002');
+    }
+  });
+
+  function approveSession() {
+    const pill = document.getElementById('session-status');
+    pill.className = 'nb-pill ok';
+    pill.innerHTML = '<i class="ti ti-lock"></i>Locked';
+    const btn = document.getElementById('approve-btn');
+    btn.textContent = 'Approved';
+    btn.disabled = true;
+    showToast('CS-002 approved and locked — COGS posted');
+  }
+
+  function requestRecount() {
+    showToast('Re-count request sent to Marcus Lee at Newtown');
+  }
+
+  function toggleVarItems(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+</script>
+</body>
+</html>
