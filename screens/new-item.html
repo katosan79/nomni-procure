@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>New item — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; gap:var(--space-2xl); padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    /* Back nav */
+    .back-nav { display:inline-flex; align-items:center; gap:var(--space-sm); font-size:13px; font-weight:600; color:var(--text-soft); text-decoration:none; }
+    .back-nav:hover { color:var(--text-accent); }
+    .back-nav i { font-size:14px; }
+
+    /* Page header */
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-subtitle { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+
+    /* Stepper */
+    .stepper { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; }
+    .step { display:flex; align-items:center; gap:var(--space-sm); }
+    .step-dot { width:28px; height:28px; border-radius:var(--radius-pill); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-feature-settings:'tnum' 1; background:var(--surface); border:1.5px solid var(--border); color:var(--text-soft); flex-shrink:0; transition:background 0.18s, border-color 0.18s, color 0.18s; }
+    .step.active .step-dot { background:var(--btn-primary-bg); border-color:var(--btn-primary-bg); color:var(--btn-primary-fg); }
+    .step.done .step-dot { background:var(--status-ok-bg); border-color:var(--status-ok-fg); color:var(--status-ok-fg); }
+    .step-label { font-size:13px; font-weight:600; color:var(--text-soft); }
+    .step.active .step-label { color:var(--text); }
+    .step.done .step-label { color:var(--text-soft); }
+    .step-line { width:32px; height:1.5px; background:var(--border); flex-shrink:0; }
+
+    /* Step panels */
+    .step-panel { display:none; flex-direction:column; gap:var(--space-xl); }
+    .step-panel.active { display:flex; }
+
+    /* Form card */
+    .form-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-2xl); display:flex; flex-direction:column; gap:var(--space-xl); }
+    .form-card-title { font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
+    .form-card-desc { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); line-height:1.5; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-md) var(--space-lg); }
+    .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md) var(--space-lg); }
+    .form-full { grid-column:1 / -1; }
+    @media (max-width:700px) { .form-grid, .form-grid-2 { grid-template-columns:1fr; } }
+
+    /* Form fields */
+    .field { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .field label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .field label .req { color:var(--status-risk-fg); margin-left:2px; }
+    .field-input, .field-select, .field-textarea { height:var(--control-h); padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; transition:border-color 0.12s; width:100%; box-sizing:border-box; }
+    .field-input:focus, .field-select:focus, .field-textarea:focus { border-color:var(--border-focus, var(--fern)); }
+    .field-input.error, .field-select.error, .field-textarea.error { border-color:var(--status-risk-fg); }
+    .field-textarea { height:auto; padding-block:var(--space-md); resize:vertical; min-height:80px; line-height:1.5; }
+    .field-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; padding-right:var(--space-3xl); cursor:pointer; }
+    .field-hint { font-size:12px; color:var(--text-soft); }
+    .field-error { font-size:12px; color:var(--status-risk-fg); display:none; }
+    .field-error.show { display:block; }
+
+    /* Supplier SKU table */
+    .sku-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+    .sku-card-head { display:flex; align-items:center; justify-content:space-between; padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .sku-card-title { font-size:15px; font-weight:700; color:var(--text); }
+    .sku-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .sku-table th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); padding:var(--space-sm) var(--space-md); text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; background:var(--surface-soft); }
+    .sku-table td { padding:var(--space-sm) var(--space-md); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .sku-table tbody tr:last-child td { border-bottom:none; }
+    .sku-inline-input { height:32px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:13px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; width:100%; box-sizing:border-box; transition:border-color 0.12s; }
+    .sku-inline-input:focus { border-color:var(--fern); }
+    .sku-inline-input::placeholder { color:var(--text-soft); }
+    .preferred-toggle { display:flex; align-items:center; gap:var(--space-xs); }
+    .preferred-radio { accent-color:var(--fern); width:14px; height:14px; cursor:pointer; }
+    .preferred-label { font-size:12px; color:var(--text-soft); cursor:pointer; }
+    .sku-remove-btn { width:28px; height:28px; border-radius:var(--radius-sm); background:none; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-soft); font-size:14px; font-family:inherit; }
+    .sku-remove-btn:hover { border-color:var(--status-risk-fg); color:var(--status-risk-fg); background:var(--status-risk-bg); }
+    .sku-add-row { display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-md) var(--space-xl); font-size:13px; font-weight:600; color:var(--text-accent); background:none; border:none; cursor:pointer; font-family:inherit; border-top:1px solid var(--border); width:100%; text-align:left; }
+    .sku-add-row:hover { background:var(--surface-soft); }
+    .sku-empty { padding:var(--space-2xl); text-align:center; color:var(--text-soft); font-size:14px; }
+
+    /* Par levels */
+    .par-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md); }
+    @media (max-width:600px) { .par-grid { grid-template-columns:1fr; } }
+    .par-row { display:flex; align-items:center; gap:var(--space-md); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md) var(--space-lg); }
+    .par-row-label { flex:1; font-size:14px; font-weight:600; color:var(--text); }
+    .par-row-uom { font-size:12px; color:var(--text-soft); white-space:nowrap; }
+    .par-inline-input { width:72px; height:32px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:14px; font-weight:600; font-family:inherit; font-feature-settings:'tnum' 1; background:var(--surface); color:var(--text); outline:none; text-align:right; transition:border-color 0.12s; box-sizing:border-box; }
+    .par-inline-input:focus { border-color:var(--fern); }
+    .par-inline-input::placeholder { color:var(--text-soft); font-weight:400; }
+
+    /* Skip link */
+    .skip-link { font-size:13px; font-weight:600; color:var(--text-soft); background:none; border:none; cursor:pointer; padding:0; font-family:inherit; }
+    .skip-link:hover { color:var(--text); text-decoration:underline; }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; transition:background 0.12s,color 0.12s,border-color 0.12s; text-decoration:none; white-space:nowrap; border:1.5px solid transparent; font-family:inherit; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--spinach); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--spinach); border-color:var(--spinach); }
+    .btn i { font-size:15px; }
+
+    /* Footer nav */
+    .step-footer { display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); flex-wrap:wrap; }
+    .step-footer-right { display:flex; align-items:center; gap:var(--space-md); }
+
+    /* Review card */
+    .review-section { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .review-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .review-value { font-size:15px; font-weight:600; color:var(--text); }
+    .review-muted { font-size:14px; color:var(--text-soft); }
+    .review-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-xl); }
+    @media (max-width:700px) { .review-grid { grid-template-columns:1fr 1fr; } }
+    .review-divider { height:1px; background:var(--border); }
+
+    /* Done state */
+    .done-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-3xl) var(--space-2xl); display:flex; flex-direction:column; align-items:center; gap:var(--space-xl); text-align:center; }
+    .done-icon { width:64px; height:64px; border-radius:var(--radius-pill); background:var(--mint); display:flex; align-items:center; justify-content:center; font-size:28px; color:var(--text-accent); }
+    .done-title { font-size:24px; font-weight:700; color:var(--text); letter-spacing:-0.02em; }
+    .done-desc { font-size:15px; color:var(--text-soft); max-width:400px; line-height:1.6; }
+    .done-actions { display:flex; gap:var(--space-md); flex-wrap:wrap; justify-content:center; }
+
+    /* Required star */
+    .required-note { font-size:12px; color:var(--text-soft); }
+    .required-note span { color:var(--status-risk-fg); }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=5" data-active="items"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <!-- Back + header -->
+      <div>
+        <a class="back-nav" href="items.html"><i class="ti ti-arrow-left"></i>Items</a>
+        <h1 class="page-title" style="margin-top:var(--space-md)">New item</h1>
+        <p class="page-subtitle">Define your internal catalog item — suppliers are mapped to it, not the other way around.</p>
+      </div>
+
+      <!-- Stepper -->
+      <nav class="stepper" id="stepper" aria-label="Creation steps">
+        <div class="step active" data-step="1"><span class="step-dot">1</span><span class="step-label">Define item</span></div>
+        <span class="step-line"></span>
+        <div class="step" data-step="2"><span class="step-dot">2</span><span class="step-label">Link suppliers</span></div>
+        <span class="step-line"></span>
+        <div class="step" data-step="3"><span class="step-dot">3</span><span class="step-label">Par levels</span></div>
+        <span class="step-line"></span>
+        <div class="step" data-step="4"><span class="step-dot"><i class="ti ti-check" style="font-size:11px"></i></span><span class="step-label">Done</span></div>
+      </nav>
+
+      <!-- ══ Step 1: Define item ══ -->
+      <div class="step-panel active" id="panel-1">
+        <div class="form-card">
+          <div>
+            <div class="form-card-title">Item details</div>
+            <div class="form-card-desc">Set the buyer-facing name, category, and unit of measure. This is the canonical identity for this item across ordering, recipes, and inventory.</div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field form-full">
+              <label>Buyer name <span class="req">*</span></label>
+              <input class="field-input" id="f-name" type="text" placeholder="e.g. Chicken Breast 500g" autocomplete="off"/>
+              <span class="field-error" id="err-name">Item name is required</span>
+              <span class="field-hint">The internal name your team uses — not the supplier's product name.</span>
+            </div>
+
+            <div class="field">
+              <label>Category <span class="req">*</span></label>
+              <select class="field-select" id="f-category">
+                <option value="">Select category…</option>
+                <option value="Produce">Produce</option>
+                <option value="Protein">Protein</option>
+                <option value="Dairy">Dairy</option>
+                <option value="Dry goods">Dry goods &amp; Bakery</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Cleaning">Cleaning &amp; Supplies</option>
+              </select>
+              <span class="field-error" id="err-category">Category is required</span>
+            </div>
+
+            <div class="field">
+              <label>Unit of measure <span class="req">*</span></label>
+              <select class="field-select" id="f-uom">
+                <option value="">Select UoM…</option>
+                <optgroup label="Weight">
+                  <option value="kg">kg</option>
+                  <option value="g">g</option>
+                  <option value="lb">lb</option>
+                </optgroup>
+                <optgroup label="Volume">
+                  <option value="L">L</option>
+                  <option value="mL">mL</option>
+                </optgroup>
+                <optgroup label="Count">
+                  <option value="each">each</option>
+                  <option value="dozen">dozen</option>
+                  <option value="portion">portion</option>
+                  <option value="serve">serve</option>
+                </optgroup>
+                <optgroup label="Pack">
+                  <option value="loaf">loaf</option>
+                  <option value="bottle">bottle</option>
+                  <option value="can">can</option>
+                  <option value="carton">carton</option>
+                  <option value="bag">bag</option>
+                  <option value="box">box</option>
+                  <option value="case">case</option>
+                </optgroup>
+              </select>
+              <span class="field-error" id="err-uom">Unit of measure is required</span>
+            </div>
+
+            <div class="field">
+              <label>Sub-category <span style="font-weight:400;opacity:0.7">(optional)</span></label>
+              <input class="field-input" id="f-subcat" type="text" placeholder="e.g. Poultry, Root vegetables…" autocomplete="off"/>
+            </div>
+
+            <div class="field form-full">
+              <label>Description <span style="font-weight:400;opacity:0.7">(optional)</span></label>
+              <textarea class="field-textarea" id="f-desc" placeholder="Any notes on quality spec, portioning, or sourcing preferences…" rows="3"></textarea>
+            </div>
+          </div>
+
+          <p class="required-note"><span>*</span> Required fields</p>
+        </div>
+
+        <div class="step-footer">
+          <a class="btn btn-outline" href="items.html"><i class="ti ti-x"></i>Cancel</a>
+          <div class="step-footer-right">
+            <button class="btn btn-primary" onclick="goStep(2)">Next — Link suppliers <i class="ti ti-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Step 2: Link suppliers ══ -->
+      <div class="step-panel" id="panel-2">
+
+        <div class="sku-card">
+          <div class="sku-card-head">
+            <div>
+              <div class="sku-card-title">Supplier SKU mappings</div>
+              <div style="font-size:13px;color:var(--text-soft);margin-top:3px">Map one or more supplier SKUs to <strong id="sku-item-name" style="color:var(--text)">this item</strong>. Mark one as preferred for ordering.</div>
+            </div>
+          </div>
+          <table class="sku-table">
+            <thead>
+              <tr>
+                <th style="width:22%">Supplier</th>
+                <th style="width:18%">Their SKU</th>
+                <th style="width:16%">Pack size</th>
+                <th style="width:16%">Last cost</th>
+                <th style="width:16%">Preferred</th>
+                <th style="width:12%"></th>
+              </tr>
+            </thead>
+            <tbody id="sku-rows">
+              <tr id="sku-empty-row">
+                <td colspan="6" class="sku-empty"><i class="ti ti-link" style="font-size:20px;display:block;margin-bottom:var(--space-sm);color:var(--border)"></i>No suppliers linked yet — add one below</td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="sku-add-row" onclick="addSkuRow()"><i class="ti ti-plus"></i>Add supplier SKU</button>
+        </div>
+
+        <div class="step-footer">
+          <button class="btn btn-outline" onclick="goStep(1)"><i class="ti ti-arrow-left"></i>Back</button>
+          <div class="step-footer-right">
+            <button class="skip-link" onclick="goStep(3)">Skip for now</button>
+            <button class="btn btn-primary" onclick="goStep(3)">Next — Par levels <i class="ti ti-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Step 3: Par levels ══ -->
+      <div class="step-panel" id="panel-3">
+
+        <div class="form-card">
+          <div>
+            <div class="form-card-title">Par levels by group</div>
+            <div class="form-card-desc">Set the minimum stock quantity for each venue group. Ordering agents use these to calculate top-up quantities. You can update these at any time from the item drawer.</div>
+          </div>
+
+          <div class="par-grid" id="par-rows">
+            <div class="par-row"><span class="par-row-label">NSW Metro</span><input class="par-inline-input" type="number" min="0" step="1" placeholder="—" id="par-nsw"/><span class="par-row-uom" id="par-uom-1">units</span></div>
+            <div class="par-row"><span class="par-row-label">VIC Metro</span><input class="par-inline-input" type="number" min="0" step="1" placeholder="—" id="par-vic"/><span class="par-row-uom" id="par-uom-2">units</span></div>
+            <div class="par-row"><span class="par-row-label">QLD Metro</span><input class="par-inline-input" type="number" min="0" step="1" placeholder="—" id="par-qld"/><span class="par-row-uom" id="par-uom-3">units</span></div>
+            <div class="par-row"><span class="par-row-label">SA Metro</span><input class="par-inline-input" type="number" min="0" step="1" placeholder="—" id="par-sa"/><span class="par-row-uom" id="par-uom-4">units</span></div>
+          </div>
+        </div>
+
+        <div class="step-footer">
+          <button class="btn btn-outline" onclick="goStep(2)"><i class="ti ti-arrow-left"></i>Back</button>
+          <div class="step-footer-right">
+            <button class="skip-link" onclick="goStep(4, true)">Skip &amp; create item</button>
+            <button class="btn btn-primary" onclick="goStep(4, false)"><i class="ti ti-circle-check"></i>Create item</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Step 4: Done ══ -->
+      <div class="step-panel" id="panel-4">
+        <div class="done-card">
+          <div class="done-icon"><i class="ti ti-circle-check"></i></div>
+          <div>
+            <div class="done-title" id="done-title">Item created</div>
+            <div class="done-desc" id="done-desc">Your new item is live in the catalog and ready to be used in ordering, recipes, and inventory.</div>
+          </div>
+
+          <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-xl);width:100%;max-width:480px;box-sizing:border-box;">
+            <div class="review-grid" style="grid-template-columns:1fr 1fr 1fr;">
+              <div class="review-section">
+                <span class="review-label">Name</span>
+                <span class="review-value" id="done-name">—</span>
+              </div>
+              <div class="review-section">
+                <span class="review-label">Category</span>
+                <span class="review-value" id="done-cat">—</span>
+              </div>
+              <div class="review-section">
+                <span class="review-label">UoM</span>
+                <span class="review-value" id="done-uom">—</span>
+              </div>
+              <div class="review-section" style="grid-column:1/-1">
+                <span class="review-label">Suppliers linked</span>
+                <span class="review-value" id="done-suppliers">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="done-actions">
+            <a class="btn btn-outline" href="items.html"><i class="ti ti-list"></i>Back to Items</a>
+            <button class="btn btn-primary" onclick="addAnother()"><i class="ti ti-plus"></i>Add another item</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('New item'));
+
+    let currentStep = 1;
+    let skuRowCount = 0;
+
+    /* ── Step navigation ── */
+    function goStep(n, skipPars) {
+      if (n === 2 && !validateStep1()) return;
+
+      // Update par level UoM labels
+      const uom = document.getElementById('f-uom').value || 'units';
+      document.querySelectorAll('[id^="par-uom-"]').forEach(el => el.textContent = uom);
+
+      // Update item name in supplier step
+      const name = document.getElementById('f-name').value.trim() || 'this item';
+      document.getElementById('sku-item-name').textContent = name;
+
+      // Mark done/active on stepper
+      for (let i = 1; i <= 4; i++) {
+        const s = document.querySelector(`.step[data-step="${i}"]`);
+        s.classList.remove('active', 'done');
+        if (i < n) s.classList.add('done');
+        else if (i === n) s.classList.add('active');
+      }
+
+      // Switch panels
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + n).classList.add('active');
+      currentStep = n;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Populate done screen
+      if (n === 4) populateDone(skipPars);
+    }
+
+    /* ── Step 1 validation ── */
+    function validateStep1() {
+      let ok = true;
+      const name = document.getElementById('f-name').value.trim();
+      const cat = document.getElementById('f-category').value;
+      const uom = document.getElementById('f-uom').value;
+      const showErr = (id, fieldId, show) => {
+        document.getElementById(id).classList.toggle('show', show);
+        document.getElementById(fieldId).classList.toggle('error', show);
+      };
+      showErr('err-name', 'f-name', !name);        if (!name) ok = false;
+      showErr('err-category', 'f-category', !cat); if (!cat) ok = false;
+      showErr('err-uom', 'f-uom', !uom);           if (!uom) ok = false;
+      return ok;
+    }
+
+    /* Clear validation on input */
+    ['f-name','f-category','f-uom'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        document.getElementById(id).classList.remove('error');
+        const errId = { 'f-name':'err-name', 'f-category':'err-category', 'f-uom':'err-uom' }[id];
+        if (errId) document.getElementById(errId).classList.remove('show');
+      });
+    });
+
+    /* ── Supplier SKU rows ── */
+    function addSkuRow() {
+      const tbody = document.getElementById('sku-rows');
+      const empty = document.getElementById('sku-empty-row');
+      if (empty) empty.remove();
+      skuRowCount++;
+      const id = 'sku-row-' + skuRowCount;
+      const isFirst = skuRowCount === 1;
+      const row = document.createElement('tr');
+      row.id = id;
+      row.innerHTML = `
+        <td><input class="sku-inline-input" type="text" placeholder="Supplier name" autocomplete="off"/></td>
+        <td><input class="sku-inline-input" type="text" placeholder="SKU-000" autocomplete="off" style="font-family:'IBM Plex Mono',monospace;font-size:12px"/></td>
+        <td><input class="sku-inline-input" type="text" placeholder="e.g. 500g" autocomplete="off"/></td>
+        <td><input class="sku-inline-input" type="text" placeholder="e.g. $8.40/kg" autocomplete="off"/></td>
+        <td>
+          <label class="preferred-toggle">
+            <input class="preferred-radio" type="radio" name="preferred-sku" value="${id}" ${isFirst ? 'checked' : ''}>
+            <span class="preferred-label">${isFirst ? 'Preferred' : 'Set preferred'}</span>
+          </label>
+        </td>
+        <td><button class="sku-remove-btn" onclick="removeSkuRow('${id}')"><i class="ti ti-x"></i></button></td>`;
+      tbody.appendChild(row);
+
+      // Update preferred labels on radio change
+      row.querySelector('.preferred-radio').addEventListener('change', updatePreferredLabels);
+    }
+
+    function updatePreferredLabels() {
+      document.querySelectorAll('.preferred-radio').forEach(r => {
+        r.closest('tr').querySelector('.preferred-label').textContent = r.checked ? 'Preferred' : 'Set preferred';
+      });
+    }
+
+    function removeSkuRow(id) {
+      const row = document.getElementById(id);
+      if (!row) return;
+      const wasPreferred = row.querySelector('.preferred-radio')?.checked;
+      row.remove();
+      skuRowCount--;
+      const remaining = document.querySelectorAll('#sku-rows tr:not(#sku-empty-row)');
+      if (remaining.length === 0) {
+        const tbody = document.getElementById('sku-rows');
+        const empty = document.createElement('tr');
+        empty.id = 'sku-empty-row';
+        empty.innerHTML = '<td colspan="6" class="sku-empty"><i class="ti ti-link" style="font-size:20px;display:block;margin-bottom:var(--space-sm);color:var(--border)"></i>No suppliers linked yet — add one below</td>';
+        tbody.appendChild(empty);
+      } else if (wasPreferred) {
+        const firstRadio = document.querySelector('#sku-rows .preferred-radio');
+        if (firstRadio) { firstRadio.checked = true; updatePreferredLabels(); }
+      }
+    }
+
+    /* ── Done screen ── */
+    function populateDone(skipPars) {
+      const name = document.getElementById('f-name').value.trim();
+      const cat  = document.getElementById('f-category').options[document.getElementById('f-category').selectedIndex]?.text || '—';
+      const uom  = document.getElementById('f-uom').value;
+      const rows = document.querySelectorAll('#sku-rows tr:not(#sku-empty-row)');
+      const supplierNames = [...rows].map(r => r.querySelector('input')?.value?.trim()).filter(Boolean);
+
+      document.getElementById('done-name').textContent = name;
+      document.getElementById('done-cat').textContent  = cat;
+      document.getElementById('done-uom').textContent  = uom;
+      document.getElementById('done-suppliers').textContent = supplierNames.length
+        ? supplierNames.join(', ')
+        : 'None — link suppliers from the item drawer';
+
+      document.getElementById('done-title').textContent = name + ' created';
+      if (skipPars) {
+        document.getElementById('done-desc').textContent = 'Item created. Par levels were skipped — set them from the item drawer when ready.';
+      }
+    }
+
+    function addAnother() {
+      // Reset form
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-category').value = '';
+      document.getElementById('f-uom').value = '';
+      document.getElementById('f-subcat').value = '';
+      document.getElementById('f-desc').value = '';
+      document.getElementById('sku-rows').innerHTML = '<tr id="sku-empty-row"><td colspan="6" class="sku-empty"><i class="ti ti-link" style="font-size:20px;display:block;margin-bottom:var(--space-sm);color:var(--border)"></i>No suppliers linked yet — add one below</td></tr>';
+      document.querySelectorAll('.par-inline-input').forEach(i => i.value = '');
+      skuRowCount = 0;
+      goStep(1);
+    }
+  </script>
+</body>
+</html>
