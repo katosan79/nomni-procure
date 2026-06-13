@@ -584,163 +584,58 @@
         </div>
       </section>
 
-      <!-- 3 · Network revenue pulse -->
-      <section aria-label="Network revenue">
-        <div class="pulse-row">
+      <!-- 3 · Triage strip — five cross-domain signals, each linking to the right page -->
+      <section aria-label="Business pulse">
+        <div class="kpi-strip" style="grid-template-columns:repeat(5,1fr);">
 
-          <!-- Hero revenue tile + live COGS / variance -->
-          <div class="pulse-hero" aria-label="Network revenue, live COGS and variance">
-            <div>
-              <p class="pulse-eyebrow">Network revenue · Yesterday <span class="live-pill"><span class="live-dot" aria-hidden="true"></span>LIVE</span></p>
-              <p class="pulse-value"><sup>$</sup>248,340</p>
-              <span class="pulse-delta up" aria-label="Up 9% vs last week">
-                <i class="ti ti-trending-up" aria-hidden="true"></i> +9% vs last week
-              </span>
-              <p class="pulse-context">vs $227,830 same day last week</p>
-            </div>
-            <div class="pulse-substats">
-              <div>
-                <p class="pulse-substat-label">Live COGS</p>
-                <p class="pulse-substat-value">28.4<sup style="font-size:11px;">%</sup> <span class="delta up" aria-label="up 1.4 points">▲1.4</span></p>
-              </div>
-              <div>
-                <p class="pulse-substat-label">Stock variance</p>
-                <p class="pulse-substat-value">3.2<sup style="font-size:11px;">%</sup> <span class="delta down" aria-label="down 0.6 points">▼0.6</span></p>
-              </div>
-            </div>
-            <div>
-              <p class="pulse-substat-label" style="margin-bottom:var(--space-xs);">7-day revenue</p>
-              <div class="pulse-sparkline" aria-hidden="true">
-                <div class="spark-bar" style="height:45%"></div>
-                <div class="spark-bar" style="height:60%"></div>
-                <div class="spark-bar" style="height:52%"></div>
-                <div class="spark-bar" style="height:78%"></div>
-                <div class="spark-bar" style="height:65%"></div>
-                <div class="spark-bar" style="height:70%"></div>
-                <div class="spark-bar today" style="height:100%"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Revenue by outlet group -->
-          <div class="group-chart-panel" aria-label="Revenue by outlet group">
-            <div class="group-chart-header">
-              <h2 class="group-chart-title">Revenue by outlet group · Yesterday</h2>
-              <a class="panel-action" href="reporting.html">Full report</a>
-            </div>
-            <div class="group-bars">
-              <div class="group-bar-row">
-                <span class="group-bar-label">NSW Metro</span>
-                <div class="group-bar-track" role="img" aria-label="NSW Metro $89.2k, up 11%, highest group">
-                  <div class="group-bar-fill highlight" style="width:100%"></div>
-                </div>
-                <span class="group-bar-amt">$89.2k</span>
-                <span class="group-bar-delta up"><i class="ti ti-arrow-up" aria-hidden="true"></i>11%</span>
-              </div>
-              <div class="group-bar-row">
-                <span class="group-bar-label">VIC Metro</span>
-                <div class="group-bar-track" role="img" aria-label="VIC Metro $72.1k, up 7%">
-                  <div class="group-bar-fill" style="width:81%"></div>
-                </div>
-                <span class="group-bar-amt">$72.1k</span>
-                <span class="group-bar-delta up"><i class="ti ti-arrow-up" aria-hidden="true"></i>7%</span>
-              </div>
-              <div class="group-bar-row">
-                <span class="group-bar-label">QLD Coastal</span>
-                <div class="group-bar-track" role="img" aria-label="QLD Coastal $51.4k, down 3%">
-                  <div class="group-bar-fill" style="width:58%"></div>
-                </div>
-                <span class="group-bar-amt">$51.4k</span>
-                <span class="group-bar-delta down"><i class="ti ti-arrow-down" aria-hidden="true"></i>3%</span>
-              </div>
-              <div class="group-bar-row">
-                <span class="group-bar-label">SA &amp; WA</span>
-                <div class="group-bar-track" role="img" aria-label="SA and WA $35.6k, up 4%">
-                  <div class="group-bar-fill" style="width:40%"></div>
-                </div>
-                <span class="group-bar-amt">$35.6k</span>
-                <span class="group-bar-delta up"><i class="ti ti-arrow-up" aria-hidden="true"></i>4%</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- 4 · KPI strip -->
-      <section aria-label="Key metrics">
-        <div class="kpi-strip">
-
-          <a class="kpi-tile" href="venues.html">
-            <span class="kpi-label">Active outlets</span>
-            <span class="kpi-value">124</span>
-            <span class="kpi-context">
-              <i class="ti ti-arrow-up" aria-hidden="true"></i>
-              <span class="ok">+3 this month</span>
-            </span>
-            <div class="kpi-spark" aria-hidden="true">
-              <div class="kpi-spark-bar" style="height:40%"></div>
-              <div class="kpi-spark-bar" style="height:55%"></div>
-              <div class="kpi-spark-bar" style="height:55%"></div>
-              <div class="kpi-spark-bar" style="height:70%"></div>
-              <div class="kpi-spark-bar" style="height:80%"></div>
-              <div class="kpi-spark-bar" style="height:90%"></div>
-              <div class="kpi-spark-bar hi" style="height:100%"></div>
-            </div>
-          </a>
-
-          <a class="kpi-tile" href="market-list.html">
-            <span class="kpi-label">Market lists</span>
-            <span class="kpi-value">18</span>
-            <span class="kpi-context">
-              <i class="ti ti-clock" aria-hidden="true"></i>
-              <span class="warn">2 pending sync</span>
-            </span>
-            <div class="kpi-spark" aria-hidden="true">
-              <div class="kpi-spark-bar" style="height:60%"></div>
-              <div class="kpi-spark-bar" style="height:60%"></div>
-              <div class="kpi-spark-bar" style="height:65%"></div>
-              <div class="kpi-spark-bar" style="height:65%"></div>
-              <div class="kpi-spark-bar" style="height:75%"></div>
-              <div class="kpi-spark-bar" style="height:85%"></div>
-              <div class="kpi-spark-bar hi" style="height:100%"></div>
-            </div>
-          </a>
-
-          <a class="kpi-tile" href="reporting.html">
-            <span class="kpi-label">Avg food cost %</span>
-            <span class="kpi-value">28<sup>%</sup></span>
+          <a class="kpi-tile" href="reporting.html" aria-label="Revenue yesterday, up 9 percent">
+            <span class="kpi-label">Revenue · Yesterday</span>
+            <span class="kpi-value"><sup>$</sup>248k</span>
             <span class="kpi-context">
               <i class="ti ti-trending-up" aria-hidden="true"></i>
-              <span class="warn">+1.4% vs last month</span>
+              <span class="ok">+9% vs last week</span>
             </span>
-            <div class="kpi-spark" aria-hidden="true">
-              <div class="kpi-spark-bar" style="height:55%"></div>
-              <div class="kpi-spark-bar" style="height:58%"></div>
-              <div class="kpi-spark-bar" style="height:60%"></div>
-              <div class="kpi-spark-bar" style="height:65%"></div>
-              <div class="kpi-spark-bar" style="height:72%"></div>
-              <div class="kpi-spark-bar" style="height:85%"></div>
-              <div class="kpi-spark-bar hi" style="height:100%"></div>
-            </div>
+            <span class="kpi-context" style="margin-top:auto;padding-top:var(--space-sm);border-top:1px solid var(--border);font-size:11px;color:var(--text-link);">Full report →</span>
           </a>
 
-          <a class="kpi-tile" href="pos-mapping.html">
+          <a class="kpi-tile" href="reporting.html" aria-label="Food cost percent, up 1.4 points, needs attention">
+            <span class="kpi-label">Food cost %</span>
+            <span class="kpi-value">28.4<sup>%</sup></span>
+            <span class="kpi-context">
+              <i class="ti ti-trending-up" aria-hidden="true"></i>
+              <span class="warn">+1.4pts vs last month</span>
+            </span>
+            <span class="kpi-context" style="margin-top:auto;padding-top:var(--space-sm);border-top:1px solid var(--border);font-size:11px;color:var(--text-link);">Full report →</span>
+          </a>
+
+          <a class="kpi-tile" href="invoices.html" aria-label="2 invoices need review">
+            <span class="kpi-label">Invoices to review</span>
+            <span class="kpi-value">2</span>
+            <span class="kpi-context">
+              <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+              <span class="warn">Match failures on hold</span>
+            </span>
+            <span class="kpi-context" style="margin-top:auto;padding-top:var(--space-sm);border-top:1px solid var(--border);font-size:11px;color:var(--text-link);">Review →</span>
+          </a>
+
+          <a class="kpi-tile" href="orders.html" aria-label="2 orders awaiting approval">
+            <span class="kpi-label">Orders pending</span>
+            <span class="kpi-value">2</span>
+            <span class="kpi-context">
+              <i class="ti ti-user-check" aria-hidden="true"></i>
+              <span class="warn">Awaiting approval</span>
+            </span>
+            <span class="kpi-context" style="margin-top:auto;padding-top:var(--space-sm);border-top:1px solid var(--border);font-size:11px;color:var(--text-link);">Approve →</span>
+          </a>
+
+          <a class="kpi-tile" href="pos-mapping.html" aria-label="POS coverage 89 percent, 1 outlet failing">
             <span class="kpi-label">POS coverage</span>
             <span class="kpi-value">89<sup>%</sup></span>
             <span class="kpi-context">
               <i class="ti ti-device-desktop" aria-hidden="true"></i>
               <span class="risk">1 outlet failing</span>
             </span>
-            <div class="kpi-spark" aria-hidden="true">
-              <div class="kpi-spark-bar" style="height:70%"></div>
-              <div class="kpi-spark-bar" style="height:78%"></div>
-              <div class="kpi-spark-bar" style="height:82%"></div>
-              <div class="kpi-spark-bar" style="height:85%"></div>
-              <div class="kpi-spark-bar" style="height:88%"></div>
-              <div class="kpi-spark-bar" style="height:92%"></div>
-              <div class="kpi-spark-bar hi" style="height:89%"></div>
-            </div>
+            <span class="kpi-context" style="margin-top:auto;padding-top:var(--space-sm);border-top:1px solid var(--border);font-size:11px;color:var(--text-link);">Fix mapping →</span>
           </a>
 
         </div>
