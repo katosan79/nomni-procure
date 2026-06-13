@@ -101,6 +101,31 @@
     /* ── Empty state ── */
     .empty-state { text-align:center; padding:var(--space-5xl) var(--space-2xl); color:var(--text-soft); font-size:14px; }
 
+    /* ── Accounting integration chip ── */
+    .acct-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 30px; padding: 0 var(--space-md) 0 var(--space-sm);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); font-size: 12px; color: var(--text-soft);
+      white-space: nowrap; text-decoration: none;
+    }
+    .acct-logo {
+      width: 18px; height: 18px; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .acct-logo.xero { background: #13B5EA; }
+    .acct-logo.xero svg { width: 10px; height: 10px; }
+    .acct-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--status-ok-fg); flex-shrink: 0;
+    }
+    .acct-sep { color: var(--border); margin: 0 1px; }
+    .acct-settings-link {
+      color: var(--text-link); font-weight: 600; font-size: 12px;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 3px;
+    }
+    .acct-settings-link:hover { text-decoration: underline; }
+
     /* ── Period switcher ── */
     .period-bar { display:flex; align-items:center; gap:var(--space-xs); margin-bottom:var(--space-xl); }
     .period-label { font-size:12px; font-weight:600; color:var(--text-soft); margin-right:var(--space-xs); text-transform:uppercase; letter-spacing:0.06em; }
@@ -181,8 +206,19 @@
             <h1 style="font-size:35px;font-weight:700;color:var(--text);letter-spacing:-0.025em;line-height:1.1;margin:0;">Invoices</h1>
             <p style="font-size:14px;color:var(--text-soft);margin:var(--space-sm) 0 0;">Digitised supplier invoices &middot; 3-way matched against PO and GRN &middot; ready for export</p>
           </div>
-          <div style="display:flex;gap:var(--space-sm);">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-sm);">
             <button onclick="toast('Upload invoice — take a photo or attach a file · PDF, JPG, PNG')" style="display:inline-flex;align-items:center;gap:var(--space-xs);height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);"><i class="ti ti-upload"></i> Upload invoice</button>
+            <div class="acct-chip">
+              <span class="acct-logo xero" aria-label="Xero">
+                <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </span>
+              <span class="acct-dot" title="Connected"></span>
+              <span style="font-size:12px;font-weight:600;color:var(--text);">Xero</span>
+              <span class="acct-sep">·</span>
+              <span class="acct-sync">Last export 2h ago</span>
+              <span class="acct-sep">·</span>
+              <a class="acct-settings-link" href="#settings/accounting" onclick="toast('Settings → Accounting integrations · CoA mapping, API key, export rules')"><i class="ti ti-settings" style="font-size:11px;"></i> Settings</a>
+            </div>
           </div>
         </div>
 
