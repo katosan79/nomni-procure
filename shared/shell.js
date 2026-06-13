@@ -112,8 +112,82 @@
       height: 100vh;
       overflow-y: auto;
       z-index: 40;
-      transition: transform 0.22s ease;
+      transition: transform 0.22s ease, width 0.22s ease, padding 0.22s ease;
     }
+
+    /* ── Collapsed nav rail ── */
+    .shell-chrome.nav-collapsed {
+      width: 52px;
+      padding: var(--space-xl) var(--space-sm);
+      overflow: visible;
+    }
+    .shell-chrome.nav-collapsed .shell-wordmark-text { display: none; }
+    .shell-chrome.nav-collapsed .shell-nav-item {
+      justify-content: center;
+      padding: var(--space-sm);
+      gap: 0;
+      position: relative;
+    }
+    .shell-chrome.nav-collapsed .shell-nav-label { display: none; }
+    .shell-chrome.nav-collapsed .shell-nav-divider { display: none; }
+    .shell-chrome.nav-collapsed .shell-nav-footer { overflow: visible; }
+    .shell-chrome.nav-collapsed .shell-collapse-btn { justify-content: center; }
+
+    /* Tooltip on hover in collapsed mode */
+    .shell-chrome.nav-collapsed .shell-nav-item[data-label]:hover::before,
+    .shell-chrome.nav-collapsed .shell-nav-item[data-label]:hover::after { content: ''; }
+    .shell-chrome.nav-collapsed .shell-nav-item[data-label]:hover::after {
+      content: attr(data-label);
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--seaweed);
+      color: var(--porcelain);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 9px;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      z-index: 200;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    }
+    .shell-chrome.nav-collapsed .shell-nav-item[data-label]:hover::before {
+      content: '';
+      position: absolute;
+      left: calc(100% + 6px);
+      top: 50%;
+      transform: translateY(-50%);
+      border: 4px solid transparent;
+      border-right-color: var(--seaweed);
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    /* ── Collapse toggle button ── */
+    .shell-collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: var(--space-sm);
+      width: 100%;
+      height: 32px;
+      padding: 0 var(--space-md);
+      background: none;
+      border: none;
+      border-radius: var(--radius-sm);
+      color: var(--chrome-fg-soft);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+      margin-top: var(--space-sm);
+      flex-shrink: 0;
+    }
+    .shell-collapse-btn:hover {
+      background: var(--chrome-panel);
+      color: var(--chrome-fg);
+    }
+    .shell-collapse-btn i { font-size: 15px; flex-shrink: 0; }
 
     /* ── Wordmark ── */
     .shell-wordmark {
@@ -397,9 +471,9 @@
         dividerInserted = true;
       }
       return `${prefix}
-      <a class="shell-nav-item${n.id === activeId ? ' active' : ''}" href="${n.href}" data-nav="${n.id}" aria-current="${n.id === activeId ? 'page' : 'false'}">
+      <a class="shell-nav-item${n.id === activeId ? ' active' : ''}" href="${n.href}" data-nav="${n.id}" data-label="${n.label}" aria-current="${n.id === activeId ? 'page' : 'false'}">
         <i class="ti ${n.icon}" aria-hidden="true"></i>
-        ${n.label}
+        <span class="shell-nav-label">${n.label}</span>
       </a>`;
     }).join('');
 
@@ -434,12 +508,18 @@
         <nav class="shell-nav" aria-label="Module navigation">
           ${navItems}
           <div class="shell-nav-footer">
-            <a class="shell-nav-item" href="#settings" aria-label="Settings">
-              <i class="ti ti-settings" aria-hidden="true"></i>Settings
+            <a class="shell-nav-item" href="#settings" data-label="Settings" aria-label="Settings">
+              <i class="ti ti-settings" aria-hidden="true"></i>
+              <span class="shell-nav-label">Settings</span>
             </a>
-            <a class="shell-nav-item" href="login.html" aria-label="Sign out">
-              <i class="ti ti-logout" aria-hidden="true"></i>Sign out
+            <a class="shell-nav-item" href="login.html" data-label="Sign out" aria-label="Sign out">
+              <i class="ti ti-logout" aria-hidden="true"></i>
+              <span class="shell-nav-label">Sign out</span>
             </a>
+            <button class="shell-collapse-btn" id="shell-collapse-btn" aria-label="Collapse navigation">
+              <i class="ti ti-chevron-left" id="shell-collapse-icon" aria-hidden="true"></i>
+              <span class="shell-nav-label" style="font-size:12px;">Collapse</span>
+            </button>
           </div>
         </nav>
       </aside>
@@ -619,6 +699,22 @@
         get master() { return agentsMaster(); },
         setMaster, setFn, agents: AGENTS,
       };
+
+      // ── Nav collapse (desktop icon rail) ──
+      const collapseBtn  = document.getElementById('shell-collapse-btn');
+      const collapseIcon = document.getElementById('shell-collapse-icon');
+
+      function setNavCollapsed(collapsed) {
+        chrome.classList.toggle('nav-collapsed', collapsed);
+        if (collapseIcon) collapseIcon.className = `ti ${collapsed ? 'ti-chevron-right' : 'ti-chevron-left'}`;
+        if (collapseBtn) collapseBtn.setAttribute('aria-label', collapsed ? 'Expand navigation' : 'Collapse navigation');
+        try { localStorage.setItem('nomni_nav_collapsed', collapsed ? 'true' : 'false'); } catch (e) {}
+      }
+
+      // Restore persisted preference
+      try { if (localStorage.getItem('nomni_nav_collapsed') === 'true') setNavCollapsed(true); } catch (e) {}
+
+      if (collapseBtn) collapseBtn.addEventListener('click', () => setNavCollapsed(!chrome.classList.contains('nav-collapsed')));
 
       // Close on Escape
       document.addEventListener('keydown', e => {
