@@ -182,6 +182,7 @@
       transition: background 0.12s, color 0.12s;
       margin-top: var(--space-sm);
       flex-shrink: 0;
+      font-family: inherit;
     }
     .shell-collapse-btn:hover {
       background: var(--chrome-panel);
