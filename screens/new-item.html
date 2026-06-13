@@ -245,11 +245,12 @@
             <thead>
               <tr>
                 <th style="width:22%">Supplier</th>
-                <th style="width:18%">Their SKU</th>
-                <th style="width:16%">Pack size</th>
-                <th style="width:16%">Last cost</th>
-                <th style="width:16%">Preferred</th>
-                <th style="width:12%"></th>
+                <th style="width:16%">Their SKU</th>
+                <th style="width:16%">Order in</th>
+                <th style="width:12%">Conv. factor</th>
+                <th style="width:14%">Last cost</th>
+                <th style="width:12%">Preferred</th>
+                <th style="width:8%"></th>
               </tr>
             </thead>
             <tbody id="sku-rows">
@@ -346,9 +347,10 @@
     function goStep(n, skipPars) {
       if (n === 2 && !validateStep1()) return;
 
-      // Update par level UoM labels
+      // Update par level and conv factor UoM labels
       const uom = document.getElementById('f-uom').value || 'units';
       document.querySelectorAll('[id^="par-uom-"]').forEach(el => el.textContent = uom);
+      document.querySelectorAll('.sku-conv-uom').forEach(el => el.textContent = uom);
 
       // Update item name in supplier step
       const name = document.getElementById('f-name').value.trim() || 'this item';
@@ -410,8 +412,9 @@
       row.innerHTML = `
         <td><input class="sku-inline-input" type="text" placeholder="Supplier name" autocomplete="off"/></td>
         <td><input class="sku-inline-input" type="text" placeholder="SKU-000" autocomplete="off" style="font-family:'IBM Plex Mono',monospace;font-size:12px"/></td>
-        <td><input class="sku-inline-input" type="text" placeholder="e.g. 500g" autocomplete="off"/></td>
-        <td><input class="sku-inline-input" type="text" placeholder="e.g. $8.40/kg" autocomplete="off"/></td>
+        <td><input class="sku-inline-input" type="text" placeholder="e.g. case (6)" autocomplete="off"/></td>
+        <td><div style="display:flex;align-items:center;gap:4px"><span style="font-size:12px;color:var(--text-soft)">×</span><input class="sku-inline-input" type="number" min="0.001" step="any" placeholder="1" style="width:56px;text-align:right"/><span class="sku-conv-uom" style="font-size:11px;color:var(--text-soft);white-space:nowrap">${document.getElementById('f-uom').value || 'unit'}</span></div></td>
+        <td><input class="sku-inline-input" type="text" placeholder="e.g. $42.00" autocomplete="off"/></td>
         <td>
           <label class="preferred-toggle">
             <input class="preferred-radio" type="radio" name="preferred-sku" value="${id}" ${isFirst ? 'checked' : ''}>

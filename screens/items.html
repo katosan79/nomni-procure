@@ -187,6 +187,8 @@
     .sku-remove:hover { color:var(--status-risk-fg); background:var(--status-risk-bg); }
     .sku-code { font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-soft); }
     .sku-price { font-feature-settings:'tnum' 1; font-weight:600; }
+    .conv-factor { font-weight:700; font-feature-settings:'tnum' 1; color:var(--text); }
+    .conv-base { font-size:11px; color:var(--text-soft); }
     .sku-add-btn { display:inline-flex; align-items:center; gap:var(--space-xs); margin-top:var(--space-md); font-size:13px; font-weight:600; color:var(--text-accent); background:none; border:none; cursor:pointer; padding:0; font-family:inherit; }
     .sku-add-btn:hover { color:var(--spinach); text-decoration:underline; }
     .par-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm); }
@@ -565,7 +567,7 @@
         <div class="drawer-section-label">Linked suppliers</div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
           <table class="sku-table">
-            <thead><tr><th>Supplier</th><th>Their SKU</th><th>Pack size</th><th>Last cost</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Supplier</th><th>Their SKU</th><th>Order in</th><th>Conv. factor</th><th>Last cost</th><th>Status</th><th></th></tr></thead>
             <tbody id="sku-tbody"></tbody>
           </table>
         </div>
@@ -705,23 +707,25 @@
 
     /* ── Item drawer ── */
     const ITEM_DATA = {
-      'chicken-breast': { id:'INT-0001', name:'Chicken Breast 500g', category:'Protein', uom:'kg', description:'Fresh chicken breast, 500g portions. Used across main dishes and salads.', skus:[{id:'s1',supplier:'Sydney Butchers Co.',sku:'SB-CHK-500',pack:'500g',price:'$8.40/kg',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0441',pack:'1kg',price:'$9.10/kg',preferred:false}], pars:[{group:'NSW Metro',value:'10 kg'},{group:'VIC Metro',value:'8 kg'},{group:'QLD Metro',value:'6 kg'}], recipes:[{name:'Grilled Chicken Salad',qty:'180g per serve'},{name:'Chicken Parmigiana',qty:'200g per serve'},{name:'Caesar Salad',qty:'120g per serve'},{name:'Chicken Burger',qty:'150g per serve'}] },
-      'avocado':        { id:'INT-0002', name:'Avocado', category:'Produce', uom:'each', description:'Ripe Hass avocados. Multiple sourcing options available for price benchmarking.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-AVOC',pack:'each',price:'$1.20/ea',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0092',pack:'each',price:'$1.35/ea',preferred:false},{id:'s3',supplier:'Premium Produce',sku:'PP-AVO-01',pack:'each',price:'$1.55/ea',preferred:false}], pars:[{group:'NSW Metro',value:'50 each'},{group:'VIC Metro',value:'40 each'}], recipes:[{name:'Avocado Toast',qty:'½ each per serve'},{name:'Smashed Avo Salad',qty:'¼ each per serve'}] },
-      'feta':           { id:'INT-0003', name:'Feta Cheese', category:'Dairy', uom:'kg', description:'Crumbled feta for salads and pastries.', skus:[{id:'s1',supplier:'Dairy Direct',sku:'DD-FTA-1KG',pack:'1kg block',price:'$18.50/kg',preferred:true},{id:'s2',supplier:'Artisan Dairy',sku:'AD-FETA',pack:'500g',price:'$22.00/kg',preferred:false}], pars:[{group:'NSW Metro',value:'5 kg'},{group:'VIC Metro',value:'4 kg'},{group:'QLD Metro',value:'3 kg'},{group:'SA Metro',value:'2 kg'}], recipes:[{name:'Greek Salad',qty:'40g per serve'},{name:'Spinach & Feta Pastry',qty:'60g per serve'},{name:'Beet & Feta Bowl',qty:'35g per serve'}] },
-      'sourdough':      { id:'INT-0004', name:'Sourdough Bread', category:'Dry goods', uom:'loaf', description:'Artisan sourdough loaf. Bread & Co is the sole approved supplier.', skus:[{id:'s1',supplier:'Bread & Co',sku:'BC-SDGH',pack:'800g loaf',price:'$4.20/loaf',preferred:true}], pars:[{group:'NSW Metro',value:'20 loaf'},{group:'VIC Metro',value:'16 loaf'},{group:'QLD Metro',value:'12 loaf'}], recipes:[{name:'Avocado Toast',qty:'2 slices per serve'},{name:'Bruschetta',qty:'3 slices per serve'}] },
-      'olive-oil':      { id:'INT-0005', name:'Olive Oil 1L', category:'Dry goods', uom:'bottle', description:'Extra virgin olive oil, 1L. Used in cooking and dressings.', skus:[{id:'s1',supplier:'Mediterranean Foods',sku:'MF-OO-1L',pack:'1L bottle',price:'$12.80/btl',preferred:true},{id:'s2',supplier:'Gourmet Direct',sku:'GD-OLV1L',pack:'1L bottle',price:'$14.50/btl',preferred:false}], pars:[{group:'NSW Metro',value:'8 bottle'},{group:'VIC Metro',value:'6 bottle'},{group:'QLD Metro',value:'5 bottle'},{group:'SA Metro',value:'4 bottle'}], recipes:[{name:'Greek Salad',qty:'15ml dressing'},{name:'Grilled Chicken Salad',qty:'10ml dressing'},{name:'Bruschetta',qty:'20ml per serve'},{name:'Pasta Napolitana',qty:'30ml per serve'},{name:'Roasted Vegetables',qty:'25ml per serve'}] },
-      'milk':           { id:'INT-0006', name:'Whole Milk 2L', category:'Dairy', uom:'carton', description:'Full-cream whole milk in 2L cartons.', skus:[{id:'s1',supplier:'Farm Fresh',sku:'FF-MLK-2L',pack:'2L carton',price:'$3.10/ctn',preferred:true},{id:'s2',supplier:'Dairy Direct',sku:'DD-MLK-2L',pack:'2L carton',price:'$2.95/ctn',preferred:false}], pars:[{group:'NSW Metro',value:'15 carton'},{group:'VIC Metro',value:'12 carton'}], recipes:[] },
-      'tomatoes':       { id:'INT-0007', name:'Roma Tomatoes', category:'Produce', uom:'kg', description:'Roma tomatoes for sauces, salads and garnish.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-TOMA',pack:'loose kg',price:'$3.20/kg',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-TOM-01',pack:'loose kg',price:'$2.80/kg',preferred:false}], pars:[{group:'NSW Metro',value:'12 kg'},{group:'VIC Metro',value:'10 kg'},{group:'QLD Metro',value:'8 kg'}], recipes:[{name:'Pasta Napolitana',qty:'120g per serve'},{name:'Bruschetta',qty:'80g per serve'},{name:'Greek Salad',qty:'60g per serve'}] }
+      'chicken-breast': { id:'INT-0001', name:'Chicken Breast 500g', category:'Protein', uom:'kg', description:'Fresh chicken breast, 500g portions. Used across main dishes and salads.', skus:[{id:'s1',supplier:'Sydney Butchers Co.',sku:'SB-CHK-500',purchaseUom:'5kg box',convFactor:5,price:'$42.00/box',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0441',purchaseUom:'1kg pack',convFactor:1,price:'$9.10/pack',preferred:false}], pars:[{group:'NSW Metro',value:'10 kg'},{group:'VIC Metro',value:'8 kg'},{group:'QLD Metro',value:'6 kg'}], recipes:[{name:'Grilled Chicken Salad',qty:'180g per serve'},{name:'Chicken Parmigiana',qty:'200g per serve'},{name:'Caesar Salad',qty:'120g per serve'},{name:'Chicken Burger',qty:'150g per serve'}] },
+      'avocado':        { id:'INT-0002', name:'Avocado', category:'Produce', uom:'each', description:'Ripe Hass avocados. Multiple sourcing options available for price benchmarking.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-AVOC',purchaseUom:'tray (12)',convFactor:12,price:'$13.20/tray',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0092',purchaseUom:'each',convFactor:1,price:'$1.35/each',preferred:false},{id:'s3',supplier:'Premium Produce',sku:'PP-AVO-01',purchaseUom:'each',convFactor:1,price:'$1.55/each',preferred:false}], pars:[{group:'NSW Metro',value:'50 each'},{group:'VIC Metro',value:'40 each'}], recipes:[{name:'Avocado Toast',qty:'½ each per serve'},{name:'Smashed Avo Salad',qty:'¼ each per serve'}] },
+      'feta':           { id:'INT-0003', name:'Feta Cheese', category:'Dairy', uom:'kg', description:'Crumbled feta for salads and pastries.', skus:[{id:'s1',supplier:'Dairy Direct',sku:'DD-FTA-1KG',purchaseUom:'1kg block',convFactor:1,price:'$18.50/block',preferred:true},{id:'s2',supplier:'Artisan Dairy',sku:'AD-FETA',purchaseUom:'500g pack',convFactor:0.5,price:'$11.00/pack',preferred:false}], pars:[{group:'NSW Metro',value:'5 kg'},{group:'VIC Metro',value:'4 kg'},{group:'QLD Metro',value:'3 kg'},{group:'SA Metro',value:'2 kg'}], recipes:[{name:'Greek Salad',qty:'40g per serve'},{name:'Spinach & Feta Pastry',qty:'60g per serve'},{name:'Beet & Feta Bowl',qty:'35g per serve'}] },
+      'sourdough':      { id:'INT-0004', name:'Sourdough Bread', category:'Dry goods', uom:'loaf', description:'Artisan sourdough loaf. Bread & Co is the sole approved supplier.', skus:[{id:'s1',supplier:'Bread & Co',sku:'BC-SDGH',purchaseUom:'loaf',convFactor:1,price:'$4.20/loaf',preferred:true}], pars:[{group:'NSW Metro',value:'20 loaf'},{group:'VIC Metro',value:'16 loaf'},{group:'QLD Metro',value:'12 loaf'}], recipes:[{name:'Avocado Toast',qty:'2 slices per serve'},{name:'Bruschetta',qty:'3 slices per serve'}] },
+      'olive-oil':      { id:'INT-0005', name:'Olive Oil 1L', category:'Dry goods', uom:'bottle', description:'Extra virgin olive oil, 1L. Used in cooking and dressings.', skus:[{id:'s1',supplier:'Mediterranean Foods',sku:'MF-OO-1L',purchaseUom:'case (6)',convFactor:6,price:'$72.00/case',preferred:true},{id:'s2',supplier:'Gourmet Direct',sku:'GD-OLV1L',purchaseUom:'bottle',convFactor:1,price:'$14.50/btl',preferred:false}], pars:[{group:'NSW Metro',value:'8 bottle'},{group:'VIC Metro',value:'6 bottle'},{group:'QLD Metro',value:'5 bottle'},{group:'SA Metro',value:'4 bottle'}], recipes:[{name:'Greek Salad',qty:'15ml dressing'},{name:'Grilled Chicken Salad',qty:'10ml dressing'},{name:'Bruschetta',qty:'20ml per serve'},{name:'Pasta Napolitana',qty:'30ml per serve'},{name:'Roasted Vegetables',qty:'25ml per serve'}] },
+      'milk':           { id:'INT-0006', name:'Whole Milk 2L', category:'Dairy', uom:'carton', description:'Full-cream whole milk in 2L cartons.', skus:[{id:'s1',supplier:'Farm Fresh',sku:'FF-MLK-2L',purchaseUom:'case (12)',convFactor:12,price:'$35.40/case',preferred:true},{id:'s2',supplier:'Dairy Direct',sku:'DD-MLK-2L',purchaseUom:'carton',convFactor:1,price:'$2.95/ctn',preferred:false}], pars:[{group:'NSW Metro',value:'15 carton'},{group:'VIC Metro',value:'12 carton'}], recipes:[] },
+      'tomatoes':       { id:'INT-0007', name:'Roma Tomatoes', category:'Produce', uom:'kg', description:'Roma tomatoes for sauces, salads and garnish.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-TOMA',purchaseUom:'10kg box',convFactor:10,price:'$28.00/box',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-TOM-01',purchaseUom:'kg',convFactor:1,price:'$2.80/kg',preferred:false}], pars:[{group:'NSW Metro',value:'12 kg'},{group:'VIC Metro',value:'10 kg'},{group:'QLD Metro',value:'8 kg'}], recipes:[{name:'Pasta Napolitana',qty:'120g per serve'},{name:'Bruschetta',qty:'80g per serve'},{name:'Greek Salad',qty:'60g per serve'}] }
     };
 
     let activeItemKey = null;
 
     function renderSkuTable(skus) {
+      const baseUom = activeItemKey ? ITEM_DATA[activeItemKey].uom : 'unit';
       document.getElementById('sku-tbody').innerHTML = skus.map(s => `
         <tr data-sku-id="${s.id}">
           <td style="font-weight:600">${s.supplier}</td>
           <td><span class="sku-code">${s.sku}</span></td>
-          <td style="color:var(--text-soft)">${s.pack}</td>
+          <td>${s.purchaseUom}</td>
+          <td><span class="conv-factor">×${s.convFactor}</span> <span class="conv-base">${baseUom}</span></td>
           <td><span class="sku-price">${s.price}</span></td>
           <td>${s.preferred ? '<span class="sku-preferred-badge"><i class="ti ti-star-filled" style="font-size:9px"></i>Preferred</span>' : `<button class="sku-set-preferred" onclick="setPreferred('${s.id}')">Set preferred</button>`}</td>
           <td><button class="sku-remove" onclick="removeSku('${s.id}')"><i class="ti ti-x"></i></button></td>
@@ -788,7 +792,7 @@
 
     function addSkuRow() {
       if (!activeItemKey) return;
-      ITEM_DATA[activeItemKey].skus.push({ id:'new-'+Date.now(), supplier:'New supplier', sku:'SKU-000', pack:'—', price:'—', preferred:false });
+      ITEM_DATA[activeItemKey].skus.push({ id:'new-'+Date.now(), supplier:'New supplier', sku:'SKU-000', purchaseUom:'—', convFactor:1, price:'—', preferred:false });
       renderSkuTable(ITEM_DATA[activeItemKey].skus);
       itemsToast('Supplier row added — edit details to complete');
     }
