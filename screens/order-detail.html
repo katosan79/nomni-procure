@@ -86,6 +86,7 @@
     .items-tbl tbody tr:hover td { background:var(--surface-soft); }
     .item-name { font-weight:600; color:var(--text); }
     .item-cat  { font-size:11px; color:var(--text-soft); margin-top:2px; }
+    .item-sku  { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-soft); }
     .total-row td { background:var(--surface-soft); font-weight:700; font-size:14px; color:var(--text); font-feature-settings:'tnum' 1; padding:var(--space-md) var(--space-lg); border-top:1.5px solid var(--border); }
     .var-short { color:var(--status-risk-fg); font-weight:700; }
     .var-ok    { color:var(--status-ok-fg); font-weight:600; }
@@ -308,11 +309,11 @@
         value:640, expected:'14 Jun', created:'10 Jun 2026, 9:14am', createdBy:'Keith Tan',
         approval:'manager', status:'needs-manager',
         items:[
-          { name:'Chicken Breast 500g',   cat:'Proteins', uom:'pkg', qty:20, unit:7.15 },
-          { name:'Beef Short Rib 500g',   cat:'Proteins', uom:'pkg', qty:12, unit:12.50 },
-          { name:'Lamb Rack (each)',       cat:'Proteins', uom:'ea',  qty:6,  unit:28.00 },
-          { name:'Pork Belly 1kg',        cat:'Proteins', uom:'pkg', qty:5,  unit:18.00 },
-          { name:'Wagyu Chuck Roll 500g', cat:'Proteins', uom:'pkg', qty:4,  unit:34.75 },
+          { name:'Chicken Breast 500g',   supplierItem:'Chicken Breast Portions',  supplierSku:'SB-CHK-500', cat:'Proteins', uom:'pkg', qty:20, unit:7.15 },
+          { name:'Beef Short Rib 500g',   supplierItem:'Beef Short Ribs',          supplierSku:'SB-BSR-500', cat:'Proteins', uom:'pkg', qty:12, unit:12.50 },
+          { name:'Lamb Rack (each)',       supplierItem:'Lamb Rack Frenched',       supplierSku:'SB-LRK-EA',  cat:'Proteins', uom:'ea',  qty:6,  unit:28.00 },
+          { name:'Pork Belly 1kg',        supplierItem:'Pork Belly Slabs',         supplierSku:'SB-PBL-1KG', cat:'Proteins', uom:'pkg', qty:5,  unit:18.00 },
+          { name:'Wagyu Chuck Roll 500g', supplierItem:'Wagyu Chuck Roll MS4+',    supplierSku:'SB-WCR-500', cat:'Proteins', uom:'pkg', qty:4,  unit:34.75 },
         ],
         comms:[
           { dir:'out', from:'Keith Tan (Surry Hills)', time:'10 Jun, 9:14am',
@@ -328,12 +329,12 @@
         value:1180, expected:'15 Jun', created:'10 Jun 2026, 8:50am', createdBy:'Keith Tan',
         approval:'manager', status:'needs-manager',
         items:[
-          { name:'Mixed Leaf 2kg',       cat:'Produce', uom:'bag',   qty:12, unit:9.00 },
-          { name:'Avocado (each)',        cat:'Produce', uom:'ea',    qty:80, unit:2.40 },
-          { name:'Roma Tomatoes 5kg',    cat:'Produce', uom:'box',   qty:10, unit:16.50 },
-          { name:'Baby Spinach 1kg',     cat:'Produce', uom:'bag',   qty:16, unit:12.00 },
-          { name:'Broccolini bunch',     cat:'Produce', uom:'bunch', qty:24, unit:4.50 },
-          { name:'Continental Cucumber', cat:'Produce', uom:'ea',    qty:40, unit:2.50 },
+          { name:'Mixed Leaf 2kg',       supplierItem:'Mixed Salad Leaves',     supplierSku:'GF-MSL-2KG', cat:'Produce', uom:'bag',   qty:12, unit:9.00 },
+          { name:'Avocado (each)',        supplierItem:'Hass Avocado',           supplierSku:'GF-AVO-EA',  cat:'Produce', uom:'ea',    qty:80, unit:2.40 },
+          { name:'Roma Tomatoes 5kg',    supplierItem:'Roma Tomato Box',        supplierSku:'GF-ROM-5KG', cat:'Produce', uom:'box',   qty:10, unit:16.50 },
+          { name:'Baby Spinach 1kg',     supplierItem:'Baby Spinach Washed',    supplierSku:'GF-BSP-1KG', cat:'Produce', uom:'bag',   qty:16, unit:12.00 },
+          { name:'Broccolini bunch',     supplierItem:'Tenderstem Broccoli',    supplierSku:'GF-BRL-BCH', cat:'Produce', uom:'bunch', qty:24, unit:4.50 },
+          { name:'Continental Cucumber', supplierItem:'Continental Cucumber',   supplierSku:'GF-CCM-EA',  cat:'Produce', uom:'ea',    qty:40, unit:2.50 },
         ],
         comms:[
           { dir:'out', from:'Keith Tan (Newtown)', time:'10 Jun, 8:51am',
@@ -349,10 +350,10 @@
         value:420, expected:'13 Jun', created:'9 Jun 2026, 2:05pm', createdBy:'Keith Tan',
         approval:'auto', status:'sent', sentAt:'9 Jun, 2:05pm',
         items:[
-          { name:'Avocado (each)',        cat:'Produce',   uom:'ea',  qty:40, unit:2.40 },
-          { name:'Roma Tomatoes 5kg',     cat:'Produce',   uom:'box', qty:4,  unit:16.50 },
-          { name:'Olive Oil 1L',          cat:'Dry goods', uom:'btl', qty:6,  unit:12.00 },
-          { name:'Free-range Eggs (doz)', cat:'Produce',   uom:'doz', qty:10, unit:6.50 },
+          { name:'Avocado (each)',        supplierItem:'Avocado Grade A',           supplierSku:'FP-AVO-EA',  cat:'Produce',   uom:'ea',  qty:40, unit:2.40 },
+          { name:'Roma Tomatoes 5kg',     supplierItem:'Roma Tomatoes Box',         supplierSku:'FP-ROM-5KG', cat:'Produce',   uom:'box', qty:4,  unit:16.50 },
+          { name:'Olive Oil 1L',          supplierItem:'Extra Virgin Olive Oil 1L', supplierSku:'FP-OLV-1L',  cat:'Dry goods', uom:'btl', qty:6,  unit:12.00 },
+          { name:'Free-range Eggs (doz)', supplierItem:'Free Range Eggs',           supplierSku:'FP-EGG-DOZ', cat:'Produce',   uom:'doz', qty:10, unit:6.50 },
         ],
         comms:[
           { dir:'out', from:'Nomni Procure (auto)', time:'9 Jun, 2:05pm',
@@ -368,9 +369,9 @@
         value:280, expected:'13 Jun', created:'9 Jun 2026, 11:30am', createdBy:'Priya Mendez',
         approval:'auto', status:'opened', sentAt:'9 Jun, 11:30am', openedAt:'10 Jun, 9:14am',
         items:[
-          { name:'Chicken Thigh 2kg', cat:'Proteins', uom:'pkg', qty:8, unit:11.50 },
-          { name:'Pork Belly 1kg',    cat:'Proteins', uom:'pkg', qty:5, unit:18.00 },
-          { name:'Beef Mince 500g',   cat:'Proteins', uom:'pkg', qty:8, unit:9.80 },
+          { name:'Chicken Thigh 2kg', supplierItem:'Chicken Thigh MDCL 2kg', supplierSku:'HM-CTH-2KG', cat:'Proteins', uom:'pkg', qty:8, unit:11.50 },
+          { name:'Pork Belly 1kg',    supplierItem:'Pork Belly Rindless',    supplierSku:'HM-PBL-1KG', cat:'Proteins', uom:'pkg', qty:5, unit:18.00 },
+          { name:'Beef Mince 500g',   supplierItem:'Beef Mince 80/20',       supplierSku:'HM-BMC-500', cat:'Proteins', uom:'pkg', qty:8, unit:9.80 },
         ],
         comms:[
           { dir:'out', from:'Nomni Procure (auto)', time:'9 Jun, 11:30am',
@@ -388,11 +389,11 @@
         approval:'manager', status:'confirmed',
         confirmedBy:'Sarah Lin (Pacific Drinks)', confirmedVia:'Nomni Supply', confirmedAt:'10 Jun, 9:00am',
         items:[
-          { name:'Orange Juice 2L',        cat:'Beverages', uom:'btl', qty:12, unit:8.50 },
-          { name:'Cold Brew Coffee 500ml', cat:'Beverages', uom:'btl', qty:18, unit:7.50 },
-          { name:'Oat Milk 1L',            cat:'Dairy',     uom:'btl', qty:24, unit:3.20 },
-          { name:'Sparkling Water 750ml',  cat:'Beverages', uom:'btl', qty:24, unit:3.80 },
-          { name:'Kombucha 330ml',         cat:'Beverages', uom:'btl', qty:24, unit:2.40 },
+          { name:'Orange Juice 2L',        supplierItem:'Fresh Squeezed OJ 2L',     supplierSku:'PD-OJC-2L',  cat:'Beverages', uom:'btl', qty:12, unit:8.50 },
+          { name:'Cold Brew Coffee 500ml', supplierItem:'Cold Brew Coffee RTD',      supplierSku:'PD-CBC-500', cat:'Beverages', uom:'btl', qty:18, unit:7.50 },
+          { name:'Oat Milk 1L',            supplierItem:'Oat Milk Barista Edition',  supplierSku:'PD-OAT-1L',  cat:'Dairy',     uom:'btl', qty:24, unit:3.20 },
+          { name:'Sparkling Water 750ml',  supplierItem:'Sparkling Mineral Water',   supplierSku:'PD-SPK-750', cat:'Beverages', uom:'btl', qty:24, unit:3.80 },
+          { name:'Kombucha 330ml',         supplierItem:'Ginger Kombucha',           supplierSku:'PD-KOM-330', cat:'Beverages', uom:'btl', qty:24, unit:2.40 },
         ],
         comms:[
           { dir:'out', from:'Nomni Procure', time:'9 Jun, 8:45am',
@@ -414,10 +415,10 @@
         value:310, expected:'12 Jun', created:'8 Jun 2026, 11:20am', createdBy:'Priya Mendez',
         approval:'auto', status:'confirmed', confirmedBy:'Pete Russo', confirmedVia:'email', confirmedAt:'9 Jun, 8:10am',
         items:[
-          { name:'Chicken Thigh 2kg',  cat:'Proteins', uom:'pkg', qty:8,  unit:11.50 },
-          { name:'Beef Mince 500g',    cat:'Proteins', uom:'pkg', qty:10, unit:9.80 },
-          { name:'Pork Sausages 500g', cat:'Proteins', uom:'pkg', qty:12, unit:7.50 },
-          { name:'Duck Breast (each)', cat:'Proteins', uom:'ea',  qty:4,  unit:7.50 },
+          { name:'Chicken Thigh 2kg',  supplierItem:'Chicken Thigh MDCL 2kg', supplierSku:'SB-CTH-2KG', cat:'Proteins', uom:'pkg', qty:8,  unit:11.50 },
+          { name:'Beef Mince 500g',    supplierItem:'Beef Mince Premium',      supplierSku:'SB-BMC-500', cat:'Proteins', uom:'pkg', qty:10, unit:9.80 },
+          { name:'Pork Sausages 500g', supplierItem:'Pork Sausages Thin',      supplierSku:'SB-PSG-500', cat:'Proteins', uom:'pkg', qty:12, unit:7.50 },
+          { name:'Duck Breast (each)', supplierItem:'Duck Breast Magret',      supplierSku:'SB-DCK-EA',  cat:'Proteins', uom:'ea',  qty:4,  unit:7.50 },
         ],
         comms:[
           { dir:'out', from:'Nomni Procure (auto)', time:'8 Jun, 11:20am',
@@ -440,12 +441,12 @@
         value:540, expected:'10 Jun', created:'7 Jun 2026, 9:00am', createdBy:'Keith Tan',
         approval:'manager', status:'delayed', daysOverdue:2,
         items:[
-          { name:'Mixed Leaf 2kg',         cat:'Produce', uom:'bag',    qty:8,  unit:9.00 },
-          { name:'Avocado (each)',          cat:'Produce', uom:'ea',     qty:40, unit:2.40 },
-          { name:'Roma Tomatoes 5kg',      cat:'Produce', uom:'box',    qty:5,  unit:16.50 },
-          { name:'Heirloom Tomatoes 500g', cat:'Produce', uom:'punnet', qty:8,  unit:6.50 },
-          { name:'Baby Spinach 1kg',       cat:'Produce', uom:'bag',    qty:8,  unit:12.00 },
-          { name:'Broccolini bunch',       cat:'Produce', uom:'bunch',  qty:10, unit:2.45 },
+          { name:'Mixed Leaf 2kg',         supplierItem:'Mixed Salad Leaves',   supplierSku:'GF-MSL-2KG', cat:'Produce', uom:'bag',    qty:8,  unit:9.00 },
+          { name:'Avocado (each)',          supplierItem:'Hass Avocado',         supplierSku:'GF-AVO-EA',  cat:'Produce', uom:'ea',     qty:40, unit:2.40 },
+          { name:'Roma Tomatoes 5kg',      supplierItem:'Roma Tomato Box',      supplierSku:'GF-ROM-5KG', cat:'Produce', uom:'box',    qty:5,  unit:16.50 },
+          { name:'Heirloom Tomatoes 500g', supplierItem:'Heirloom Tomato Mix',  supplierSku:'GF-HRL-500', cat:'Produce', uom:'punnet', qty:8,  unit:6.50 },
+          { name:'Baby Spinach 1kg',       supplierItem:'Baby Spinach Washed',  supplierSku:'GF-BSP-1KG', cat:'Produce', uom:'bag',    qty:8,  unit:12.00 },
+          { name:'Broccolini bunch',       supplierItem:'Tenderstem Broccoli',  supplierSku:'GF-BRL-BCH', cat:'Produce', uom:'bunch',  qty:10, unit:2.45 },
         ],
         comms:[
           { dir:'out', from:'Nomni Procure', time:'7 Jun, 2:15pm',
@@ -470,13 +471,13 @@
         value:890, expected:'9 Jun', created:'5 Jun 2026, 10:45am', createdBy:'Sam Nguyen',
         approval:'manager', status:'received', receivedAt:'9 Jun, 8:30am',
         items:[
-          { name:'Mixed Leaf 2kg',        cat:'Produce', uom:'bag', qty:16, unit:9.00,  recv:16 },
-          { name:'Avocado (each)',         cat:'Produce', uom:'ea',  qty:60, unit:2.40,  recv:60 },
-          { name:'Roma Tomatoes 5kg',     cat:'Produce', uom:'box', qty:10, unit:16.50, recv:10 },
-          { name:'Baby Spinach 1kg',      cat:'Produce', uom:'bag', qty:12, unit:12.00, recv:12 },
-          { name:'Broccolini bunch',      cat:'Produce', uom:'bunch', qty:30, unit:4.50, recv:30 },
-          { name:'Continental Cucumber',  cat:'Produce', uom:'ea',  qty:50, unit:2.50,  recv:50 },
-          { name:'Capsicum Red 500g',     cat:'Produce', uom:'bag', qty:20, unit:6.00,  recv:20 },
+          { name:'Mixed Leaf 2kg',        supplierItem:'Mixed Salad Leaves',   supplierSku:'GF-MSL-2KG', cat:'Produce', uom:'bag',   qty:16, unit:9.00,  recv:16 },
+          { name:'Avocado (each)',         supplierItem:'Hass Avocado',         supplierSku:'GF-AVO-EA',  cat:'Produce', uom:'ea',    qty:60, unit:2.40,  recv:60 },
+          { name:'Roma Tomatoes 5kg',     supplierItem:'Roma Tomato Box',      supplierSku:'GF-ROM-5KG', cat:'Produce', uom:'box',   qty:10, unit:16.50, recv:10 },
+          { name:'Baby Spinach 1kg',      supplierItem:'Baby Spinach Washed',  supplierSku:'GF-BSP-1KG', cat:'Produce', uom:'bag',   qty:12, unit:12.00, recv:12 },
+          { name:'Broccolini bunch',      supplierItem:'Tenderstem Broccoli',  supplierSku:'GF-BRL-BCH', cat:'Produce', uom:'bunch', qty:30, unit:4.50,  recv:30 },
+          { name:'Continental Cucumber',  supplierItem:'Continental Cucumber', supplierSku:'GF-CCM-EA',  cat:'Produce', uom:'ea',    qty:50, unit:2.50,  recv:50 },
+          { name:'Capsicum Red 500g',     supplierItem:'Red Capsicum',         supplierSku:'GF-CAP-500', cat:'Produce', uom:'bag',   qty:20, unit:6.00,  recv:20 },
         ],
         grn:{ receivedBy:'Sam Nguyen', temp:'4°C', note:'All items in good condition. Avocados slightly underripe — acceptable.' },
         invoice:{ id:'INV-00891', status:'matched', amount:'$890', method:'Auto-matched by Cyrus · 3-way match passed' },
@@ -505,10 +506,10 @@
         approval:'auto', status:'discrepancy',
         discLines:2,
         items:[
-          { name:'Chicken Breast 500g', cat:'Proteins', uom:'pkg', qty:20, unit:7.15,  recv:20, batch:'LOT-060424', dmg:false },
-          { name:'Beef Short Rib 500g', cat:'Proteins', uom:'pkg', qty:12, unit:12.50, recv:8,  batch:'LOT-060425', dmg:false },
-          { name:'Lamb Rack (each)',    cat:'Proteins', uom:'ea',  qty:6,  unit:28.00, recv:4,  batch:'LOT-060426', dmg:false },
-          { name:'Pork Belly 1kg',     cat:'Proteins', uom:'pkg', qty:5,  unit:18.00, recv:5,  batch:'LOT-060427', dmg:false },
+          { name:'Chicken Breast 500g', supplierItem:'Free-Range Chicken Breast', supplierSku:'HM-CHK-500', cat:'Proteins', uom:'pkg', qty:20, unit:7.15,  recv:20, batch:'LOT-060424', dmg:false },
+          { name:'Beef Short Rib 500g', supplierItem:'Beef Short Ribs Bone-In',   supplierSku:'HM-BSR-500', cat:'Proteins', uom:'pkg', qty:12, unit:12.50, recv:8,  batch:'LOT-060425', dmg:false },
+          { name:'Lamb Rack (each)',    supplierItem:'Lamb Rack 8 Rib',           supplierSku:'HM-LRK-EA',  cat:'Proteins', uom:'ea',  qty:6,  unit:28.00, recv:4,  batch:'LOT-060426', dmg:false },
+          { name:'Pork Belly 1kg',     supplierItem:'Pork Belly Rindless',       supplierSku:'HM-PBL-1KG', cat:'Proteins', uom:'pkg', qty:5,  unit:18.00, recv:5,  batch:'LOT-060427', dmg:false },
         ],
         grn:{ receivedBy:'Marcus Lee', temp:'2°C', note:'Beef Short Rib and Lamb Rack short on delivery. Driver said balance follows Thursday — no confirmation received.' },
         invoice:{ id:'INV-00887', status:'on-hold', amount:'$470', method:'On hold — discrepancy pending resolution' },
@@ -714,7 +715,7 @@
         }
         const isShort = showRecv && item.recv!==undefined && item.recv<item.qty;
         return `<tr${isShort?' style="background:rgba(238,75,135,0.04)"':''}>
-          <td><div class="item-name">${item.name}</div><div class="item-cat">${item.cat}</div></td>
+          <td><div class="item-name">${item.supplierItem||item.name}</div><div class="item-cat">${item.supplierSku?'<span class="item-sku">'+item.supplierSku+'</span> · ':''}${item.supplierItem?item.name:item.cat}</div></td>
           <td class="num">${item.qty}</td><td style="color:var(--text-soft);font-size:13px;">${item.uom||'—'}</td><td class="num">$${item.unit.toFixed(2)}</td>
           ${recvCols}<td class="num">$${lt.toFixed(2)}</td></tr>`;
       }).join('');
@@ -762,7 +763,7 @@
           const varStr = diff===0 ? '<span class="var-ok"><i class="ti ti-check"></i> Full</span>' : `<span class="var-short">−${Math.abs(diff)}</span>`;
           const isShort = recv < item.qty;
           return `<tr${isShort?' style="background:rgba(238,75,135,0.04)"':''}>
-            <td><div class="item-name">${item.name}</div><div class="item-cat">${item.cat}</div></td>
+            <td><div class="item-name">${item.supplierItem||item.name}</div><div class="item-cat">${item.supplierSku?'<span class="item-sku">'+item.supplierSku+'</span> · ':''}${item.supplierItem?item.name:item.cat}</div></td>
             <td class="num">${item.qty}</td><td style="font-size:13px;color:var(--text-soft);">${item.uom||'—'}</td><td class="num">${varStr}</td>
             <td style="font-size:12px;color:var(--text-soft);">${item.batch||'—'}</td>
             <td class="num" style="font-size:12px;">${po.grn?.temp||'—'}</td>
@@ -770,7 +771,7 @@
             <td style="text-align:center;">—</td></tr>`;
         }
         return `<tr id="grn-r-${i}">
-          <td><div class="item-name">${item.name}</div><div class="item-cat">${item.cat}</div></td>
+          <td><div class="item-name">${item.supplierItem||item.name}</div><div class="item-cat">${item.supplierSku?'<span class="item-sku">'+item.supplierSku+'</span> · ':''}${item.supplierItem?item.name:item.cat}</div></td>
           <td class="num" style="color:var(--text-soft);">${item.qty}</td>
           <td style="font-size:13px;color:var(--text-soft);">${item.uom||'—'}</td>
           <td class="num"><input class="grn-input" id="grn-q-${i}" type="number" value="${item.qty}" min="0" oninput="grnCheck(${i},${item.qty})"/></td>

@@ -365,21 +365,21 @@
     }
 
     const OTTO = [
-      { name:'Chicken Breast 500g', qty:20, unit:7.15, cat:'Proteins', uom:'pkg', par:true },
-      { name:'Avocado (each)', qty:40, unit:2.40, cat:'Produce', uom:'ea', par:true },
-      { name:'Roma Tomatoes 5kg', qty:4, unit:16.50, cat:'Produce', uom:'box', par:true },
-      { name:'Olive Oil 1L', qty:6, unit:12.00, cat:'Dry goods', uom:'btl', par:true },
-      { name:'Oat Milk 1L', qty:24, unit:3.20, cat:'Dairy', uom:'btl', par:false },
+      { name:'Chicken Breast 500g',   supplierItem:'Free-Range Chicken Breast',  supplierSku:'HM-CHK-500', qty:20, unit:7.15,  cat:'Proteins',  uom:'pkg', par:true },
+      { name:'Avocado (each)',         supplierItem:'Avocado Grade A',            supplierSku:'FP-AVO-EA',  qty:40, unit:2.40,  cat:'Produce',   uom:'ea',  par:true },
+      { name:'Roma Tomatoes 5kg',      supplierItem:'Roma Tomatoes Box',          supplierSku:'FP-ROM-5KG', qty:4,  unit:16.50, cat:'Produce',   uom:'box', par:true },
+      { name:'Olive Oil 1L',           supplierItem:'Extra Virgin Olive Oil 1L',  supplierSku:'FP-OLV-1L',  qty:6,  unit:12.00, cat:'Dry goods', uom:'btl', par:true },
+      { name:'Oat Milk 1L',            supplierItem:'Oat Milk Barista Edition',   supplierSku:'GF-OAT-1L',  qty:24, unit:3.20,  cat:'Dairy',     uom:'btl', par:false },
     ];
     const MARKET = [
-      { name:'Sourdough Loaf', qty:12, unit:4.20, cat:'Bakery', uom:'ea' },
-      { name:'Feta Cheese 200g', qty:8, unit:3.80, cat:'Dairy', uom:'ea' },
-      { name:'Buffalo Mozzarella 250g', qty:6, unit:4.20, cat:'Dairy', uom:'ea' },
-      { name:'Free-range Eggs (dozen)', qty:10, unit:6.50, cat:'Produce', uom:'doz' },
+      { name:'Sourdough Loaf',          supplierItem:'Country Sourdough',   supplierSku:'AB-SDG-EA',  qty:12, unit:4.20, cat:'Bakery',  uom:'ea' },
+      { name:'Feta Cheese 200g',        supplierItem:'Danish Feta 200g',    supplierSku:'GF-FTA-200', qty:8,  unit:3.80, cat:'Dairy',   uom:'ea' },
+      { name:'Buffalo Mozzarella 250g', supplierItem:'Buffalo Mozzarella',  supplierSku:'GF-MOZ-250', qty:6,  unit:4.20, cat:'Dairy',   uom:'ea' },
+      { name:'Free-range Eggs (dozen)', supplierItem:'Free Range Eggs',     supplierSku:'FP-EGG-DOZ', qty:10, unit:6.50, cat:'Produce', uom:'doz' },
     ];
     const REORDERS = {
-      '5510':[ {name:'Mixed Leaf 2kg',qty:6,unit:9.00,cat:'Produce',uom:'bag'},{name:'Roma Tomatoes 5kg',qty:4,unit:16.50,cat:'Produce',uom:'box'},{name:'Avocado (each)',qty:30,unit:2.40,cat:'Produce',uom:'ea'} ],
-      '1030':[ {name:'Olive Oil 1L',qty:6,unit:12.00,cat:'Dry goods',uom:'btl'},{name:'Sea Salt 1kg',qty:3,unit:5.50,cat:'Dry goods',uom:'pkg'},{name:'Plain Flour 5kg',qty:4,unit:8.00,cat:'Dry goods',uom:'pkg'} ],
+      '5510':[ {name:'Mixed Leaf 2kg',supplierItem:'Mixed Salad Leaves',supplierSku:'FP-MSL-2KG',qty:6,unit:9.00,cat:'Produce',uom:'bag'},{name:'Roma Tomatoes 5kg',supplierItem:'Roma Tomatoes Box',supplierSku:'FP-ROM-5KG',qty:4,unit:16.50,cat:'Produce',uom:'box'},{name:'Avocado (each)',supplierItem:'Avocado Grade A',supplierSku:'FP-AVO-EA',qty:30,unit:2.40,cat:'Produce',uom:'ea'} ],
+      '1030':[ {name:'Olive Oil 1L',supplierItem:'Extra Virgin Olive Oil 1L',supplierSku:'FP-OLV-1L',qty:6,unit:12.00,cat:'Dry goods',uom:'btl'},{name:'Sea Salt 1kg',supplierItem:'Sea Salt Flakes 1kg',supplierSku:'FP-SLT-1KG',qty:3,unit:5.50,cat:'Dry goods',uom:'pkg'},{name:'Plain Flour 5kg',supplierItem:'Plain Flour 5kg',supplierSku:'FP-FLR-5KG',qty:4,unit:8.00,cat:'Dry goods',uom:'pkg'} ],
     };
 
     /* ── Render item sources ── */
@@ -407,7 +407,7 @@
       OTTO.forEach((it,i) => {
         if (document.getElementById('otto-'+i).checked) {
           const qty = parseFloat(document.getElementById('otto-qty-'+i).value) || 0;
-          if (qty > 0) { addToBasket({ name:it.name, qty, unit:it.unit, cat:it.cat, uom:it.uom }); n++; }
+          if (qty > 0) { addToBasket({ ...it, qty }); n++; }
         }
       });
       noToast(n + ' item' + (n!==1?'s':'') + ' added from Otto');
@@ -415,7 +415,7 @@
     function addMarket(i, btn) {
       const it = MARKET[i];
       const qty = parseFloat(document.getElementById('mkt-qty-'+i).value) || 0;
-      if (qty>0) { addToBasket({ name:it.name, qty, unit:it.unit, cat:it.cat, uom:it.uom }); btn.classList.add('added'); btn.innerHTML='<i class="ti ti-check"></i>Added'; }
+      if (qty>0) { addToBasket({ ...it, qty }); btn.classList.add('added'); btn.innerHTML='<i class="ti ti-check"></i>Added'; }
     }
     function reorder(id, btn) {
       REORDERS[id].forEach(it => addToBasket({...it}));
@@ -458,7 +458,10 @@
             : '';
           const itemsHtml = items.map(b =>
             `<div class="basket-item">
-              <div><div style="font-weight:600;color:var(--text);">${b.name}</div><div class="item-meta">${b.qty}${b.uom?' '+b.uom:''} × $${b.unit.toFixed(2)}</div></div>
+              <div>
+                <div style="font-weight:600;color:var(--text);">${b.supplierItem||b.name}</div>
+                <div class="item-meta">${b.supplierSku?'<span style="font-family:\'IBM Plex Mono\',monospace;">'+b.supplierSku+'</span> · '+b.name+' · ':'' }${b.qty}${b.uom?' '+b.uom:''} × $${b.unit.toFixed(2)}</div>
+              </div>
               <div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;font-feature-settings:'tnum' 1;">$${(b.qty*b.unit).toFixed(0)}</span><button class="basket-remove" aria-label="Remove ${b.name}" onclick="removeBasket(${JSON.stringify(b.name)})"><i class="ti ti-x"></i></button></div>
             </div>`).join('');
           return `<div class="basket-group">
