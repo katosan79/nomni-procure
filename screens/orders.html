@@ -105,6 +105,20 @@
     @media (max-width: 768px) { .page-header { flex-direction: column; align-items: flex-start; } .page-title { font-size: 24px; } }
     @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } }
 
+    /* ── Trend monitor (sparkline tiles) ── */
+    .trend-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-lg); }
+    .trend-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-xs); }
+    .trend-head { display: flex; align-items: center; justify-content: space-between; }
+    .trend-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; }
+    .trend-badge.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .trend-badge.warn { background: var(--status-warn-bg); color: #7A5000; }
+    .trend-badge.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .trend-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
+    .sparkline { width: 100%; height: 36px; overflow: visible; display: block; margin-block: var(--space-sm); }
+    .trend-range { font-size: 11px; color: var(--text-soft); }
+    @media (max-width: 1024px) { .trend-strip { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 480px) { .trend-strip { grid-template-columns: 1fr; } }
+
     /* ── Attention summary bar ── */
     .attn-bar { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; padding:var(--space-md) var(--space-xl); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:var(--space-md); }
     .attn-chip { display:inline-flex; align-items:center; gap:var(--space-sm); font-size:13px; font-weight:600; padding:var(--space-xs) var(--space-md); border-radius:var(--radius-pill); cursor:pointer; }
@@ -246,6 +260,84 @@
           <div class="kpi-tile"><span class="kpi-label">In delivery</span><span class="kpi-value">2</span><span class="kpi-sub">Confirmed or delivered</span></div>
           <div class="kpi-tile"><span class="kpi-label">Delayed</span><span class="kpi-value" style="color:var(--status-risk-fg)">1</span><span class="kpi-sub risk">Past expected date</span></div>
         </div>
+
+        <!-- ── Trend monitor ── -->
+        <div class="trend-strip">
+
+          <!-- Weekly spend -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">Weekly spend</span>
+              <span class="trend-badge risk">↑ 39% above band</span>
+            </div>
+            <span class="trend-value">$98,200</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="14" width="120" height="18" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="14" x2="120" y2="14" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="32" x2="120" y2="32" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,24 17,27 34,22 51,17 68,21 85,19 102,25 119,5"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="5" r="3" fill="var(--status-risk-fg)"/>
+            </svg>
+            <span class="trend-range">Normal $60K – $85K · 8-week avg</span>
+          </div>
+
+          <!-- Weekly order count -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">Orders this week</span>
+              <span class="trend-badge warn">↑ above band</span>
+            </div>
+            <span class="trend-value">31</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="13" width="120" height="18" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="13" x2="120" y2="13" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="31" x2="120" y2="31" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,23 17,27 34,20 51,16 68,25 85,18 102,22 119,7"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="7" r="3" fill="#D97706"/>
+            </svg>
+            <span class="trend-range">Normal 18 – 28 orders · 8-week avg</span>
+          </div>
+
+          <!-- Avg order value -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">Avg order value</span>
+              <span class="trend-badge risk">↑ 2.1× normal</span>
+            </div>
+            <span class="trend-value">$820</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="18" width="120" height="15" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="18" x2="120" y2="18" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="33" x2="120" y2="33" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,29 17,31 34,27 51,26 68,29 85,26 102,31 119,5"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="5" r="3" fill="var(--status-risk-fg)"/>
+            </svg>
+            <span class="trend-range">Normal $350 – $600 · 8-week avg</span>
+          </div>
+
+        </div>
+
+        <!-- Vera: order anomaly agent -->
+        <article class="agent-surface" id="vera-orders" data-agent-fn="variance">
+          <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
+            <div class="agent-card-head">
+              <span class="agent-avatar" data-agent="vera" aria-hidden="true">Ve</span>
+              <span class="agent-id"><span class="agent-name">Vera</span><span class="agent-role">Variance agent</span></span>
+              <span class="agent-card-spacer" style="flex:1"></span>
+              <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
+            </div>
+            <p style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">Weekly spend is 39% above the normal band — $98,200 vs an expected $60K–$85K</p>
+            <p class="agent-why">The spike is concentrated in Newtown: $2,400 this week in proteins from Harbour Meats — 3× its normal weekly spend of $600–$900. No unusual events are logged for this outlet. Check whether this is a legitimate bulk buy or a duplicate order before Friday's payment run.</p>
+            <div class="agent-actions">
+              <button class="nb-btn primary" onclick="ordToast('Filtering to Newtown · Harbour Meats orders…')"><i class="ti ti-arrow-right" aria-hidden="true"></i>Investigate</button>
+              <button class="nb-btn" onclick="ordToast('Dismissed — Vera keeps monitoring spend patterns')">Dismiss</button>
+            </div>
+          </div>
+        </article>
+
         <div class="table-card">
           <table class="data-table" aria-label="Purchase orders">
             <div class="attn-bar role-hq-only" style="margin-bottom:var(--space-md);">
