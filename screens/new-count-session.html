@@ -132,12 +132,14 @@
     .toggle-switch input:checked ~ .toggle-thumb { transform:translateX(16px); }
     .carry-hint { font-size:11px; color:var(--text-soft); font-style:italic; white-space:nowrap; }
 
-    /* Assignee input in table */
+    /* Assignee select in table */
     .assignee-input {
-      height:32px; padding-inline:var(--space-sm); border:1.5px solid var(--border);
+      height:32px; padding-inline:var(--space-sm) 28px; border:1.5px solid var(--border);
       border-radius:var(--radius-md); font-size:13px; font-family:inherit;
-      background:var(--surface); color:var(--text); outline:none;
-      transition:border-color 0.12s; width:140px;
+      background:var(--surface); color:var(--text); appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 6px center;
+      cursor:pointer; outline:none; width:150px; transition:border-color 0.12s;
     }
     .assignee-input:focus { border-color:var(--fern); }
 
@@ -449,8 +451,12 @@
       { name:'Freezer',   cadence:'Weekly',  required:true,  assignee:'Keith Tan'  },
       { name:'Bar',       cadence:'Weekly',  required:true,  assignee:'Sarah Kim'  },
       { name:'FOH',       cadence:'Monthly', required:false, assignee:'Sarah Kim'  },
-    ];
 
+    ];
+    const STAFF = [
+      'Keith Tan', 'Sarah Kim', 'Marcus Lee', 'Jake Chen',
+      'Priya Nair', 'Tom Walsh', 'Nina Loh',
+    ];
     /* ── Count type selection ── */
     function selectCountType(type) {
       countType = type;
@@ -490,8 +496,9 @@
             </div>
           </td>
           <td>
-            <input type="text" class="assignee-input" data-idx="${i}"
-              value="${sheet.assignee}" placeholder="Name or team"/>
+            <select class="assignee-input" data-idx="${i}">
+              ${STAFF.map(s => `<option ${s===sheet.assignee?'selected':''}>${s}</option>`).join('')}
+            </select>
           </td>
         </tr>
       `).join('');
