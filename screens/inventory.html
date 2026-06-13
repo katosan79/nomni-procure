@@ -733,6 +733,139 @@
     .var-fill.high { background: var(--status-risk-fg); }
     .var-val { font-size: 13px; font-weight: 600; text-align: right; font-feature-settings: 'tnum' 1; }
     .var-val.high { color: var(--status-risk-fg); }
+
+    /* ── Count sessions ── */
+    .sessions-kpi {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+    }
+    .sessions-actions {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
+    }
+    .cadence-badge {
+      font-size: 10px; font-weight: 600;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-soft);
+      color: var(--text-soft);
+      border: 1px solid var(--border);
+    }
+
+    /* Session drawer */
+    .session-drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(14,55,39,0.25);
+      z-index: 190;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s;
+    }
+    .session-drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .session-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 520px; max-width: 95vw;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      overflow: hidden;
+    }
+    .session-drawer.open { transform: translateX(0); }
+
+    /* Sheet rows */
+    .sheet-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: var(--space-md);
+      align-items: center;
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .sheet-row:last-child { border-bottom: none; }
+    .sheet-status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sheet-status-dot.submitted      { background: var(--fern); }
+    .sheet-status-dot.in-progress    { background: var(--status-warn-fg); }
+    .sheet-status-dot.pending        { background: var(--border); }
+    .sheet-status-dot.carried-forward{ background: var(--text-soft); }
+
+    /* COGS panel */
+    .cogs-panel {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .cogs-row {
+      display: flex; justify-content: space-between;
+      font-size: 14px; color: var(--text-soft);
+    }
+    .cogs-total {
+      display: flex; justify-content: space-between;
+      font-size: 15px; font-weight: 700; color: var(--text);
+      padding-top: var(--space-sm);
+      border-top: 1px solid var(--border);
+      font-feature-settings: 'tnum' 1;
+    }
+
+    /* Variance by category */
+    .var-cat-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 90px;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) 0;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+    }
+    .var-cat-row:hover { background: var(--surface-soft); }
+    .var-item-list {
+      padding: var(--space-sm) 0 var(--space-md) var(--space-lg);
+      display: none;
+    }
+    .var-item-list.open { display: block; }
+    .var-item-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: var(--space-md);
+      font-size: 12px; color: var(--text-soft);
+      padding: 3px 0;
+    }
+
+    /* KPI tile (reuse existing pattern) */
+    .kpi-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .kpi-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
+    .kpi-sub { font-size: 11px; color: var(--text-soft); }
+    .kpi-sub.warn { color: var(--status-warn-fg); }
+
+    /* num column alignment */
+    .data-table th.num, .data-table td.num { text-align: right; }
+
+    @media (max-width: 768px) {
+      .sessions-kpi { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .sessions-kpi { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -1056,23 +1189,55 @@
 
       <!-- ══ Panel: Stock counts (IN-6) ══ -->
       <div class="inv-panel active" id="panel-counts">
-        <div class="sub-card">
-          <div class="sub-card-title">Stock counts</div>
-          <p class="sub-card-sub">Scheduled and spot counts across outlets. Variance is computed against theoretical stock (recipe usage × POS sales).</p>
-          <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-lg);">
-            <button class="btn btn-primary"><i class="ti ti-clipboard-plus"></i>Start spot count</button>
-            <button class="btn btn-outline"><i class="ti ti-calendar"></i>Schedule count</button>
+
+        <!-- KPI strip -->
+        <div class="sessions-kpi">
+          <div class="kpi-tile">
+            <div class="kpi-label">Active sessions</div>
+            <div class="kpi-value">3</div>
+            <div class="kpi-sub">across 3 outlets</div>
           </div>
-          <table class="data-table">
-            <thead><tr><th>Outlet</th><th>Type</th><th>Status</th><th style="text-align:right">Variance</th><th>When</th></tr></thead>
-            <tbody>
-              <tr><td class="cell-name">Surry Hills</td><td>Weekly scheduled</td><td><span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span></td><td class="tabular" style="text-align:right;color:var(--status-risk-fg);font-weight:600;">8.1%</td><td class="cell-timestamp">Today 7:00 am</td></tr>
-              <tr><td class="cell-name">Circular Quay</td><td>Weekly scheduled</td><td><span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span></td><td class="tabular" style="text-align:right">2.3%</td><td class="cell-timestamp">Today 6:40 am</td></tr>
-              <tr><td class="cell-name">Newtown</td><td>Spot</td><td><span class="nb-pill warn"><i class="ti ti-clock"></i>In progress</span></td><td class="tabular" style="text-align:right">—</td><td class="cell-timestamp">Started 8:10 am</td></tr>
-              <tr><td class="cell-name">Melbourne CBD</td><td>Weekly scheduled</td><td><span class="nb-pill neutral"><i class="ti ti-clock"></i>Due today</span></td><td class="tabular" style="text-align:right">—</td><td class="cell-timestamp">Scheduled 5:00 pm</td></tr>
-            </tbody>
+          <div class="kpi-tile">
+            <div class="kpi-label">Last posted COGS</div>
+            <div class="kpi-value">$8,600</div>
+            <div class="kpi-sub">Bondi · 1 Jun fortnight</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-label">Network variance</div>
+            <div class="kpi-value" style="color:var(--status-warn-fg)">6.7%</div>
+            <div class="kpi-sub warn">+1.4pp vs prior period</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-label">Pending approval</div>
+            <div class="kpi-value">1</div>
+            <div class="kpi-sub">Newtown · 8 Jun week</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="sessions-actions">
+          <button class="btn btn-primary" onclick="openNewSession()"><i class="ti ti-clipboard-list"></i>New count session</button>
+          <button class="btn btn-outline" onclick="openSpotCount()"><i class="ti ti-clipboard-plus"></i>Spot count</button>
+        </div>
+
+        <!-- Sessions table -->
+        <div class="table-card">
+          <table class="data-table" id="sessions-table">
+            <thead>
+              <tr>
+                <th>Session</th>
+                <th>Outlet</th>
+                <th>Sheets</th>
+                <th>Status</th>
+                <th class="num">COGS</th>
+                <th class="num">Variance</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sessions-tbody"></tbody>
           </table>
         </div>
+
       </div>
 
       <!-- ══ Panel: Variance (IN-7) ══ -->
@@ -1155,6 +1320,10 @@
 
     </div><!-- /napp-canvas -->
   </div><!-- /page-body -->
+
+  <!-- Session detail drawer (Count sessions) -->
+  <div class="session-drawer-backdrop" id="session-drawer-backdrop" onclick="closeSessionDrawer()"></div>
+  <aside class="session-drawer" id="session-drawer" role="dialog" aria-modal="true" aria-label="Count session details"></aside>
 
   <!-- Item detail drawer (PIM) -->
   <div class="item-drawer-backdrop" id="drawer-backdrop" onclick="closeItemDrawer()"></div>
@@ -1518,6 +1687,285 @@
         invToast(item.name + ' saved');
       }
     }
+
+    /* ── Count sessions ── */
+    const SESSIONS = [
+      {
+        id:'CS-003', period:'Week ending 15 Jun 2026', outlet:'Surry Hills', type:'full', status:'in-progress',
+        sheets:[
+          {name:'Dry Store',  required:true,  cadence:'Weekly',      assignee:'Keith Tan',  status:'submitted'},
+          {name:'Freezer',    required:true,  cadence:'Weekly',      assignee:'Keith Tan',  status:'submitted'},
+          {name:'Bar',        required:true,  cadence:'Weekly',      assignee:'Sarah Kim',  status:'in-progress'},
+          {name:'FOH',        required:false, cadence:'Monthly',     assignee:'Sarah Kim',  status:'pending'},
+        ],
+        openingStock:14200, purchases:8400, closingStock:null, actualCogs:null, theoreticalCogs:null,
+        variance:null, variancePct:null, varByCategory:null,
+        createdAt:'13 Jun 2026', createdBy:'Keith Tan',
+      },
+      {
+        id:'CS-002', period:'Week ending 8 Jun 2026', outlet:'Newtown', type:'full', status:'submitted',
+        sheets:[
+          {name:'Dry Store',  required:true, cadence:'Weekly', assignee:'Marcus Lee', status:'submitted'},
+          {name:'Freezer',    required:true, cadence:'Weekly', assignee:'Marcus Lee', status:'submitted'},
+          {name:'Bar',        required:true, cadence:'Weekly', assignee:'Jake Chen',  status:'submitted'},
+          {name:'FOH',        required:true, cadence:'Weekly', assignee:'Jake Chen',  status:'submitted'},
+        ],
+        openingStock:12800, purchases:6900, closingStock:9800, actualCogs:9900, theoreticalCogs:9200,
+        variance:700, variancePct:7.6,
+        varByCategory:[
+          {cat:'Proteins',  actual:3800, theoretical:3400, var:400, varPct:11.8, items:[
+            {name:'Chicken Breast 500g', theoretical:'1.2 kg',  actual:'1.8 kg',  varCost:180},
+            {name:'Beef Short Rib 500g', theoretical:'0.8 kg',  actual:'1.1 kg',  varCost:110},
+          ]},
+          {cat:'Produce',   actual:2400, theoretical:2200, var:200, varPct:9.1, items:[
+            {name:'Avocado',       theoretical:'40 ea',  actual:'52 ea',  varCost:96},
+            {name:'Roma Tomatoes', theoretical:'15 kg',  actual:'19 kg',  varCost:66},
+          ]},
+          {cat:'Dairy',     actual:1900, theoretical:1820, var:80,  varPct:4.4, items:[
+            {name:'Whole Milk 2L', theoretical:'24 ctn', actual:'27 ctn', varCost:48},
+          ]},
+          {cat:'Beverages', actual:1200, theoretical:1180, var:20,  varPct:1.7, items:[
+            {name:'Orange Juice 2L', theoretical:'10 btl', actual:'11 btl', varCost:20},
+          ]},
+          {cat:'Dry goods', actual:600, theoretical:600, var:0, varPct:0, items:[]},
+        ],
+        createdAt:'8 Jun 2026', submittedAt:'9 Jun, 8:30 am', createdBy:'Marcus Lee',
+      },
+      {
+        id:'CS-001', period:'Fortnight ending 1 Jun 2026', outlet:'Bondi Beach', type:'full', status:'locked',
+        sheets:[
+          {name:'Dry Store',  required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'Freezer',    required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'Bar',        required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'FOH',        required:false, cadence:'Monthly',     assignee:'Priya Mendez', status:'carried-forward'},
+        ],
+        openingStock:9800, purchases:7200, closingStock:8400, actualCogs:8600, theoreticalCogs:8100,
+        variance:500, variancePct:6.2,
+        varByCategory:[
+          {cat:'Proteins',  actual:3200, theoretical:2900, var:300, varPct:10.3, items:[
+            {name:'Chicken Thigh 2kg', theoretical:'8 pkg', actual:'11 pkg', varCost:180},
+          ]},
+          {cat:'Produce',   actual:2100, theoretical:2050, var:50,  varPct:2.4, items:[]},
+          {cat:'Dairy',     actual:1600, theoretical:1600, var:0,   varPct:0,   items:[]},
+          {cat:'Beverages', actual:1200, theoretical:1150, var:50,  varPct:4.3, items:[]},
+          {cat:'Dry goods', actual:500,  theoretical:400,  var:100, varPct:25.0, items:[
+            {name:'Olive Oil 1L', theoretical:'6 btl', actual:'10 btl', varCost:100},
+          ]},
+        ],
+        approvedBy:'Keith Tan', approvedAt:'2 Jun, 10:14 am',
+        createdAt:'1 Jun 2026', createdBy:'Priya Mendez',
+      },
+      {
+        id:'SC-041', period:'Spot · Proteins', outlet:'Melbourne CBD', type:'spot', status:'complete',
+        sheets:[{name:'Proteins (spot)', required:true, cadence:null, assignee:'Lee Sung', status:'submitted'}],
+        openingStock:null, purchases:null, closingStock:null, actualCogs:null, theoreticalCogs:null,
+        variance:null, variancePct:null, varByCategory:null,
+        createdAt:'13 Jun 2026', createdBy:'Lee Sung',
+      },
+    ];
+
+    function fmt(n) { return n==null?'—':'$'+n.toLocaleString(); }
+    function fmtPct(p) { return p==null?'—':p.toFixed(1)+'%'; }
+
+    function renderSessions() {
+      const tbody = document.getElementById('sessions-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = SESSIONS.map(s => {
+        const reqSheets = s.sheets.filter(sh=>sh.required);
+        const doneReq   = reqSheets.filter(sh=>sh.status==='submitted'||sh.status==='carried-forward').length;
+        const totalReq  = reqSheets.length;
+
+        // Sheets cell — dots
+        const dots = s.sheets.map(sh => {
+          const col = sh.status==='submitted'?'var(--fern)': sh.status==='in-progress'?'var(--status-warn-fg)': sh.status==='carried-forward'?'var(--text-soft)':'var(--border)';
+          return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;" title="${sh.name}: ${sh.status}"></span>`;
+        }).join('');
+        const sheetsCell = `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">${dots}<span style="font-size:11px;color:var(--text-soft);white-space:nowrap;">${doneReq}/${totalReq} req.</span></div>`;
+
+        // Status badge
+        const statusBadge = s.status==='in-progress'  ? `<span class="nb-pill warn"><i class="ti ti-edit"></i>In progress</span>`
+                          : s.status==='submitted'      ? `<span class="nb-pill info"><i class="ti ti-send"></i>Pending approval</span>`
+                          : s.status==='locked'         ? `<span class="nb-pill ok"><i class="ti ti-lock"></i>Locked</span>`
+                          : s.status==='complete'       ? `<span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span>`
+                          : `<span class="nb-pill neutral"><i class="ti ti-clock"></i>Open</span>`;
+
+        // Variance color
+        const varColor = s.variancePct==null?'':s.variancePct>8?'color:var(--status-risk-fg);font-weight:600':s.variancePct>4?'color:var(--status-warn-fg);font-weight:600':'';
+
+        // Action button
+        const actionBtn = s.status==='submitted'
+          ? `<button class="btn btn-primary" style="height:32px;font-size:12px;padding-inline:var(--space-md);" onclick="event.stopPropagation();approveSession('${s.id}')"><i class="ti ti-check"></i>Approve</button>`
+          : `<button class="link-action" onclick="event.stopPropagation();openSessionDrawer('${s.id}')">View</button>`;
+
+        return `<tr style="cursor:pointer;" onclick="openSessionDrawer('${s.id}')">
+          <td>
+            <div style="font-weight:600;color:var(--text);">${s.period}</div>
+            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-soft);">${s.id}</div>
+          </td>
+          <td>${s.outlet}</td>
+          <td>${sheetsCell}</td>
+          <td>${statusBadge}</td>
+          <td class="num tabular">${fmt(s.actualCogs)}</td>
+          <td class="num tabular" style="${varColor}">${fmtPct(s.variancePct)}</td>
+          <td onclick="event.stopPropagation()">${actionBtn}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    let activeSession = null;
+    function openSessionDrawer(id) {
+      activeSession = SESSIONS.find(s=>s.id===id);
+      if (!activeSession) return;
+      renderSessionDrawer(activeSession);
+      document.getElementById('session-drawer').classList.add('open');
+      document.getElementById('session-drawer-backdrop').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSessionDrawer() {
+      document.getElementById('session-drawer').classList.remove('open');
+      document.getElementById('session-drawer-backdrop').classList.remove('open');
+      document.body.style.overflow = '';
+      activeSession = null;
+    }
+    function approveSession(id) {
+      const s = SESSIONS.find(x=>x.id===id);
+      if (!s) return;
+      s.status = 'locked';
+      s.approvedBy = 'Keith Tan';
+      s.approvedAt = '13 Jun, now';
+      renderSessions();
+      invToast('Session approved and locked — COGS posted');
+    }
+    function openNewSession() { invToast('New count session — select outlet and period'); }
+    function openSpotCount()  { invToast('Spot count — select outlet and sheet'); }
+
+    function renderSessionDrawer(s) {
+      const el = document.getElementById('session-drawer');
+
+      // Status badge for header
+      const statusBadge = s.status==='in-progress'  ? `<span class="nb-pill warn"><i class="ti ti-edit"></i>In progress</span>`
+                        : s.status==='submitted'      ? `<span class="nb-pill info"><i class="ti ti-send"></i>Pending approval</span>`
+                        : s.status==='locked'         ? `<span class="nb-pill ok"><i class="ti ti-lock"></i>Locked</span>`
+                        : s.status==='complete'       ? `<span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span>`
+                        : `<span class="nb-pill neutral"><i class="ti ti-clock"></i>Open</span>`;
+
+      // Sheets
+      const reqSheets = s.sheets.filter(sh=>sh.required);
+      const doneReq   = reqSheets.filter(sh=>sh.status==='submitted').length;
+      const totalReq  = reqSheets.length;
+      const sheetsHtml = s.sheets.map(sh => {
+        const dotClass = sh.status==='submitted'?'submitted':sh.status==='in-progress'?'in-progress':sh.status==='carried-forward'?'carried-forward':'pending';
+        const statusLabel = sh.status==='submitted'?'Submitted':sh.status==='in-progress'?'In progress':sh.status==='carried-forward'?'Carry-forward':'Pending';
+        const cadenceBadge = sh.cadence ? `<span class="cadence-badge">${sh.cadence}</span>` : '';
+        const optionalNote = !sh.required ? `<span style="font-size:10px;color:var(--text-soft);margin-left:4px;">optional</span>` : '';
+        return `<div class="sheet-row">
+          <div>
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${sh.name}</span>
+            ${cadenceBadge}${optionalNote}
+            <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${sh.assignee}</div>
+          </div>
+          <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">${sh.assignee}</span>
+          <div style="display:flex;align-items:center;gap:var(--space-xs);white-space:nowrap;">
+            <span class="sheet-status-dot ${dotClass}"></span>
+            <span style="font-size:12px;font-weight:600;color:${dotClass==='submitted'?'var(--fern)':dotClass==='in-progress'?'var(--status-warn-fg)':'var(--text-soft)'};">${statusLabel}</span>
+          </div>
+        </div>`;
+      }).join('');
+
+      // COGS panel
+      let cogsHtml = '';
+      const showCogs = s.actualCogs != null;
+      if (showCogs) {
+        const varColor = s.variancePct>8?'color:var(--status-risk-fg)':s.variancePct>4?'color:var(--status-warn-fg)':'color:var(--status-ok-fg)';
+        const varIcon  = s.variancePct>8?'ti-alert-triangle':s.variancePct>4?'ti-alert-circle':'ti-check';
+        const cfNote   = s.sheets.some(sh=>sh.status==='carried-forward')?' + 1 carry-forward':'';
+        cogsHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">COGS summary</div>
+        <div class="cogs-panel">
+          <div class="cogs-row"><span>Opening stock</span><span class="tabular">${fmt(s.openingStock)}</span></div>
+          <div class="cogs-row"><span style="color:var(--status-ok-fg)">+ Purchases</span><span class="tabular">${fmt(s.purchases)}</span></div>
+          <div class="cogs-row"><span style="color:var(--status-risk-fg)">− Closing stock</span><span class="tabular">${fmt(s.closingStock)}</span></div>
+          <div class="cogs-total"><span>Actual COGS</span><span>${fmt(s.actualCogs)}</span></div>
+          <div class="cogs-row" style="margin-top:var(--space-xs);"><span>Theoretical COGS <span style="font-size:11px;">(POS × recipes)</span></span><span class="tabular">${fmt(s.theoreticalCogs)}</span></div>
+          <div class="cogs-total" style="${varColor}"><span><i class="ti ${varIcon}" style="font-size:12px;margin-right:4px;"></i>Variance</span><span>${fmt(s.variance)} (${fmtPct(s.variancePct)})</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-soft);margin-top:var(--space-sm);">Based on ${doneReq}/${totalReq} required sheets${cfNote}</div>`;
+      }
+
+      // Variance by category
+      let varCatHtml = '';
+      if (showCogs && s.varByCategory) {
+        const rows = s.varByCategory.map((c,i) => {
+          const maxVar = Math.max(...s.varByCategory.map(x=>x.varPct));
+          const barW   = maxVar>0 ? Math.round((c.varPct/maxVar)*100) : 0;
+          const textColor = c.varPct>8?'color:var(--status-risk-fg);font-weight:700':c.varPct>4?'color:var(--status-warn-fg);font-weight:600':'color:var(--text-soft)';
+          const fillColor = c.varPct>8?'background:var(--status-risk-fg)':c.varPct>4?'background:var(--status-warn-fg)':'background:var(--fern)';
+          const itemRows  = c.items.length ? c.items.map(it=>`
+            <div class="var-item-row">
+              <span>${it.name}</span>
+              <span class="tabular" style="color:var(--text-soft);">${it.theoretical} → ${it.actual}</span>
+              <span class="tabular" style="color:var(--status-risk-fg);">+$${it.varCost}</span>
+            </div>`).join('') : `<div style="font-size:12px;color:var(--text-soft);padding:4px 0;">No significant item variance</div>`;
+          return `<div class="var-cat-row" ondblclick="toggleVarItems('var-items-${i}')">
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${c.cat}</span>
+            <div class="var-track" style="height:6px;"><div class="var-fill" style="width:${barW}%;${fillColor}"></div></div>
+            <span style="font-size:12px;${textColor}">${c.var>0?'+':''}${fmt(c.var)} (${fmtPct(c.varPct)})</span>
+          </div>
+          <div class="var-item-list" id="var-items-${i}">${itemRows}</div>`;
+        }).join('');
+        varCatHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">Variance by category <span style="font-size:11px;font-weight:400;color:var(--text-soft);">· Double-click to expand</span></div>
+        ${rows}`;
+      }
+
+      // Activity
+      const actItems = [`Created by <strong>${s.createdBy}</strong> · ${s.createdAt}`];
+      if (s.submittedAt) actItems.push(`Submitted for approval · ${s.submittedAt}`);
+      if (s.approvedBy)  actItems.push(`Approved by <strong>${s.approvedBy}</strong> · ${s.approvedAt}`);
+      const actHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">Activity</div>
+        ${actItems.map(a=>`<div style="font-size:12px;color:var(--text-soft);padding:var(--space-xs) 0;border-bottom:1px solid var(--border);">${a}</div>`).join('')}`;
+
+      // Footer buttons
+      const reqDone = s.sheets.filter(sh=>sh.required&&sh.status==='submitted').length === s.sheets.filter(sh=>sh.required).length;
+      const footerHtml = s.status==='submitted'
+        ? `<button class="btn btn-primary" onclick="approveSession('${s.id}');closeSessionDrawer()"><i class="ti ti-check"></i>Approve &amp; lock</button>
+           <button class="btn btn-outline" onclick="invToast('Re-count request sent to outlet manager')"><i class="ti ti-arrow-back"></i>Request re-count</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : s.status==='locked'||s.status==='complete'
+        ? `<button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : reqDone
+        ? `<button class="btn btn-primary" onclick="invToast('Session submitted for HQ approval')"><i class="ti ti-send"></i>Submit for review</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : `<button class="btn btn-primary" style="opacity:0.45;cursor:not-allowed;" disabled title="All required sheets must be submitted first"><i class="ti ti-send"></i>Submit for review</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`;
+
+      el.innerHTML = `
+        <div class="drawer-head">
+          <div class="drawer-head-left">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-soft);">${s.id}</span>
+            <span style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">${s.period}</span>
+            <span style="font-size:13px;color:var(--text-soft);">${s.outlet} &nbsp;${statusBadge}</span>
+          </div>
+          <button class="drawer-close" onclick="closeSessionDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="drawer-body" style="overflow-y:auto;flex:1;padding:var(--space-xl);">
+          <div class="drawer-section-label">Count sheets <span style="font-weight:400;color:var(--text-soft);">(${doneReq}/${totalReq} required submitted)</span></div>
+          ${sheetsHtml}
+          ${cogsHtml}
+          ${varCatHtml}
+          ${actHtml}
+        </div>
+        <div class="drawer-footer">${footerHtml}</div>`;
+    }
+
+    function toggleVarItems(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('open');
+    }
+
+    // Kick off sessions render on load
+    document.addEventListener('DOMContentLoaded', () => renderSessions());
   </script>
 </body>
 </html>
