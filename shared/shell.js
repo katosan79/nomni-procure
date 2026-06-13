@@ -8,6 +8,7 @@
     { id: 'dashboard',   icon: 'ti-layout-dashboard',  label: 'Overview',     href: 'dashboard.html' },
     { id: 'orders',      icon: 'ti-shopping-cart',      label: 'Orders',       href: 'orders.html' },
     { id: 'invoices',    icon: 'ti-file-invoice',       label: 'Invoices',     href: 'invoices.html' },
+    { id: 'items',       icon: 'ti-stack',              label: 'Items',        href: 'items.html' },
     { id: 'inventory',   icon: 'ti-package',            label: 'Inventory',    href: 'inventory.html' },
     { id: 'market-list', icon: 'ti-receipt',            label: 'Market lists', href: 'market-list.html' },
     { id: 'recipes',     icon: 'ti-tools-kitchen-2',    label: 'Recipes',      href: 'recipes.html' },

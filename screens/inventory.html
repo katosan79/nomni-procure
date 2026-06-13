@@ -744,12 +744,10 @@
       <header class="page-header">
         <div class="page-header-left">
           <span class="page-eyebrow">Inventory Management</span>
-          <h1 class="page-title">Master item list</h1>
+          <h1 class="page-title">Inventory</h1>
         </div>
         <div class="page-actions role-editor-only">
-          <button class="btn btn-outline"><i class="ti ti-download"></i>Download template</button>
-          <button class="btn btn-outline" id="btn-import-toggle"><i class="ti ti-file-import"></i>Import items</button>
-          <button class="btn btn-primary"><i class="ti ti-plus"></i>New item</button>
+          <button class="btn btn-primary" onclick="invToast('Start spot count — select outlet and items')"><i class="ti ti-clipboard-plus"></i>Start count</button>
         </div>
       </header>
 
@@ -791,15 +789,14 @@
 
       <!-- Sub-module tabs (IN-6/7/9/10 entry points) -->
       <div class="inv-tabs" role="tablist" aria-label="Inventory modules">
-        <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('items')"><i class="ti ti-package" aria-hidden="true"></i>Items</button>
-        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('counts')"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Stock counts</button>
+        <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('counts')"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Stock counts</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('variance')"><i class="ti ti-chart-dots" aria-hidden="true"></i>Variance</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('transfers')"><i class="ti ti-transfer" aria-hidden="true"></i>Transfers</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('waste')"><i class="ti ti-trash-x" aria-hidden="true"></i>Waste</button>
       </div>
 
-      <!-- ══ Panel: Master items ══ -->
-      <div class="inv-panel active" id="panel-items">
+      <!-- ══ Panel: Master items — moved to items.html ══ -->
+      <div class="inv-panel" id="panel-items">
       <!-- Filter bar -->
       <div class="filter-bar" id="items-filter">
         <div class="search-wrap">
@@ -1058,7 +1055,7 @@
       </div><!-- /panel-items -->
 
       <!-- ══ Panel: Stock counts (IN-6) ══ -->
-      <div class="inv-panel" id="panel-counts">
+      <div class="inv-panel active" id="panel-counts">
         <div class="sub-card">
           <div class="sub-card-title">Stock counts</div>
           <p class="sub-card-sub">Scheduled and spot counts across outlets. Variance is computed against theoretical stock (recipe usage × POS sales).</p>
