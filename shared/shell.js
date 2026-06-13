@@ -197,12 +197,12 @@
       text-decoration: none;
     }
     .shell-wordmark-icon {
-      width: 28px; height: 28px;
+      width: 24px; height: 27px;
       background: none;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .shell-wordmark-icon svg { width: 28px; height: 28px; }
+    .shell-wordmark-icon svg { width: 24px; height: 27px; }
     .shell-wordmark-text {
       font-size: 16px; font-weight: 600;
       color: var(--chrome-fg);
@@ -498,13 +498,8 @@
       <aside class="shell-chrome" id="shell-chrome" aria-label="Main navigation">
         <a class="shell-wordmark" href="dashboard.html" aria-label="Nomni HQ home">
           <div class="shell-wordmark-icon" aria-hidden="true">
-            <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
-              <!-- Bottom bowl (largest) -->
-              <path d="M1 18Q1 26 14 26Q27 26 27 18L27 15Q27 21 14 21Q1 21 1 15Z" fill="#2AC864"/>
-              <!-- Middle bowl -->
-              <path d="M4 11Q4 17 14 17Q24 17 24 11L24 8.5Q24 13.5 14 13.5Q4 13.5 4 8.5Z" fill="#2AC864"/>
-              <!-- Top crescent (smallest) -->
-              <path d="M9 4.5Q9 8.5 14 8.5Q19 8.5 19 4.5L19 3Q19 6 14 6Q9 6 9 3Z" fill="#2AC864"/>
+            <svg viewBox="0 0 138.195 157.144" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20.941 30.552C21.157 29.542 22.148 28.896 23.158 29.111L115.484 48.735C116.494 48.951 117.14 49.942 116.925 50.952L115.362 58.322C114.801 60.941 114.043 63.467 113.107 65.89L132.117 61.849C133.128 61.634 134.12 62.279 134.335 63.289L136.683 74.336C144.849 112.732 119.085 150.482 79.635 156.412C43.253 161.874 9.472 136.152 1.838 100.254L0.042 91.826C-0.173 90.816 0.472 89.824 1.482 89.609L33.14 82.885C21.493 71.015 16.095 53.318 19.763 36.052L20.932 30.562ZM92.068 0.041C93.079-0.174 94.07 0.471 94.285 1.481L94.818 3.97C97.559 16.859 88.916 29.532 75.669 31.524C63.461 33.358 52.112 24.725 49.549 12.668L49.203 11.06C48.988 10.049 49.633 9.058 50.644 8.843Z" fill="#2AC864"/>
             </svg>
           </div>
           <span class="shell-wordmark-text">Nomni Procure</span>
