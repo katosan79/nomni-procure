@@ -198,12 +198,11 @@
     }
     .shell-wordmark-icon {
       width: 28px; height: 28px;
-      background: var(--accent);
-      border-radius: var(--radius-sm);
+      background: none;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .shell-wordmark-icon svg { width: 16px; height: 16px; fill: var(--seaweed); }
+    .shell-wordmark-icon svg { width: 28px; height: 28px; }
     .shell-wordmark-text {
       font-size: 16px; font-weight: 600;
       color: var(--chrome-fg);
@@ -499,8 +498,13 @@
       <aside class="shell-chrome" id="shell-chrome" aria-label="Main navigation">
         <a class="shell-wordmark" href="dashboard.html" aria-label="Nomni HQ home">
           <div class="shell-wordmark-icon" aria-hidden="true">
-            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z" opacity="0.9"/>
+            <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+              <!-- Bottom bowl (largest) -->
+              <path d="M1 18Q1 26 14 26Q27 26 27 18L27 15Q27 21 14 21Q1 21 1 15Z" fill="#2AC864"/>
+              <!-- Middle bowl -->
+              <path d="M4 11Q4 17 14 17Q24 17 24 11L24 8.5Q24 13.5 14 13.5Q4 13.5 4 8.5Z" fill="#2AC864"/>
+              <!-- Top crescent (smallest) -->
+              <path d="M9 4.5Q9 8.5 14 8.5Q19 8.5 19 4.5L19 3Q19 6 14 6Q9 6 9 3Z" fill="#2AC864"/>
             </svg>
           </div>
           <span class="shell-wordmark-text">Nomni Procure</span>
