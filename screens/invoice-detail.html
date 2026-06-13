@@ -285,6 +285,83 @@
 
     /* ── Toast ── */
     #toast-wrap { position:fixed; bottom:var(--space-xl); left:50%; transform:translateX(-50%); z-index:300; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+
+    /* ── Edit / override mode ── */
+    .override-banner {
+      display:flex; gap:var(--space-md);
+      padding:var(--space-md) var(--space-lg);
+      background:#FFFBEB; border:1px solid rgba(245,194,25,0.5);
+      border-radius:var(--radius-md); margin-bottom:var(--space-xl);
+    }
+    .override-banner-icon { font-size:18px; color:#D97706; flex-shrink:0; margin-top:2px; }
+    .override-banner-body { flex:1; font-size:13px; color:#78350F; line-height:1.55; }
+    .override-banner-title { font-weight:700; margin-bottom:3px; }
+    .edit-reason {
+      display:block; width:100%; margin-top:var(--space-sm);
+      padding:var(--space-sm) var(--space-md);
+      border:1px solid rgba(245,194,25,0.6); border-radius:var(--radius-sm);
+      background:rgba(255,251,235,0.6); font-family:inherit; font-size:12px; color:#78350F;
+      resize:none; height:50px;
+    }
+    .edit-reason:focus { outline:none; border-color:#D97706; }
+    .edit-reason::placeholder { color:#92400E; opacity:0.65; }
+    .edit-field-row {
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:var(--space-md); padding:var(--space-xs) 0; border-bottom:1px solid var(--border);
+    }
+    .edit-field-row:last-child { border-bottom:none; }
+    .edit-field-label { font-size:13px; color:var(--text-soft); flex-shrink:0; padding-top:8px; }
+    .edit-field-right { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+    .edit-input {
+      height:34px; padding:0 var(--space-md);
+      border:1px solid var(--border); border-radius:var(--radius-sm);
+      background:var(--surface); font-family:inherit; font-size:13px;
+      font-weight:600; color:var(--text); text-align:right;
+    }
+    .edit-input:focus { outline:none; border-color:var(--text-accent); box-shadow:0 0 0 3px rgba(18,155,65,0.1); }
+    .edit-hint { font-size:11px; color:var(--text-soft); font-style:italic; }
+    .edit-line-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .edit-line-table th {
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+      color:var(--text-soft); padding:var(--space-xs) var(--space-sm);
+      background:var(--surface-soft); border-bottom:1px solid var(--border); text-align:left;
+    }
+    .edit-line-table th.r { text-align:right; }
+    .edit-line-table td {
+      padding:var(--space-xs) var(--space-sm); border-bottom:1px solid var(--border);
+      color:var(--text); vertical-align:top;
+    }
+    .edit-line-table tr:last-child td { border-bottom:none; }
+    .edit-inline {
+      display:block; width:72px; height:30px; text-align:right; padding:0 var(--space-sm);
+      border:1px solid var(--border); border-radius:var(--radius-sm);
+      background:var(--surface); font-family:inherit; font-size:12px;
+      font-weight:600; color:var(--text); font-feature-settings:'tnum' 1;
+    }
+    .edit-inline:focus { outline:none; border-color:var(--text-accent); }
+    .edit-totals {
+      display:flex; flex-direction:column; align-items:flex-end;
+      gap:2px; padding:var(--space-md) 0 0;
+    }
+    .edit-total-row {
+      display:flex; min-width:224px; justify-content:space-between;
+      font-size:13px; color:var(--text-soft); padding:2px var(--space-xs);
+    }
+    .edit-total-row.grand {
+      font-size:15px; font-weight:700; color:var(--text);
+      border-top:1.5px solid var(--border); padding-top:var(--space-sm); margin-top:4px;
+    }
+    .override-record {
+      background:var(--surface-soft); border:1px solid var(--border);
+      border-radius:var(--radius-md); padding:var(--space-md) var(--space-lg);
+      margin-bottom:var(--space-md);
+    }
+    .override-record-head {
+      display:flex; align-items:center; gap:var(--space-sm);
+      font-size:13px; font-weight:600; color:var(--text); margin-bottom:var(--space-sm);
+    }
+    .override-record-reason { font-size:12px; color:var(--text-soft); font-style:italic; margin-bottom:var(--space-xs); }
+    .override-record-at { font-size:11px; color:var(--text-soft); margin-top:var(--space-xs); }
   </style>
 </head>
 <body>
@@ -795,7 +872,26 @@
           </div>`;
       }
 
-      return header + cyrus + kvHtml + matchHtml;
+      /* ── Override record (shown after a correction has been saved) ── */
+      let overrideHtml = '';
+      if (inv.hasOverride) {
+        const changeItems = inv.overrideChanges.length
+          ? inv.overrideChanges.map(c => `<li style="margin-bottom:2px;">${c}</li>`).join('')
+          : '<li style="color:var(--text-soft);">No field values changed</li>';
+        overrideHtml = `
+          <div class="section-head">Override record</div>
+          <div class="override-record">
+            <div class="override-record-head">
+              <span class="agent-avatar" data-agent="cyrus" aria-hidden="true" style="width:22px;height:22px;font-size:10px;flex-shrink:0;">Cy</span>
+              Cyrus re-ran 3-way match after override by ${inv.overrideBy}
+            </div>
+            <ul style="font-size:12px;color:var(--text-soft);padding-left:var(--space-lg);margin:var(--space-sm) 0;line-height:1.7;">${changeItems}</ul>
+            ${inv.overrideReason ? `<div class="override-record-reason">Reason: "${inv.overrideReason}"</div>` : ''}
+            <div class="override-record-at">${inv.overrideAt}</div>
+          </div>`;
+      }
+
+      return header + cyrus + kvHtml + overrideHtml + matchHtml;
     }
 
     function buildUnlinkedSection(inv) {
@@ -854,6 +950,9 @@
         parts.push(`<button class="btn-secondary" onclick="toast('${inv.id} flagged for manual review')"><i class="ti ti-flag"></i> Flag</button>`);
         parts.push(`<button class="btn-danger" onclick="rejectInvoice('${inv.id}')"><i class="ti ti-trash"></i> Reject</button>`);
       }
+      if (['pending','matched','failed'].includes(inv.status) && inv.lines.length) {
+        parts.push(`<button class="btn-secondary" onclick="enterEditMode()"><i class="ti ti-pencil"></i> Edit invoice</button>`);
+      }
       parts.push(`<span class="foot-spacer"></span>`);
       parts.push(`<a href="invoices.html" class="btn-secondary"><i class="ti ti-list"></i> All invoices</a>`);
       return parts.join('');
@@ -897,6 +996,7 @@
     ══════════════════════════════════════════════════════ */
     let _currentIdx = 0;
     let _zoom = 1.0;
+    let _editMode = false;
 
     function navigate(delta) {
       const n = _currentIdx + delta;
@@ -931,8 +1031,8 @@
 
       document.getElementById('doc-content').innerHTML = buildDocPane(inv);
       document.getElementById('doc-content').style.zoom = _zoom;
-      document.getElementById('data-inner').innerHTML = buildDataPane(inv);
-      document.getElementById('detail-foot').innerHTML = buildFoot(inv);
+      document.getElementById('data-inner').innerHTML  = _editMode ? buildEditDataPane(inv) : buildDataPane(inv);
+      document.getElementById('detail-foot').innerHTML = _editMode ? buildEditFoot(inv)     : buildFoot(inv);
     }
 
     /* ══════════════════════════════════════════════════════
@@ -957,6 +1057,202 @@
       if (e.key === '-')                  setZoom(_zoom - 0.15);
       if (e.key === '0')                  setZoom(1.0);
     });
+
+    /* ══════════════════════════════════════════════════════
+       EDIT / OVERRIDE MODE
+    ══════════════════════════════════════════════════════ */
+    function enterEditMode() {
+      _editMode = true;
+      document.querySelector('.data-pane').scrollTop = 0;
+      renderPage();
+    }
+
+    function exitEditMode() {
+      _editMode = false;
+      renderPage();
+    }
+
+    function recalcLine(i) {
+      const qty   = parseFloat(document.getElementById('edit-qty-'  +i)?.value) || 0;
+      const price = parseFloat(document.getElementById('edit-price-'+i)?.value) || 0;
+      const el = document.getElementById('edit-line-amt-'+i);
+      if (el) el.textContent = fmtMoney(qty * price);
+      recalcTotal();
+    }
+
+    function recalcTotal() {
+      const inv = INV_DATA[_currentIdx];
+      let lineSum = 0;
+      inv.lines.forEach((_, i) => {
+        lineSum += (parseFloat(document.getElementById('edit-qty-'  +i)?.value) || 0)
+                 * (parseFloat(document.getElementById('edit-price-'+i)?.value) || 0);
+      });
+      const gst   = lineSum * 0.1;
+      const total = lineSum + gst;
+      const subEl = document.getElementById('edit-subtotal');
+      const gstEl = document.getElementById('edit-gst');
+      const totEl = document.getElementById('edit-total');
+      const hdrEl = document.getElementById('edit-header-total');
+      if (subEl) subEl.textContent = fmtMoney(lineSum);
+      if (gstEl) gstEl.textContent = fmtMoney(gst);
+      if (totEl) totEl.textContent = fmtMoney(total);
+      if (hdrEl) hdrEl.textContent = fmtMoney(total);
+    }
+
+    function saveOverride(id) {
+      const inv = INV_DATA.find(i => i.id === id);
+      if (!inv) return;
+
+      const reason  = (document.getElementById('edit-reason')?.value || '').trim();
+      const newDate = (document.getElementById('edit-date')?.value   || inv.date).trim();
+      const changes = [];
+
+      if (newDate !== inv.date) { changes.push('Date: ' + inv.date + ' → ' + newDate); inv.date = newDate; }
+
+      let lineSum = 0;
+      inv.lines.forEach((l, i) => {
+        const newQty   = parseFloat(document.getElementById('edit-qty-'  +i)?.value) ?? l.invQty;
+        const newPrice = parseFloat(document.getElementById('edit-price-'+i)?.value) ?? l.invPrice;
+        if (newQty !== l.invQty)                        changes.push(l.name + ' qty: ' + l.invQty + ' → ' + newQty);
+        if (Math.abs(newPrice - l.invPrice) > 0.001)   changes.push(l.name + ' price: ' + fmtMoney(l.invPrice) + ' → ' + fmtMoney(newPrice));
+        l.invQty = newQty; l.invPrice = newPrice;
+        lineSum += newQty * newPrice;
+      });
+
+      const newTotal = Math.round(lineSum * 1.1 * 100) / 100;
+      if (Math.abs(newTotal - inv.amount) > 0.01) changes.push('Total: ' + fmtMoney(inv.amount) + ' → ' + fmtMoney(newTotal));
+      inv.amount = newTotal;
+
+      const summary = invMatchSummary(inv);
+      if (summary.result === 'pass')     inv.status = 'matched';
+      else if (summary.result === 'fail') inv.status = 'failed';
+
+      inv.hasOverride      = true;
+      inv.overrideBy       = 'Keith Tan';
+      inv.overrideAt       = '13 Jun 2026';
+      inv.overrideChanges  = changes;
+      inv.overrideReason   = reason;
+
+      const delta    = changes.length ? changes.join(' · ') : 'no fields changed';
+      const matchMsg = summary.result === 'pass'  ? 'match now clean — ready to approve'
+                     : summary.result === 'fail'  ? 'match still failing — review lines below'
+                     : 'match pending GRN confirmation';
+      inv.agentNote = 'Override by Keith Tan · ' + delta + ' · Cyrus re-ran 3-way match · ' + matchMsg;
+
+      _editMode = false;
+      toast(changes.length ? 'Override saved · Cyrus re-running 3-way match' : 'No changes made');
+      renderPage();
+    }
+
+    function buildEditDataPane(inv) {
+      const lineSum0 = inv.lines.reduce((s, l) => s + l.invQty * l.invPrice, 0);
+      const gst0     = lineSum0 * 0.1;
+      const total0   = lineSum0 + gst0;
+      const meta     = SUPPLIER_META[inv.supplier] || {};
+
+      const header = `
+        <div class="inv-detail-head">
+          <div>
+            <h1 class="inv-detail-id">${inv.id}</h1>
+            <div class="inv-detail-meta">${inv.supplier}${inv.outlet ? ' · '+inv.outlet : ''}</div>
+          </div>
+          <span class="nb-pill warn" style="flex-shrink:0;"><i class="ti ti-pencil"></i>Edit mode</span>
+        </div>`;
+
+      const banner = `
+        <div class="override-banner">
+          <span class="override-banner-icon"><i class="ti ti-alert-triangle"></i></span>
+          <div class="override-banner-body">
+            <div class="override-banner-title">Override mode</div>
+            You're correcting Cyrus's OCR extraction. All changes are logged to the activity trail and re-trigger the 3-way match.
+            <textarea id="edit-reason" class="edit-reason" placeholder="Reason for override — e.g. supplier PDF had a formatting error…"></textarea>
+          </div>
+        </div>`;
+
+      const fields = `
+        <div class="section-head">Invoice details</div>
+        <div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Invoice ref</span>
+            <div class="edit-field-right">
+              <span class="dkv-value" style="font-family:'IBM Plex Mono',monospace;">${inv.id}</span>
+              <span class="edit-hint">locked — contact support to amend</span>
+            </div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Purchase order</span>
+            <div class="edit-field-right">
+              <span class="dkv-value" style="font-family:'IBM Plex Mono',monospace;">${inv.po||'—'}</span>
+            </div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Supplier</span>
+            <div class="edit-field-right"><span class="dkv-value">${inv.supplier}</span></div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Outlet</span>
+            <div class="edit-field-right"><span class="dkv-value">${inv.outlet||'—'}</span></div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Date received</span>
+            <div class="edit-field-right">
+              <input class="edit-input" id="edit-date" value="${inv.date}" style="width:136px;" autocomplete="off">
+            </div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Payment due</span>
+            <div class="edit-field-right"><span class="dkv-value">${dueDate(inv)}</span></div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Terms</span>
+            <div class="edit-field-right"><span class="dkv-value">${meta.terms||'NET 14'}</span></div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Amount</span>
+            <div class="edit-field-right">
+              <span class="dkv-value" id="edit-header-total" style="font-size:15px;">${fmtMoney(total0)}</span>
+              <span class="edit-hint">auto-calculated from line items</span>
+            </div>
+          </div>
+        </div>`;
+
+      const lineRows = inv.lines.map((l, i) => `
+        <tr>
+          <td style="font-weight:600;">${l.name}</td>
+          <td style="color:var(--text-soft);font-size:11px;">${l.uom}</td>
+          <td><input class="edit-inline" id="edit-qty-${i}"   value="${l.invQty}"   type="number" min="0" step="1"    oninput="recalcLine(${i})" autocomplete="off"></td>
+          <td><input class="edit-inline" id="edit-price-${i}" value="${l.invPrice}" type="number" min="0" step="0.01" oninput="recalcLine(${i})" autocomplete="off"></td>
+          <td style="text-align:right;vertical-align:middle;font-weight:600;font-feature-settings:'tnum' 1;" id="edit-line-amt-${i}">${fmtMoney(l.invQty * l.invPrice)}</td>
+        </tr>`).join('');
+
+      const lineTable = inv.lines.length ? `
+        <div class="section-head" style="margin-top:var(--space-xl);">Line items</div>
+        <div class="three-way-wrap">
+          <table class="edit-line-table">
+            <thead><tr>
+              <th>Item</th><th>UoM</th>
+              <th>Inv qty</th><th>Unit price</th><th class="r">Amount</th>
+            </tr></thead>
+            <tbody>${lineRows}</tbody>
+          </table>
+        </div>
+        <div class="edit-totals">
+          <div class="edit-total-row"><span>Subtotal (excl. GST)</span><span id="edit-subtotal">${fmtMoney(lineSum0)}</span></div>
+          <div class="edit-total-row"><span>GST 10%</span><span id="edit-gst">${fmtMoney(gst0)}</span></div>
+          <div class="edit-total-row grand"><span>Total (incl. GST)</span><span id="edit-total">${fmtMoney(total0)}</span></div>
+        </div>` : '';
+
+      return header + banner + fields + lineTable;
+    }
+
+    function buildEditFoot(inv) {
+      return [
+        `<button class="btn-primary" onclick="saveOverride('${inv.id}')"><i class="ti ti-check"></i> Save &amp; re-run match</button>`,
+        `<button class="btn-secondary" onclick="exitEditMode()"><i class="ti ti-x"></i> Cancel</button>`,
+        `<span class="foot-spacer"></span>`,
+        `<a href="invoices.html" class="btn-secondary"><i class="ti ti-list"></i> All invoices</a>`,
+      ].join('');
+    }
 
     /* ── Toast ── */
     function toast(msg) {
