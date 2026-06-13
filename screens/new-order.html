@@ -460,7 +460,8 @@
             `<div class="basket-item">
               <div>
                 <div style="font-weight:600;color:var(--text);">${b.supplierItem||b.name}</div>
-                <div class="item-meta">${b.supplierSku?'<span style="font-family:\'IBM Plex Mono\',monospace;">'+b.supplierSku+'</span> · '+b.name+' · ':'' }${b.qty}${b.uom?' '+b.uom:''} × $${b.unit.toFixed(2)}</div>
+                ${b.supplierSku?'<div class="item-meta"><span style="font-family:\'IBM Plex Mono\',monospace;">'+b.supplierSku+'</span> · '+b.name+'</div>':''}
+                <div class="item-meta">${b.qty}${b.uom?' '+b.uom:''} × $${b.unit.toFixed(2)}</div>
               </div>
               <div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;font-feature-settings:'tnum' 1;">$${(b.qty*b.unit).toFixed(0)}</span><button class="basket-remove" aria-label="Remove ${b.name}" onclick="removeBasket(${JSON.stringify(b.name)})"><i class="ti ti-x"></i></button></div>
             </div>`).join('');
@@ -520,7 +521,7 @@
           const opts = [...new Set([def,'Fresh Produce Co','Harbour Meats','Green Farmers Market','Pacific Drinks Wholesale','Artisan Bakehouse'])];
           return `<div class="route-group">
             <div class="route-head"><span class="route-title">${cat} · ${items.length} item${items.length!==1?'s':''}</span><span class="item-meta">$${sum.toFixed(0)}</span></div>
-            <div class="route-items">${items.map(i=>i.name+' ×'+i.qty+(i.uom?' '+i.uom:'')).join(' · ')}</div>
+            <div class="route-items">${items.map(i=>`<div>${i.name} ×${i.qty}${i.uom?' '+i.uom:''}</div>`).join('')}</div>
             <select class="select-input" style="max-width:none;margin-top:var(--space-sm);" data-cat="${cat}" onchange="onRouteChange(this)">${opts.map(o=>`<option ${o===def?'selected':''}>${o}${o===def?' — preferred':''}</option>`).join('')}</select>
           </div>`;
         }).join('') + '<div class="route-summary" id="route-summary"></div>';
@@ -556,7 +557,7 @@
                 ? '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:var(--status-warn-bg);color:var(--status-warn-fg);white-space:nowrap;"><i class="ti ti-user-check"></i> Needs approval</span>'
                 : '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:var(--status-ok-bg);color:var(--status-ok-fg);white-space:nowrap;"><i class="ti ti-bolt"></i> Auto-approved</span>'}
             </div>
-            <div class="route-items" style="margin-bottom:var(--space-sm);">${items.map(i=>i.name+' ×'+i.qty+(i.uom?' '+i.uom:'')).join(' · ')}</div>
+            <div class="route-items" style="margin-bottom:var(--space-sm);">${items.map(i=>`<div>${i.name} ×${i.qty}${i.uom?' '+i.uom:''}</div>`).join('')}</div>
             <div style="display:flex;align-items:center;gap:var(--space-md);">
               <span style="font-size:12px;font-weight:600;color:var(--text-soft);white-space:nowrap;"><i class="ti ti-calendar-event"></i> Delivery</span>
               <select class="select-input" id="${safeId}" style="max-width:none;flex:1;">${buildDeliveryOptions(sup)}</select>
