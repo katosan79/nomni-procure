@@ -560,6 +560,170 @@
     .import-error-row i { color: var(--status-risk-fg); font-size: 15px; flex-shrink: 0; }
     .import-error-row .row-ref { font-feature-settings: 'tnum' 1; color: var(--text-soft); width: 56px; flex-shrink: 0; }
 
+    /* ── Item detail drawer (PIM) ── */
+    .item-drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(14,55,39,0.25);
+      z-index: 60;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s;
+    }
+    .item-drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .item-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 520px; max-width: 95vw;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      z-index: 61;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.22s ease;
+      overflow: hidden;
+    }
+    .item-drawer.open { transform: translateX(0); }
+    .drawer-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: var(--space-xl) var(--space-2xl);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: var(--space-md);
+    }
+    .drawer-head-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .drawer-internal-id {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+    }
+    .drawer-item-name {
+      font-size: 22px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.02em; line-height: 1.2;
+    }
+    .drawer-item-meta {
+      font-size: 13px; color: var(--text-soft);
+    }
+    .drawer-close {
+      width: 32px; height: 32px; flex-shrink: 0;
+      border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft);
+      font-size: 16px;
+    }
+    .drawer-close:hover { background: var(--surface-soft); color: var(--text); }
+    .drawer-body {
+      flex: 1; overflow-y: auto;
+      padding: var(--space-xl) var(--space-2xl);
+      display: flex; flex-direction: column;
+      gap: var(--space-2xl);
+    }
+    .drawer-section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-soft);
+      margin-bottom: var(--space-md);
+    }
+    .drawer-fields {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--space-sm) var(--space-md);
+    }
+    .drawer-field label {
+      display: block; font-size: 11px; font-weight: 600;
+      color: var(--text-soft); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: var(--space-xs);
+    }
+    .drawer-field .field-val {
+      font-size: 14px; font-weight: 500; color: var(--text);
+    }
+    .drawer-field-full { grid-column: 1 / -1; }
+    .drawer-desc { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+
+    /* Supplier SKU table */
+    .sku-table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    .sku-table th {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-soft);
+      padding: var(--space-sm) var(--space-sm);
+      text-align: left; border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .sku-table td {
+      padding: var(--space-md) var(--space-sm);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle; color: var(--text);
+    }
+    .sku-table tbody tr:last-child td { border-bottom: none; }
+    .sku-table tbody tr:hover td { background: var(--surface-soft); }
+    .sku-preferred-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 700;
+      color: var(--text-accent);
+      background: var(--mint); border: 1px solid color-mix(in srgb, var(--fern) 25%, transparent);
+      border-radius: var(--radius-pill);
+      padding: 1px var(--space-sm);
+    }
+    .sku-set-preferred {
+      font-size: 12px; font-weight: 600; color: var(--text-soft);
+      background: none; border: 1.5px solid var(--border);
+      border-radius: var(--radius-pill); padding: 2px var(--space-sm);
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+    }
+    .sku-set-preferred:hover { border-color: var(--fern); color: var(--text-accent); }
+    .sku-remove {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-soft); padding: 2px; font-size: 15px;
+      border-radius: var(--radius-sm);
+    }
+    .sku-remove:hover { color: var(--status-risk-fg); background: var(--status-risk-bg); }
+    .sku-code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
+    .sku-price { font-feature-settings: 'tnum' 1; font-weight: 600; }
+    .sku-add-btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      margin-top: var(--space-md); font-size: 13px; font-weight: 600;
+      color: var(--text-accent); background: none; border: none;
+      cursor: pointer; padding: 0; font-family: inherit;
+    }
+    .sku-add-btn:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* Par levels in drawer */
+    .par-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: var(--space-sm);
+    }
+    .par-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: var(--space-sm) var(--space-md);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .par-group { font-size: 13px; color: var(--text); font-weight: 500; }
+    .par-value { font-size: 13px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; }
+    .par-value.low { color: var(--status-warn-fg); }
+
+    /* Supplier chip in table */
+    .supplier-chip {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px var(--space-sm); border-radius: var(--radius-pill);
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .supplier-chip.preferred {
+      background: var(--mint); color: var(--text-accent);
+      border: 1px solid color-mix(in srgb, var(--fern) 25%, transparent);
+    }
+    .supplier-chip.more {
+      background: var(--surface-soft); color: var(--text-soft);
+      border: 1px solid var(--border);
+    }
+
+    /* Drawer footer */
+    .drawer-footer {
+      padding: var(--space-lg) var(--space-2xl);
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: var(--space-sm);
+      flex-shrink: 0;
+    }
+
     /* Variance mini-bars */
     .var-row { display: grid; grid-template-columns: 130px 1fr 70px; align-items: center; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
     .var-row:last-child { border-bottom: none; }
@@ -627,7 +791,7 @@
 
       <!-- Sub-module tabs (IN-6/7/9/10 entry points) -->
       <div class="inv-tabs" role="tablist" aria-label="Inventory modules">
-        <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('items')"><i class="ti ti-package" aria-hidden="true"></i>Master items</button>
+        <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('items')"><i class="ti ti-package" aria-hidden="true"></i>Items</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('counts')"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Stock counts</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('variance')"><i class="ti ti-chart-dots" aria-hidden="true"></i>Variance</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('transfers')"><i class="ti ti-transfer" aria-hidden="true"></i>Transfers</button>
@@ -666,6 +830,7 @@
               <th>Category</th>
               <th>UOM</th>
               <th style="text-align:right">Par level</th>
+              <th>Linked suppliers</th>
               <th>Assigned groups</th>
               <th>Last updated</th>
               <th><span class="sr-only">Actions</span></th>
@@ -678,15 +843,17 @@
               <td><span class="cell-cat">Protein</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">10</td>
+              <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Sydney Butchers</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
               <td class="cell-timestamp">2h ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openItemDrawer('chicken-breast')">Edit</button>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Chicken Breast 500g" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" role="menuitem" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-edit"></i>Edit item</button>
+                      <button class="overflow-menu-item" role="menuitem" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-link"></i>Manage suppliers</button>
                       <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Assign to groups</button>
                       <div class="overflow-menu-divider"></div>
                       <button class="overflow-menu-item destructive" role="menuitem" onclick="openRemoveDialog('Chicken Breast 500g', 3, 8, 2)"><i class="ti ti-trash"></i>Remove item</button>
@@ -701,15 +868,17 @@
               <td><span class="cell-cat">Produce</span></td>
               <td class="tabular">each</td>
               <td class="tabular" style="text-align:right">50</td>
+              <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+2</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
               <td class="cell-timestamp">1 day ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openItemDrawer('avocado')">Edit</button>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Avocado" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" role="menuitem" onclick="openItemDrawer('avocado')"><i class="ti ti-edit"></i>Edit item</button>
+                      <button class="overflow-menu-item" role="menuitem" onclick="openItemDrawer('avocado')"><i class="ti ti-link"></i>Manage suppliers</button>
                       <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Assign to groups</button>
                       <div class="overflow-menu-divider"></div>
                       <button class="overflow-menu-item destructive" role="menuitem" onclick="openRemoveDialog('Avocado', 2, 4, 1)"><i class="ti ti-trash"></i>Remove item</button>
@@ -724,15 +893,17 @@
               <td><span class="cell-cat">Dairy</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">5</td>
+              <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Dairy Direct</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
               <td class="cell-timestamp">3 days ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openItemDrawer('feta')">Edit</button>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Feta Cheese" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('feta')"><i class="ti ti-edit"></i>Edit item</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('feta')"><i class="ti ti-link"></i>Manage suppliers</button>
                       <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
                       <div class="overflow-menu-divider"></div>
                       <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Feta Cheese', 4, 6, 3)"><i class="ti ti-trash"></i>Remove item</button>
@@ -747,15 +918,17 @@
               <td><span class="cell-cat">Dry goods</span></td>
               <td class="tabular">loaf</td>
               <td class="tabular" style="text-align:right">20</td>
+              <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Bread &amp; Co</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
               <td class="cell-timestamp">1 week ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openItemDrawer('sourdough')">Edit</button>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Sourdough Bread" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('sourdough')"><i class="ti ti-edit"></i>Edit item</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('sourdough')"><i class="ti ti-link"></i>Manage suppliers</button>
                       <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
                       <div class="overflow-menu-divider"></div>
                       <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Sourdough Bread', 3, 5, 2)"><i class="ti ti-trash"></i>Remove item</button>
@@ -770,15 +943,17 @@
               <td><span class="cell-cat">Dry goods</span></td>
               <td class="tabular">bottle</td>
               <td class="tabular" style="text-align:right">8</td>
+              <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Mediterranean Foods</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
               <td class="cell-timestamp">1 week ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openItemDrawer('olive-oil')">Edit</button>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Olive Oil 1L" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('olive-oil')"><i class="ti ti-edit"></i>Edit item</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('olive-oil')"><i class="ti ti-link"></i>Manage suppliers</button>
                       <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
                       <div class="overflow-menu-divider"></div>
                       <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Olive Oil 1L', 4, 7, 4)"><i class="ti ti-trash"></i>Remove item</button>
@@ -793,15 +968,17 @@
               <td><span class="cell-cat">Dairy</span></td>
               <td class="tabular">carton</td>
               <td class="tabular" style="text-align:right">15</td>
+              <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Farm Fresh</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
               <td class="cell-timestamp">2 weeks ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openItemDrawer('milk')">Edit</button>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Whole Milk 2L" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('milk')"><i class="ti ti-edit"></i>Edit item</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('milk')"><i class="ti ti-link"></i>Manage suppliers</button>
                       <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
                       <div class="overflow-menu-divider"></div>
                       <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Whole Milk 2L', 2, 3, 1)"><i class="ti ti-trash"></i>Remove item</button>
@@ -816,15 +993,17 @@
               <td><span class="cell-cat">Produce</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">12</td>
+              <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
               <td class="cell-timestamp">2 weeks ago</td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Edit</button>
+                  <button class="link-action" onclick="openItemDrawer('tomatoes')">Edit</button>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Roma Tomatoes" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit par level</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('tomatoes')"><i class="ti ti-edit"></i>Edit item</button>
+                      <button class="overflow-menu-item" onclick="openItemDrawer('tomatoes')"><i class="ti ti-link"></i>Manage suppliers</button>
                       <button class="overflow-menu-item"><i class="ti ti-building-store"></i>Assign to groups</button>
                       <div class="overflow-menu-divider"></div>
                       <button class="overflow-menu-item destructive" onclick="openRemoveDialog('Roma Tomatoes', 3, 4, 2)"><i class="ti ti-trash"></i>Remove item</button>
@@ -980,6 +1159,76 @@
     </div><!-- /napp-canvas -->
   </div><!-- /page-body -->
 
+  <!-- Item detail drawer (PIM) -->
+  <div class="item-drawer-backdrop" id="drawer-backdrop" onclick="closeItemDrawer()"></div>
+  <aside class="item-drawer" id="item-drawer" aria-label="Item details" role="dialog" aria-modal="true">
+    <div class="drawer-head">
+      <div class="drawer-head-left">
+        <span class="drawer-internal-id" id="drawer-id">INT-0000</span>
+        <span class="drawer-item-name" id="drawer-name">Item name</span>
+        <span class="drawer-item-meta" id="drawer-meta">Category · UoM</span>
+      </div>
+      <button class="drawer-close" onclick="closeItemDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="drawer-body">
+
+      <!-- Basic details -->
+      <div>
+        <div class="drawer-section-label">Basic details</div>
+        <div class="drawer-fields">
+          <div class="drawer-field">
+            <label>Buyer name</label>
+            <div class="field-val" id="drawer-d-name">—</div>
+          </div>
+          <div class="drawer-field">
+            <label>Category</label>
+            <div class="field-val" id="drawer-d-cat">—</div>
+          </div>
+          <div class="drawer-field">
+            <label>Unit of measure</label>
+            <div class="field-val" id="drawer-d-uom">—</div>
+          </div>
+          <div class="drawer-field drawer-field-full">
+            <label>Description</label>
+            <div class="field-val drawer-desc" id="drawer-d-desc">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linked suppliers -->
+      <div>
+        <div class="drawer-section-label">Linked suppliers</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+          <table class="sku-table">
+            <thead>
+              <tr>
+                <th>Supplier</th>
+                <th>Their SKU</th>
+                <th>Pack size</th>
+                <th>Last cost</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sku-tbody"></tbody>
+          </table>
+        </div>
+        <button class="sku-add-btn" onclick="addSkuRow()"><i class="ti ti-plus"></i>Link supplier SKU</button>
+      </div>
+
+      <!-- Par levels -->
+      <div>
+        <div class="drawer-section-label">Par levels by group</div>
+        <div class="par-grid" id="drawer-pars"></div>
+      </div>
+
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-outline" onclick="closeItemDrawer()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItemDrawer()"><i class="ti ti-check"></i>Save changes</button>
+    </div>
+  </aside>
+
   <!-- Remove item confirm dialog -->
   <dialog id="remove-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
     <div class="dialog-inner">
@@ -1120,9 +1369,157 @@
       document.getElementById('import-body').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
-    /* Simulate upload progress */
-    function simulateUpload() {
-      document.getElementById('upload-progress').classList.add('show');
+    /* ── Item drawer (PIM) ── */
+    const ITEM_DATA = {
+      'chicken-breast': {
+        id: 'INT-0001', name: 'Chicken Breast 500g', category: 'Protein', uom: 'kg',
+        description: 'Fresh chicken breast, 500g portions. Used across main dishes and salads.',
+        skus: [
+          { id: 's1', supplier: 'Sydney Butchers Co.', sku: 'SB-CHK-500', pack: '500g', price: '$8.40/kg', preferred: true },
+          { id: 's2', supplier: 'Fresh Direct', sku: 'FD-0441', pack: '1kg', price: '$9.10/kg', preferred: false }
+        ],
+        pars: [{ group: 'NSW Metro', value: '10 kg' }, { group: 'VIC Metro', value: '8 kg' }, { group: 'QLD Metro', value: '6 kg' }]
+      },
+      'avocado': {
+        id: 'INT-0002', name: 'Avocado', category: 'Produce', uom: 'each',
+        description: 'Ripe Hass avocados. Multiple sourcing options available for price benchmarking.',
+        skus: [
+          { id: 's1', supplier: 'Green Farmers Market', sku: 'GFM-AVOC', pack: 'each', price: '$1.20/ea', preferred: true },
+          { id: 's2', supplier: 'Fresh Direct', sku: 'FD-0092', pack: 'each', price: '$1.35/ea', preferred: false },
+          { id: 's3', supplier: 'Premium Produce', sku: 'PP-AVO-01', pack: 'each', price: '$1.55/ea', preferred: false }
+        ],
+        pars: [{ group: 'NSW Metro', value: '50 each' }, { group: 'VIC Metro', value: '40 each' }]
+      },
+      'feta': {
+        id: 'INT-0003', name: 'Feta Cheese', category: 'Dairy', uom: 'kg',
+        description: 'Crumbled feta for salads and pastries.',
+        skus: [
+          { id: 's1', supplier: 'Dairy Direct', sku: 'DD-FTA-1KG', pack: '1kg block', price: '$18.50/kg', preferred: true },
+          { id: 's2', supplier: 'Artisan Dairy', sku: 'AD-FETA', pack: '500g', price: '$22.00/kg', preferred: false }
+        ],
+        pars: [{ group: 'NSW Metro', value: '5 kg' }, { group: 'VIC Metro', value: '4 kg' }, { group: 'QLD Metro', value: '3 kg' }, { group: 'SA Metro', value: '2 kg' }]
+      },
+      'sourdough': {
+        id: 'INT-0004', name: 'Sourdough Bread', category: 'Dry goods', uom: 'loaf',
+        description: 'Artisan sourdough loaf. Bread & Co is the sole approved supplier.',
+        skus: [
+          { id: 's1', supplier: 'Bread & Co', sku: 'BC-SDGH', pack: '800g loaf', price: '$4.20/loaf', preferred: true }
+        ],
+        pars: [{ group: 'NSW Metro', value: '20 loaf' }, { group: 'VIC Metro', value: '16 loaf' }, { group: 'QLD Metro', value: '12 loaf' }]
+      },
+      'olive-oil': {
+        id: 'INT-0005', name: 'Olive Oil 1L', category: 'Dry goods', uom: 'bottle',
+        description: 'Extra virgin olive oil, 1L. Used in cooking and dressings.',
+        skus: [
+          { id: 's1', supplier: 'Mediterranean Foods', sku: 'MF-OO-1L', pack: '1L bottle', price: '$12.80/btl', preferred: true },
+          { id: 's2', supplier: 'Gourmet Direct', sku: 'GD-OLV1L', pack: '1L bottle', price: '$14.50/btl', preferred: false }
+        ],
+        pars: [{ group: 'NSW Metro', value: '8 bottle' }, { group: 'VIC Metro', value: '6 bottle' }, { group: 'QLD Metro', value: '5 bottle' }, { group: 'SA Metro', value: '4 bottle' }]
+      },
+      'milk': {
+        id: 'INT-0006', name: 'Whole Milk 2L', category: 'Dairy', uom: 'carton',
+        description: 'Full-cream whole milk in 2L cartons.',
+        skus: [
+          { id: 's1', supplier: 'Farm Fresh', sku: 'FF-MLK-2L', pack: '2L carton', price: '$3.10/ctn', preferred: true },
+          { id: 's2', supplier: 'Dairy Direct', sku: 'DD-MLK-2L', pack: '2L carton', price: '$2.95/ctn', preferred: false }
+        ],
+        pars: [{ group: 'NSW Metro', value: '15 carton' }, { group: 'VIC Metro', value: '12 carton' }]
+      },
+      'tomatoes': {
+        id: 'INT-0007', name: 'Roma Tomatoes', category: 'Produce', uom: 'kg',
+        description: 'Roma tomatoes for sauces, salads and garnish.',
+        skus: [
+          { id: 's1', supplier: 'Green Farmers Market', sku: 'GFM-TOMA', pack: 'loose kg', price: '$3.20/kg', preferred: true },
+          { id: 's2', supplier: 'Fresh Direct', sku: 'FD-TOM-01', pack: 'loose kg', price: '$2.80/kg', preferred: false }
+        ],
+        pars: [{ group: 'NSW Metro', value: '12 kg' }, { group: 'VIC Metro', value: '10 kg' }, { group: 'QLD Metro', value: '8 kg' }]
+      }
+    };
+
+    let activeItemKey = null;
+
+    function renderSkuTable(skus) {
+      const tbody = document.getElementById('sku-tbody');
+      tbody.innerHTML = skus.map(s => `
+        <tr data-sku-id="${s.id}">
+          <td style="font-weight:600">${s.supplier}</td>
+          <td><span class="sku-code">${s.sku}</span></td>
+          <td style="color:var(--text-soft)">${s.pack}</td>
+          <td><span class="sku-price">${s.price}</span></td>
+          <td>${s.preferred
+            ? '<span class="sku-preferred-badge"><i class="ti ti-star-filled" style="font-size:9px"></i>Preferred</span>'
+            : `<button class="sku-set-preferred" onclick="setPreferred('${s.id}')">Set preferred</button>`
+          }</td>
+          <td><button class="sku-remove" title="Remove supplier link" onclick="removeSku('${s.id}')"><i class="ti ti-x"></i></button></td>
+        </tr>`).join('');
+    }
+
+    function openItemDrawer(key) {
+      const item = ITEM_DATA[key];
+      if (!item) return;
+      activeItemKey = key;
+      document.getElementById('drawer-id').textContent = item.id;
+      document.getElementById('drawer-name').textContent = item.name;
+      document.getElementById('drawer-meta').textContent = item.category + ' · ' + item.uom;
+      document.getElementById('drawer-d-name').textContent = item.name;
+      document.getElementById('drawer-d-cat').textContent = item.category;
+      document.getElementById('drawer-d-uom').textContent = item.uom;
+      document.getElementById('drawer-d-desc').textContent = item.description;
+      renderSkuTable(item.skus);
+      document.getElementById('drawer-pars').innerHTML = item.pars.map(p =>
+        `<div class="par-item"><span class="par-group">${p.group}</span><span class="par-value">${p.value}</span></div>`
+      ).join('');
+      document.getElementById('item-drawer').classList.add('open');
+      document.getElementById('drawer-backdrop').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeItemDrawer() {
+      document.getElementById('item-drawer').classList.remove('open');
+      document.getElementById('drawer-backdrop').classList.remove('open');
+      document.body.style.overflow = '';
+      activeItemKey = null;
+    }
+
+    function setPreferred(skuId) {
+      if (!activeItemKey) return;
+      const item = ITEM_DATA[activeItemKey];
+      item.skus.forEach(s => s.preferred = (s.id === skuId));
+      renderSkuTable(item.skus);
+      invToast('Preferred supplier updated');
+    }
+
+    function removeSku(skuId) {
+      if (!activeItemKey) return;
+      const item = ITEM_DATA[activeItemKey];
+      if (item.skus.length <= 1) { invToast('At least one supplier link required'); return; }
+      const removing = item.skus.find(s => s.id === skuId);
+      if (removing && removing.preferred && item.skus.length > 1) {
+        item.skus = item.skus.filter(s => s.id !== skuId);
+        item.skus[0].preferred = true;
+      } else {
+        item.skus = item.skus.filter(s => s.id !== skuId);
+      }
+      renderSkuTable(item.skus);
+      invToast('Supplier link removed');
+    }
+
+    function addSkuRow() {
+      if (!activeItemKey) return;
+      const item = ITEM_DATA[activeItemKey];
+      const newId = 'new-' + Date.now();
+      item.skus.push({ id: newId, supplier: 'New supplier', sku: 'SKU-000', pack: '—', price: '—', preferred: false });
+      renderSkuTable(item.skus);
+      invToast('Supplier row added — edit details to complete');
+    }
+
+    function saveItemDrawer() {
+      const item = activeItemKey ? ITEM_DATA[activeItemKey] : null;
+      closeItemDrawer();
+      if (item) {
+        addInvActivity('<strong>' + item.name + '</strong> supplier links updated', 'HQ Administrator');
+        invToast(item.name + ' saved');
+      }
     }
   </script>
 </body>
