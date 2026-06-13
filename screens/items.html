@@ -125,6 +125,7 @@
     .data-table th { padding:var(--space-md) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); white-space:nowrap; }
     .data-table td { padding:var(--space-md) var(--space-lg); color:var(--text); border-bottom:1px solid var(--border); vertical-align:middle; }
     .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table tbody tr { cursor: pointer; }
     .data-table tbody tr:hover td { background:var(--surface-soft); }
     .data-table .tabular { font-feature-settings:'tnum' 1; }
     .cell-name { font-weight:600; }
@@ -418,87 +419,87 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr onclick="openItemDrawer('chicken-breast')">
                 <td class="cell-name">Chicken Breast 500g</td>
                 <td><span class="cell-cat">Protein</span></td>
                 <td class="tabular">kg</td>
                 
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Sydney Butchers</span><span class="supplier-chip more">+1</span></div></td>
-                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('chicken-breast')">4</button></td>
+                <td class="tabular" style="text-align:right">4</td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
                 <td class="cell-timestamp">2h ago</td>
-                <td class="overflow-cell"><div class="row-actions">
-                  <button class="link-action" onclick="openItemDrawer('chicken-breast')">Edit</button>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
                   <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Chicken Breast 500g',3,8,2)"><i class="ti ti-trash"></i>Remove item</button></div>
                   </div>
                 </div></td>
               </tr>
-              <tr>
+              <tr onclick="openItemDrawer('avocado')">
                 <td class="cell-name">Avocado</td>
                 <td><span class="cell-cat">Produce</span></td>
                 <td class="tabular">each</td>
                 
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+2</span></div></td>
-                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('avocado')">2</button></td>
+                <td class="tabular" style="text-align:right">2</td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
                 <td class="cell-timestamp">1 day ago</td>
-                <td class="overflow-cell"><div class="row-actions">
-                  <button class="link-action" onclick="openItemDrawer('avocado')">Edit</button>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
                   <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('avocado')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('avocado')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Avocado',2,4,1)"><i class="ti ti-trash"></i>Remove item</button></div>
                   </div>
                 </div></td>
               </tr>
-              <tr>
+              <tr onclick="openItemDrawer('feta')">
                 <td class="cell-name">Feta Cheese</td>
                 <td><span class="cell-cat">Dairy</span></td>
                 <td class="tabular">kg</td>
                 
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Dairy Direct</span><span class="supplier-chip more">+1</span></div></td>
-                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('feta')">3</button></td>
+                <td class="tabular" style="text-align:right">3</td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
                 <td class="cell-timestamp">3 days ago</td>
-                <td class="overflow-cell"><div class="row-actions">
-                  <button class="link-action" onclick="openItemDrawer('feta')">Edit</button>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
                   <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('feta')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('feta')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Feta Cheese',4,6,3)"><i class="ti ti-trash"></i>Remove item</button></div>
                   </div>
                 </div></td>
               </tr>
-              <tr>
+              <tr onclick="openItemDrawer('sourdough')">
                 <td class="cell-name">Sourdough Bread</td>
                 <td><span class="cell-cat">Dry goods</span></td>
                 <td class="tabular">loaf</td>
                 
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Bread &amp; Co</span></div></td>
-                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('sourdough')">2</button></td>
+                <td class="tabular" style="text-align:right">2</td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
                 <td class="cell-timestamp">1 week ago</td>
-                <td class="overflow-cell"><div class="row-actions">
-                  <button class="link-action" onclick="openItemDrawer('sourdough')">Edit</button>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
                   <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('sourdough')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('sourdough')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Sourdough Bread',3,5,2)"><i class="ti ti-trash"></i>Remove item</button></div>
                   </div>
                 </div></td>
               </tr>
-              <tr>
+              <tr onclick="openItemDrawer('olive-oil')">
                 <td class="cell-name">Olive Oil 1L</td>
                 <td><span class="cell-cat">Dry goods</span></td>
                 <td class="tabular">bottle</td>
                 
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Mediterranean Foods</span><span class="supplier-chip more">+1</span></div></td>
-                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('olive-oil')">5</button></td>
+                <td class="tabular" style="text-align:right">5</td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
                 <td class="cell-timestamp">1 week ago</td>
-                <td class="overflow-cell"><div class="row-actions">
-                  <button class="link-action" onclick="openItemDrawer('olive-oil')">Edit</button>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
                   <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('olive-oil')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('olive-oil')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Olive Oil 1L',4,7,4)"><i class="ti ti-trash"></i>Remove item</button></div>
                   </div>
                 </div></td>
               </tr>
-              <tr>
+              <tr onclick="openItemDrawer('milk')">
                 <td class="cell-name">Whole Milk 2L</td>
                 <td><span class="cell-cat">Dairy</span></td>
                 <td class="tabular">carton</td>
@@ -507,24 +508,24 @@
                 <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
                 <td class="cell-timestamp">2 weeks ago</td>
-                <td class="overflow-cell"><div class="row-actions">
-                  <button class="link-action" onclick="openItemDrawer('milk')">Edit</button>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
                   <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('milk')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('milk')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Whole Milk 2L',2,3,1)"><i class="ti ti-trash"></i>Remove item</button></div>
                   </div>
                 </div></td>
               </tr>
-              <tr>
+              <tr onclick="openItemDrawer('tomatoes')">
                 <td class="cell-name">Roma Tomatoes</td>
                 <td><span class="cell-cat">Produce</span></td>
                 <td class="tabular">kg</td>
                 
                 <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+1</span></div></td>
-                <td class="tabular" style="text-align:right"><button class="link-action" onclick="openItemDrawer('tomatoes')">3</button></td>
+                <td class="tabular" style="text-align:right">3</td>
                 <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
                 <td class="cell-timestamp">2 weeks ago</td>
-                <td class="overflow-cell"><div class="row-actions">
-                  <button class="link-action" onclick="openItemDrawer('tomatoes')">Edit</button>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
                   <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('tomatoes')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('tomatoes')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Roma Tomatoes',3,4,2)"><i class="ti ti-trash"></i>Remove item</button></div>
                   </div>
