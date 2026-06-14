@@ -313,6 +313,52 @@
       color: var(--spinach); white-space: nowrap;
     }
 
+    /* Nomni Supply connection */
+    .ns-supply-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      background: color-mix(in srgb, var(--fern) 12%, transparent);
+      color: var(--fern); border: 1px solid color-mix(in srgb, var(--fern) 25%, transparent);
+    }
+    .ns-connection-card {
+      background: var(--surface);
+      border: 1.5px solid color-mix(in srgb, var(--fern) 25%, transparent);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .ns-connection-head {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-md) var(--space-lg);
+      background: color-mix(in srgb, var(--fern) 8%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--fern) 15%, transparent);
+    }
+    .ns-connection-head i { color: var(--fern); font-size: 15px; }
+    .ns-connection-title { font-size: 13px; font-weight: 700; color: var(--text); }
+    .ns-connection-body { padding: var(--space-md) var(--space-lg); }
+
+    /* Locked fields (managed by supplier via Nomni Supply) */
+    .field-locked .field-input {
+      background: var(--surface-soft); color: var(--text-soft);
+      cursor: not-allowed; border-color: var(--border);
+    }
+    .field-locked .field-input:focus { border-color: var(--border); box-shadow: none; }
+    .field-lock-note {
+      display: flex; align-items: center; gap: 3px;
+      font-size: 11px; color: var(--text-soft); margin-top: 1px;
+    }
+    .field-lock-note i { font-size: 11px; }
+
+    /* Bank details NS notice */
+    .ns-bank-notice {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: color-mix(in srgb, var(--fern) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--fern) 20%, transparent);
+      border-radius: var(--radius-sm); font-size: 12px; color: var(--text-soft);
+      margin-bottom: var(--space-md);
+    }
+    .ns-bank-notice i { color: var(--fern); font-size: 13px; flex-shrink: 0; }
+
     /* Toast */
     #toast-wrap { position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center; }
   </style>
@@ -338,6 +384,7 @@
             <span class="status-pill active">Active</span>
             <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-map-pin" style="font-size:12px;"></i>Sydney, NSW</span>
             <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-tag" style="font-size:12px;"></i>Meat &amp; Seafood</span>
+            <span class="ns-supply-pill"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span>
           </div>
         </div>
       </div>
@@ -375,9 +422,10 @@
                       <label class="field-label">Supplier name <span style="color:var(--status-risk-fg);">*</span></label>
                       <input class="field-input" type="text" value="Sydney Butchers Co."/>
                     </div>
-                    <div class="field-group">
-                      <label class="field-label">ABN <span class="opt">(optional)</span></label>
-                      <input class="field-input" type="text" value="54 321 987 654" placeholder="XX XXX XXX XXX" style="font-family:'IBM Plex Mono',monospace;"/>
+                    <div class="field-group field-locked">
+                      <label class="field-label">ABN <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                      <input class="field-input" type="text" value="54 321 987 654" readonly style="font-family:'IBM Plex Mono',monospace;"/>
+                      <div class="field-lock-note"><i class="ti ti-lock"></i>Verified by supplier on Nomni Supply</div>
                     </div>
                   </div>
                   <div class="form-row">
@@ -464,26 +512,27 @@
                     </div>
                   </div>
                   <div style="border-top:1px solid var(--border);padding-top:var(--space-lg);">
-                    <div class="form-section-title" style="margin-bottom:var(--space-lg);">Bank details <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(for remittance advice)</span></div>
+                    <div class="form-section-title" style="margin-bottom:var(--space-md);">Bank details <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(for remittance advice)</span></div>
+                    <div class="ns-bank-notice"><i class="ti ti-plug-connected"></i>Managed by Sydney Butchers Co. on Nomni Supply — read-only here.</div>
                     <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
                       <div class="form-row">
-                        <div class="field-group">
-                          <label class="field-label">Bank name <span class="opt">(optional)</span></label>
-                          <input class="field-input" type="text" value="Commonwealth Bank of Australia"/>
+                        <div class="field-group field-locked">
+                          <label class="field-label">Bank name <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                          <input class="field-input" type="text" value="Commonwealth Bank of Australia" readonly/>
                         </div>
-                        <div class="field-group">
-                          <label class="field-label">BSB <span class="opt">(optional)</span></label>
-                          <input class="field-input" type="text" value="062-000" placeholder="XXX-XXX" style="font-family:'IBM Plex Mono',monospace;"/>
+                        <div class="field-group field-locked">
+                          <label class="field-label">BSB <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                          <input class="field-input" type="text" value="062-000" readonly style="font-family:'IBM Plex Mono',monospace;"/>
                         </div>
                       </div>
                       <div class="form-row">
-                        <div class="field-group">
-                          <label class="field-label">Account number <span class="opt">(optional)</span></label>
-                          <input class="field-input" type="text" value="1234 5678" placeholder="XXXXXXXX" style="font-family:'IBM Plex Mono',monospace;"/>
+                        <div class="field-group field-locked">
+                          <label class="field-label">Account number <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                          <input class="field-input" type="text" value="1234 5678" readonly style="font-family:'IBM Plex Mono',monospace;"/>
                         </div>
-                        <div class="field-group">
-                          <label class="field-label">Account name <span class="opt">(optional)</span></label>
-                          <input class="field-input" type="text" value="Sydney Butchers Co. Pty Ltd"/>
+                        <div class="field-group field-locked">
+                          <label class="field-label">Account name <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                          <input class="field-input" type="text" value="Sydney Butchers Co. Pty Ltd" readonly/>
                         </div>
                       </div>
                     </div>
@@ -698,6 +747,28 @@
 
       <!-- ── Aside ── -->
       <aside class="aside-stack">
+
+        <!-- Nomni Supply connection card -->
+        <div class="ns-connection-card">
+          <div class="ns-connection-head">
+            <i class="ti ti-plug-connected"></i>
+            <span class="ns-connection-title">Nomni Supply</span>
+            <span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--fern);">Connected</span>
+          </div>
+          <div class="ns-connection-body">
+            <div class="meta-kv">
+              <div class="meta-row">
+                <span class="meta-row-label">Connected since</span>
+                <span class="meta-row-val">Mar 2024</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row-label">Last sync</span>
+                <span class="meta-row-val">Today · 6:00am</span>
+              </div>
+            </div>
+            <p style="font-size:11px;color:var(--text-soft);margin-top:var(--space-sm);line-height:1.5;">ABN and bank details are managed by the supplier directly on Nomni Supply.</p>
+          </div>
+        </div>
 
         <!-- Status card -->
         <div class="card">

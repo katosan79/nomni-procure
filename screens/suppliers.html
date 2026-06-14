@@ -137,6 +137,14 @@
     }
     .cell-name { font-weight: 600; color: var(--text); }
     .cell-sub { font-size: 12px; color: var(--text-soft); }
+    .ns-supply-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 700; padding: 1px 6px;
+      border-radius: var(--radius-pill); vertical-align: 1px;
+      background: color-mix(in srgb, var(--fern) 12%, transparent);
+      color: var(--fern); border: 1px solid color-mix(in srgb, var(--fern) 25%, transparent);
+      white-space: nowrap;
+    }
 
     /* Category pills */
     .cat-list { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -448,7 +456,7 @@
                 <div class="cell-supplier">
                   <div class="supplier-avatar">SB</div>
                   <div>
-                    <div class="cell-name">Sydney Butchers Co. <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-name">Sydney Butchers Co. <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i> <span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span></div>
                     <div class="cell-sub">orders@sydneybutchers.com.au</div>
                   </div>
                 </div>
@@ -489,7 +497,7 @@
                 <div class="cell-supplier">
                   <div class="supplier-avatar">GF</div>
                   <div>
-                    <div class="cell-name">Green Farmers Market <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-name">Green Farmers Market <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i> <span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span></div>
                     <div class="cell-sub">supply@greenfarmers.com.au</div>
                   </div>
                 </div>
@@ -571,7 +579,7 @@
                 <div class="cell-supplier">
                   <div class="supplier-avatar">PD</div>
                   <div>
-                    <div class="cell-name">Pacific Drinks Wholesale <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-name">Pacific Drinks Wholesale <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i> <span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span></div>
                     <div class="cell-sub">trade@pacificdrinks.com.au</div>
                   </div>
                 </div>
