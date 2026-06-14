@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>CBD Cluster — Nomni HQ</title>
+  <title>Outlet Group — Nomni HQ</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
   <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
@@ -166,7 +166,7 @@
     .colour-swatch:hover { transform: scale(1.12); }
     .colour-swatch.selected { border-color: var(--text); }
 
-    /* Venues table */
+    /* Outlets table */
     .data-table { width: 100%; border-collapse: collapse; }
     .data-table th {
       font-size: 11px;
@@ -360,22 +360,22 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=5" data-active="venues"></script>
+  <script src="../shared/shell.js?v=5" data-active="outlets"></script>
 
   <div class="page-body">
     <div class="napp-canvas">
 
       <!-- Back nav -->
-      <a class="back-nav" href="venues.html">
-        <i class="ti ti-chevron-left" style="font-size:14px;"></i>Venues
+      <a class="back-nav" href="outlets.html">
+        <i class="ti ti-chevron-left" style="font-size:14px;"></i>Outlets
       </a>
 
       <!-- Page header -->
       <div class="page-header">
         <div class="page-header-left">
-          <div class="page-eyebrow">Venue Group</div>
+          <div class="page-eyebrow">Outlet Group</div>
           <h1 class="page-title">CBD Cluster</h1>
-          <div class="page-sub">4 venues · HQ Mode · Sydney CBD</div>
+          <div class="page-sub">4 outlets · HQ Mode · Sydney CBD</div>
         </div>
         <div class="page-header-right">
           <button class="btn btn-outline" onclick="discard()">Discard</button>
@@ -428,7 +428,7 @@
                     <option value="hybrid">Hybrid</option>
                     <option value="standalone">Standalone</option>
                   </select>
-                  <div class="field-hint">New venues added to this group will default to this operating mode. Individual venues can be overridden in their own settings.</div>
+                  <div class="field-hint">New outlets added to this group will default to this operating mode. Individual outlets can be overridden in their own settings.</div>
                 </div>
 
                 <!-- Group colour (full-width) -->
@@ -477,20 +477,20 @@
             </div><!-- /card-body -->
           </div><!-- /card -->
 
-          <!-- Card 2: Venues in this group -->
+          <!-- Card 2: Outlets in this group -->
           <div class="card" style="overflow:visible;">
             <div class="card-head">
               <div class="card-title">
                 <i class="ti ti-building-store" style="font-size:16px;color:var(--text-soft);"></i>
-                Venues
-                <span style="font-size:12px;font-weight:700;padding:2px 10px;border-radius:var(--radius-pill);background:var(--mint);color:var(--spinach);">4 venues</span>
+                Outlets
+                <span style="font-size:12px;font-weight:700;padding:2px 10px;border-radius:var(--radius-pill);background:var(--mint);color:var(--spinach);">4 outlets</span>
               </div>
             </div>
             <div style="overflow-x:auto;">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Venue</th>
+                    <th>Outlet</th>
                     <th>Operating mode</th>
                     <th>Status</th>
                     <th style="width:80px;"></th>
@@ -501,25 +501,25 @@
                     <td style="font-weight:600;">Sydney Central Kitchen</td>
                     <td><span class="mode-pill hq">HQ Mode</span></td>
                     <td><span class="status-dot">Active</span></td>
-                    <td><a href="venue-detail.html" class="link-action">Configure</a></td>
+                    <td><a href="outlet-detail.html" class="link-action">Configure</a></td>
                   </tr>
                   <tr>
                     <td style="font-weight:600;">Darling Street Bistro</td>
                     <td><span class="mode-pill hq">HQ Mode</span></td>
                     <td><span class="status-dot">Active</span></td>
-                    <td><a href="venue-detail.html" class="link-action">Configure</a></td>
+                    <td><a href="outlet-detail.html" class="link-action">Configure</a></td>
                   </tr>
                   <tr>
                     <td style="font-weight:600;">Harbour Kitchen</td>
                     <td><span class="mode-pill hq">HQ Mode</span></td>
                     <td><span class="status-dot">Active</span></td>
-                    <td><a href="venue-detail.html" class="link-action">Configure</a></td>
+                    <td><a href="outlet-detail.html" class="link-action">Configure</a></td>
                   </tr>
                   <tr>
                     <td style="font-weight:600;">The CBD Rooftop</td>
                     <td><span class="mode-pill hq">HQ Mode</span></td>
                     <td><span class="status-dot">Active</span></td>
-                    <td><a href="venue-detail.html" class="link-action">Configure</a></td>
+                    <td><a href="outlet-detail.html" class="link-action">Configure</a></td>
                   </tr>
                 </tbody>
               </table>
@@ -528,9 +528,9 @@
               <button
                 class="btn btn-outline"
                 style="height:32px;font-size:13px;"
-                onclick="showToast('Add venue to group — opens venue picker')"
+                onclick="showToast('Add outlet to group — opens outlet picker')"
               >
-                <i class="ti ti-plus"></i>Add venue to group
+                <i class="ti ti-plus"></i>Add outlet to group
               </button>
             </div>
           </div>
@@ -544,7 +544,7 @@
               </div>
             </div>
             <p style="font-size:13px;color:var(--text-soft);padding:var(--space-lg) var(--space-xl) 0;margin:0;">
-              Control what HQ pushes down to venues in this group. Changes take effect on the next propagation cycle or when manually triggered.
+              Control what HQ pushes down to outlets in this group. Changes take effect on the next propagation cycle or when manually triggered.
             </p>
 
             <!-- Toggle rows -->
@@ -553,7 +553,7 @@
               <div class="toggle-row">
                 <div class="toggle-row-label">
                   <strong>Market list</strong>
-                  <span>Push HQ market list to all venues in this group</span>
+                  <span>Push HQ market list to all outlets in this group</span>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" checked/>
@@ -627,7 +627,7 @@
             <div style="padding:var(--space-lg) var(--space-xl); border-top:1px solid var(--border); display:flex; gap:var(--space-sm);">
               <button
                 class="btn btn-primary"
-                onclick="showToast('Propagation triggered — changes will reach 4 venues within 2 minutes')"
+                onclick="showToast('Propagation triggered — changes will reach 4 outlets within 2 minutes')"
               >
                 <i class="ti ti-broadcast"></i>Trigger propagation now
               </button>
@@ -662,7 +662,7 @@
                 <span class="kv-val">2 Jun 2026</span>
               </div>
               <div class="kv-row">
-                <span class="kv-key">Venues</span>
+                <span class="kv-key">Outlets</span>
                 <span class="kv-val">4 active</span>
               </div>
               <div class="kv-row">
@@ -756,7 +756,7 @@
             </div>
             <div class="card-body">
               <div style="font-size:13px;font-weight:600;color:var(--status-risk-fg);margin-bottom:4px;">Delete group</div>
-              <div style="font-size:12px;color:var(--text-soft);margin-bottom:var(--space-md);">Venues in this group will become ungrouped. This cannot be undone.</div>
+              <div style="font-size:12px;color:var(--text-soft);margin-bottom:var(--space-md);">Outlets in this group will become ungrouped. This cannot be undone.</div>
               <button
                 class="btn"
                 style="background:var(--status-risk-bg);color:var(--status-risk-fg);border:none;height:32px;font-size:13px;"
@@ -787,7 +787,7 @@
     }
 
     function discard() {
-      window.location.href = 'venues.html';
+      window.location.href = 'outlets.html';
     }
 
     function saveGroup() {
@@ -795,9 +795,9 @@
     }
 
     function confirmDelete() {
-      if (confirm('Delete CBD Cluster? All 4 venues will become ungrouped.')) {
-        showToast('Group deleted — venues moved to Ungrouped');
-        setTimeout(() => window.location.href = 'venues.html', 1500);
+      if (confirm('Delete CBD Cluster? All 4 outlets will become ungrouped.')) {
+        showToast('Group deleted — outlets moved to Ungrouped');
+        setTimeout(() => window.location.href = 'outlets.html', 1500);
       }
     }
 

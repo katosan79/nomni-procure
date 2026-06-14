@@ -41,17 +41,17 @@ Roles are template wrappers over a permission engine of 200+ discrete permission
 
 ### Operating Modes
 
-Each venue group runs in one of three modes:
+Each outlet group runs in one of three modes:
 
 - **HQ Mode** — all market lists, recipes, and POS mappings are governed centrally; outlets have read-only views
 - **Hybrid** — outlets can raise orders and run counts; HQ controls pricing and recipes
-- **Standalone** — individual outlet operates independently (shown as "Ungrouped" in Venues)
+- **Standalone** — individual outlet operates independently (shown as "Ungrouped" in Outlets)
 
 ### Organisational Hierarchy
 
 HQ → Brand → Region → Outlet Group → Outlet
 
-The prototype shows 124 outlets across four outlet groups: NSW Metro (38), VIC Metro (29), QLD Coastal (32), SA&WA (25). The Venues screen shows a smaller 12-venue demo dataset (CBD Cluster / Beachside / Suburban / Ungrouped) with the same structural model.
+The prototype shows 124 outlets across four outlet groups: NSW Metro (38), VIC Metro (29), QLD Coastal (32), SA&WA (25). The Outlets screen shows a smaller 12-outlet demo dataset (CBD Cluster / Beachside / Suburban / Ungrouped) with the same structural model.
 
 ### Buyer-Primary Item Model
 
@@ -77,7 +77,7 @@ The persistent left-side shell nav renders the following items:
 | POS mapping | `pos-mapping.html` | HQ roles |
 | Reporting | `reporting.html` | HQ Admin, HQ Approver, Finance, Outlet Manager (view) |
 | Suppliers | `suppliers.html` | HQ Admin |
-| Venues | `venues.html` | HQ Admin |
+| Outlets | `outlets.html` | HQ Admin |
 | Users | `users.html` | HQ Admin |
 
 ### URL Structure (prototype filenames)
@@ -105,7 +105,7 @@ The persistent left-side shell nav renders the following items:
   pos-mapping.html
   reporting.html
   suppliers.html
-  venues.html
+  outlets.html
   users.html
 ```
 
@@ -646,12 +646,12 @@ Opening stock
 
 **Supplier categories (9):** Meat & Seafood, Produce, Dairy, Dry Goods, Beverages, Bakery, Packaging, Cleaning, Equipment
 
-**Table columns:** Supplier (avatar + name + verified badge), Categories (pills), Contact (email + phone), Venues supplied, Status (Active / Pending / Inactive)
+**Table columns:** Supplier (avatar + name + verified badge), Categories (pills), Contact (email + phone), Outlets supplied, Status (Active / Pending / Inactive)
 
 **Verified badge:** `ti-rosette-discount-check-filled` — shown on Sydney Butchers Co., Green Farmers Market, Artisan Bakehouse, Pacific Drinks Wholesale, Clean Pack Solutions
 
 **Sample data:**
-| Supplier | Categories | Venues | Status |
+| Supplier | Categories | Outlets | Status |
 |---|---|---|---|
 | Sydney Butchers Co. | Meat & Seafood | 8 | Active, verified |
 | Green Farmers Market | Produce, Dairy | 12 | Active, verified |
@@ -670,34 +670,34 @@ Opening stock
 **Add supplier dialog fields:** Name (required), ABN, Category (required), Contact email
 
 **Row overflow menu:**
-- Active suppliers: Edit details, Venue assignments, View orders, Deactivate
+- Active suppliers: Edit details, Outlet assignments, View orders, Deactivate
 - Pending suppliers: Approve, Reject
 
 **Nomni Supply connection:** Pacific Drinks Wholesale shown as connected via Nomni Supply EDI (electronic invoice submission).
 
 ---
 
-### 3.12 Venues — `venues.html`
+### 3.12 Outlets — `outlets.html`
 
-**Purpose:** Organise outlets into venue groups with operating modes; manage procurement contacts.
+**Purpose:** Organise outlets into outlet groups with operating modes; manage procurement contacts.
 
 **Page description:** "Organise outlets by brand, region and state. Each group runs in an operating mode — HQ-governed, Hybrid, or Standalone — and can include a Central Kitchen."
 
-**Venue groups strip:** 4 clickable group cards (All venues, CBD Cluster, Beachside, Suburban) + dashed "New group" card
+**Outlet groups strip:** 4 clickable group cards (All outlets, CBD Cluster, Beachside, Suburban) + dashed "New group" card
 
-**Group card data:** Group name, venue count, area/region, Operating mode (HQ Mode / Hybrid / Standalone)
+**Group card data:** Group name, outlet count, area/region, Operating mode (HQ Mode / Hybrid / Standalone)
 
-**Table columns:** Venue, Location, Group & mode, Procurement contact, Status (Active / Inactive)
+**Table columns:** Outlet, Location, Group & mode, Procurement contact, Status (Active / Inactive)
 
 **Operating mode pills:**
 - HQ Mode (purple) — `ti-shield-lock`
 - Hybrid (amber) — `ti-git-merge`
 - Standalone (neutral) — `ti-building-store`
 
-**Central Kitchen badge:** `ti-tools-kitchen-2` CK badge on applicable venues (e.g. Sydney Central Kitchen)
+**Central Kitchen badge:** `ti-tools-kitchen-2` CK badge on applicable outlets (e.g. Sydney Central Kitchen)
 
-**Sample venues:**
-| Venue | Group | Mode |
+**Sample outlets:**
+| Outlet | Group | Mode |
 |---|---|---|
 | Sydney Central Kitchen | CBD Cluster | HQ Mode (CK) |
 | Darling Street Bistro | CBD Cluster | HQ Mode |
@@ -706,9 +706,9 @@ Opening stock
 | Parramatta Table | Suburban | Hybrid |
 | Surry Hills Social | Ungrouped | Standalone (Inactive) |
 
-**Row actions:** Configure (link), overflow (Edit details / Change group / Manage access / Deactivate; Inactive venues show Reactivate)
+**Row actions:** Configure (link), overflow (Edit details / Change group / Manage access / Deactivate; Inactive outlets show Reactivate)
 
-**Add venue dialog fields:** Venue name (required), Address, Venue group, Procurement contact
+**Add outlet dialog fields:** Outlet name (required), Address, Outlet group, Procurement contact
 
 **Create group dialog:** Placeholder — "to be wired up".
 
@@ -720,21 +720,21 @@ Opening stock
 
 **Summary:** 24 total users — 20 active, 3 invited, 1 suspended
 
-**Table columns:** User (avatar + name + email), Role (badge), Venue access (pills), Last active, Status (Active / Invited / Suspended)
+**Table columns:** User (avatar + name + email), Role (badge), Outlet access (pills), Last active, Status (Active / Invited / Suspended)
 
 **6 roles:** HQ Administrator, HQ Approver, Outlet Manager, Outlet User, Finance User, Supplier User
 
 **Sample users:**
-| User | Role | Venue access |
+| User | Role | Outlet access |
 |---|---|---|
-| Keith Tan | HQ Administrator | All venues |
-| Jane Liu | HQ Approver | All venues |
-| Sarah Okonkwo | Outlet Manager | 4 venues |
-| James Nguyen | Outlet User | 1 venue |
-| Aisha Patel | Finance User | 2 venues |
+| Keith Tan | HQ Administrator | All outlets |
+| Jane Liu | HQ Approver | All outlets |
+| Sarah Okonkwo | Outlet Manager | 4 outlets |
+| James Nguyen | Outlet User | 1 outlet |
+| Aisha Patel | Finance User | 2 outlets |
 | Mia Chen | Supplier User | Invited |
 
-**Invite user dialog fields:** Email, Role, Venue access (All venues / cluster / Select specific)
+**Invite user dialog fields:** Email, Role, Outlet access (All outlets / cluster / Select specific)
 
 **Permission matrix:**
 
@@ -894,7 +894,7 @@ Opening stock
   contact: { email, phone },
   abn, address, bank, terms,  // payment terms: 'NET 7' | 'NET 14' | 'NET 30'
   rating,
-  venuesSupplied,
+  outletsSupplied,
   status,           // 'Active' | 'Pending' | 'Inactive'
   skuLinks: [{
     internalItem,   // references Item.buyerName
@@ -905,7 +905,7 @@ Opening stock
 }
 ```
 
-### 4.7 Venue / Outlet
+### 4.7 Outlet
 
 ```javascript
 {
@@ -924,7 +924,7 @@ Opening stock
 {
   name, email, avatar,
   role,           // one of six role types
-  venueAccess,    // 'all' | group name | array of outlet names
+  outletAccess,   // 'all' | group name | array of outlet names
   lastActive,
   status          // 'Active' | 'Invited' | 'Suspended'
 }
@@ -1118,7 +1118,7 @@ Control height: `--control-h`
 
 ### Placeholder / Not Wired Up
 
-- Create group dialog in Venues (`alert('Create group dialog — to be wired up')`)
+- Create group dialog in Outlets (`alert('Create group dialog — to be wired up')`)
 - Import recipes button (no upload flow built)
 - Download template / Import items (toast-only, no actual file handling)
 - Reporting "Ask Nomni" query bar (chips shown, no backend)

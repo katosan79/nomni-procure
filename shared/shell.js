@@ -14,7 +14,7 @@
     { id: 'recipes',     icon: 'ti-tools-kitchen-2',    label: 'Recipes',      href: 'recipes.html' },
     { id: 'pos-mapping', icon: 'ti-device-desktop',     label: 'POS mapping',  href: 'pos-mapping.html' },
     { id: 'reporting',   icon: 'ti-chart-bar',          label: 'Reporting',    href: 'reporting.html' },
-    { id: 'venues',      icon: 'ti-building-store',     label: 'Venues',       href: 'venues.html' },
+    { id: 'outlets',      icon: 'ti-building-store',     label: 'Outlets',       href: 'outlets.html' },
     { id: 'suppliers',   icon: 'ti-truck',              label: 'Suppliers',    href: 'suppliers.html' },
     { id: 'users',       icon: 'ti-users',              label: 'Users',        href: 'users.html' },
   ];
@@ -38,7 +38,7 @@
     recipes:       ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
     'pos-mapping': ['hq-admin','hq-approver','outlet-mgr'],
     reporting:     ['hq-admin','hq-approver','finance'],
-    venues:        ['hq-admin','hq-approver'],
+    outlets:        ['hq-admin','hq-approver'],
     suppliers:     ['hq-admin','hq-approver','finance'],
     users:         ['hq-admin'],
   };
@@ -463,7 +463,7 @@
   document.head.appendChild(style);
 
   function buildShell(pageTitle) {
-    const ADMIN_IDS = new Set(['venues', 'suppliers', 'users']);
+    const ADMIN_IDS = new Set(['outlets', 'suppliers', 'users']);
     let dividerInserted = false;
     const navItems = NAV.map(n => {
       let prefix = '';
@@ -620,7 +620,7 @@
           a.style.display = allowed.includes(role.id) ? '' : 'none';
         });
         // Hide the admin divider when no admin items are visible
-        const adminVisible = ['venues','suppliers','users'].some(id => (NAV_ROLES[id] || []).includes(role.id));
+        const adminVisible = ['outlets','suppliers','users'].some(id => (NAV_ROLES[id] || []).includes(role.id));
         const divider = document.querySelector('.shell-nav-divider');
         if (divider) divider.style.display = adminVisible ? '' : 'none';
 

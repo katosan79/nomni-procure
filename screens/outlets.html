@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Venues — Nomni HQ</title>
+  <title>Outlets — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <style>
     body { background: var(--surface-soft); }
 
@@ -252,6 +254,29 @@
     .empty-title { font-size: 15px; font-weight: 700; color: var(--text); }
     .empty-desc { font-size: 13px; color: var(--text-soft); max-width: 300px; }
 
+    /* View toggle */
+    .view-toggle { display:flex; gap:2px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:3px; }
+    .view-toggle-btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:30px; padding-inline:var(--space-md); border-radius:calc(var(--radius-md) - 2px); border:none; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-soft); background:none; cursor:pointer; transition:background 0.12s, color 0.12s; }
+    .view-toggle-btn:hover { color:var(--text); }
+    .view-toggle-btn.active { background:var(--fern); color:#fff; }
+    .view-toggle-btn i { font-size:14px; }
+
+    /* Map container */
+    #outlet-map { height:520px; border-radius:var(--radius-lg); border:1px solid var(--border); overflow:hidden; display:none; }
+
+    /* Leaflet popup customisation */
+    .outlet-popup { font-family: inherit; min-width: 200px; }
+    .outlet-popup-name { font-size:14px; font-weight:700; color:#0E3727; margin-bottom:4px; }
+    .outlet-popup-sub { font-size:12px; color:#666; margin-bottom:8px; line-height:1.4; }
+    .outlet-popup-badges { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px; }
+    .outlet-popup-badge { font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; }
+    .outlet-popup-badge.hq { background:#ede9ff; color:#7C3AED; }
+    .outlet-popup-badge.hybrid { background:#FEF3C7; color:#D97706; }
+    .outlet-popup-badge.standalone { background:#F3F4F6; color:#6B7280; }
+    .outlet-popup-badge.group { background:#E2FFE6; color:#076715; }
+    .outlet-popup-link { display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:600; color:#129B41; text-decoration:none; }
+    .outlet-popup-link:hover { text-decoration:underline; }
+
     /* Responsive */
     @media (max-width: 768px) {
       .page-header { flex-direction: column; align-items: flex-start; }
@@ -263,7 +288,7 @@
       .filter-bar .search-wrap { min-width: 0; }
     }
 
-    /* Add venue drawer */
+    /* Add outlet drawer */
     #av-backdrop { position:fixed;inset:0;background:color-mix(in srgb,var(--seaweed) 40%,transparent);z-index:200;display:none; }
     #av-backdrop.open { display:block; }
     #av-drawer { position:fixed;top:0;right:0;bottom:0;width:540px;background:var(--surface);z-index:201;transform:translateX(100%);transition:transform 0.25s ease;display:flex;flex-direction:column;box-shadow:0 0 40px color-mix(in srgb,var(--seaweed) 20%,transparent); }
@@ -332,12 +357,12 @@
     <div class="page-header">
       <div class="page-header-left">
         <span class="page-eyebrow">Administration</span>
-        <h1 class="page-title">Venues</h1>
+        <h1 class="page-title">Outlets</h1>
         <p class="page-desc">Organise outlets by brand, region and state. Each group runs in an operating mode — HQ-governed, Hybrid, or Standalone — and can include a Central Kitchen.</p>
       </div>
       <div class="page-actions">
-        <button class="btn btn-outline" onclick="window.location.href='venue-group-detail.html'"><i class="ti ti-adjustments-horizontal"></i>Manage groups</button>
-        <button class="btn btn-primary" onclick="openAddVenueDialog()"><i class="ti ti-plus"></i>Add venue</button>
+        <button class="btn btn-outline" onclick="window.location.href='outlet-group-detail.html'"><i class="ti ti-adjustments-horizontal"></i>Manage groups</button>
+        <button class="btn btn-primary" onclick="openAddOutletDialog()"><i class="ti ti-plus"></i>Add outlet</button>
       </div>
     </div>
 
@@ -345,10 +370,10 @@
     <div>
       <div class="section-heading" style="margin-bottom: var(--space-lg);">
         <div style="display:flex;align-items:center;gap:var(--space-sm);">
-          <span class="section-title">Venue groups</span>
+          <span class="section-title">Outlet groups</span>
           <span class="section-count">4 groups</span>
         </div>
-        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);" onclick="window.location.href='venue-group-detail.html'">
+        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);" onclick="window.location.href='outlet-group-detail.html'">
           <i class="ti ti-plus"></i>New group
         </button>
       </div>
@@ -356,50 +381,54 @@
         <div class="group-card active" onclick="filterByGroup('all')">
           <div class="group-card-header">
             <div class="group-icon"><i class="ti ti-layout-grid"></i></div>
-            <span class="group-name">All venues</span>
+            <span class="group-name">All outlets</span>
           </div>
-          <span class="group-meta">12 venues</span>
+          <span class="group-meta">12 outlets</span>
         </div>
         <div class="group-card" onclick="filterByGroup('cbd')">
           <div class="group-card-header">
             <div class="group-icon"><i class="ti ti-building"></i></div>
             <span class="group-name">CBD Cluster</span>
           </div>
-          <span class="group-meta">4 venues · City · <span style="color:var(--procurement);font-weight:600;">HQ Mode</span></span>
+          <span class="group-meta">4 outlets · City · <span style="color:var(--procurement);font-weight:600;">HQ Mode</span></span>
         </div>
         <div class="group-card" onclick="filterByGroup('beachside')">
           <div class="group-card-header">
             <div class="group-icon"><i class="ti ti-wave-sine"></i></div>
             <span class="group-name">Beachside</span>
           </div>
-          <span class="group-meta">3 venues · Coastal · <span style="color:var(--ordering);font-weight:600;">Hybrid</span></span>
+          <span class="group-meta">3 outlets · Coastal · <span style="color:var(--ordering);font-weight:600;">Hybrid</span></span>
         </div>
         <div class="group-card" onclick="filterByGroup('suburban')">
           <div class="group-card-header">
             <div class="group-icon"><i class="ti ti-home"></i></div>
             <span class="group-name">Suburban</span>
           </div>
-          <span class="group-meta">5 venues · Various · <span style="color:var(--ordering);font-weight:600;">Hybrid</span></span>
+          <span class="group-meta">5 outlets · Various · <span style="color:var(--ordering);font-weight:600;">Hybrid</span></span>
         </div>
-        <div class="group-card-add" onclick="window.location.href='venue-group-detail.html'">
+        <div class="group-card-add" onclick="window.location.href='outlet-group-detail.html'">
           <i class="ti ti-plus"></i>
           New group
         </div>
       </div>
     </div>
 
-    <!-- Venues table -->
+    <!-- Outlets table -->
     <div>
       <div class="section-heading" style="margin-bottom: var(--space-lg);">
         <div style="display:flex;align-items:center;gap:var(--space-sm);">
-          <span class="section-title">All venues</span>
-          <span class="section-count">12 venues</span>
+          <span class="section-title">All outlets</span>
+          <span class="section-count">12 outlets</span>
+        </div>
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" id="btn-list-view" onclick="setView('list')"><i class="ti ti-list"></i>List</button>
+          <button class="view-toggle-btn" id="btn-map-view" onclick="setView('map')"><i class="ti ti-map-2"></i>Map</button>
         </div>
       </div>
       <div class="filter-bar" style="margin-bottom: var(--space-md);">
         <div class="search-wrap">
           <i class="ti ti-search"></i>
-          <input class="search-input" type="search" placeholder="Search venues…" aria-label="Search venues"/>
+          <input class="search-input" type="search" placeholder="Search outlets…" aria-label="Search outlets"/>
         </div>
         <select class="filter-select" aria-label="Filter by group">
           <option value="">All groups</option>
@@ -415,10 +444,10 @@
         </select>
       </div>
       <div class="table-card">
-        <table class="data-table" aria-label="Venues">
+        <table class="data-table" aria-label="Outlets">
           <thead>
             <tr>
-              <th>Venue</th>
+              <th>Outlet</th>
               <th>Location</th>
               <th>Group &amp; mode</th>
               <th>Procurement contact</th>
@@ -435,7 +464,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="venue-detail.html">Configure</a>
+                  <a class="link-action" href="outlet-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for The Harbour Kitchen" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -457,7 +486,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="venue-detail.html">Configure</a>
+                  <a class="link-action" href="outlet-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Darling Street Bistro" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -479,7 +508,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="venue-detail.html">Configure</a>
+                  <a class="link-action" href="outlet-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Bondi Rooftop" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -501,7 +530,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="venue-detail.html">Configure</a>
+                  <a class="link-action" href="outlet-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Manly Wharf Bar" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -523,7 +552,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="venue-detail.html">Configure</a>
+                  <a class="link-action" href="outlet-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Parramatta Table" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -545,7 +574,7 @@
               <td><span class="status-pill inactive">Inactive</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="venue-detail.html">Configure</a>
+                  <a class="link-action" href="outlet-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Surry Hills Social" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -562,19 +591,20 @@
           </tbody>
         </table>
       </div>
+      <div id="outlet-map"></div>
     </div>
 
   </div><!-- /.napp-canvas -->
 </div><!-- /.page-body -->
 
-<!-- Add venue backdrop -->
+<!-- Add outlet backdrop -->
 <div id="av-backdrop" onclick="closeAvDrawer()"></div>
 
-<!-- Add venue drawer -->
-<div id="av-drawer" role="dialog" aria-modal="true" aria-label="Add venue">
+<!-- Add outlet drawer -->
+<div id="av-drawer" role="dialog" aria-modal="true" aria-label="Add outlet">
   <div class="av-header">
     <div class="av-header-top">
-      <span class="av-title">Add venue</span>
+      <span class="av-title">Add outlet</span>
       <button class="av-close" onclick="closeAvDrawer()" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>
     </div>
     <!-- Step indicator -->
@@ -599,7 +629,7 @@
     <!-- Step 1: Details -->
     <div id="av-step-1">
       <div class="av-field">
-        <label class="av-label">Venue name <span class="req">*</span></label>
+        <label class="av-label">Outlet name <span class="req">*</span></label>
         <input id="av-name" class="av-input" type="text" placeholder="e.g. The Harbour Kitchen"/>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
@@ -632,14 +662,14 @@
     <!-- Step 2: Group & mode -->
     <div id="av-step-2" style="display:none;">
       <div class="av-field">
-        <label class="av-label">Venue group</label>
+        <label class="av-label">Outlet group</label>
         <select id="av-group" class="av-select">
           <option value="">None (ungrouped)</option>
           <option>CBD Cluster</option>
           <option>Beachside</option>
           <option>Suburban</option>
         </select>
-        <span class="av-hint">The venue inherits the group's default operating mode. You can override it below.</span>
+        <span class="av-hint">The outlet inherits the group's default operating mode. You can override it below.</span>
       </div>
 
       <div style="margin-bottom:var(--space-md);">
@@ -684,10 +714,10 @@
     <div id="av-step-3" style="display:none;">
       <div style="background:var(--mint);border:1px solid var(--fern);border-radius:var(--radius-md);padding:var(--space-lg);display:flex;gap:var(--space-md);align-items:center;margin-bottom:var(--space-2xl);">
         <i class="ti ti-circle-check" style="font-size:22px;color:var(--fern);flex-shrink:0;"></i>
-        <div style="font-size:14px;font-weight:600;color:var(--spinach);">Ready to add venue — review details below</div>
+        <div style="font-size:14px;font-weight:600;color:var(--spinach);">Ready to add outlet — review details below</div>
       </div>
       <div class="av-review-section">
-        <div class="av-review-heading">Venue details</div>
+        <div class="av-review-heading">Outlet details</div>
         <div class="av-kv"><span class="av-kv-label">Name</span><span class="av-kv-value" id="rv-name">—</span></div>
         <div class="av-kv"><span class="av-kv-label">Address</span><span class="av-kv-value" id="rv-address">—</span></div>
         <div class="av-kv"><span class="av-kv-label">Phone</span><span class="av-kv-value" id="rv-phone">—</span></div>
@@ -715,9 +745,9 @@
   </div>
 </div>
 
-<script src="../shared/shell.js?v=5" data-active="venues"></script>
+<script src="../shared/shell.js?v=5" data-active="outlets"></script>
 <script>
-  NomniShell.init('Venues');
+  NomniShell.init('Outlets');
 
   function toggleMenu(btn) {
     const menu = btn.nextElementSibling;
@@ -748,7 +778,7 @@
     document.getElementById('av-backdrop').classList.remove('open');
     document.getElementById('av-drawer').classList.remove('open');
   }
-  function openAddVenueDialog() { openAvDrawer(); }
+  function openAddOutletDialog() { openAvDrawer(); }
 
   function avRenderStep(n) {
     [1,2,3].forEach(i => {
@@ -766,7 +796,7 @@
     const nextBtn = document.getElementById('av-next-btn');
     if (n === 1) { nextBtn.innerHTML = 'Next: Group &amp; mode <i class="ti ti-arrow-right"></i>'; }
     else if (n === 2) { nextBtn.innerHTML = 'Review <i class="ti ti-arrow-right"></i>'; }
-    else { nextBtn.innerHTML = '<i class="ti ti-plus"></i>Add venue'; }
+    else { nextBtn.innerHTML = '<i class="ti ti-plus"></i>Add outlet'; }
   }
 
   function avNext() {
@@ -774,7 +804,7 @@
       const name = document.getElementById('av-name').value.trim();
       const addr = document.getElementById('av-address').value.trim();
       const errEl = document.getElementById('av-step1-err');
-      if (!name || !addr) { errEl.textContent = 'Venue name and address are required.'; errEl.style.display = 'block'; return; }
+      if (!name || !addr) { errEl.textContent = 'Outlet name and address are required.'; errEl.style.display = 'block'; return; }
       errEl.style.display = 'none';
       avStep = 2; avRenderStep(2);
     } else if (avStep === 2) {
@@ -790,7 +820,7 @@
       avStep = 3; avRenderStep(3);
     } else {
       closeAvDrawer();
-      venuesShowToast('Venue "' + document.getElementById('av-name').value + '" added successfully');
+      outletsShowToast('Outlet "' + document.getElementById('av-name').value + '" added successfully');
     }
   }
   function avBack() {
@@ -801,7 +831,7 @@
     document.querySelectorAll('.av-mode-card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
   }
-  function venuesShowToast(msg) {
+  function outletsShowToast(msg) {
     const t = document.createElement('div');
     t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:var(--shadow-lg);';
     t.textContent = msg;
@@ -810,7 +840,143 @@
   }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAvDrawer(); });
 
-  function openCreateGroupDialog() { window.location.href = 'venue-group-detail.html'; }
+  function openCreateGroupDialog() { window.location.href = 'outlet-group-detail.html'; }
+
+  /* ── View toggle ── */
+  let mapInitialised = false;
+  let leafletMap = null;
+
+  const OUTLET_PINS = [
+    {
+      name: 'Sydney Central Kitchen',
+      address: 'Alexandria, Sydney NSW',
+      group: 'CBD Cluster', mode: 'hq', ck: true,
+      lat: -33.9100, lng: 151.1975
+    },
+    {
+      name: 'Darling Street Bistro',
+      address: 'Darlinghurst, Sydney NSW',
+      group: 'CBD Cluster', mode: 'hq', ck: false,
+      lat: -33.8785, lng: 151.2217
+    },
+    {
+      name: 'Bondi Rooftop',
+      address: 'Bondi Beach, Sydney NSW',
+      group: 'Beachside', mode: 'hybrid', ck: false,
+      lat: -33.8908, lng: 151.2743
+    },
+    {
+      name: 'Manly Wharf Bar',
+      address: 'Manly, Sydney NSW',
+      group: 'Beachside', mode: 'hybrid', ck: false,
+      lat: -33.7971, lng: 151.2877
+    },
+    {
+      name: 'Parramatta Table',
+      address: 'Parramatta, Sydney NSW',
+      group: 'Suburban', mode: 'hybrid', ck: false,
+      lat: -33.8148, lng: 151.0017
+    },
+    {
+      name: 'Surry Hills Social',
+      address: 'Surry Hills, Sydney NSW',
+      group: null, mode: 'standalone', ck: false,
+      lat: -33.8862, lng: 151.2100
+    },
+  ];
+
+  const MODE_LABELS = { hq: 'HQ Mode', hybrid: 'Hybrid', standalone: 'Standalone' };
+
+  function setView(view) {
+    const listBtn   = document.getElementById('btn-list-view');
+    const mapBtn    = document.getElementById('btn-map-view');
+    const filterBar = document.querySelector('.filter-bar');
+    const tableCard = document.querySelector('.table-card');
+    const mapEl     = document.getElementById('outlet-map');
+
+    if (view === 'map') {
+      listBtn.classList.remove('active');
+      mapBtn.classList.add('active');
+      filterBar.style.display = 'none';
+      tableCard.style.display = 'none';
+      mapEl.style.display = 'block';
+      initMap();
+    } else {
+      mapBtn.classList.remove('active');
+      listBtn.classList.add('active');
+      filterBar.style.display = '';
+      tableCard.style.display = '';
+      mapEl.style.display = 'none';
+    }
+  }
+
+  function initMap() {
+    if (mapInitialised) {
+      leafletMap.invalidateSize();
+      return;
+    }
+    mapInitialised = true;
+
+    leafletMap = L.map('outlet-map', { zoomControl: true }).setView([-33.8688, 151.2093], 11);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(leafletMap);
+
+    // Custom green pin icon
+    const greenIcon = L.divIcon({
+      className: '',
+      html: `<div style="width:28px;height:28px;background:#129B41;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -30]
+    });
+
+    // CK icon (slightly different colour)
+    const ckIcon = L.divIcon({
+      className: '',
+      html: `<div style="width:28px;height:28px;background:#076715;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -30]
+    });
+
+    OUTLET_PINS.forEach(outlet => {
+      const icon = outlet.ck ? ckIcon : greenIcon;
+      const modeBadge = `<span class="outlet-popup-badge ${outlet.mode}">${MODE_LABELS[outlet.mode]}</span>`;
+      const groupBadge = outlet.group ? `<span class="outlet-popup-badge group">${outlet.group}</span>` : '';
+      const ckBadge = outlet.ck ? `<span class="outlet-popup-badge" style="background:#E0F2FE;color:#0369A1;">Central Kitchen</span>` : '';
+
+      const popupHtml = `
+        <div class="outlet-popup">
+          <div class="outlet-popup-name">${outlet.name}</div>
+          <div class="outlet-popup-sub">${outlet.address}</div>
+          <div class="outlet-popup-badges">${groupBadge}${modeBadge}${ckBadge}</div>
+          <a class="outlet-popup-link" href="outlet-detail.html">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5l7 7-7 7"/><path d="M5 12h14"/></svg>
+            Configure outlet
+          </a>
+        </div>`;
+
+      L.marker([outlet.lat, outlet.lng], { icon })
+        .addTo(leafletMap)
+        .bindPopup(popupHtml, { maxWidth: 260 });
+    });
+
+    // Add a simple legend
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function() {
+      const div = L.DomUtil.create('div');
+      div.style.cssText = 'background:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-family:inherit;font-size:12px;line-height:1.8;';
+      div.innerHTML = `
+        <div style="font-weight:700;margin-bottom:4px;color:#0E3727;">Legend</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#129B41;border-radius:50%;display:inline-block;"></span> Outlet</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#076715;border-radius:50%;display:inline-block;"></span> Central Kitchen</div>`;
+      return div;
+    };
+    legend.addTo(leafletMap);
+  }
 </script>
 </body>
 </html>
