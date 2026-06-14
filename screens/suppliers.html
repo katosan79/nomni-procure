@@ -360,6 +360,48 @@
     .as-review-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
     .as-review-divider { height: 1px; background: var(--border); }
 
+    /* Supplier search UI */
+    .as-results-list { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .as-result-item {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); cursor: pointer;
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .as-result-item:hover { border-color: var(--fern); background: color-mix(in srgb, var(--mint) 20%, transparent); }
+    .as-result-item.selected { border-color: var(--fern); background: color-mix(in srgb, var(--mint) 25%, transparent); cursor: default; }
+    .as-result-logo {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--text-accent);
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .as-result-info { flex: 1; min-width: 0; }
+    .as-result-name { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .as-result-meta { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .as-create-prompt {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-md); padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .as-link-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: none; border: none; cursor: pointer; padding: 0;
+      font-size: 13px; font-weight: 600; color: var(--text-accent); font-family: inherit;
+    }
+    .as-link-btn:hover { color: var(--spinach); text-decoration: underline; }
+    .as-existing-banner {
+      display: flex; align-items: flex-start; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: color-mix(in srgb, var(--fern) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--fern) 20%, transparent);
+      border-radius: var(--radius-md); font-size: 13px; color: var(--text);
+      margin-bottom: var(--space-lg);
+    }
+    .as-existing-banner i { color: var(--fern); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
     /* Footer */
     .as-foot {
       display: flex; align-items: center; gap: var(--space-sm);
@@ -719,69 +761,105 @@
 
   <!-- Step indicator -->
   <div class="as-steps">
-    <div class="as-step active" id="as-step-dot-1"><span class="as-step-num">1</span><span class="as-step-label">Details</span></div>
+    <div class="as-step active" id="as-step-dot-1"><span class="as-step-num">1</span><span class="as-step-label" id="as-step-label-1">Find</span></div>
     <div class="as-step-line"></div>
-    <div class="as-step" id="as-step-dot-2"><span class="as-step-num">2</span><span class="as-step-label">Terms &amp; outlets</span></div>
+    <div class="as-step" id="as-step-dot-2"><span class="as-step-num">2</span><span class="as-step-label" id="as-step-label-2">Outlets</span></div>
     <div class="as-step-line"></div>
-    <div class="as-step" id="as-step-dot-3"><span class="as-step-num">3</span><span class="as-step-label">Confirm</span></div>
+    <div class="as-step" id="as-step-dot-3"><span class="as-step-num">3</span><span class="as-step-label" id="as-step-label-3">Confirm</span></div>
   </div>
 
   <!-- Body -->
   <div class="as-body">
 
-    <!-- Step 1: Company details -->
+    <!-- Step 1: Find supplier -->
     <div class="as-panel active" id="as-panel-1">
-      <div class="as-field-stack">
-        <div class="as-field">
-          <label class="as-label">Supplier name <span class="as-req">*</span></label>
-          <input class="as-input" id="as-name" type="text" placeholder="e.g. NSW Dairy Direct"/>
-          <div class="as-error" id="as-name-err" style="display:none;">Supplier name is required.</div>
-        </div>
-        <div class="as-row">
+
+      <!-- SEARCH UI (default state) -->
+      <div id="as-search-ui">
+        <div class="as-field-stack">
+          <p style="font-size:13px;color:var(--text-soft);margin:0;line-height:1.6;">Search the Nomni supplier directory first. If your supplier is already on the platform, connect to their existing profile — no duplicates needed.</p>
           <div class="as-field">
-            <label class="as-label">Contact email <span class="as-req">*</span></label>
-            <input class="as-input" id="as-email" type="email" placeholder="orders@supplier.com.au"/>
-            <div class="as-error" id="as-email-err" style="display:none;">A valid email is required.</div>
+            <label class="as-label">Search by name or ABN</label>
+            <div style="position:relative;">
+              <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text-soft);pointer-events:none;"></i>
+              <input class="as-input" id="as-search" type="text" placeholder="e.g. John's Meats or 54 321 987 654" style="padding-left:38px;" oninput="asSearchInput(this.value)" autocomplete="off"/>
+            </div>
           </div>
-          <div class="as-field">
-            <label class="as-label">Phone <span class="as-opt">(optional)</span></label>
-            <input class="as-input" id="as-phone" type="tel" placeholder="+61 2 XXXX XXXX"/>
+          <div id="as-results-wrap" style="display:none;">
+            <div id="as-results-list" class="as-results-list"></div>
           </div>
-        </div>
-        <div class="as-row">
-          <div class="as-field">
-            <label class="as-label">ABN <span class="as-opt">(optional)</span></label>
-            <input class="as-input" id="as-abn" type="text" placeholder="XX XXX XXX XXX" style="font-family:'IBM Plex Mono',monospace;"/>
+          <div id="as-selected-wrap" style="display:none;">
+            <div id="as-selected-card"></div>
+            <button class="as-link-btn" onclick="asClearSelection()" style="margin-top:var(--space-sm);"><i class="ti ti-arrow-left" style="font-size:13px;"></i>Search again</button>
           </div>
-          <div class="as-field">
-            <label class="as-label">Website <span class="as-opt">(optional)</span></label>
-            <input class="as-input" id="as-website" type="url" placeholder="https://…"/>
+          <div class="as-create-prompt">
+            <span style="font-size:13px;color:var(--text-soft);">Can't find your supplier?</span>
+            <button class="btn btn-outline btn-sm" onclick="asStartCreate()"><i class="ti ti-plus"></i>Create new supplier</button>
           </div>
-        </div>
-        <div class="as-field">
-          <label class="as-label">Address <span class="as-opt">(optional)</span></label>
-          <input class="as-input" id="as-address" type="text" placeholder="Street address, suburb, state, postcode"/>
-        </div>
-        <div class="as-field">
-          <label class="as-label">Categories <span class="as-req">*</span></label>
-          <div class="as-cat-tags" id="as-cats">
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Meat &amp; Seafood">Meat &amp; Seafood</span>
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Produce">Produce</span>
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Dairy">Dairy</span>
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Dry Goods">Dry Goods</span>
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Beverages">Beverages</span>
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Bakery">Bakery</span>
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Packaging">Packaging</span>
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Cleaning">Cleaning</span>
-            <span class="as-cat" onclick="asToggleCat(this)" data-val="Equipment">Equipment</span>
-          </div>
-          <div class="as-error" id="as-cat-err" style="display:none;">Select at least one category.</div>
         </div>
       </div>
+
+      <!-- CREATE UI (shown after "Create new supplier" click) -->
+      <div id="as-create-ui" style="display:none;">
+        <div class="as-field-stack">
+          <button class="as-link-btn" onclick="asBackToSearch()"><i class="ti ti-arrow-left" style="font-size:13px;"></i>Back to search</button>
+          <div class="as-field">
+            <label class="as-label">Supplier name <span class="as-req">*</span></label>
+            <input class="as-input" id="as-name" type="text" placeholder="e.g. NSW Dairy Direct"/>
+            <div class="as-error" id="as-name-err" style="display:none;">Supplier name is required.</div>
+          </div>
+          <div class="as-row">
+            <div class="as-field">
+              <label class="as-label">Contact email <span class="as-req">*</span></label>
+              <input class="as-input" id="as-email" type="email" placeholder="orders@supplier.com.au"/>
+              <div class="as-error" id="as-email-err" style="display:none;">A valid email is required.</div>
+            </div>
+            <div class="as-field">
+              <label class="as-label">Phone <span class="as-opt">(optional)</span></label>
+              <input class="as-input" id="as-phone" type="tel" placeholder="+61 2 XXXX XXXX"/>
+            </div>
+          </div>
+          <div class="as-row">
+            <div class="as-field">
+              <label class="as-label">ABN <span class="as-opt">(optional)</span></label>
+              <input class="as-input" id="as-abn" type="text" placeholder="XX XXX XXX XXX" style="font-family:'IBM Plex Mono',monospace;"/>
+            </div>
+            <div class="as-field">
+              <label class="as-label">Website <span class="as-opt">(optional)</span></label>
+              <input class="as-input" id="as-website" type="url" placeholder="https://…"/>
+            </div>
+          </div>
+          <div class="as-field">
+            <label class="as-label">Address <span class="as-opt">(optional)</span></label>
+            <input class="as-input" id="as-address" type="text" placeholder="Street address, suburb, state, postcode"/>
+          </div>
+          <div class="as-field">
+            <label class="as-label">Categories <span class="as-req">*</span></label>
+            <div class="as-cat-tags" id="as-cats">
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Meat &amp; Seafood">Meat &amp; Seafood</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Produce">Produce</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Dairy">Dairy</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Dry Goods">Dry Goods</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Beverages">Beverages</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Bakery">Bakery</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Packaging">Packaging</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Cleaning">Cleaning</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Equipment">Equipment</span>
+            </div>
+            <div class="as-error" id="as-cat-err" style="display:none;">Select at least one category.</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Step 2: Payment terms + outlet assignment -->
+    <!-- Step 2: Trading account + outlet assignment -->
     <div class="as-panel" id="as-panel-2">
+      <!-- Existing supplier banner (shown only in 'existing' mode) -->
+      <div id="as-existing-banner" class="as-existing-banner" style="display:none;">
+        <i class="ti ti-plug-connected"></i>
+        <div>Connecting to <strong id="as-existing-name"></strong> — their verified profile is already on Nomni. Set your payment terms and assign outlets below.</div>
+      </div>
       <div class="as-field-stack">
         <div class="as-section-title">Trading account <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text-soft);">— all optional</span></div>
         <div class="as-row">
@@ -927,7 +1005,15 @@
 
   // ── Add Supplier Drawer ────────────────────────────────────────────────────
 
+  const AS_GLOBAL_SUPPLIERS = [
+    { id: 'gs1', initials: 'JP', name: "John's Premium Meats",   abn: '12 345 678 901', email: 'orders@johnspremiummeats.com.au', category: 'Meat & Seafood', location: 'Melbourne, VIC', nsConnected: true,  verified: true,  buyers: 6 },
+    { id: 'gs2', initials: 'SF', name: 'Sunrise Fresh Produce',  abn: '98 765 432 109', email: 'supply@sunriseproduce.com.au',    category: 'Produce',        location: 'Sydney, NSW',    nsConnected: false, verified: true,  buyers: 3 },
+    { id: 'gs3', initials: 'MC', name: 'Metro Coffee Supplies',  abn: '55 432 109 876', email: 'trade@metrocoffee.com.au',        category: 'Beverages',      location: 'Brisbane, QLD',  nsConnected: false, verified: false, buyers: 1 },
+  ];
+
   let asStep = 1;
+  let asMode = 'search'; // 'search' | 'existing' | 'new'
+  let asSelectedSupplier = null;
 
   const AS_GROUPS = [
     { id: 'ag1', name: 'CBD Cluster',  outlets: ['Harbour Kitchen', 'Darling St Bistro', 'The CBD Rooftop', 'Central Brasserie'] },
@@ -939,7 +1025,15 @@
 
   function openAddSupplierDialog() {
     asStep = 1;
-    // Reset fields
+    asMode = 'search';
+    asSelectedSupplier = null;
+    // Reset search UI
+    document.getElementById('as-search-ui').style.display = 'block';
+    document.getElementById('as-create-ui').style.display = 'none';
+    document.getElementById('as-results-wrap').style.display = 'none';
+    document.getElementById('as-selected-wrap').style.display = 'none';
+    document.getElementById('as-search').value = '';
+    // Reset form fields
     ['as-name','as-email','as-phone','as-abn','as-website','as-address','as-account','as-credit'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = '';
     });
@@ -947,14 +1041,14 @@
     document.querySelectorAll('.as-cat').forEach(c => c.classList.remove('selected'));
     AS_GROUPS.forEach(g => asAccess[g.id] = new Set());
     asExpanded.clear();
-    ['as-name-err','as-email-err','as-cat-err'].forEach(id => { document.getElementById(id).style.display = 'none'; });
-    ['as-name','as-email'].forEach(id => { document.getElementById(id).classList.remove('error'); });
+    ['as-name-err','as-email-err','as-cat-err'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    ['as-name','as-email'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('error'); });
     asRender();
     asUpdateUI();
     document.getElementById('as-scrim').classList.add('open');
     document.getElementById('as-drawer').classList.add('open');
     document.getElementById('as-drawer').setAttribute('aria-hidden','false');
-    setTimeout(() => document.getElementById('as-name').focus(), 250);
+    setTimeout(() => document.getElementById('as-search').focus(), 250);
   }
 
   function asClose() {
@@ -963,11 +1057,108 @@
     document.getElementById('as-drawer').setAttribute('aria-hidden','true');
   }
 
+  function asSearchInput(val) {
+    if (asSelectedSupplier) return;
+    const q = val.trim().toLowerCase();
+    const wrap = document.getElementById('as-results-wrap');
+    const list = document.getElementById('as-results-list');
+    if (q.length < 2) { wrap.style.display = 'none'; return; }
+    const matches = AS_GLOBAL_SUPPLIERS.filter(s =>
+      s.name.toLowerCase().includes(q) || s.abn.replace(/\s/g,'').includes(q.replace(/\s/g,''))
+    );
+    if (matches.length === 0) {
+      list.innerHTML = `<div style="padding:var(--space-lg);text-align:center;color:var(--text-soft);font-size:13px;">No suppliers found for "<strong>${val}</strong>"</div>`;
+    } else {
+      list.innerHTML = matches.map(s => `
+        <div class="as-result-item" onclick="asSelectSupplier('${s.id}')">
+          <div class="as-result-logo">${s.initials}</div>
+          <div class="as-result-info">
+            <div class="as-result-name">
+              ${s.name}
+              ${s.verified ? '<i class="ti ti-rosette-discount-check-filled" title="Verified" style="color:var(--text-accent);font-size:13px;"></i>' : ''}
+              ${s.nsConnected ? '<span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span>' : ''}
+            </div>
+            <div class="as-result-meta">${s.category} · ${s.location} · Used by ${s.buyers} buyer${s.buyers !== 1 ? 's' : ''}</div>
+          </div>
+          <button class="btn btn-outline btn-sm" style="pointer-events:none;flex-shrink:0;">Connect</button>
+        </div>`).join('');
+    }
+    wrap.style.display = 'block';
+  }
+
+  function asSelectSupplier(id) {
+    asSelectedSupplier = AS_GLOBAL_SUPPLIERS.find(s => s.id === id);
+    asMode = 'existing';
+    document.getElementById('as-results-wrap').style.display = 'none';
+    document.getElementById('as-search').value = '';
+    const s = asSelectedSupplier;
+    document.getElementById('as-selected-card').innerHTML = `
+      <div class="as-result-item selected" style="cursor:default;">
+        <div class="as-result-logo">${s.initials}</div>
+        <div class="as-result-info">
+          <div class="as-result-name">
+            ${s.name}
+            ${s.verified ? '<i class="ti ti-rosette-discount-check-filled" title="Verified" style="color:var(--text-accent);font-size:13px;"></i>' : ''}
+            ${s.nsConnected ? '<span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span>' : ''}
+          </div>
+          <div class="as-result-meta">${s.category} · ${s.location} · Used by ${s.buyers} buyer${s.buyers !== 1 ? 's' : ''}</div>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:var(--fern);display:inline-flex;align-items:center;gap:3px;flex-shrink:0;"><i class="ti ti-check" style="font-size:12px;"></i>Selected</span>
+      </div>`;
+    document.getElementById('as-selected-wrap').style.display = 'block';
+    asUpdateUI();
+  }
+
+  function asClearSelection() {
+    asSelectedSupplier = null;
+    asMode = 'search';
+    document.getElementById('as-selected-wrap').style.display = 'none';
+    document.getElementById('as-search').value = '';
+    document.getElementById('as-search').focus();
+    asUpdateUI();
+  }
+
+  function asStartCreate() {
+    asMode = 'new';
+    document.getElementById('as-search-ui').style.display = 'none';
+    document.getElementById('as-create-ui').style.display = 'block';
+    asUpdateUI();
+    setTimeout(() => document.getElementById('as-name').focus(), 100);
+  }
+
+  function asBackToSearch() {
+    asMode = 'search';
+    asSelectedSupplier = null;
+    document.getElementById('as-create-ui').style.display = 'none';
+    document.getElementById('as-search-ui').style.display = 'block';
+    asUpdateUI();
+  }
+
   function asUpdateUI() {
-    const titles = ['Add supplier', 'Terms & outlet assignment', 'Review & confirm'];
-    document.getElementById('as-title').textContent = titles[asStep - 1];
+    const stepLabels = {
+      search:   ['Find', 'Outlets', 'Confirm'],
+      existing: ['Find', 'Outlets', 'Confirm'],
+      new:      ['Details', 'Terms & outlets', 'Confirm'],
+    };
+    const titles = {
+      search:   ['Add supplier', 'Outlet assignment', 'Review & confirm'],
+      existing: ['Add supplier', 'Outlet assignment', 'Review & confirm'],
+      new:      ['Add supplier', 'Supplier details', 'Review & confirm'],
+    };
+    const labels = stepLabels[asMode];
+    for (let i = 1; i <= 3; i++) {
+      const lbl = document.getElementById(`as-step-label-${i}`);
+      if (lbl) lbl.textContent = labels[i - 1];
+    }
+    document.getElementById('as-title').textContent = titles[asMode][asStep - 1];
     document.getElementById('as-eyebrow').textContent = `Step ${asStep} of 3`;
     document.querySelectorAll('.as-panel').forEach((p, i) => p.classList.toggle('active', i === asStep - 1));
+    // Existing supplier banner in step 2
+    const banner = document.getElementById('as-existing-banner');
+    if (banner) {
+      banner.style.display = (asMode === 'existing' && asStep === 2) ? 'flex' : 'none';
+      if (asSelectedSupplier) document.getElementById('as-existing-name').textContent = asSelectedSupplier.name;
+    }
     // Step dots
     for (let i = 1; i <= 3; i++) {
       const dot = document.getElementById(`as-step-dot-${i}`);
@@ -975,24 +1166,22 @@
       if (i === asStep) dot.classList.add('active');
       else if (i < asStep) dot.classList.add('done');
     }
-    // Step num → check for done
     for (let i = 1; i < asStep; i++) {
       document.querySelector(`#as-step-dot-${i} .as-step-num`).innerHTML = '<i class="ti ti-check" style="font-size:11px;"></i>';
     }
-    // Back button
     document.getElementById('as-back-btn').style.display = asStep > 1 ? 'inline-flex' : 'none';
-    // Next/confirm button
     const nextBtn = document.getElementById('as-next-btn');
-    nextBtn.innerHTML = asStep < 3 ? 'Next<i class="ti ti-arrow-right"></i>' : '<i class="ti ti-circle-check"></i>Add supplier';
+    if (asStep === 3) nextBtn.innerHTML = '<i class="ti ti-circle-check"></i>Add supplier';
+    else if (asStep === 1 && asMode === 'existing') nextBtn.innerHTML = 'Continue<i class="ti ti-arrow-right"></i>';
+    else nextBtn.innerHTML = 'Next<i class="ti ti-arrow-right"></i>';
   }
 
   function asNext() {
     if (asStep === 1) {
-      if (!asValidateStep1()) return;
+      if (asMode === 'search') return; // nothing selected yet
+      if (asMode === 'new' && !asValidateCreateForm()) return;
     }
-    if (asStep === 3) {
-      asConfirm(); return;
-    }
+    if (asStep === 3) { asConfirm(); return; }
     if (asStep === 2) asPopulateReview();
     asStep++;
     asUpdateUI();
@@ -1004,63 +1193,63 @@
     document.querySelector('.as-body').scrollTop = 0;
   }
 
-  function asValidateStep1() {
+  function asValidateCreateForm() {
     let ok = true;
     const name = document.getElementById('as-name');
     const email = document.getElementById('as-email');
     const cats = document.querySelectorAll('.as-cat.selected');
-    if (!name.value.trim()) {
-      name.classList.add('error');
-      document.getElementById('as-name-err').style.display = 'block';
-      ok = false;
-    } else {
-      name.classList.remove('error');
-      document.getElementById('as-name-err').style.display = 'none';
-    }
-    if (!email.value.trim() || !email.value.includes('@')) {
-      email.classList.add('error');
-      document.getElementById('as-email-err').style.display = 'block';
-      ok = false;
-    } else {
-      email.classList.remove('error');
-      document.getElementById('as-email-err').style.display = 'none';
-    }
-    if (cats.length === 0) {
-      document.getElementById('as-cat-err').style.display = 'block';
-      ok = false;
-    } else {
-      document.getElementById('as-cat-err').style.display = 'none';
-    }
+    if (!name.value.trim()) { name.classList.add('error'); document.getElementById('as-name-err').style.display = 'block'; ok = false; }
+    else { name.classList.remove('error'); document.getElementById('as-name-err').style.display = 'none'; }
+    if (!email.value.trim() || !email.value.includes('@')) { email.classList.add('error'); document.getElementById('as-email-err').style.display = 'block'; ok = false; }
+    else { email.classList.remove('error'); document.getElementById('as-email-err').style.display = 'none'; }
+    if (cats.length === 0) { document.getElementById('as-cat-err').style.display = 'block'; ok = false; }
+    else { document.getElementById('as-cat-err').style.display = 'none'; }
     return ok;
   }
 
   function asPopulateReview() {
-    const cats = [...document.querySelectorAll('.as-cat.selected')].map(c => c.dataset.val).join(', ');
     let totalOutlets = 0;
     Object.values(asAccess).forEach(s => totalOutlets += s.size);
     const terms = document.getElementById('as-terms').value || '—';
     const credit = document.getElementById('as-credit').value ? '$' + document.getElementById('as-credit').value : '—';
     const account = document.getElementById('as-account').value || '—';
-
-    document.getElementById('as-review').innerHTML = `
-      <div class="as-review-row"><span class="as-review-label">Supplier name</span><span class="as-review-val">${document.getElementById('as-name').value}</span></div>
-      <div class="as-review-row"><span class="as-review-label">Email</span><span class="as-review-val">${document.getElementById('as-email').value}</span></div>
-      ${document.getElementById('as-phone').value ? `<div class="as-review-row"><span class="as-review-label">Phone</span><span class="as-review-val">${document.getElementById('as-phone').value}</span></div>` : ''}
-      ${document.getElementById('as-abn').value ? `<div class="as-review-row"><span class="as-review-label">ABN</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${document.getElementById('as-abn').value}</span></div>` : ''}
-      <div class="as-review-row"><span class="as-review-label">Categories</span><span class="as-review-val">${cats}</span></div>
-      <div class="as-review-divider"></div>
-      <div class="as-review-row"><span class="as-review-label">Payment terms</span><span class="as-review-val">${terms}</span></div>
-      <div class="as-review-row"><span class="as-review-label">Account number</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${account}</span></div>
-      <div class="as-review-row"><span class="as-review-label">Credit limit</span><span class="as-review-val">${credit}</span></div>
-      <div class="as-review-divider"></div>
-      <div class="as-review-row"><span class="as-review-label">Outlet assignment</span><span class="as-review-val">${totalOutlets} outlet${totalOutlets !== 1 ? 's' : ''} selected</span></div>
-      <div class="as-review-row"><span class="as-review-label">Status</span><span class="as-review-val" style="color:var(--status-ok-fg);">Active immediately</span></div>
-    `;
+    if (asMode === 'existing' && asSelectedSupplier) {
+      const s = asSelectedSupplier;
+      document.getElementById('as-review').innerHTML = `
+        <div class="as-review-row"><span class="as-review-label">Connecting to</span><span class="as-review-val">${s.name}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Category</span><span class="as-review-val">${s.category}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Location</span><span class="as-review-val">${s.location}</span></div>
+        ${s.nsConnected ? '<div class="as-review-row"><span class="as-review-label">Profile</span><span class="as-review-val" style="color:var(--fern);">Nomni Supply connected</span></div>' : ''}
+        <div class="as-review-divider"></div>
+        <div class="as-review-row"><span class="as-review-label">Payment terms</span><span class="as-review-val">${terms}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Account number</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${account}</span></div>
+        <div class="as-review-divider"></div>
+        <div class="as-review-row"><span class="as-review-label">Outlet assignment</span><span class="as-review-val">${totalOutlets} outlet${totalOutlets !== 1 ? 's' : ''} selected</span></div>
+        <div class="as-review-row"><span class="as-review-label">Status</span><span class="as-review-val" style="color:var(--status-ok-fg);">Active immediately</span></div>`;
+    } else {
+      const cats = [...document.querySelectorAll('.as-cat.selected')].map(c => c.dataset.val).join(', ');
+      document.getElementById('as-review').innerHTML = `
+        <div class="as-review-row"><span class="as-review-label">Supplier name</span><span class="as-review-val">${document.getElementById('as-name').value}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Email</span><span class="as-review-val">${document.getElementById('as-email').value}</span></div>
+        ${document.getElementById('as-phone').value ? `<div class="as-review-row"><span class="as-review-label">Phone</span><span class="as-review-val">${document.getElementById('as-phone').value}</span></div>` : ''}
+        ${document.getElementById('as-abn').value ? `<div class="as-review-row"><span class="as-review-label">ABN</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${document.getElementById('as-abn').value}</span></div>` : ''}
+        <div class="as-review-row"><span class="as-review-label">Categories</span><span class="as-review-val">${cats}</span></div>
+        <div class="as-review-divider"></div>
+        <div class="as-review-row"><span class="as-review-label">Payment terms</span><span class="as-review-val">${terms}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Account number</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${account}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Credit limit</span><span class="as-review-val">${credit}</span></div>
+        <div class="as-review-divider"></div>
+        <div class="as-review-row"><span class="as-review-label">Outlet assignment</span><span class="as-review-val">${totalOutlets} outlet${totalOutlets !== 1 ? 's' : ''} selected</span></div>
+        <div class="as-review-row"><span class="as-review-label">Status</span><span class="as-review-val" style="color:var(--status-ok-fg);">Active immediately</span></div>`;
+    }
   }
 
   function asConfirm() {
     asClose();
-    supToast('Supplier added successfully and is now active.');
+    const msg = asMode === 'existing' && asSelectedSupplier
+      ? `${asSelectedSupplier.name} connected and added to your suppliers.`
+      : 'New supplier created and is now active.';
+    supToast(msg);
   }
 
   function asToggleCat(el) {
