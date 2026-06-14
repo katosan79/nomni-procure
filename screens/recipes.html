@@ -75,6 +75,60 @@
     .split-caret:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
     .split-caret i { font-size: 14px; }
 
+    /* ── KPI strip ── */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    .kpi-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg) var(--space-xl);
+    }
+    .kpi-tile.type-finished { border-left: 3px solid #3F8AFB; }
+    .kpi-tile.type-prep     { border-left: 3px solid #B05EC0; }
+    .kpi-tile.type-prod     { border-left: 3px solid #17B3A3; }
+    .kpi-tile-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-soft);
+      margin-bottom: var(--space-xs);
+    }
+    .kpi-tile-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      font-feature-settings: 'tnum' 1;
+      line-height: 1.1;
+    }
+    .kpi-tile-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: var(--space-xs);
+    }
+
+    /* ── Type badges ── */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding-inline: var(--space-sm);
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .type-badge.finished   { background: color-mix(in srgb, #3F8AFB 12%, transparent); color: #3F8AFB; }
+    .type-badge.prep       { background: color-mix(in srgb, #B05EC0 12%, transparent); color: #B05EC0; }
+    .type-badge.production { background: color-mix(in srgb, #17B3A3 12%, transparent); color: #17B3A3; }
+
+    /* ── Filter bar ── */
     .filter-bar {
       display: flex;
       align-items: center;
@@ -124,7 +178,7 @@
       background: var(--surface);
       outline: none;
       cursor: pointer;
-      min-width: 160px;
+      min-width: 140px;
     }
     .select-input:focus { border-color: var(--border-focus); }
 
@@ -158,6 +212,7 @@
       font-weight: 600;
     }
 
+    /* ── Table ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -182,12 +237,12 @@
     .data-table tbody tr {
       border-bottom: 1px solid var(--border);
       transition: background 0.1s;
+      cursor: pointer;
     }
     .data-table tbody tr:last-child { border-bottom: none; }
     .data-table tbody tr:hover { background: var(--surface-soft); }
     .data-table td {
-      padding: 0 var(--space-lg);
-      height: var(--row-h);
+      padding: var(--space-md) var(--space-lg);
       vertical-align: middle;
       color: var(--text);
     }
@@ -199,8 +254,24 @@
     .recipe-name {
       font-weight: 600;
       color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
     }
-    .recipe-name-sub { font-size: 12px; color: var(--text-soft); margin-top: 1px; }
+    .recipe-name-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    /* Food cost % colour coding */
+    .fc-good { color: var(--status-ok-fg); font-size: 11px; font-weight: 600; font-feature-settings: 'tnum' 1; }
+    .fc-warn { color: var(--status-warn-fg); font-size: 11px; font-weight: 600; font-feature-settings: 'tnum' 1; }
+    .fc-bad  { color: var(--status-risk-fg); font-size: 11px; font-weight: 600; font-feature-settings: 'tnum' 1; }
+    .fc-na   { color: var(--text-soft); font-size: 11px; }
 
     .pill {
       display: inline-flex;
@@ -248,6 +319,11 @@
       transition: background 0.1s;
     }
     .link-action:hover { background: var(--mint); }
+    .link-action.action-prod {
+      color: #17B3A3;
+      font-size: 12px;
+    }
+    .link-action.action-prod:hover { background: color-mix(in srgb, #17B3A3 10%, transparent); }
 
     .split-btn-sm { display: inline-flex; align-items: stretch; }
     .split-btn-sm .btn-split-main {
@@ -381,58 +457,37 @@
     }
     .tooltip-wrap:hover .tooltip-text { display: block; }
 
-  /* ── Responsive breakpoints ── */
-
-  /* Tablet — ≤1024px */
-  @media (max-width: 1024px) {
-    .filter-bar { flex-wrap: wrap; }
-    .status-pills { margin-left: 0; }
-  }
-
-  /* Mobile — ≤768px */
-  @media (max-width: 768px) {
-    .page-h1 { font-size: 24px; }
-
-    .page-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--space-md);
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+      .kpi-strip { grid-template-columns: repeat(2, 1fr); }
     }
-    .page-header-actions {
-      flex-wrap: wrap;
-      flex-shrink: unset;
-      width: 100%;
+    @media (max-width: 1024px) {
+      .filter-bar { flex-wrap: wrap; }
+      .status-pills { margin-left: 0; }
     }
-    .page-header-actions .btn { flex: 1; justify-content: center; }
-
-    .filter-bar {
-      flex-direction: column;
-      align-items: stretch;
+    @media (max-width: 768px) {
+      .page-h1 { font-size: 24px; }
+      .page-header { flex-direction: column; align-items: flex-start; gap: var(--space-md); }
+      .page-header-actions { flex-wrap: wrap; flex-shrink: unset; width: 100%; }
+      .page-header-actions .btn { flex: 1; justify-content: center; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .search-wrap { min-width: unset; width: 100%; }
+      .select-input { width: 100%; min-width: unset; }
+      .status-pills { flex-wrap: wrap; }
+      .kpi-strip { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+      .card { overflow-x: auto; }
+      .data-table { min-width: 760px; }
+      .row-actions { flex-wrap: wrap; gap: var(--space-xs); }
+      .pagination-bar { flex-direction: column; align-items: flex-start; gap: var(--space-sm); }
     }
-    .search-wrap { min-width: unset; width: 100%; }
-    .select-input { width: 100%; min-width: unset; }
-    .status-pills { flex-wrap: wrap; }
-
-    .card { overflow-x: auto; }
-    .data-table { min-width: 640px; }
-
-    .row-actions { flex-wrap: wrap; gap: var(--space-xs); }
-
-    .pagination-bar {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--space-sm);
+    @media (max-width: 480px) {
+      .page-body { padding: var(--space-lg) 0; }
+      .page-h1 { font-size: 22px; }
+      .page-header { margin-bottom: var(--space-lg); }
+      .filter-bar { margin-bottom: var(--space-lg); gap: var(--space-sm); }
+      .pagination-bar { padding: var(--space-md); }
+      .kpi-strip { grid-template-columns: 1fr; }
     }
-  }
-
-  /* Small mobile — ≤480px */
-  @media (max-width: 480px) {
-    .page-body { padding: var(--space-lg) 0; }
-    .page-h1 { font-size: 22px; }
-    .page-header { margin-bottom: var(--space-lg); }
-    .filter-bar { margin-bottom: var(--space-lg); gap: var(--space-sm); }
-    .pagination-bar { padding: var(--space-md); }
-  }
   </style>
 </head>
 <body>
@@ -458,12 +513,42 @@
         </div>
       </header>
 
+      <!-- KPI strip -->
+      <div class="kpi-strip">
+        <div class="kpi-tile">
+          <p class="kpi-tile-label">Total recipes</p>
+          <p class="kpi-tile-value">346</p>
+          <p class="kpi-tile-sub">Across all brands</p>
+        </div>
+        <div class="kpi-tile type-finished">
+          <p class="kpi-tile-label">Finished</p>
+          <p class="kpi-tile-value">320</p>
+          <p class="kpi-tile-sub">POS-linked menu items</p>
+        </div>
+        <div class="kpi-tile type-prep">
+          <p class="kpi-tile-label">Preparations</p>
+          <p class="kpi-tile-value">18</p>
+          <p class="kpi-tile-sub">Sub-recipes &amp; bases</p>
+        </div>
+        <div class="kpi-tile type-prod">
+          <p class="kpi-tile-label">Production batches</p>
+          <p class="kpi-tile-value">8</p>
+          <p class="kpi-tile-sub">Bulk-made, reduces inventory</p>
+        </div>
+      </div>
+
       <!-- Filter / search bar -->
       <div class="filter-bar">
         <div class="search-wrap">
           <i class="ti ti-search" aria-hidden="true"></i>
           <input type="text" class="search-input" placeholder="Search recipes…" aria-label="Search recipes"/>
         </div>
+        <select class="select-input" aria-label="Filter by type" id="filter-type" onchange="applyTypeFilter(this.value)">
+          <option value="">All types</option>
+          <option value="finished">Finished</option>
+          <option value="prep">Preparation</option>
+          <option value="production">Production batch</option>
+        </select>
         <select class="select-input" aria-label="Filter by category">
           <option value="">All categories</option>
           <option>Breakfast</option>
@@ -471,6 +556,9 @@
           <option>Desserts</option>
           <option>Beverages</option>
           <option>Sides</option>
+          <option>Sauces &amp; Bases</option>
+          <option>Stocks &amp; Bases</option>
+          <option>Bakery</option>
         </select>
         <select class="select-input" aria-label="Filter by brand">
           <option value="">All brands</option>
@@ -503,14 +591,20 @@
           </thead>
           <tbody>
 
-            <!-- Row 1 -->
-            <tr>
+            <!-- ── FINISHED recipes ── -->
+
+            <!-- Row 1: Avocado Toast -->
+            <tr data-type="finished">
               <td>
                 <p class="recipe-name">Avocado Toast v3</p>
+                <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
               </td>
               <td>Breakfast</td>
               <td>The Burger Co</td>
-              <td class="num tabular">$4.20</td>
+              <td class="num tabular">
+                $4.20
+                <div class="fc-good">23.3% FC</div>
+              </td>
               <td class="num tabular">$18.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
               <td class="lock-cell">
@@ -544,12 +638,18 @@
               </td>
             </tr>
 
-            <!-- Row 2 -->
-            <tr>
-              <td><p class="recipe-name">Classic Cheeseburger</p></td>
+            <!-- Row 2: Classic Cheeseburger -->
+            <tr data-type="finished">
+              <td>
+                <p class="recipe-name">Classic Cheeseburger</p>
+                <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
+              </td>
               <td>Mains</td>
               <td>The Burger Co</td>
-              <td class="num tabular">$6.80</td>
+              <td class="num tabular">
+                $6.80
+                <div class="fc-warn">30.9% FC</div>
+              </td>
               <td class="num tabular">$22.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
               <td class="lock-cell">
@@ -581,12 +681,18 @@
               </td>
             </tr>
 
-            <!-- Row 3 -->
-            <tr>
-              <td><p class="recipe-name">Tiramisu</p></td>
+            <!-- Row 3: Tiramisu -->
+            <tr data-type="finished">
+              <td>
+                <p class="recipe-name">Tiramisu</p>
+                <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
+              </td>
               <td>Desserts</td>
               <td>Pasta Palace</td>
-              <td class="num tabular">$3.50</td>
+              <td class="num tabular">
+                $3.50
+                <div class="fc-warn">25.0% FC</div>
+              </td>
               <td class="num tabular">$14.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
               <td class="lock-cell">
@@ -618,12 +724,18 @@
               </td>
             </tr>
 
-            <!-- Row 4 -->
-            <tr>
-              <td><p class="recipe-name">Flat White</p></td>
+            <!-- Row 4: Flat White -->
+            <tr data-type="finished">
+              <td>
+                <p class="recipe-name">Flat White</p>
+                <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
+              </td>
               <td>Beverages</td>
               <td>The Burger Co</td>
-              <td class="num tabular">$1.20</td>
+              <td class="num tabular">
+                $1.20
+                <div class="fc-good">20.0% FC</div>
+              </td>
               <td class="num tabular">$6.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
               <td class="lock-cell">
@@ -655,12 +767,18 @@
               </td>
             </tr>
 
-            <!-- Row 5 -->
-            <tr>
-              <td><p class="recipe-name">Caesar Salad</p></td>
+            <!-- Row 5: Caesar Salad -->
+            <tr data-type="finished">
+              <td>
+                <p class="recipe-name">Caesar Salad</p>
+                <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
+              </td>
               <td>Mains</td>
               <td>Pasta Palace</td>
-              <td class="num tabular">$5.10</td>
+              <td class="num tabular">
+                $5.10
+                <div class="fc-warn">26.8% FC</div>
+              </td>
               <td class="num tabular">$19.00</td>
               <td><span class="pill pill-warn"><span class="pill-dot"></span>Pending review</span></td>
               <td class="lock-cell">
@@ -692,12 +810,18 @@
               </td>
             </tr>
 
-            <!-- Row 6 -->
-            <tr>
-              <td><p class="recipe-name">Chocolate Fondant</p></td>
+            <!-- Row 6: Chocolate Fondant -->
+            <tr data-type="finished">
+              <td>
+                <p class="recipe-name">Chocolate Fondant</p>
+                <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
+              </td>
               <td>Desserts</td>
               <td>Taco Time</td>
-              <td class="num tabular">$4.80</td>
+              <td class="num tabular">
+                $4.80
+                <div class="fc-warn">30.0% FC</div>
+              </td>
               <td class="num tabular">$16.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
               <td class="lock-cell">
@@ -729,12 +853,18 @@
               </td>
             </tr>
 
-            <!-- Row 7 -->
-            <tr>
-              <td><p class="recipe-name">Breakfast Burrito</p></td>
+            <!-- Row 7: Breakfast Burrito -->
+            <tr data-type="finished">
+              <td>
+                <p class="recipe-name">Breakfast Burrito</p>
+                <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
+              </td>
               <td>Breakfast</td>
               <td>Taco Time</td>
-              <td class="num tabular">$5.50</td>
+              <td class="num tabular">
+                $5.50
+                <div class="fc-warn">26.2% FC</div>
+              </td>
               <td class="num tabular">$21.00</td>
               <td><span class="pill pill-info"><span class="pill-dot"></span>Draft</span></td>
               <td class="lock-cell">
@@ -766,12 +896,18 @@
               </td>
             </tr>
 
-            <!-- Row 8 -->
-            <tr>
-              <td><p class="recipe-name">Garlic Bread</p></td>
+            <!-- Row 8: Garlic Bread -->
+            <tr data-type="finished">
+              <td>
+                <p class="recipe-name">Garlic Bread</p>
+                <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
+              </td>
               <td>Sides</td>
               <td>Pasta Palace</td>
-              <td class="num tabular">$1.80</td>
+              <td class="num tabular">
+                $1.80
+                <div class="fc-good">22.5% FC</div>
+              </td>
               <td class="num tabular">$8.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
               <td class="lock-cell">
@@ -803,12 +939,192 @@
               </td>
             </tr>
 
+            <!-- ── PREPARATION recipes ── -->
+
+            <!-- Row 9: Hollandaise Sauce -->
+            <tr data-type="prep">
+              <td>
+                <p class="recipe-name">Hollandaise Sauce</p>
+                <p class="recipe-name-sub"><span class="type-badge prep">Preparation</span> · Used in 4 recipes</p>
+              </td>
+              <td>Sauces &amp; Bases</td>
+              <td>The Burger Co</td>
+              <td class="num tabular">$1.40</td>
+              <td class="num" style="color:var(--text-soft);">—</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock-open lock-icon-open" aria-label="Unlocked"></i>
+                  <span class="tooltip-text">Unlocked — outlets can edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-9')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-9">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 10: Burger Patty Mix -->
+            <tr data-type="prep">
+              <td>
+                <p class="recipe-name">Burger Patty Mix</p>
+                <p class="recipe-name-sub"><span class="type-badge prep">Preparation</span> · Used in 2 recipes</p>
+              </td>
+              <td>Bases</td>
+              <td>The Burger Co</td>
+              <td class="num tabular">$3.20</td>
+              <td class="num" style="color:var(--text-soft);">—</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock lock-icon-locked" aria-label="Locked by HQ"></i>
+                  <span class="tooltip-text">Locked by HQ — outlet cannot edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-10')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-10">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 11: Caesar Dressing -->
+            <tr data-type="prep">
+              <td>
+                <p class="recipe-name">Caesar Dressing</p>
+                <p class="recipe-name-sub"><span class="type-badge prep">Preparation</span> · Used in 3 recipes</p>
+              </td>
+              <td>Sauces &amp; Bases</td>
+              <td>Pasta Palace</td>
+              <td class="num tabular">$0.85</td>
+              <td class="num" style="color:var(--text-soft);">—</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock-open lock-icon-open" aria-label="Unlocked"></i>
+                  <span class="tooltip-text">Unlocked — outlets can edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-11')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-11">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- ── PRODUCTION BATCH recipes ── -->
+
+            <!-- Row 12: Chicken Stock -->
+            <tr data-type="production">
+              <td>
+                <p class="recipe-name">Chicken Stock</p>
+                <p class="recipe-name-sub"><span class="type-badge production">Production batch</span> · Yields 10 L</p>
+              </td>
+              <td>Stocks &amp; Bases</td>
+              <td>Pasta Palace</td>
+              <td class="num tabular">$0.40<span style="font-size:11px;color:var(--text-soft);">/L</span></td>
+              <td class="num" style="color:var(--text-soft);">—</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock lock-icon-locked" aria-label="Locked by HQ"></i>
+                  <span class="tooltip-text">Locked by HQ — outlet cannot edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="inventory.html" class="link-action action-prod">
+                    <i class="ti ti-arrow-right" style="font-size:12px;"></i>Record production
+                  </a>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-12')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-12">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 13: Brioche Bun Batch -->
+            <tr data-type="production">
+              <td>
+                <p class="recipe-name">Brioche Bun Batch</p>
+                <p class="recipe-name-sub"><span class="type-badge production">Production batch</span> · Yields 48 buns</p>
+              </td>
+              <td>Bakery</td>
+              <td>The Burger Co</td>
+              <td class="num tabular">$0.75<span style="font-size:11px;color:var(--text-soft);">/bun</span></td>
+              <td class="num" style="color:var(--text-soft);">—</td>
+              <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
+              <td class="lock-cell">
+                <div class="tooltip-wrap">
+                  <i class="ti ti-lock lock-icon-locked" aria-label="Locked by HQ"></i>
+                  <span class="tooltip-text">Locked by HQ — outlet cannot edit</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="inventory.html" class="link-action action-prod">
+                    <i class="ti ti-arrow-right" style="font-size:12px;"></i>Record production
+                  </a>
+                  <div style="position:relative;">
+                    <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-13')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+                    <div class="dropdown-menu" id="menu-13">
+                      <button class="dropdown-item"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</button>
+                      <button class="dropdown-item"><i class="ti ti-copy" aria-hidden="true"></i>Duplicate</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item"><i class="ti ti-archive" aria-hidden="true"></i>Archive</button>
+                      <button class="dropdown-item danger"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
           </tbody>
         </table>
 
         <!-- Pagination -->
         <div class="pagination-bar">
-          <p class="pagination-info">Showing <strong>1–8</strong> of <strong>346</strong> recipes</p>
+          <p class="pagination-info">Showing <strong>1–13</strong> of <strong>346</strong> recipes</p>
           <div class="pagination-controls">
             <button class="page-btn" disabled aria-label="Previous page">
               <i class="ti ti-chevron-left" aria-hidden="true"></i> Prev
@@ -831,6 +1147,16 @@
       btn.classList.add('active');
     }
 
+    function applyTypeFilter(type) {
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        if (!type || tr.dataset.type === type) {
+          tr.style.display = '';
+        } else {
+          tr.style.display = 'none';
+        }
+      });
+    }
+
     function toggleMenu(event, id) {
       event.stopPropagation();
       const menu = document.getElementById(id);
@@ -843,11 +1169,10 @@
       document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
     });
 
-    // Clickable rows
+    // Clickable rows — navigate to recipe detail
     document.querySelectorAll('.data-table tbody tr').forEach(tr => {
-      tr.style.cursor = 'pointer';
       tr.addEventListener('click', e => {
-        if (e.target.closest('.kebab-btn, .overflow-menu, .dropdown-menu, .row-actions a, .row-actions button')) return;
+        if (e.target.closest('.kebab-btn, .dropdown-menu, .split-btn-sm, .link-action')) return;
         window.location.href = 'recipe-detail.html';
       });
     });
