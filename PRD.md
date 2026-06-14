@@ -1,7 +1,7 @@
 # Nomni Procure — Product Requirements Document
 
-**Version:** 1.0  
-**Last updated:** 13 Jun 2026  
+**Version:** 1.1  
+**Last updated:** 14 Jun 2026  
 **Status:** Living document — update after each sprint or prototype revision  
 **Source:** Derived from 23 HTML prototype screens in `/screens/`
 
@@ -225,41 +225,129 @@ A platform-wide role switcher (HQ Admin / Outlet Manager / Finance User) is pres
 - `recipe-detail.html` — full recipe editor with live costing
 - `outlet-recipes.html` — outlet read-only view
 
+#### Recipe Type System
+
+Three recipe types exist across the library; all live in the same list:
+
+| Type | Badge colour | Purpose | Selling price | Row action |
+|------|-------------|---------|---------------|------------|
+| **Finished** | Blue (`#3F8AFB`) | POS-linked menu items sold to customers | Yes (POS synced) | Push split button |
+| **Preparation** | Purple (`#B05EC0`) | Sub-recipes and bases used as ingredients in other recipes | None (internal) | Kebab only |
+| **Production batch** | Teal (`#17B3A3`) | Bulk-made items that trigger inventory depletion when recorded | None (internal) | "Record production →" link to Inventory |
+
+Recording a production run is handled in the **Inventory** module (same flow as an inventory adjustment), not on the recipe detail page.
+
 #### 3.5.1 Recipe Library (`recipes.html`)
 
-**Filter bar:** Search, Category (Breakfast / Mains / Desserts / Beverages / Sides), Brand (The Burger Co / Pasta Palace / Taco Time), Status pills (All / Active / Draft / Archived)
+**KPI strip (4 tiles):**
+- Total recipes: 346 (across all brands)
+- Finished: 320 (POS-linked menu items)
+- Preparations: 18 (sub-recipes & bases)
+- Production batches: 8 (bulk-made, reduces inventory)
 
-**Table columns:** Name, Category, Brand, Cost ($), Selling price ($), Status (Active / Pending review / Draft / Archived), Locked (ti-lock = Locked by HQ; ti-lock-open = Unlocked)
+**Filter bar:** Search, Type (All types / Finished / Preparation / Production batch), Category (Breakfast / Mains / Desserts / Beverages / Sides / Sauces & Bases / Stocks & Bases / Bakery), Brand (The Burger Co / Pasta Palace / Taco Time), Status pills (All / Active / Draft / Archived)
 
-**Row actions:** View → `recipe-detail.html`, Push (split button), kebab (Edit / Duplicate / Push to outlets / Lock-Unlock / Archive / Delete)
+**Table columns:** Name (with type badge sub-line), Category, Brand, Cost (with food cost % sub-value, colour-coded), Selling price (— for Preparation and Production), Status, Locked, Actions
+
+**Food cost % colour coding:**
+- `< 25%` → green (`--status-ok-fg`)
+- `25–32%` → amber (`--status-warn-fg`)
+- `> 32%` → red (`--status-risk-fg`)
+
+**Per-type row actions:**
+- Finished: View + Push (split button) + kebab (Edit / Duplicate / Push to outlets / Lock-Unlock / Archive / Delete)
+- Preparation: View + kebab (Edit / Duplicate / Archive / Delete) — no Push
+- Production batch: View + "Record production →" (links to `inventory.html`) + kebab (Edit / Duplicate / Archive / Delete)
+
+**Sample data (visible rows):**
+| Name | Type | Cost | FC% | Sell | Status |
+|------|------|------|-----|------|--------|
+| Avocado Toast v3 | Finished | $4.20 | 23.3% | $18.00 | Active |
+| Classic Cheeseburger | Finished | $6.80 | 30.9% | $22.00 | Active |
+| Tiramisu | Finished | $3.50 | 25.0% | $14.00 | Active |
+| Flat White | Finished | $1.20 | 20.0% | $6.00 | Active |
+| Caesar Salad | Finished | $5.10 | 26.8% | $19.00 | Pending review |
+| Hollandaise Sauce | Preparation | $1.40 | — | — | Active (used in 4 recipes) |
+| Burger Patty Mix | Preparation | $3.20 | — | — | Active (used in 2 recipes) |
+| Caesar Dressing | Preparation | $0.85 | — | — | Active (used in 3 recipes) |
+| Chicken Stock | Production batch | $0.40/L | — | — | Active (yields 10 L) |
+| Brioche Bun Batch | Production batch | $0.75/bun | — | — | Active (yields 48 buns) |
 
 **Import:** Import recipes button (placeholder).
 
 #### 3.5.2 Recipe Detail (`recipe-detail.html`)
 
-**Sample recipe:** Avocado Toast v3, Breakfast, The Burger Co, status Active, locked by HQ.
+**Sample recipe:** Avocado Toast v3, type Finished, Breakfast, The Burger Co, status Active, locked by HQ, v3.
 
-**Sections:**
+**Layout:** Page header + 4-tile KPI strip + tabbed main panel (1fr) + aside (280px).
 
-- **Basic details** — name, category, brand, description, portions
-- **Ingredients** — inline editable table: Ingredient, Qty, UOM, Unit cost, Subtotal; live total cost recalculates on qty change
-  - Sample: Sourdough bread 2 slices $0.40, Avocado 1 each $1.80, Feta cheese 30g $0.05/g, Chilli flakes 2g $0.02/g, Olive oil 5ml $0.01/ml = $4.20 total
-- **Pricing & margin** — Selling price ($18.00, two-way POS sync), foodCostPct (auto-calc, 23.3%), grossMarginPct (auto-calc, 76.7%), targetMargin (70%)
-- **Allergens & nutrition** — Allergens: Gluten, Dairy (propagated to outlets and POS); Nutrition: energy 420 kcal, protein 12g, carbs 38g, fat 24g
-- **Lock settings** — toggle: when locked, outlet users cannot edit ingredients or pricing
-- **Version history** (accordion) — v3 current, v2 (added feta), v1 (initial); non-current versions have Rollback button
-- **Activity timeline** — Recipe locked, Pushed to 42 outlets, Recipe created
+**KPI strip (live-calculated):**
+- Prime cost: $9.80 (ingredient cost + labour cost)
+- Food cost %: 23.3% (ingredient cost only / selling price)
+- Selling price: $18.00
+- Gross margin: 45.6% ((selling − prime) / selling)
 
-**Footer actions:** Push to outlets (split button), Discard, Submit for approval, Save changes  
-**Sticky save bar** shows unsaved changes count.
+**Tabs: Ingredients | Costing | Outlets | Settings**
+
+---
+
+**Tab: Ingredients**
+
+- *Basic details card* — name, category, brand, description, portions per batch
+- *Ingredient list card* — table: Ingredient name, Qty, UOM, Waste %, Adjusted qty, Unit cost, Subtotal
+  - Preparation sub-recipes shown with purple `[R]` badge (e.g. Hollandaise Sauce)
+  - Waste % is an inline input per row (defaults to 0%)
+  - Footer buttons: Add ingredient, Add preparation [R]
+- *Method & instructions card* — textarea for method notes, yield, shelf life
+
+---
+
+**Tab: Costing**
+
+- *Ingredient cost card* — line-by-line cost rows, total ingredient cost ($6.25)
+- *Labour cost card* — three time inputs (Prep time, Cook time, Plating time) in minutes + Hourly rate ($35/hr); labour total auto-calculated
+  - Sample: Prep 15min ($8.75) + Cook 10min ($5.83) + Plating 5min ($2.92) = $17.50 total labour... wait, stored per-recipe labour total is $3.55 at default sample values
+- *Prime cost & margin card* — ingredient cost + labour cost = prime cost; selling price input; target food cost % input; three metric tiles: Food cost % (ingredient only), Prime cost %, Gross margin %
+  - Food cost % tile goes red when above target
+  - Target calculator: "Sell at $X to hit Y% food cost" reverse formula
+
+---
+
+**Tab: Outlets**
+
+- *Outlet assignment card* — same outlet group tree (Brand → Region → Outlet) with toggles; same expand/collapse pattern as other detail pages
+- *Outlet selling prices card* — per-outlet table: Outlet, POS synced price (read-only), HQ override input, Effective price
+  - Override field: when a value is entered, effective price turns accent colour; when cleared, reverts to POS synced price
+  - Business rule: POS synced price is the base; HQ override replaces it; effective price is override if set, otherwise POS synced
+
+---
+
+**Tab: Settings**
+
+- *Lock settings card* — two toggles: "Lock ingredients (outlets cannot edit)" and "Lock pricing (outlets cannot edit selling price)"
+- *Allergens card* — 12 allergen checkboxes + 6 dietary checkboxes; inherited allergens (from sub-recipe ingredients) shown with "Inherited" label; propagated to outlets and POS on push
+- *Version history card* — v3 (current badge), v2 "Added feta + chilli flakes", v1 "Initial recipe" — non-current versions have Restore button
+- *Activity log card* — chronological list of recipe events (recipe locked, pushed to 42 outlets, recipe created)
+
+---
+
+**Aside (280px):**
+- *Recipe info card* — type badge, status pill, lock status, portions, outlets count, version, last updated
+- *Margin agent card* — Sloan agent surface (green border + glow); shows food cost guidance; "Review costing" CTA; state: "On track" when within target, alert state when above target
+- *Danger zone* — Archive recipe (destructive, red)
+
+---
+
+**Page header actions:** Version history (ghost), Duplicate, Push (split button — Push to outlets / Push to group / Push to selection)
 
 **Agent touchpoints:**
-- Mara appears when `grossMarginPct < targetMargin` with three actions: Reprice to target (e.g. $18.90), Rebuild recipe, Re-source
+- Sloan (Margin agent, renamed from Mara in this screen) appears in aside with food cost status and three remediation actions when over target: Reprice to target, Rebuild recipe, Re-source
 
 **Business rules:**
-- Lock prevents outlet edit of ingredients and pricing
-- Allergens and nutrition propagate to outlets and POS on push
-- Selling price syncs two-way with POS
+- Lock prevents outlet edit of ingredients and/or pricing (two separate toggles)
+- Allergens inherited from sub-recipe (Preparation) ingredients propagate automatically
+- Selling price syncs two-way with POS; HQ override supersedes POS synced price per outlet
+- Production runs are recorded in Inventory, not on this screen
 
 #### 3.5.3 Outlet Recipes (`outlet-recipes.html`)
 
@@ -638,7 +726,7 @@ Opening stock
 
 ---
 
-### 3.11 Suppliers — `suppliers.html`
+### 3.11 Suppliers — `suppliers.html`, `supplier-detail.html`
 
 **Purpose:** Manage the supplier network, SKU links, and onboarding.
 
@@ -646,34 +734,58 @@ Opening stock
 
 **Supplier categories (9):** Meat & Seafood, Produce, Dairy, Dry Goods, Beverages, Bakery, Packaging, Cleaning, Equipment
 
-**Table columns:** Supplier (avatar + name + verified badge), Categories (pills), Contact (email + phone), Outlets supplied, Status (Active / Pending / Inactive)
+**Table columns:** Supplier (avatar + name + verified badge + Nomni Supply badge where applicable), Categories (pills), Order activity (last order date + next expected + frequency badge), Spend YTD ($), Outlets supplied, Status (Active / Pending / Inactive)
 
 **Verified badge:** `ti-rosette-discount-check-filled` — shown on Sydney Butchers Co., Green Farmers Market, Artisan Bakehouse, Pacific Drinks Wholesale, Clean Pack Solutions
 
-**Sample data:**
-| Supplier | Categories | Outlets | Status |
-|---|---|---|---|
-| Sydney Butchers Co. | Meat & Seafood | 8 | Active, verified |
-| Green Farmers Market | Produce, Dairy | 12 | Active, verified |
-| Artisan Bakehouse | Bakery, Dry Goods | 5 | Active, verified |
-| Pacific Drinks Wholesale | Beverages | 12 | Active, verified (Nomni Supply) |
-| NSW Seafood Direct | Meat & Seafood | 3 | Pending |
-| Clean Pack Solutions | Packaging, Cleaning | 12 | Active, verified |
+#### Nomni Supply Differentiation
 
-**Supplier detail drawer fields:**
-- Verified badge, rating (e.g. 4.7 stars), delivery info
-- Supplier SKU links table: Internal item, Pack/UOM, Price, Lead time (days), Preferred / Fallback pills
-- Price benchmark: % vs network median
+Suppliers connected to the Nomni Supply platform are visually distinguished from manually-managed suppliers. The buyer cannot edit certain fields on a Nomni Supply–connected supplier because those fields are maintained by the supplier themselves in their Nomni Supply account.
+
+**Visual indicator:** Small green pill badge with plug icon — "Nomni Supply" — shown in the supplier list row (next to supplier name) and in the supplier detail page header.
+
+**Connected suppliers:** Sydney Butchers Co., Green Farmers Market, Pacific Drinks Wholesale (3 of 38 in demo data)
+
+**Read-only fields on Nomni Supply suppliers (`supplier-detail.html`):**
+- ABN — "Verified by supplier on Nomni Supply" lock note
+- Bank name, BSB, Account number, Account name — all locked with banner: "Managed by [Supplier] on Nomni Supply — read-only here."
+
+**Nomni Supply connection card** (in aside, supplier detail): Connected since date, Last sync timestamp, explanatory note that supplier-managed fields are kept up to date automatically.
+
+**Sample data:**
+| Supplier | Categories | Outlets | Status | Nomni Supply |
+|---|---|---|---|---|
+| Sydney Butchers Co. | Meat & Seafood | 8 | Active, verified | Yes |
+| Green Farmers Market | Produce, Dairy | 12 | Active, verified | Yes |
+| Artisan Bakehouse | Bakery, Dry Goods | 5 | Active, verified | No |
+| Pacific Drinks Wholesale | Beverages | 12 | Active, verified | Yes |
+| NSW Seafood Direct | Meat & Seafood | 3 | Pending | No |
+| Clean Pack Solutions | Packaging, Cleaning | 12 | Active, verified | No |
+
+#### Add Supplier — Search-Before-Create
+
+The system enforces a **single canonical record** per supplier. Two buyers purchasing from the same supplier (e.g. John's Premium Meats) must connect to the same shared record — no duplicate records permitted.
+
+**3-step drawer flow:**
+
+**Step 1 — Find:** Mandatory search through the global Nomni supplier directory before creation is allowed.
+- Search input — filters against the global directory by name or ABN
+- Results list — shows name, ABN, location, Nomni Supply badge, verified badge, "N buyers" count
+- Selecting a result sets `asMode = 'existing'` — no profile form required (profile comes from the shared record)
+- "Can't find your supplier?" → "Create new" link switches to `asMode = 'new'` and shows the profile form
+- Create form fields: Company name, ABN, Category, Contact name, Email, Phone, Website, Address
+
+**Step 2 — Outlets:** Select which outlet groups this supplier will serve (multi-select outlet group tree); if `asMode = 'existing'` a banner shows "Connecting to existing supplier record — your pricing lives in your Market List."
+
+**Step 3 — Confirm:** Review card + confirm action. For existing: shows shared record preview. For new: shows full profile preview.
+
+**Key business rule:** Supplier SKU prices are buyer-specific and live in **Market Lists**, not on the shared supplier record. The same SKU can be sold at different prices to different buyers.
 
 **Actions:** Benchmark (network price comparison), New RFQ, Add supplier
-
-**Add supplier dialog fields:** Name (required), ABN, Category (required), Contact email
 
 **Row overflow menu:**
 - Active suppliers: Edit details, Outlet assignments, View orders, Deactivate
 - Pending suppliers: Approve, Reject
-
-**Nomni Supply connection:** Pacific Drinks Wholesale shown as connected via Nomni Supply EDI (electronic invoice submission).
 
 ---
 
@@ -843,21 +955,49 @@ Opening stock
 
 ```javascript
 {
-  id, name, version,  // e.g. "Avocado Toast v3"
+  id, name, version,    // e.g. "Avocado Toast v3"
+  type,                 // 'finished' | 'prep' | 'production'
   category, brand, description, portions,
-  status,             // 'active' | 'pending review' | 'draft' | 'archived'
-  locked,             // bool — HQ lock prevents outlet edit
+  status,               // 'active' | 'pending review' | 'draft' | 'archived'
+  locked,               // bool — HQ lock prevents outlet edit
+  lockIngredients,      // bool — separate toggle for ingredient lock
+  lockPricing,          // bool — separate toggle for pricing lock
+
+  // Ingredient list (Finished and Preparation recipes)
   ingredients: [{
-    ingredient,       // references Item.buyerName
+    ingredient,         // references Item.buyerName or another Recipe.name (sub-recipe)
+    isSubRecipe,        // bool — true for [R] Preparation type ingredients
     qty, uom,
+    wastePct,           // waste % per row (0 default)
+    adjustedQty,        // qty × (1 + wastePct/100)
     unitCost, subtotal
   }],
-  totalCost,          // sum of subtotals
-  sellingPrice,       // two-way sync with POS
-  foodCostPct,        // auto-calc: totalCost / sellingPrice
-  grossMarginPct,     // auto-calc: 1 - foodCostPct
-  targetMargin,
-  allergens: [],      // propagated to outlets and POS on push
+  ingredientCost,       // sum of ingredient subtotals
+  yieldQty, yieldUom,   // for Production batch (e.g. 10 L, 48 buns)
+  shelfLife,            // optional string
+
+  // Labour cost (Finished recipes)
+  labour: {
+    prepMins, cookMins, plateMins,
+    hourlyRate,         // $/hr
+    labourCost          // auto-calc: (total mins / 60) × hourlyRate
+  },
+  primeCost,            // ingredientCost + labourCost
+  targetFoodCostPct,    // user-set target food cost % (ingredient only / sell price)
+
+  // Pricing (Finished recipes only)
+  sellingPrice,         // base POS synced price (two-way sync)
+  outletPricing: [{     // per-outlet overrides
+    outletId,
+    posSyncedPrice,     // read-only from POS
+    hqOverride,         // nullable — if set, overrides POS synced price
+    effectivePrice      // hqOverride ?? posSyncedPrice
+  }],
+  foodCostPct,          // auto-calc: ingredientCost / effectivePrice
+  primeCostPct,         // auto-calc: primeCost / effectivePrice
+  grossMarginPct,       // auto-calc: (effectivePrice - primeCost) / effectivePrice
+
+  allergens: [],        // propagated to outlets and POS on push; inherited from sub-recipes
   nutrition: { energy, protein, carbs, fat },
   versionHistory: [{ version, description, date, author }],
   activity: [{ text, time }]
@@ -889,21 +1029,38 @@ Opening stock
 
 ```javascript
 {
-  name, verified,   // bool — shows rosette badge
+  // Shared global record (one per real-world supplier)
+  name, verified,     // bool — shows rosette badge
   categories: [],
   contact: { email, phone },
-  abn, address, bank, terms,  // payment terms: 'NET 7' | 'NET 14' | 'NET 30'
+  abn,                // read-only for buyer if nomniSupplyConnected
+  address,
+  bank: {             // read-only for buyer if nomniSupplyConnected
+    bankName, bsb, accountNumber, accountName
+  },
+  terms,              // 'NET 7' | 'NET 14' | 'NET 30'
   rating,
+
+  // Nomni Supply connection
+  nomniSupplyConnected,  // bool — supplier manages their own profile on Nomni Supply
+  nomniSupplyConnectedSince,
+  nomniSupplyLastSync,
+
+  // Buyer-specific fields (per connected buyer)
   outletsSupplied,
-  status,           // 'Active' | 'Pending' | 'Inactive'
-  skuLinks: [{
-    internalItem,   // references Item.buyerName
-    packUom, price, leadTimeDays,
-    preferred       // 'Preferred' | 'Fallback'
+  status,             // 'Active' | 'Pending' | 'Inactive'
+  skuLinks: [{        // buyer-specific SKU links and pricing
+    internalItem,     // references Item.buyerName
+    packUom,
+    price,            // buyer-specific price (NOT shared with other buyers)
+    leadTimeDays,
+    preferred         // 'Preferred' | 'Fallback'
   }],
-  priceBenchmarkPct  // % vs network median
+  priceBenchmarkPct   // % vs network median
 }
 ```
+
+**Key rule:** Supplier SKU prices are buyer-specific and live in buyer Market Lists. The same SKU can be sold at different prices to different buyers. The shared supplier record holds identity and contact information only.
 
 ### 4.7 Outlet
 
