@@ -674,6 +674,19 @@
       if (!e.target.closest('.overflow-btn')) document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
     });
 
+    // Clickable rows — derive item key from existing onclick or link-action
+    document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+      const btn = tr.querySelector('[onclick*="openItemDrawer"]');
+      if (!btn) return;
+      const m = btn.getAttribute('onclick').match(/openItemDrawer\('([^']+)'\)/);
+      if (!m) return;
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', e => {
+        if (e.target.closest('.overflow-wrap, .overflow-btn')) return;
+        openItemDrawer(m[1]);
+      });
+    });
+
     /* Remove dialog */
     let removeName = '';
     function openRemoveDialog(name, outlets, recipes, pos) {

@@ -957,6 +957,14 @@
   // ─── Init ─────────────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
     renderAccessTree();
+
+    // Clickable order history rows
+    document.querySelectorAll('#tab-orders .data-table tbody tr').forEach(tr => {
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', () => {
+        window.location.href = 'orders.html?supplier=sydney-butchers';
+      });
+    });
   });
 </script>
 </body>

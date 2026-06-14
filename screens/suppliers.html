@@ -1036,6 +1036,17 @@
       asClose();
     }
   });
+
+  // Clickable rows
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', e => {
+        if (e.target.closest('.overflow-wrap, .row-actions a, .row-actions button')) return;
+        window.location.href = 'supplier-detail.html';
+      });
+    });
+  });
 </script>
 </body>
 </html>

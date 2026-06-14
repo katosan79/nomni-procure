@@ -867,6 +867,15 @@
     }
   });
 
+  // Clickable rows
+  document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+    tr.style.cursor = 'pointer';
+    tr.addEventListener('click', e => {
+      if (e.target.closest('.overflow-wrap, .row-actions a, .row-actions button')) return;
+      window.location.href = 'user-detail.html';
+    });
+  });
+
   function switchTab(el, id) {
     document.querySelectorAll('.tab-btn').forEach(b => {
       b.classList.remove('active');

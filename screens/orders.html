@@ -669,6 +669,19 @@
       wrap.appendChild(t);
       setTimeout(() => t.remove(), 3000);
     }
+
+    // Clickable rows — PR rows open route drawer; PO rows already have onclick on <tr>
+    document.querySelectorAll('.data-table tbody tr:not([onclick])').forEach(tr => {
+      const btn = tr.querySelector('[onclick*="openRoute"]');
+      if (!btn) return;
+      const m = btn.getAttribute('onclick').match(/openRoute\('([^']+)','([^']+)'\)/);
+      if (!m) return;
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', e => {
+        if (e.target.closest('.link-action')) return;
+        openRoute(m[1], m[2]);
+      });
+    });
   </script>
 </body>
 </html>

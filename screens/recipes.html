@@ -842,6 +842,15 @@
     document.addEventListener('click', () => {
       document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
     });
+
+    // Clickable rows
+    document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', e => {
+        if (e.target.closest('.kebab-btn, .overflow-menu, .dropdown-menu, .row-actions a, .row-actions button')) return;
+        window.location.href = 'recipe-detail.html';
+      });
+    });
   </script>
 </body>
 </html>

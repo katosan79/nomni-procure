@@ -1966,6 +1966,21 @@
 
     // Kick off sessions render on load
     document.addEventListener('DOMContentLoaded', () => renderSessions());
+
+    // Clickable rows — derive item key from the existing link-action's onclick
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        const editBtn = tr.querySelector('[onclick*="openItemDrawer"]');
+        if (!editBtn) return;
+        const m = editBtn.getAttribute('onclick').match(/openItemDrawer\('([^']+)'\)/);
+        if (!m) return;
+        tr.style.cursor = 'pointer';
+        tr.addEventListener('click', e => {
+          if (e.target.closest('.overflow-wrap, .overflow-btn')) return;
+          openItemDrawer(m[1]);
+        });
+      });
+    });
   </script>
 </body>
 </html>

@@ -760,6 +760,15 @@
     }
   });
 
+  // Clickable rows
+  document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+    tr.style.cursor = 'pointer';
+    tr.addEventListener('click', e => {
+      if (e.target.closest('.overflow-wrap, .row-actions a, .row-actions button')) return;
+      window.location.href = 'outlet-detail.html';
+    });
+  });
+
   function filterByGroup(id) {
     document.querySelectorAll('.group-card').forEach(c => c.classList.remove('active'));
     event.currentTarget.classList.add('active');
