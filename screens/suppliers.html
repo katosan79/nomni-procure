@@ -60,6 +60,28 @@
     .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); }
     .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; font-feature-settings: 'tnum' 1; }
     .kpi-sub { font-size: 12px; color: var(--text-soft); }
+    .kpi-delta { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
+    .kpi-delta.up { color: var(--status-ok-fg); }
+    .kpi-delta.down { color: var(--status-risk-fg); }
+
+    /* Activity cell */
+    .cell-activity { display: flex; flex-direction: column; gap: 3px; }
+    .activity-last { font-size: 13px; color: var(--text); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+    .activity-last i { font-size: 12px; color: var(--text-soft); }
+    .freq-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 700; padding: 2px 7px;
+      border-radius: var(--radius-pill); white-space: nowrap;
+    }
+    .freq-badge.high   { background: var(--mint); color: var(--spinach); }
+    .freq-badge.medium { background: color-mix(in srgb, var(--mint) 40%, transparent); color: var(--fern); }
+    .freq-badge.low    { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .freq-badge.none   { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+
+    /* Spend cell */
+    .cell-spend { text-align: right; }
+    .spend-val { font-size: 14px; font-weight: 600; color: var(--text); font-feature-settings: 'tnum' 1; }
+    .spend-sub { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
 
     /* Filter bar */
     .filter-bar { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
@@ -367,17 +389,17 @@
       <div class="kpi-tile">
         <span class="kpi-label">Active</span>
         <span class="kpi-value">31</span>
-        <span class="kpi-sub">Currently supplying</span>
+        <span class="kpi-sub">Currently supplying · <span style="color:var(--status-warn-fg);font-weight:600;">4 pending</span></span>
       </div>
       <div class="kpi-tile">
-        <span class="kpi-label">Pending approval</span>
-        <span class="kpi-value">4</span>
-        <span class="kpi-sub">Awaiting review</span>
+        <span class="kpi-label">Spend YTD</span>
+        <span class="kpi-value">$324k</span>
+        <span class="kpi-sub"><span class="kpi-delta up"><i class="ti ti-trending-up" style="font-size:11px;"></i>+12%</span> vs same period last year</span>
       </div>
       <div class="kpi-tile">
-        <span class="kpi-label">Categories</span>
-        <span class="kpi-value">9</span>
-        <span class="kpi-sub">Product categories</span>
+        <span class="kpi-label">Avg order frequency</span>
+        <span class="kpi-value" style="font-size:22px;">2.4×</span>
+        <span class="kpi-sub">Per week across active suppliers</span>
       </div>
     </div>
 
@@ -413,8 +435,9 @@
             <tr>
               <th>Supplier</th>
               <th>Categories</th>
-              <th>Contact</th>
-              <th>Outlets supplied</th>
+              <th>Outlets</th>
+              <th>Order activity</th>
+              <th style="text-align:right;">Spend YTD</th>
               <th>Status</th>
               <th class="overflow-cell"></th>
             </tr>
@@ -424,12 +447,26 @@
               <td>
                 <div class="cell-supplier">
                   <div class="supplier-avatar">SB</div>
-                  <div><div class="cell-name">Sydney Butchers Co. <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div></div>
+                  <div>
+                    <div class="cell-name">Sydney Butchers Co. <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-sub">orders@sydneybutchers.com.au</div>
+                  </div>
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Meat &amp; Seafood</span></div></td>
-              <td><div class="cell-name">orders@sydneybutchers.com.au</div><div class="cell-sub">+61 2 9000 1234</div></td>
               <td>8 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>2 days ago</div>
+                  <span class="freq-badge high"><i class="ti ti-repeat" style="font-size:10px;"></i>Weekly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$84,720</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -451,12 +488,26 @@
               <td>
                 <div class="cell-supplier">
                   <div class="supplier-avatar">GF</div>
-                  <div><div class="cell-name">Green Farmers Market <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div></div>
+                  <div>
+                    <div class="cell-name">Green Farmers Market <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-sub">supply@greenfarmers.com.au</div>
+                  </div>
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Produce</span><span class="cat-pill">Dairy</span></div></td>
-              <td><div class="cell-name">supply@greenfarmers.com.au</div><div class="cell-sub">+61 2 8000 5678</div></td>
               <td>12 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>Yesterday</div>
+                  <span class="freq-badge high"><i class="ti ti-repeat" style="font-size:10px;"></i>3× / week</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$112,400</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -478,12 +529,26 @@
               <td>
                 <div class="cell-supplier">
                   <div class="supplier-avatar">AB</div>
-                  <div><div class="cell-name">Artisan Bakehouse <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div></div>
+                  <div>
+                    <div class="cell-name">Artisan Bakehouse <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-sub">wholesale@artisanbake.com.au</div>
+                  </div>
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Bakery</span><span class="cat-pill">Dry Goods</span></div></td>
-              <td><div class="cell-name">wholesale@artisanbake.com.au</div><div class="cell-sub">+61 3 9000 2222</div></td>
               <td>5 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>5 days ago</div>
+                  <span class="freq-badge medium"><i class="ti ti-repeat" style="font-size:10px;"></i>Bi-weekly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$28,350</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -505,12 +570,26 @@
               <td>
                 <div class="cell-supplier">
                   <div class="supplier-avatar">PD</div>
-                  <div><div class="cell-name">Pacific Drinks Wholesale <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div></div>
+                  <div>
+                    <div class="cell-name">Pacific Drinks Wholesale <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-sub">trade@pacificdrinks.com.au</div>
+                  </div>
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Beverages</span></div></td>
-              <td><div class="cell-name">trade@pacificdrinks.com.au</div><div class="cell-sub">+61 2 7000 9900</div></td>
               <td>12 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>8 days ago</div>
+                  <span class="freq-badge medium"><i class="ti ti-repeat" style="font-size:10px;"></i>Bi-weekly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$67,800</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -532,12 +611,26 @@
               <td>
                 <div class="cell-supplier">
                   <div class="supplier-avatar">NS</div>
-                  <div><div class="cell-name">NSW Seafood Direct</div></div>
+                  <div>
+                    <div class="cell-name">NSW Seafood Direct</div>
+                    <div class="cell-sub">fresh@nswseafood.com.au</div>
+                  </div>
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Meat &amp; Seafood</span></div></td>
-              <td><div class="cell-name">fresh@nswseafood.com.au</div><div class="cell-sub">+61 2 9111 3333</div></td>
               <td>3 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last" style="color:var(--text-soft);"><i class="ti ti-clock"></i>No orders yet</div>
+                  <span class="freq-badge none">Pending approval</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val" style="color:var(--text-soft);">—</div>
+                  <div class="spend-sub">Not yet active</div>
+                </div>
+              </td>
               <td><span class="status-pill pending">Pending</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
@@ -558,12 +651,26 @@
               <td>
                 <div class="cell-supplier">
                   <div class="supplier-avatar">CP</div>
-                  <div><div class="cell-name">Clean Pack Solutions <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div></div>
+                  <div>
+                    <div class="cell-name">Clean Pack Solutions <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-sub">b2b@cleanpack.com.au</div>
+                  </div>
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Packaging</span><span class="cat-pill">Cleaning</span></div></td>
-              <td><div class="cell-name">b2b@cleanpack.com.au</div><div class="cell-sub">+61 3 8000 7777</div></td>
               <td>12 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>11 days ago</div>
+                  <span class="freq-badge low"><i class="ti ti-repeat" style="font-size:10px;"></i>Monthly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$31,200</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
