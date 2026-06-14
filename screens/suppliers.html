@@ -181,6 +181,162 @@
       .kpi-strip { grid-template-columns: 1fr 1fr; }
       .filter-bar { flex-direction: column; align-items: stretch; }
     }
+
+    /* ── Add Supplier Drawer ─────────────────────────────────────────────────── */
+    .as-scrim {
+      display: none; position: fixed; inset: 0; z-index: 190;
+      background: color-mix(in srgb, var(--seaweed) 40%, transparent);
+    }
+    .as-scrim.open { display: block; }
+    .as-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
+      width: min(560px, 100vw); background: var(--surface);
+      box-shadow: var(--shadow-lg);
+      transform: translateX(100%); transition: transform 0.22s ease;
+      display: flex; flex-direction: column;
+    }
+    .as-drawer.open { transform: translateX(0); }
+    .as-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: var(--space-xl) var(--space-2xl) var(--space-lg);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .as-title { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; margin-top: 2px; }
+    .as-close {
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft); flex-shrink: 0;
+      transition: background 0.12s;
+    }
+    .as-close:hover { background: var(--surface-soft); color: var(--text); }
+    .as-close i { font-size: 16px; }
+
+    /* Step indicator */
+    .as-steps {
+      display: flex; align-items: center; padding: var(--space-lg) var(--space-2xl);
+      border-bottom: 1px solid var(--border); gap: 0; flex-shrink: 0;
+    }
+    .as-step {
+      display: flex; align-items: center; gap: var(--space-xs);
+      opacity: 0.4;
+    }
+    .as-step.active { opacity: 1; }
+    .as-step.done { opacity: 0.7; }
+    .as-step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--surface-soft); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--text-soft);
+      flex-shrink: 0;
+    }
+    .as-step.active .as-step-num { background: var(--fern); border-color: var(--fern); color: #fff; }
+    .as-step.done .as-step-num { background: var(--mint); border-color: var(--fern); color: var(--spinach); }
+    .as-step-label { font-size: 12px; font-weight: 600; color: var(--text-soft); white-space: nowrap; }
+    .as-step.active .as-step-label { color: var(--text); }
+    .as-step-line { flex: 1; height: 1px; background: var(--border); margin: 0 var(--space-sm); min-width: 20px; }
+
+    /* Body */
+    .as-body { flex: 1; overflow-y: auto; padding: var(--space-2xl); }
+    .as-panel { display: none; }
+    .as-panel.active { display: block; }
+
+    /* Form elements */
+    .as-field-stack { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .as-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .as-field { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .as-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .as-req { color: var(--status-risk-fg); }
+    .as-opt { font-weight: 400; color: var(--text-soft); font-size: 12px; }
+    .as-input {
+      height: var(--control-h); padding-inline: var(--space-md);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); outline: none; width: 100%; box-sizing: border-box;
+      transition: border-color 0.12s;
+    }
+    .as-input:focus { border-color: var(--border-focus); }
+    .as-input.error { border-color: var(--status-risk-fg); }
+    .as-select {
+      height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right var(--space-sm) center;
+      width: 100%; box-sizing: border-box;
+    }
+    .as-select:focus { border-color: var(--border-focus); }
+    .as-error { font-size: 12px; color: var(--status-risk-fg); font-weight: 500; }
+    .as-section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-soft);
+      padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border);
+    }
+
+    /* Category tags */
+    .as-cat-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .as-cat {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600; padding: 4px 10px;
+      border-radius: var(--radius-pill); background: var(--surface-soft);
+      border: 1.5px solid var(--border); color: var(--text-soft);
+      cursor: pointer; transition: background 0.12s, border-color 0.12s;
+    }
+    .as-cat.selected { background: var(--mint); border-color: var(--fern); color: var(--spinach); }
+
+    /* Outlet access tree */
+    .as-tree-wrap { border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .as-group-row {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none;
+    }
+    .as-group-row:last-child { border-bottom: none; }
+    .as-group-row:hover { background: var(--surface-soft); }
+    .as-chevron { font-size: 13px; color: var(--text-soft); transition: transform 0.18s; flex-shrink: 0; }
+    .as-chevron.open { transform: rotate(90deg); }
+    .as-group-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+    .as-group-count { font-size: 12px; color: var(--text-soft); }
+    .as-group-state {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-pill);
+    }
+    .as-state-none { background: var(--surface-soft); color: var(--text-soft); }
+    .as-state-all  { background: var(--mint); color: var(--spinach); }
+    .as-state-some { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .as-group-cb { cursor: pointer; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--fern); }
+    .as-outlet-list { display: none; background: color-mix(in srgb, var(--mint) 15%, transparent); }
+    .as-outlet-list.open { display: block; }
+    .as-outlet-row {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg) var(--space-sm) calc(var(--space-lg) + 28px);
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    }
+    .as-outlet-row:last-child { border-bottom: none; }
+    .as-outlet-row:hover { background: color-mix(in srgb, var(--mint) 40%, transparent); }
+    .as-outlet-cb { cursor: pointer; width: 15px; height: 15px; accent-color: var(--fern); flex-shrink: 0; }
+    .as-outlet-name { font-size: 13px; color: var(--text); flex: 1; }
+
+    /* Review card */
+    .as-review-card {
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column; gap: var(--space-md);
+    }
+    .as-review-row { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-lg); }
+    .as-review-label { font-size: 12px; color: var(--text-soft); flex-shrink: 0; min-width: 120px; }
+    .as-review-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
+    .as-review-divider { height: 1px; background: var(--border); }
+
+    /* Footer */
+    .as-foot {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-lg) var(--space-2xl);
+      border-top: 1px solid var(--border); flex-shrink: 0;
+      background: var(--surface);
+    }
   </style>
 </head>
 <body>
@@ -277,7 +433,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action" onclick="openSupplier(this)">View</button>
+                  <a class="link-action" href="supplier-detail.html">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Sydney Butchers Co." onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -304,7 +460,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action" onclick="openSupplier(this)">View</button>
+                  <a class="link-action" href="supplier-detail.html">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Green Farmers Market" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -331,7 +487,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action" onclick="openSupplier(this)">View</button>
+                  <a class="link-action" href="supplier-detail.html">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Artisan Bakehouse" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -358,7 +514,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action" onclick="openSupplier(this)">View</button>
+                  <a class="link-action" href="supplier-detail.html">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Pacific Drinks Wholesale" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -385,7 +541,7 @@
               <td><span class="status-pill pending">Pending</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action" onclick="openSupplier(this)">Review</button>
+                  <a class="link-action" href="supplier-detail.html">Review</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for NSW Seafood Direct" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -411,7 +567,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action" onclick="openSupplier(this)">View</button>
+                  <a class="link-action" href="supplier-detail.html">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Clean Pack Solutions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -433,49 +589,142 @@
   </div><!-- /.napp-canvas -->
 </div><!-- /.page-body -->
 
-<!-- Add supplier dialog -->
-<div id="add-supplier-dialog" role="dialog" aria-modal="true" aria-labelledby="add-supplier-title" style="display:none;position:fixed;inset:0;z-index:200;">
-  <div style="position:absolute;inset:0;background:color-mix(in srgb, var(--seaweed) 40%, transparent);" onclick="closeAddSupplierDialog()"></div>
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-lg);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <h2 id="add-supplier-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Add supplier</h2>
-      <button onclick="closeAddSupplierDialog()" style="background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px;" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>
+<!-- Add supplier drawer (3-step) -->
+<div class="as-scrim" id="as-scrim" onclick="asClose()"></div>
+<aside class="as-drawer" id="as-drawer" aria-label="Add supplier" aria-hidden="true">
+
+  <!-- Header -->
+  <div class="as-head">
+    <div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-soft);" id="as-eyebrow">Step 1 of 3</div>
+      <div class="as-title" id="as-title">Add supplier</div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
-      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Supplier name <span style="color:var(--status-risk-fg);">*</span></label>
-        <input type="text" placeholder="e.g. Sydney Butchers Co." style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">ABN</label>
-        <input type="text" placeholder="XX XXX XXX XXX" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Category <span style="color:var(--status-risk-fg);">*</span></label>
-        <select style="height:var(--control-h);padding-inline:var(--space-md) var(--space-2xl);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;appearance:none;width:100%;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center;">
-          <option value="">Select category…</option>
-          <option>Meat &amp; Seafood</option>
-          <option>Produce</option>
-          <option>Dairy</option>
-          <option>Dry Goods</option>
-          <option>Beverages</option>
-          <option>Bakery</option>
-          <option>Packaging</option>
-          <option>Cleaning</option>
-          <option>Equipment</option>
-        </select>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Contact email</label>
-        <input type="email" placeholder="orders@supplier.com.au" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:var(--space-sm);">
-      <button class="btn btn-outline" onclick="closeAddSupplierDialog()">Cancel</button>
-      <button class="btn btn-primary" onclick="closeAddSupplierDialog()">Add supplier</button>
-    </div>
+    <button class="as-close" onclick="asClose()" aria-label="Close"><i class="ti ti-x"></i></button>
   </div>
-</div>
+
+  <!-- Step indicator -->
+  <div class="as-steps">
+    <div class="as-step active" id="as-step-dot-1"><span class="as-step-num">1</span><span class="as-step-label">Details</span></div>
+    <div class="as-step-line"></div>
+    <div class="as-step" id="as-step-dot-2"><span class="as-step-num">2</span><span class="as-step-label">Terms &amp; outlets</span></div>
+    <div class="as-step-line"></div>
+    <div class="as-step" id="as-step-dot-3"><span class="as-step-num">3</span><span class="as-step-label">Confirm</span></div>
+  </div>
+
+  <!-- Body -->
+  <div class="as-body">
+
+    <!-- Step 1: Company details -->
+    <div class="as-panel active" id="as-panel-1">
+      <div class="as-field-stack">
+        <div class="as-field">
+          <label class="as-label">Supplier name <span class="as-req">*</span></label>
+          <input class="as-input" id="as-name" type="text" placeholder="e.g. NSW Dairy Direct"/>
+          <div class="as-error" id="as-name-err" style="display:none;">Supplier name is required.</div>
+        </div>
+        <div class="as-row">
+          <div class="as-field">
+            <label class="as-label">Contact email <span class="as-req">*</span></label>
+            <input class="as-input" id="as-email" type="email" placeholder="orders@supplier.com.au"/>
+            <div class="as-error" id="as-email-err" style="display:none;">A valid email is required.</div>
+          </div>
+          <div class="as-field">
+            <label class="as-label">Phone <span class="as-opt">(optional)</span></label>
+            <input class="as-input" id="as-phone" type="tel" placeholder="+61 2 XXXX XXXX"/>
+          </div>
+        </div>
+        <div class="as-row">
+          <div class="as-field">
+            <label class="as-label">ABN <span class="as-opt">(optional)</span></label>
+            <input class="as-input" id="as-abn" type="text" placeholder="XX XXX XXX XXX" style="font-family:'IBM Plex Mono',monospace;"/>
+          </div>
+          <div class="as-field">
+            <label class="as-label">Website <span class="as-opt">(optional)</span></label>
+            <input class="as-input" id="as-website" type="url" placeholder="https://…"/>
+          </div>
+        </div>
+        <div class="as-field">
+          <label class="as-label">Address <span class="as-opt">(optional)</span></label>
+          <input class="as-input" id="as-address" type="text" placeholder="Street address, suburb, state, postcode"/>
+        </div>
+        <div class="as-field">
+          <label class="as-label">Categories <span class="as-req">*</span></label>
+          <div class="as-cat-tags" id="as-cats">
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Meat &amp; Seafood">Meat &amp; Seafood</span>
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Produce">Produce</span>
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Dairy">Dairy</span>
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Dry Goods">Dry Goods</span>
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Beverages">Beverages</span>
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Bakery">Bakery</span>
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Packaging">Packaging</span>
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Cleaning">Cleaning</span>
+            <span class="as-cat" onclick="asToggleCat(this)" data-val="Equipment">Equipment</span>
+          </div>
+          <div class="as-error" id="as-cat-err" style="display:none;">Select at least one category.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Payment terms + outlet assignment -->
+    <div class="as-panel" id="as-panel-2">
+      <div class="as-field-stack">
+        <div class="as-section-title">Trading account <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text-soft);">— all optional</span></div>
+        <div class="as-row">
+          <div class="as-field">
+            <label class="as-label">Account number <span class="as-opt">(optional)</span></label>
+            <input class="as-input" id="as-account" type="text" placeholder="e.g. ACC-00100" style="font-family:'IBM Plex Mono',monospace;"/>
+          </div>
+          <div class="as-field">
+            <label class="as-label">Payment terms <span class="as-opt">(optional)</span></label>
+            <select class="as-select" id="as-terms">
+              <option value="">Select terms…</option>
+              <option>COD – Cash on Delivery</option>
+              <option>Net 7</option>
+              <option>Net 14</option>
+              <option>Net 30</option>
+              <option>Net 60</option>
+              <option>EOM – End of Month</option>
+            </select>
+          </div>
+        </div>
+        <div class="as-field" style="max-width:180px;">
+          <label class="as-label">Credit limit <span class="as-opt">(optional)</span></label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);">$</span>
+            <input class="as-input" id="as-credit" type="text" placeholder="0.00" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+          </div>
+        </div>
+
+        <div class="as-section-title" style="margin-top:var(--space-sm);">Outlet assignment</div>
+        <p style="font-size:13px;color:var(--text-soft);line-height:1.6;margin:0;">Select which outlets this supplier is approved to supply. You can change this at any time from the supplier's profile.</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-soft);">
+          <span>Approved for</span>
+          <span id="as-outlet-count" style="font-weight:600;color:var(--text-accent);">0 outlets</span>
+        </div>
+        <div class="as-tree-wrap" id="as-access-tree"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Review -->
+    <div class="as-panel" id="as-panel-3">
+      <div class="as-field-stack">
+        <div class="as-section-title">Review &amp; confirm</div>
+        <p style="font-size:13px;color:var(--text-soft);margin:0;line-height:1.6;">The supplier will be added as <strong>Active</strong> immediately and assigned to the selected outlets.</p>
+        <div class="as-review-card" id="as-review"></div>
+      </div>
+    </div>
+
+  </div><!-- /as-body -->
+
+  <!-- Footer -->
+  <div class="as-foot">
+    <button class="btn btn-outline" id="as-back-btn" onclick="asBack()" style="display:none;"><i class="ti ti-arrow-left"></i>Back</button>
+    <div style="flex:1;"></div>
+    <button class="btn btn-outline" onclick="asClose()">Cancel</button>
+    <button class="btn btn-primary" id="as-next-btn" onclick="asNext()">Next<i class="ti ti-arrow-right"></i></button>
+  </div>
+
+</aside>
 
 <!-- Supplier detail drawer (SN-1, buyer-primary SKU links) -->
 <div class="nb-drawer-scrim" id="sup-scrim" onclick="closeSupplier()"></div>
@@ -561,12 +810,232 @@
     }
   });
 
+  // ── Add Supplier Drawer ────────────────────────────────────────────────────
+
+  let asStep = 1;
+
+  const AS_GROUPS = [
+    { id: 'ag1', name: 'CBD Cluster',  outlets: ['Harbour Kitchen', 'Darling St Bistro', 'The CBD Rooftop', 'Central Brasserie'] },
+    { id: 'ag2', name: 'Beachside',    outlets: ['Bondi Rooftop', 'Manly Wharf Bar', 'Coogee Bay Dining'] },
+    { id: 'ag3', name: 'Suburban',     outlets: ['Parramatta Table', 'Surry Hills Social', 'Newtown Kitchen', 'Leichhardt Trattoria'] },
+  ];
+  const asAccess = { ag1: new Set(), ag2: new Set(), ag3: new Set() };
+  const asExpanded = new Set();
+
   function openAddSupplierDialog() {
-    document.getElementById('add-supplier-dialog').style.display = 'block';
+    asStep = 1;
+    // Reset fields
+    ['as-name','as-email','as-phone','as-abn','as-website','as-address','as-account','as-credit'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('as-terms').value = '';
+    document.querySelectorAll('.as-cat').forEach(c => c.classList.remove('selected'));
+    AS_GROUPS.forEach(g => asAccess[g.id] = new Set());
+    asExpanded.clear();
+    ['as-name-err','as-email-err','as-cat-err'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+    ['as-name','as-email'].forEach(id => { document.getElementById(id).classList.remove('error'); });
+    asRender();
+    asUpdateUI();
+    document.getElementById('as-scrim').classList.add('open');
+    document.getElementById('as-drawer').classList.add('open');
+    document.getElementById('as-drawer').setAttribute('aria-hidden','false');
+    setTimeout(() => document.getElementById('as-name').focus(), 250);
   }
-  function closeAddSupplierDialog() {
-    document.getElementById('add-supplier-dialog').style.display = 'none';
+
+  function asClose() {
+    document.getElementById('as-scrim').classList.remove('open');
+    document.getElementById('as-drawer').classList.remove('open');
+    document.getElementById('as-drawer').setAttribute('aria-hidden','true');
   }
+
+  function asUpdateUI() {
+    const titles = ['Add supplier', 'Terms & outlet assignment', 'Review & confirm'];
+    document.getElementById('as-title').textContent = titles[asStep - 1];
+    document.getElementById('as-eyebrow').textContent = `Step ${asStep} of 3`;
+    document.querySelectorAll('.as-panel').forEach((p, i) => p.classList.toggle('active', i === asStep - 1));
+    // Step dots
+    for (let i = 1; i <= 3; i++) {
+      const dot = document.getElementById(`as-step-dot-${i}`);
+      dot.classList.remove('active','done');
+      if (i === asStep) dot.classList.add('active');
+      else if (i < asStep) dot.classList.add('done');
+    }
+    // Step num → check for done
+    for (let i = 1; i < asStep; i++) {
+      document.querySelector(`#as-step-dot-${i} .as-step-num`).innerHTML = '<i class="ti ti-check" style="font-size:11px;"></i>';
+    }
+    // Back button
+    document.getElementById('as-back-btn').style.display = asStep > 1 ? 'inline-flex' : 'none';
+    // Next/confirm button
+    const nextBtn = document.getElementById('as-next-btn');
+    nextBtn.innerHTML = asStep < 3 ? 'Next<i class="ti ti-arrow-right"></i>' : '<i class="ti ti-circle-check"></i>Add supplier';
+  }
+
+  function asNext() {
+    if (asStep === 1) {
+      if (!asValidateStep1()) return;
+    }
+    if (asStep === 3) {
+      asConfirm(); return;
+    }
+    if (asStep === 2) asPopulateReview();
+    asStep++;
+    asUpdateUI();
+    document.querySelector('.as-body').scrollTop = 0;
+  }
+
+  function asBack() {
+    if (asStep > 1) { asStep--; asUpdateUI(); }
+    document.querySelector('.as-body').scrollTop = 0;
+  }
+
+  function asValidateStep1() {
+    let ok = true;
+    const name = document.getElementById('as-name');
+    const email = document.getElementById('as-email');
+    const cats = document.querySelectorAll('.as-cat.selected');
+    if (!name.value.trim()) {
+      name.classList.add('error');
+      document.getElementById('as-name-err').style.display = 'block';
+      ok = false;
+    } else {
+      name.classList.remove('error');
+      document.getElementById('as-name-err').style.display = 'none';
+    }
+    if (!email.value.trim() || !email.value.includes('@')) {
+      email.classList.add('error');
+      document.getElementById('as-email-err').style.display = 'block';
+      ok = false;
+    } else {
+      email.classList.remove('error');
+      document.getElementById('as-email-err').style.display = 'none';
+    }
+    if (cats.length === 0) {
+      document.getElementById('as-cat-err').style.display = 'block';
+      ok = false;
+    } else {
+      document.getElementById('as-cat-err').style.display = 'none';
+    }
+    return ok;
+  }
+
+  function asPopulateReview() {
+    const cats = [...document.querySelectorAll('.as-cat.selected')].map(c => c.dataset.val).join(', ');
+    let totalOutlets = 0;
+    Object.values(asAccess).forEach(s => totalOutlets += s.size);
+    const terms = document.getElementById('as-terms').value || '—';
+    const credit = document.getElementById('as-credit').value ? '$' + document.getElementById('as-credit').value : '—';
+    const account = document.getElementById('as-account').value || '—';
+
+    document.getElementById('as-review').innerHTML = `
+      <div class="as-review-row"><span class="as-review-label">Supplier name</span><span class="as-review-val">${document.getElementById('as-name').value}</span></div>
+      <div class="as-review-row"><span class="as-review-label">Email</span><span class="as-review-val">${document.getElementById('as-email').value}</span></div>
+      ${document.getElementById('as-phone').value ? `<div class="as-review-row"><span class="as-review-label">Phone</span><span class="as-review-val">${document.getElementById('as-phone').value}</span></div>` : ''}
+      ${document.getElementById('as-abn').value ? `<div class="as-review-row"><span class="as-review-label">ABN</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${document.getElementById('as-abn').value}</span></div>` : ''}
+      <div class="as-review-row"><span class="as-review-label">Categories</span><span class="as-review-val">${cats}</span></div>
+      <div class="as-review-divider"></div>
+      <div class="as-review-row"><span class="as-review-label">Payment terms</span><span class="as-review-val">${terms}</span></div>
+      <div class="as-review-row"><span class="as-review-label">Account number</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${account}</span></div>
+      <div class="as-review-row"><span class="as-review-label">Credit limit</span><span class="as-review-val">${credit}</span></div>
+      <div class="as-review-divider"></div>
+      <div class="as-review-row"><span class="as-review-label">Outlet assignment</span><span class="as-review-val">${totalOutlets} outlet${totalOutlets !== 1 ? 's' : ''} selected</span></div>
+      <div class="as-review-row"><span class="as-review-label">Status</span><span class="as-review-val" style="color:var(--status-ok-fg);">Active immediately</span></div>
+    `;
+  }
+
+  function asConfirm() {
+    asClose();
+    supToast('Supplier added successfully and is now active.');
+  }
+
+  function asToggleCat(el) {
+    el.classList.toggle('selected');
+  }
+
+  // Outlet access tree for the drawer
+  function asRender() {
+    const tree = document.getElementById('as-access-tree');
+    tree.innerHTML = '';
+    AS_GROUPS.forEach(group => {
+      const isExpanded = asExpanded.has(group.id);
+      const sel = asAccess[group.id];
+      const total = group.outlets.length;
+      const count = sel.size;
+      let stateLabel, stateClass;
+      if (count === 0)     { stateLabel = 'None';        stateClass = 'as-state-none'; }
+      else if (count === total) { stateLabel = 'All outlets'; stateClass = 'as-state-all'; }
+      else                 { stateLabel = 'Custom';      stateClass = 'as-state-some'; }
+
+      const groupRow = document.createElement('div');
+      groupRow.className = 'as-group-row';
+      groupRow.innerHTML = `
+        <i class="ti ti-chevron-right as-chevron ${isExpanded ? 'open' : ''}"></i>
+        <span class="as-group-name">${group.name}</span>
+        <span class="as-group-count">${total} outlets</span>
+        <span class="as-group-state ${stateClass}">${stateLabel}</span>
+        <input type="checkbox" class="as-group-cb" id="ascb-${group.id}"
+          ${count === total ? 'checked' : ''}
+          onclick="asGroupToggle(event, '${group.id}')"/>
+      `;
+      groupRow.addEventListener('click', e => {
+        if (e.target.classList.contains('as-group-cb')) return;
+        asExpanded.has(group.id) ? asExpanded.delete(group.id) : asExpanded.add(group.id);
+        asRender();
+      });
+      tree.appendChild(groupRow);
+
+      const cb = groupRow.querySelector(`#ascb-${group.id}`);
+      if (count > 0 && count < total) cb.indeterminate = true;
+
+      const outletList = document.createElement('div');
+      outletList.className = `as-outlet-list ${isExpanded ? 'open' : ''}`;
+      group.outlets.forEach(name => {
+        const row = document.createElement('div');
+        row.className = 'as-outlet-row';
+        const slug = name.replace(/\s+/g, '-');
+        row.innerHTML = `
+          <input type="checkbox" class="as-outlet-cb" id="asout-${group.id}-${slug}"
+            ${sel.has(name) ? 'checked' : ''}
+            onchange="asOutletToggle('${group.id}', '${name}', this)"/>
+          <label class="as-outlet-name" for="asout-${group.id}-${slug}" style="cursor:pointer;">${name}</label>
+        `;
+        outletList.appendChild(row);
+      });
+      tree.appendChild(outletList);
+    });
+    asUpdateOutletCount();
+  }
+
+  function asGroupToggle(e, groupId) {
+    e.stopPropagation();
+    const group = AS_GROUPS.find(g => g.id === groupId);
+    asAccess[groupId] = e.target.checked ? new Set(group.outlets) : new Set();
+    asRender();
+  }
+
+  function asOutletToggle(groupId, name, cb) {
+    cb.checked ? asAccess[groupId].add(name) : asAccess[groupId].delete(name);
+    asRender();
+    if (asExpanded.has(groupId)) {
+      document.querySelectorAll('.as-outlet-list').forEach(l => {
+        if (l.previousElementSibling && l.previousElementSibling.querySelector(`#ascb-${groupId}`)) l.classList.add('open');
+      });
+    }
+  }
+
+  function asUpdateOutletCount() {
+    let total = 0;
+    Object.values(asAccess).forEach(s => total += s.size);
+    const el = document.getElementById('as-outlet-count');
+    if (el) el.textContent = total + ' outlet' + (total !== 1 ? 's' : '');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeSupplier();
+      asClose();
+    }
+  });
 </script>
 </body>
 </html>
