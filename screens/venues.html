@@ -206,6 +206,7 @@
     .link-action {
       font-size: 13px; font-weight: 600; color: var(--text-accent);
       background: none; border: none; cursor: pointer; padding: 0; font-family: inherit;
+      text-decoration: none;
     }
     .link-action:hover { color: var(--spinach); text-decoration: underline; }
     .overflow-btn {
@@ -261,6 +262,66 @@
       .filter-bar { flex-direction: column; align-items: stretch; }
       .filter-bar .search-wrap { min-width: 0; }
     }
+
+    /* Add venue drawer */
+    #av-backdrop { position:fixed;inset:0;background:color-mix(in srgb,var(--seaweed) 40%,transparent);z-index:200;display:none; }
+    #av-backdrop.open { display:block; }
+    #av-drawer { position:fixed;top:0;right:0;bottom:0;width:540px;background:var(--surface);z-index:201;transform:translateX(100%);transition:transform 0.25s ease;display:flex;flex-direction:column;box-shadow:0 0 40px color-mix(in srgb,var(--seaweed) 20%,transparent); }
+    #av-drawer.open { transform:translateX(0); }
+    .av-header { padding:var(--space-xl);border-bottom:1px solid var(--border);flex-shrink:0; }
+    .av-header-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md); }
+    .av-title { font-size:18px;font-weight:700;color:var(--text); }
+    .av-close { background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px; }
+    .av-body { flex:1;overflow-y:auto;padding:var(--space-xl); }
+    .av-footer { padding:var(--space-lg) var(--space-xl);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0; }
+
+    /* Step indicator */
+    .av-steps { display:flex;align-items:center;gap:0; }
+    .av-step-node { width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0; }
+    .av-step-node.done   { background:var(--fern);color:#fff; }
+    .av-step-node.active { background:var(--fern);color:#fff;box-shadow:0 0 0 3px var(--mint); }
+    .av-step-node.pending{ background:var(--surface-soft);color:var(--text-soft);border:2px solid var(--border); }
+    .av-step-line { flex:1;height:2px;background:var(--border);min-width:40px; }
+    .av-step-line.done { background:var(--fern); }
+    .av-step-labels { display:flex;justify-content:space-between;margin-top:4px; }
+    .av-step-label { font-size:11px;color:var(--text-soft);text-align:center;flex:1; }
+    .av-step-label.active { color:var(--text-accent);font-weight:600; }
+
+    /* Form fields */
+    .av-field { display:flex;flex-direction:column;gap:var(--space-xs);margin-bottom:var(--space-lg); }
+    .av-label { font-size:13px;font-weight:600;color:var(--text); }
+    .av-label .req { color:var(--status-risk-fg); }
+    .av-input { height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box; }
+    .av-input:focus { border-color:var(--fern);box-shadow:0 0 0 3px var(--mint); }
+    .av-hint { font-size:12px;color:var(--text-soft);margin-top:2px; }
+    .av-select { height:var(--control-h);padding-inline:var(--space-md) 32px;border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;appearance:none;width:100%;box-sizing:border-box;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center; }
+    .av-select:focus { border-color:var(--fern); }
+
+    /* Mode cards (step 2) */
+    .av-mode-card { border:2px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-lg);cursor:pointer;margin-bottom:var(--space-md);transition:border-color 0.15s,background 0.15s;display:flex;gap:var(--space-lg);align-items:flex-start; }
+    .av-mode-card:hover { border-color:var(--fern); }
+    .av-mode-card.selected { border-color:var(--fern);background:var(--mint); }
+    .av-mode-icon { width:40px;height:40px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+    .av-mode-title { font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px; }
+    .av-mode-desc { font-size:13px;color:var(--text-soft);line-height:1.4; }
+    .av-mode-card.selected .av-mode-desc { color:var(--spinach); }
+
+    /* CK toggle */
+    .av-ck-row { display:flex;align-items:center;justify-content:space-between;padding:var(--space-lg);background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-lg);margin-top:var(--space-xl); }
+    .toggle-switch { position:relative;display:inline-flex;align-items:center;cursor:pointer; }
+    .toggle-switch input { opacity:0;width:0;height:0;position:absolute; }
+    .toggle-track { width:36px;height:20px;background:var(--border);border-radius:var(--radius-pill);transition:background 0.2s;display:block; }
+    .toggle-switch input:checked + .toggle-track { background:var(--fern); }
+    .toggle-thumb { position:absolute;left:3px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform 0.2s;pointer-events:none; }
+    .toggle-switch input:checked ~ .toggle-thumb { transform:translateX(16px); }
+
+    /* Step 3 review */
+    .av-review-section { margin-bottom:var(--space-xl); }
+    .av-review-heading { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-soft);margin-bottom:var(--space-md); }
+    .av-kv { display:flex;justify-content:space-between;align-items:baseline;padding:var(--space-xs) 0;border-bottom:1px solid var(--border);font-size:13px; }
+    .av-kv:last-child { border-bottom:none; }
+    .av-kv-label { color:var(--text-soft); }
+    .av-kv-value { font-weight:500;color:var(--text); }
   </style>
 </head>
 <body>
@@ -275,7 +336,7 @@
         <p class="page-desc">Organise outlets by brand, region and state. Each group runs in an operating mode — HQ-governed, Hybrid, or Standalone — and can include a Central Kitchen.</p>
       </div>
       <div class="page-actions">
-        <button class="btn btn-outline"><i class="ti ti-adjustments-horizontal"></i>Manage groups</button>
+        <button class="btn btn-outline" onclick="window.location.href='venue-group-detail.html'"><i class="ti ti-adjustments-horizontal"></i>Manage groups</button>
         <button class="btn btn-primary" onclick="openAddVenueDialog()"><i class="ti ti-plus"></i>Add venue</button>
       </div>
     </div>
@@ -287,7 +348,7 @@
           <span class="section-title">Venue groups</span>
           <span class="section-count">4 groups</span>
         </div>
-        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);" onclick="openCreateGroupDialog()">
+        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);" onclick="window.location.href='venue-group-detail.html'">
           <i class="ti ti-plus"></i>New group
         </button>
       </div>
@@ -320,7 +381,7 @@
           </div>
           <span class="group-meta">5 venues · Various · <span style="color:var(--ordering);font-weight:600;">Hybrid</span></span>
         </div>
-        <div class="group-card-add" onclick="openCreateGroupDialog()">
+        <div class="group-card-add" onclick="window.location.href='venue-group-detail.html'">
           <i class="ti ti-plus"></i>
           New group
         </div>
@@ -374,7 +435,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Configure</button>
+                  <a class="link-action" href="venue-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for The Harbour Kitchen" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -396,7 +457,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Configure</button>
+                  <a class="link-action" href="venue-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Darling Street Bistro" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -418,7 +479,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Configure</button>
+                  <a class="link-action" href="venue-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Bondi Rooftop" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -440,7 +501,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Configure</button>
+                  <a class="link-action" href="venue-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Manly Wharf Bar" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -462,7 +523,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Configure</button>
+                  <a class="link-action" href="venue-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Parramatta Table" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -484,7 +545,7 @@
               <td><span class="status-pill inactive">Inactive</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <button class="link-action">Configure</button>
+                  <a class="link-action" href="venue-detail.html">Configure</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Surry Hills Social" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -506,40 +567,150 @@
   </div><!-- /.napp-canvas -->
 </div><!-- /.page-body -->
 
-<!-- Add venue dialog -->
-<div id="add-venue-dialog" role="dialog" aria-modal="true" aria-labelledby="add-venue-title" style="display:none;position:fixed;inset:0;z-index:200;display:none;">
-  <div style="position:absolute;inset:0;background:color-mix(in srgb, var(--seaweed) 40%, transparent);" onclick="closeAddVenueDialog()"></div>
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-lg);padding:var(--space-2xl);width:min(480px,calc(100vw - 48px));display:flex;flex-direction:column;gap:var(--space-xl);">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <h2 id="add-venue-title" style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">Add venue</h2>
-      <button onclick="closeAddVenueDialog()" style="background:none;border:none;cursor:pointer;color:var(--text-soft);padding:4px;" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>
+<!-- Add venue backdrop -->
+<div id="av-backdrop" onclick="closeAvDrawer()"></div>
+
+<!-- Add venue drawer -->
+<div id="av-drawer" role="dialog" aria-modal="true" aria-label="Add venue">
+  <div class="av-header">
+    <div class="av-header-top">
+      <span class="av-title">Add venue</span>
+      <button class="av-close" onclick="closeAvDrawer()" aria-label="Close"><i class="ti ti-x" style="font-size:18px;"></i></button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
-      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Venue name <span style="color:var(--status-risk-fg);">*</span></label>
-        <input type="text" placeholder="e.g. The Harbour Kitchen" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+    <!-- Step indicator -->
+    <div>
+      <div class="av-steps">
+        <div class="av-step-node active" id="av-node-1">1</div>
+        <div class="av-step-line" id="av-line-1"></div>
+        <div class="av-step-node pending" id="av-node-2">2</div>
+        <div class="av-step-line" id="av-line-2"></div>
+        <div class="av-step-node pending" id="av-node-3">3</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Address</label>
-        <input type="text" placeholder="Street, suburb, state" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+      <div class="av-step-labels">
+        <span class="av-step-label active" id="av-label-1">Details</span>
+        <span class="av-step-label" id="av-label-2">Group &amp; mode</span>
+        <span class="av-step-label" id="av-label-3">Confirm</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Venue group</label>
-        <select style="height:var(--control-h);padding-inline:var(--space-md) var(--space-2xl);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;appearance:none;width:100%;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center;">
+    </div>
+  </div>
+
+  <div class="av-body">
+
+    <!-- Step 1: Details -->
+    <div id="av-step-1">
+      <div class="av-field">
+        <label class="av-label">Venue name <span class="req">*</span></label>
+        <input id="av-name" class="av-input" type="text" placeholder="e.g. The Harbour Kitchen"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+        <div class="av-field">
+          <label class="av-label">Phone</label>
+          <input id="av-phone" class="av-input" type="tel" placeholder="+61 2 9000 0000"/>
+        </div>
+        <div class="av-field">
+          <label class="av-label">ABN</label>
+          <input id="av-abn" class="av-input" type="text" placeholder="XX XXX XXX XXX"/>
+        </div>
+      </div>
+      <div class="av-field">
+        <label class="av-label">Address <span class="req">*</span></label>
+        <input id="av-address" class="av-input" type="text" placeholder="Street, suburb, state postcode"/>
+      </div>
+      <div class="av-field">
+        <label class="av-label">Procurement contact</label>
+        <select id="av-contact" class="av-select">
+          <option value="">Select contact…</option>
+          <option>Keith Tan</option>
+          <option>Sarah Okonkwo</option>
+          <option>James Nguyen</option>
+          <option>Aisha Patel</option>
+        </select>
+      </div>
+      <div id="av-step1-err" style="display:none;color:var(--status-risk-fg);font-size:13px;font-weight:600;margin-top:var(--space-sm);"></div>
+    </div>
+
+    <!-- Step 2: Group & mode -->
+    <div id="av-step-2" style="display:none;">
+      <div class="av-field">
+        <label class="av-label">Venue group</label>
+        <select id="av-group" class="av-select">
           <option value="">None (ungrouped)</option>
           <option>CBD Cluster</option>
           <option>Beachside</option>
           <option>Suburban</option>
         </select>
+        <span class="av-hint">The venue inherits the group's default operating mode. You can override it below.</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
-        <label style="font-size:13px;font-weight:600;color:var(--text);">Procurement contact</label>
-        <input type="text" placeholder="Name or email" style="height:var(--control-h);padding-inline:var(--space-md);border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;width:100%;box-sizing:border-box;"/>
+
+      <div style="margin-bottom:var(--space-md);">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:var(--space-md);">Operating mode</div>
+        <div class="av-mode-card selected" onclick="selectAvMode('hq',this)" id="av-mode-hq">
+          <div class="av-mode-icon" style="background:color-mix(in srgb,var(--procurement) 13%,transparent);color:var(--procurement);"><i class="ti ti-shield-lock"></i></div>
+          <div>
+            <div class="av-mode-title">HQ Mode</div>
+            <div class="av-mode-desc">All configuration managed centrally. Market list, recipes, and approval workflows are pushed from HQ.</div>
+          </div>
+        </div>
+        <div class="av-mode-card" onclick="selectAvMode('hybrid',this)" id="av-mode-hybrid">
+          <div class="av-mode-icon" style="background:color-mix(in srgb,var(--ordering) 14%,transparent);color:var(--ordering);"><i class="ti ti-git-merge"></i></div>
+          <div>
+            <div class="av-mode-title">Hybrid</div>
+            <div class="av-mode-desc">HQ sets the baseline. Outlet can add local items and override within permitted bounds.</div>
+          </div>
+        </div>
+        <div class="av-mode-card" onclick="selectAvMode('standalone',this)" id="av-mode-standalone">
+          <div class="av-mode-icon" style="background:var(--surface-soft);color:var(--text-soft);"><i class="ti ti-building-store"></i></div>
+          <div>
+            <div class="av-mode-title">Standalone</div>
+            <div class="av-mode-desc">Operates independently. No HQ configuration pushed. Full local control.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="av-ck-row">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);">Central Kitchen</div>
+          <div style="font-size:12px;color:var(--text-soft);margin-top:2px;">Enable production tracking and inter-outlet transfers</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="av-ck-toggle"/>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
       </div>
     </div>
-    <div style="display:flex;justify-content:flex-end;gap:var(--space-sm);">
-      <button class="btn btn-outline" onclick="closeAddVenueDialog()">Cancel</button>
-      <button class="btn btn-primary" onclick="closeAddVenueDialog()">Add venue</button>
+
+    <!-- Step 3: Confirm -->
+    <div id="av-step-3" style="display:none;">
+      <div style="background:var(--mint);border:1px solid var(--fern);border-radius:var(--radius-md);padding:var(--space-lg);display:flex;gap:var(--space-md);align-items:center;margin-bottom:var(--space-2xl);">
+        <i class="ti ti-circle-check" style="font-size:22px;color:var(--fern);flex-shrink:0;"></i>
+        <div style="font-size:14px;font-weight:600;color:var(--spinach);">Ready to add venue — review details below</div>
+      </div>
+      <div class="av-review-section">
+        <div class="av-review-heading">Venue details</div>
+        <div class="av-kv"><span class="av-kv-label">Name</span><span class="av-kv-value" id="rv-name">—</span></div>
+        <div class="av-kv"><span class="av-kv-label">Address</span><span class="av-kv-value" id="rv-address">—</span></div>
+        <div class="av-kv"><span class="av-kv-label">Phone</span><span class="av-kv-value" id="rv-phone">—</span></div>
+        <div class="av-kv"><span class="av-kv-label">ABN</span><span class="av-kv-value" id="rv-abn">—</span></div>
+        <div class="av-kv"><span class="av-kv-label">Contact</span><span class="av-kv-value" id="rv-contact">—</span></div>
+      </div>
+      <div class="av-review-section">
+        <div class="av-review-heading">Group &amp; mode</div>
+        <div class="av-kv"><span class="av-kv-label">Group</span><span class="av-kv-value" id="rv-group">—</span></div>
+        <div class="av-kv"><span class="av-kv-label">Operating mode</span><span class="av-kv-value" id="rv-mode">—</span></div>
+        <div class="av-kv"><span class="av-kv-label">Central Kitchen</span><span class="av-kv-value" id="rv-ck">—</span></div>
+      </div>
+    </div>
+
+  </div><!-- /av-body -->
+
+  <div class="av-footer">
+    <div>
+      <button id="av-back-btn" class="btn btn-outline" onclick="avBack()" style="display:none;"><i class="ti ti-arrow-left"></i>Back</button>
+    </div>
+    <div style="display:flex;gap:var(--space-sm);">
+      <button class="btn btn-outline" onclick="closeAvDrawer()">Cancel</button>
+      <button id="av-next-btn" class="btn btn-primary" onclick="avNext()">Next: Group &amp; mode <i class="ti ti-arrow-right"></i></button>
     </div>
   </div>
 </div>
@@ -564,15 +735,82 @@
     event.currentTarget.classList.add('active');
   }
 
-  function openAddVenueDialog() {
-    document.getElementById('add-venue-dialog').style.display = 'block';
+  let avStep = 1;
+  let avMode = 'hq';
+
+  function openAvDrawer() {
+    avStep = 1; avMode = 'hq';
+    document.getElementById('av-backdrop').classList.add('open');
+    document.getElementById('av-drawer').classList.add('open');
+    avRenderStep(1);
   }
-  function closeAddVenueDialog() {
-    document.getElementById('add-venue-dialog').style.display = 'none';
+  function closeAvDrawer() {
+    document.getElementById('av-backdrop').classList.remove('open');
+    document.getElementById('av-drawer').classList.remove('open');
   }
-  function openCreateGroupDialog() {
-    alert('Create group dialog — to be wired up');
+  function openAddVenueDialog() { openAvDrawer(); }
+
+  function avRenderStep(n) {
+    [1,2,3].forEach(i => {
+      document.getElementById('av-step-' + i).style.display = i === n ? 'block' : 'none';
+      const node = document.getElementById('av-node-' + i);
+      const label = document.getElementById('av-label-' + i);
+      if (i < n) { node.className = 'av-step-node done'; node.innerHTML = '<i class="ti ti-check" style="font-size:12px;"></i>'; }
+      else if (i === n) { node.className = 'av-step-node active'; node.textContent = i; label.className = 'av-step-label active'; }
+      else { node.className = 'av-step-node pending'; node.textContent = i; label.className = 'av-step-label'; }
+      if (i < 3) {
+        document.getElementById('av-line-' + i).className = 'av-step-line' + (i < n ? ' done' : '');
+      }
+    });
+    document.getElementById('av-back-btn').style.display = n > 1 ? 'inline-flex' : 'none';
+    const nextBtn = document.getElementById('av-next-btn');
+    if (n === 1) { nextBtn.innerHTML = 'Next: Group &amp; mode <i class="ti ti-arrow-right"></i>'; }
+    else if (n === 2) { nextBtn.innerHTML = 'Review <i class="ti ti-arrow-right"></i>'; }
+    else { nextBtn.innerHTML = '<i class="ti ti-plus"></i>Add venue'; }
   }
+
+  function avNext() {
+    if (avStep === 1) {
+      const name = document.getElementById('av-name').value.trim();
+      const addr = document.getElementById('av-address').value.trim();
+      const errEl = document.getElementById('av-step1-err');
+      if (!name || !addr) { errEl.textContent = 'Venue name and address are required.'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+      avStep = 2; avRenderStep(2);
+    } else if (avStep === 2) {
+      const modeLabels = { hq:'HQ Mode', hybrid:'Hybrid', standalone:'Standalone' };
+      document.getElementById('rv-name').textContent    = document.getElementById('av-name').value || '—';
+      document.getElementById('rv-address').textContent = document.getElementById('av-address').value || '—';
+      document.getElementById('rv-phone').textContent   = document.getElementById('av-phone').value || '—';
+      document.getElementById('rv-abn').textContent     = document.getElementById('av-abn').value || '—';
+      document.getElementById('rv-contact').textContent = document.getElementById('av-contact').value || '—';
+      document.getElementById('rv-group').textContent   = document.getElementById('av-group').value || 'None (ungrouped)';
+      document.getElementById('rv-mode').textContent    = modeLabels[avMode] || 'HQ Mode';
+      document.getElementById('rv-ck').textContent      = document.getElementById('av-ck-toggle').checked ? 'Yes' : 'No';
+      avStep = 3; avRenderStep(3);
+    } else {
+      closeAvDrawer();
+      venuesShowToast('Venue "' + document.getElementById('av-name').value + '" added successfully');
+    }
+  }
+  function avBack() {
+    if (avStep > 1) { avStep--; avRenderStep(avStep); }
+  }
+  function selectAvMode(mode, el) {
+    avMode = mode;
+    document.querySelectorAll('.av-mode-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function venuesShowToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:var(--shadow-lg);';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAvDrawer(); });
+
+  function openCreateGroupDialog() { window.location.href = 'venue-group-detail.html'; }
 </script>
 </body>
 </html>
