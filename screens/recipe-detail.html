@@ -4,1002 +4,1175 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Avocado Toast v3 — Nomni HQ</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
   <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
   <style>
-    .page-body { padding: var(--space-2xl) 0 120px; }
+    body { background: var(--surface-soft); }
+    .page-body { display: flex; flex-direction: column; padding-block: var(--space-2xl); }
+    .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-xl); }
 
-    /* Breadcrumb */
-    .breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
-      font-size: 13px;
-      color: var(--text-soft);
-      margin-bottom: var(--space-md);
+    /* Back nav */
+    .back-nav { font-size: 13px; font-weight: 600; color: var(--text-accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .back-nav:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* Recipe type badge */
+    .recipe-type-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; padding: 3px 10px;
+      border-radius: var(--radius-pill);
     }
-    .breadcrumb a { color: var(--text-link); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb i { font-size: 13px; }
+    .recipe-type-badge.finished  { background: color-mix(in srgb, var(--sky, #3FC3FB) 12%, transparent); color: #0872C3; border: 1px solid color-mix(in srgb, var(--sky, #3FC3FB) 28%, transparent); }
+    .recipe-type-badge.prep      { background: color-mix(in srgb, #B05EC0 10%, transparent); color: #7A3D87; border: 1px solid color-mix(in srgb, #B05EC0 22%, transparent); }
+    .recipe-type-badge.production { background: color-mix(in srgb, #17B3A3 10%, transparent); color: #0E7A6F; border: 1px solid color-mix(in srgb, #17B3A3 22%, transparent); }
 
     /* Page header */
-    .page-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: var(--space-3xl);
-      gap: var(--space-xl);
-    }
-    .page-header-left { display: flex; flex-direction: column; gap: var(--space-sm); }
-    .page-h1 {
-      font-size: 35px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-    }
-    .header-badges { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-xs);
-      height: 24px;
-      padding-inline: var(--space-sm);
-      border-radius: var(--radius-pill);
-      font-size: 12px;
-      font-weight: 500;
-      white-space: nowrap;
-    }
-    .pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .pill-ok   { background: var(--status-ok-bg); color: var(--status-ok-fg); }
-    .pill-ok   .pill-dot { background: var(--status-ok-fg); }
-    .pill-lock {
-      background: var(--mint);
-      color: var(--fern);
-      border: 1px solid rgba(18,155,65,0.2);
-      gap: var(--space-xs);
-    }
-    .pill-lock i { font-size: 12px; }
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap; }
+    .page-header-left { display: flex; align-items: flex-start; gap: var(--space-lg); }
+    .page-header-text { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-title { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
+    .page-title-meta { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-top: 2px; }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
 
     /* Buttons */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-xs);
-      height: var(--control-h);
-      padding-inline: var(--space-lg);
-      border-radius: var(--radius-md);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      white-space: nowrap;
-      border: 1px solid transparent;
-      font-family: inherit;
-    }
-    .btn i { font-size: 16px; }
+    .btn { display: inline-flex; align-items: center; gap: var(--space-xs); height: var(--control-h); padding-inline: var(--space-lg); border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; font-family: inherit; white-space: nowrap; text-decoration: none; transition: background 0.12s, color 0.12s, border-color 0.12s; }
     .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
-    .btn-primary:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
-    .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
-    .btn-outline:hover { background: var(--surface-soft); }
-    .btn-sm { height: 32px; padding-inline: var(--space-md); font-size: 13px; }
-    .btn-ghost { background: transparent; color: var(--text-soft); border-color: transparent; }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-ghost { background: none; border-color: transparent; color: var(--text-soft); }
     .btn-ghost:hover { background: var(--surface-soft); color: var(--text); }
+    .btn-danger { background: var(--status-risk-bg); color: var(--status-risk-fg); border-color: transparent; }
+    .btn-danger:hover { background: var(--status-risk-fg); color: #fff; }
+    .btn-sm { height: 30px; padding-inline: var(--space-md); font-size: 13px; }
+    .btn i { font-size: 15px; }
 
+    /* Split button */
     .split-btn { display: inline-flex; align-items: stretch; }
-    .split-btn .btn { border-radius: var(--radius-md) 0 0 var(--radius-md); border-right: none; }
-    .split-btn .split-caret {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      border-radius: 0 var(--radius-md) var(--radius-md) 0;
-      background: var(--btn-primary-bg);
-      color: var(--btn-primary-fg);
-      border: 1px solid var(--btn-primary-bg);
-      border-left: 1px solid rgba(255,255,255,0.25);
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .split-caret:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
-    .split-caret i { font-size: 14px; }
+    .split-btn .btn { border-radius: var(--radius-md) 0 0 var(--radius-md); border-right-color: rgba(255,255,255,0.25); }
+    .split-caret { display: inline-flex; align-items: center; justify-content: center; width: 32px; background: var(--btn-primary-bg); border: 1.5px solid var(--btn-primary-bg); border-left-color: rgba(255,255,255,0.25); border-radius: 0 var(--radius-md) var(--radius-md) 0; cursor: pointer; color: var(--btn-primary-fg); font-size: 13px; }
+    .split-caret:hover { background: var(--spinach); border-color: var(--spinach); }
 
-    /* Notification banner */
-    .notification {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--space-md);
-      padding: var(--space-md) var(--space-lg);
-      border-radius: var(--radius-md);
-      margin-bottom: var(--space-xl);
-      font-size: 14px;
-    }
-    .notification-info {
-      background: var(--status-info-bg);
-      border: 1px solid rgba(63,195,251,0.25);
-      color: var(--status-info-fg);
-    }
-    .notification i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-    .notification-body { display: flex; flex-direction: column; gap: var(--space-xs); }
-    .notification-title { font-weight: 600; }
-    .notification-desc { color: var(--text-soft); font-size: 13px; }
+    /* KPI strip */
+    .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
+    @media (max-width: 700px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); }
+    .kpi-tile-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
+    .kpi-tile-value { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; margin-top: 4px; }
+    .kpi-tile-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+    .kpi-tile-value.warn { color: var(--status-warn-fg); }
+    .kpi-tile-value.ok { color: var(--status-ok-fg); }
 
-    /* Save bar (sticky bottom) */
-    .save-bar {
-      position: fixed;
-      bottom: 0;
-      left: var(--nav-width, 220px);
-      right: 0;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-md) var(--space-2xl);
-      z-index: 50;
-      transform: translateY(100%);
-      transition: transform 0.2s ease;
-    }
-    .save-bar.visible { transform: translateY(0); }
-    .save-bar-message {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      font-size: 14px;
-      color: var(--text-soft);
-    }
-    .save-bar-message i { color: var(--status-warn-fg); font-size: 16px; }
-    .save-bar-actions { display: flex; align-items: center; gap: var(--space-sm); }
+    /* Detail layout */
+    .detail-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-2xl); align-items: start; }
+    @media (max-width: 900px) { .detail-layout { grid-template-columns: 1fr; } }
 
-    /* Form sections */
-    .form-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: var(--space-2xl);
-      margin-bottom: var(--space-xl);
-    }
-    .section-heading {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: var(--space-xl);
-      padding-bottom: var(--space-lg);
-      border-bottom: 1px solid var(--border);
-    }
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: var(--space-sm); }
+    .card-body { padding: var(--space-xl); }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-xl);
-    }
-    .form-grid .span-2 { grid-column: span 2; }
+    /* Tab nav */
+    .tab-nav { display: flex; gap: 2px; padding: 3px; background: var(--surface-soft); border-radius: var(--radius-md); border: 1px solid var(--border); align-self: flex-start; flex-wrap: wrap; }
+    .tab-nav-btn { height: 32px; padding-inline: var(--space-lg); border: none; background: none; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-soft); cursor: pointer; white-space: nowrap; font-family: inherit; transition: background 0.12s, color 0.12s; display: inline-flex; align-items: center; gap: 5px; }
+    .tab-nav-btn i { font-size: 13px; }
+    .tab-nav-btn:hover { color: var(--text); background: color-mix(in srgb, var(--surface) 60%, transparent); }
+    .tab-nav-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px color-mix(in srgb, var(--seaweed) 12%, transparent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: flex; flex-direction: column; gap: var(--space-lg); }
 
-    .field { display: flex; flex-direction: column; gap: var(--space-xs); }
-    .field-label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-    }
-    .field-helper { font-size: 12px; color: var(--text-soft); }
-    .field-readonly {
-      height: var(--control-h);
-      display: flex;
-      align-items: center;
-      padding-inline: var(--space-md);
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      font-size: 14px;
-      color: var(--text-soft);
-      font-feature-settings: 'tnum' 1;
-    }
-    .field-readonly strong { color: var(--text); font-weight: 600; }
-
-    .text-input, .select-input, .number-input, .textarea-input {
-      width: 100%;
-      font-family: inherit;
-      font-size: 14px;
-      color: var(--text);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      outline: none;
-      transition: border-color 0.12s;
-    }
-    .text-input, .select-input, .number-input {
-      height: var(--control-h);
-      padding-inline: var(--space-md);
-    }
-    .text-input:focus, .select-input:focus, .number-input:focus, .textarea-input:focus {
-      border-color: var(--border-focus);
-    }
-    .textarea-input {
-      padding: var(--space-md);
-      resize: vertical;
-      min-height: 80px;
-      line-height: 1.5;
-    }
-    .input-prefix-wrap {
-      display: flex;
-      align-items: stretch;
-    }
-    .input-prefix {
-      display: flex;
-      align-items: center;
-      padding-inline: var(--space-md);
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      border-right: none;
-      border-radius: var(--radius-md) 0 0 var(--radius-md);
-      font-size: 14px;
-      color: var(--text-soft);
-      flex-shrink: 0;
-    }
-    .input-prefix + .text-input,
-    .input-prefix + .number-input {
-      border-radius: 0 var(--radius-md) var(--radius-md) 0;
-    }
+    /* Form fields */
+    .field-group { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .field-label .opt { font-weight: 400; color: var(--text-soft); font-size: 12px; }
+    .field-input { height: var(--control-h); padding-inline: var(--space-md); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.12s; }
+    .field-input:focus { border-color: var(--border-focus); }
+    .field-select { height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-sm) center; width: 100%; box-sizing: border-box; }
+    .field-select:focus { border-color: var(--border-focus); }
+    .field-textarea { padding: var(--space-md); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; width: 100%; box-sizing: border-box; resize: vertical; min-height: 100px; }
+    .field-textarea:focus { border-color: var(--border-focus); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); }
+    .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border); }
 
     /* Ingredients table */
-    .ingredients-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: var(--space-lg); }
-    .ingredients-table thead th {
-      padding: var(--space-sm) var(--space-md);
-      text-align: left;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-soft);
-      background: var(--surface-soft);
-      border-bottom: 1px solid var(--border);
-    }
-    .ingredients-table thead th.num { text-align: right; }
-    .ingredients-table tbody tr { border-bottom: 1px solid var(--border); }
-    .ingredients-table tbody tr:last-child { border-bottom: none; }
-    .ingredients-table td {
-      padding: var(--space-sm) var(--space-md);
-      color: var(--text);
-    }
-    .ingredients-table td.num {
-      text-align: right;
-      font-feature-settings: 'tnum' 1;
-    }
-    .ingredients-table tfoot td {
-      padding: var(--space-md);
-      font-weight: 700;
-      font-feature-settings: 'tnum' 1;
-      border-top: 2px solid var(--border);
-    }
-    .ingredients-table tfoot td.total-label { color: var(--text); }
-    .ingredients-table tfoot td.total-value { text-align: right; color: var(--text); font-size: 15px; }
+    .ing-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .ing-table thead tr { border-bottom: 1px solid var(--border); background: var(--surface-soft); }
+    .ing-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap; }
+    .ing-table th.num, .ing-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
+    .ing-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+    .ing-table tbody tr:last-child td { border-bottom: none; }
+    .ing-table tbody tr:hover td { background: var(--surface-soft); }
+    .ing-table tfoot td { padding: var(--space-md) var(--space-lg); border-top: 2px solid var(--border); font-size: 14px; background: var(--surface-soft); }
+    .ing-table .total-label { color: var(--text-soft); font-weight: 600; }
+    .ing-table .total-val { text-align: right; font-weight: 700; color: var(--text); font-size: 15px; font-feature-settings: 'tnum' 1; }
 
-    .inline-input {
-      width: 80px;
-      height: 32px;
-      padding-inline: var(--space-sm);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-family: inherit;
-      color: var(--text);
-      background: var(--surface);
-      outline: none;
-      font-feature-settings: 'tnum' 1;
-    }
-    .inline-input:focus { border-color: var(--border-focus); }
+    /* Ingredient type indicator */
+    .ing-type-r { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; background: color-mix(in srgb, #B05EC0 10%, transparent); color: #7A3D87; vertical-align: 1px; margin-left: 4px; }
 
-    /* Toggle */
-    .toggle-row {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: var(--space-xl);
-    }
-    .toggle-label-group { display: flex; flex-direction: column; gap: var(--space-xs); }
-    .toggle-label { font-size: 14px; font-weight: 500; color: var(--text); }
-    .toggle-helper { font-size: 13px; color: var(--text-soft); }
-    .toggle-wrap { display: flex; align-items: center; flex-shrink: 0; }
-    .toggle {
-      position: relative;
-      width: 44px;
-      height: 24px;
-      cursor: pointer;
-    }
-    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
-    .toggle-track {
-      position: absolute;
-      inset: 0;
-      border-radius: var(--radius-pill);
-      background: var(--stone);
-      transition: background 0.2s;
-    }
-    .toggle input:checked ~ .toggle-track { background: var(--fern); }
-    .toggle-thumb {
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--porcelain);
-      transition: transform 0.2s;
-      box-shadow: var(--shadow-sm);
-    }
-    .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+    /* Waste input (inline mini) */
+    .waste-input { width: 52px; height: 26px; padding-inline: 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: 'IBM Plex Mono', monospace; background: var(--surface); color: var(--text); text-align: right; outline: none; }
+    .waste-input:focus { border-color: var(--border-focus); }
 
-    /* Accordion */
-    .accordion { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
-    .accordion-trigger {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: var(--space-lg);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      text-align: left;
-      transition: background 0.1s;
-    }
-    .accordion-trigger:hover { background: var(--surface-soft); }
-    .accordion-trigger i { font-size: 16px; color: var(--text-soft); transition: transform 0.2s; }
-    .accordion-trigger[aria-expanded="true"] i { transform: rotate(180deg); }
-    .accordion-body {
-      display: none;
-      padding: 0 var(--space-lg) var(--space-lg);
-      border-top: 1px solid var(--border);
-    }
-    .accordion-body.open { display: block; }
+    /* Costing sections */
+    .cost-section { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .cost-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-md) 0; border-bottom: 1px solid var(--border); }
+    .cost-row:last-child { border-bottom: none; }
+    .cost-row-label { font-size: 14px; color: var(--text); }
+    .cost-row-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .cost-row-val { font-size: 15px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; white-space: nowrap; }
+    .cost-row-val.muted { font-size: 14px; font-weight: 500; color: var(--text-soft); }
+    .cost-total-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-lg) var(--space-xl); background: color-mix(in srgb, var(--seaweed) 4%, transparent); border-radius: var(--radius-md); border: 1.5px solid var(--border); }
+    .cost-total-label { font-size: 15px; font-weight: 700; color: var(--text); }
+    .cost-total-val { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
 
-    /* Version history */
+    .labor-row { display: grid; grid-template-columns: 1fr auto 90px auto 80px; gap: var(--space-md); align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
+    .labor-row:last-child { border-bottom: none; }
+    .labor-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .labor-sep { font-size: 13px; color: var(--text-soft); }
+    .labor-cost { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; font-feature-settings: 'tnum' 1; }
+
+    .target-calculator {
+      background: color-mix(in srgb, var(--fern) 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--fern) 20%, transparent);
+      border-radius: var(--radius-md); padding: var(--space-lg) var(--space-xl);
+    }
+    .target-calc-row { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; }
+    .target-result { display: none; font-size: 14px; font-weight: 600; color: var(--text-accent); margin-top: var(--space-sm); }
+
+    /* Outlet pricing table */
+    .pricing-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .pricing-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); background: var(--surface-soft); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .pricing-table th.num, .pricing-table td.num { text-align: right; }
+    .pricing-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+    .pricing-table tbody tr:last-child td { border-bottom: none; }
+    .pricing-table tbody tr:hover td { background: var(--surface-soft); }
+    .pricing-override-input { width: 90px; height: 28px; padding-inline: var(--space-sm); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'IBM Plex Mono', monospace; background: var(--surface); color: var(--text); text-align: right; outline: none; }
+    .pricing-override-input:focus { border-color: var(--border-focus); }
+    .pricing-effective { font-size: 13px; font-weight: 600; color: var(--text); font-feature-settings: 'tnum' 1; }
+    .pricing-synced { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+
+    /* Allergen grid */
+    .allergen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-md); }
+    .allergen-item { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; color: var(--text); cursor: pointer; user-select: none; }
+    .allergen-item input[type="checkbox"] { accent-color: var(--fern); width: 15px; height: 15px; flex-shrink: 0; }
+    .allergen-item.inherited { color: var(--text-soft); }
+    .allergen-note { font-size: 12px; color: var(--text-soft); margin-top: var(--space-xs); }
+
+    /* Version list */
     .version-list { display: flex; flex-direction: column; gap: 0; }
-    .version-item {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: var(--space-lg);
-      padding: var(--space-md) 0;
-      border-bottom: 1px solid var(--border);
-    }
+    .version-item { display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--border); gap: var(--space-lg); }
     .version-item:last-child { border-bottom: none; }
     .version-meta { display: flex; flex-direction: column; gap: 2px; }
-    .version-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-xs);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .version-current {
-      font-size: 11px;
-      font-weight: 500;
-      background: var(--mint);
-      color: var(--spinach);
-      padding: 1px 6px;
-      border-radius: var(--radius-pill);
-    }
+    .version-tag { display: inline-flex; align-items: center; height: 20px; padding-inline: var(--space-sm); border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .version-tag.current { background: var(--mint); color: var(--spinach); }
+    .version-tag.old { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .version-name { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 2px; }
     .version-by { font-size: 12px; color: var(--text-soft); }
-    .version-desc { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+    .version-desc { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
 
-    /* Activity timeline */
-    .timeline { display: flex; flex-direction: column; gap: 0; }
-    .timeline-item {
-      display: flex;
-      gap: var(--space-md);
-      padding: var(--space-md) 0;
-      position: relative;
-    }
-    .timeline-item:not(:last-child)::before {
-      content: '';
-      position: absolute;
-      left: 11px;
-      top: calc(var(--space-md) + 22px);
-      bottom: 0;
-      width: 1px;
-      background: var(--border);
-    }
-    .timeline-dot {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: var(--mint);
-      border: 2px solid var(--surface);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .timeline-dot i { font-size: 12px; color: var(--spinach); }
-    .timeline-body { display: flex; flex-direction: column; gap: 2px; }
-    .timeline-action { font-size: 14px; font-weight: 500; color: var(--text); }
-    .timeline-meta { font-size: 12px; color: var(--text-soft); }
+    /* Activity */
+    .activity-list { display: flex; flex-direction: column; gap: var(--space-md); }
+    .activity-item { display: flex; gap: var(--space-md); }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; margin-top: 5px; }
+    .activity-dot.ok { background: var(--status-ok-fg); }
+    .activity-dot.warn { background: var(--status-warn-fg); }
+    .activity-text { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+    .activity-text strong { color: var(--text); font-weight: 600; }
+    .activity-time { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
 
-    /* Footer actions */
-    .footer-actions {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      margin-top: var(--space-2xl);
-      padding-top: var(--space-xl);
-      border-top: 1px solid var(--border);
-    }
-    .footer-spacer { flex: 1; }
+    /* Aside */
+    .aside-stack { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .meta-kv { display: flex; flex-direction: column; gap: var(--space-md); }
+    .meta-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); }
+    .meta-label { font-size: 12px; color: var(--text-soft); }
+    .meta-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
 
-  /* ── Responsive breakpoints ── */
+    /* Status pills */
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-pill); }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
+    .status-pill.draft { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .status-pill.draft::before { background: var(--text-soft); }
+    .pill-lock { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--mint); color: var(--fern); border: 1px solid color-mix(in srgb, var(--fern) 25%, transparent); }
 
-  /* Tablet — ≤1024px */
-  @media (max-width: 1024px) {
-    .form-grid { grid-template-columns: 1fr 1fr; }
-  }
+    /* Link */
+    .link { font-size: 13px; font-weight: 600; color: var(--text-accent); text-decoration: none; }
+    .link:hover { color: var(--spinach); text-decoration: underline; }
 
-  /* Mobile — ≤768px */
-  @media (max-width: 768px) {
-    .page-h1 { font-size: 24px; }
+    /* Danger zone */
+    .danger-zone { border: 1.5px solid var(--status-risk-bg); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-md); }
+    .danger-title { font-size: 14px; font-weight: 700; color: var(--status-risk-fg); }
+    .danger-desc { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
 
-    .page-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--space-md);
-      margin-bottom: var(--space-xl);
-    }
+    /* Info banner */
+    .info-banner { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) var(--space-lg); background: color-mix(in srgb, var(--sky, #3FC3FB) 10%, transparent); border: 1px solid color-mix(in srgb, var(--sky, #3FC3FB) 28%, transparent); border-radius: var(--radius-md); font-size: 13px; color: var(--text); line-height: 1.5; }
+    .info-banner i { color: #0872C3; font-size: 15px; flex-shrink: 0; margin-top: 1px; }
 
-    .form-section { padding: var(--space-lg); }
+    /* Access tree (outlet assignment) */
+    .access-tree-wrap { border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .group-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); background: var(--surface); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .group-row:last-child { border-bottom: none; }
+    .group-row:hover { background: var(--surface-soft); }
+    .group-chevron { font-size: 13px; color: var(--text-soft); transition: transform 0.18s; flex-shrink: 0; }
+    .group-chevron.open { transform: rotate(90deg); }
+    .group-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+    .group-outlet-count { font-size: 12px; color: var(--text-soft); }
+    .group-state-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-pill); }
+    .group-state-none { background: var(--surface-soft); color: var(--text-soft); }
+    .group-state-all  { background: var(--mint); color: var(--spinach); }
+    .group-state-some { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .group-toggle { cursor: pointer; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--fern); }
+    .outlet-list { display: none; background: color-mix(in srgb, var(--mint) 15%, transparent); }
+    .outlet-list.open { display: block; }
+    .outlet-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-sm) var(--space-lg) var(--space-sm) calc(var(--space-lg) + 28px); border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+    .outlet-row:last-child { border-bottom: none; }
+    .outlet-row:hover { background: color-mix(in srgb, var(--mint) 40%, transparent); }
+    .outlet-check { cursor: pointer; width: 15px; height: 15px; accent-color: var(--fern); flex-shrink: 0; }
+    .outlet-name { font-size: 13px; color: var(--text); flex: 1; }
 
-    .form-grid {
-      grid-template-columns: 1fr;
-    }
-    .form-grid .span-2 { grid-column: span 1; }
+    /* Lock settings */
+    .lock-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-lg) 0; }
+    .toggle-input { position: relative; display: inline-flex; width: 36px; height: 20px; cursor: pointer; }
+    .toggle-input input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 20px; transition: background 0.2s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+    .toggle-input input:checked + .toggle-slider { background: var(--fern); }
+    .toggle-input input:checked + .toggle-slider::before { transform: translateX(16px); }
 
-    .section-heading { font-size: 16px; }
+    /* Toast */
+    #toast-wrap { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 80; display: flex; flex-direction: column; gap: 8px; align-items: center; }
 
-    /* Ingredients table — horizontal scroll */
-    .form-section:has(.ingredients-table) { overflow-x: auto; }
-    .ingredients-table { min-width: 480px; }
-
-    /* Footer actions — stack vertically */
-    .footer-actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .footer-spacer { display: none; }
-    .footer-actions .btn,
-    .footer-actions .split-btn { width: 100%; justify-content: center; }
-    .footer-actions .split-btn .btn { flex: 1; }
-
-    /* Sticky save bar — reset left offset on mobile */
-    .save-bar {
-      left: 0;
-      padding: var(--space-sm) var(--space-lg);
-    }
-
-    .toggle-row {
-      flex-direction: column;
-      gap: var(--space-md);
-    }
-    .toggle-wrap { align-self: flex-start; }
-  }
-
-  /* Small mobile — ≤480px */
-  @media (max-width: 480px) {
-    .page-body { padding: var(--space-lg) 0 100px; }
-    .page-h1 { font-size: 22px; }
-    .form-section { padding: var(--space-md); }
-    .form-grid { gap: var(--space-lg); }
-    .notification { padding: var(--space-sm) var(--space-md); }
-    .footer-actions { margin-top: var(--space-lg); padding-top: var(--space-lg); gap: var(--space-sm); }
-  }
+    /* Nb pill (reuse) */
+    .nb-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: var(--radius-pill); }
+    .nb-pill.neutral { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=5" data-active="recipes"></script>
-  <div class="page-body">
-    <div class="napp-canvas" data-measure="narrow">
+<script src="../shared/shell.js?v=5" data-active="recipes"></script>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="content">
 
-      <!-- Breadcrumb -->
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="recipes.html">Recipes</a>
-        <i class="ti ti-chevron-right" aria-hidden="true"></i>
-        <span aria-current="page">Avocado Toast v3</span>
-      </nav>
+    <!-- Back nav -->
+    <a class="back-nav" href="recipes.html"><i class="ti ti-arrow-left"></i>Recipe library</a>
 
-      <!-- Page header -->
-      <header class="page-header">
-        <div class="page-header-left">
-          <h1 class="page-h1">Avocado Toast v3</h1>
-          <div class="header-badges">
-            <span class="pill pill-ok"><span class="pill-dot"></span>Active</span>
-            <span class="pill pill-lock"><i class="ti ti-lock" aria-hidden="true"></i>Locked · HQ</span>
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+          <span class="recipe-type-badge finished"><i class="ti ti-chef-hat" style="font-size:10px;"></i>Finished recipe</span>
+          <h1 class="page-title">Avocado Toast v3</h1>
+          <div class="page-title-meta">
+            <span class="status-pill active">Active</span>
+            <span class="pill-lock"><i class="ti ti-lock"></i>Locked by HQ</span>
+            <span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>Breakfast</span>
+            <span class="nb-pill neutral"><i class="ti ti-building-store" style="font-size:11px;"></i>The Burger Co</span>
           </div>
-        </div>
-      </header>
-
-      <!-- Managed by HQ notification banner -->
-      <div class="notification notification-info" id="lock-banner" role="status" aria-live="polite">
-        <i class="ti ti-lock" aria-hidden="true"></i>
-        <div class="notification-body">
-          <p class="notification-title">Managed by HQ</p>
-          <p class="notification-desc">This recipe is locked. Outlet users cannot edit ingredients or pricing. Unlock below to allow outlet-level changes.</p>
         </div>
       </div>
-
-      <!-- ── Section: Basic details ── -->
-      <section class="form-section" aria-labelledby="sec-basic">
-        <h2 class="section-heading" id="sec-basic">Basic details</h2>
-        <div class="form-grid">
-          <div class="field span-2">
-            <label class="field-label" for="recipe-name">Recipe name</label>
-            <input class="text-input" type="text" id="recipe-name" value="Avocado Toast v3" oninput="markDirty()"/>
-          </div>
-          <div class="field">
-            <label class="field-label" for="recipe-category">Category</label>
-            <select class="select-input" id="recipe-category" onchange="markDirty()">
-              <option selected>Breakfast</option>
-              <option>Mains</option>
-              <option>Desserts</option>
-              <option>Beverages</option>
-              <option>Sides</option>
-            </select>
-          </div>
-          <div class="field">
-            <label class="field-label" for="recipe-brand">Brand</label>
-            <select class="select-input" id="recipe-brand" onchange="markDirty()">
-              <option selected>The Burger Co</option>
-              <option>Pasta Palace</option>
-              <option>Taco Time</option>
-            </select>
-          </div>
-          <div class="field span-2">
-            <label class="field-label" for="recipe-desc">Description</label>
-            <textarea class="textarea-input" id="recipe-desc" rows="3" oninput="markDirty()">Smashed avocado on sourdough with feta and chilli flakes</textarea>
-          </div>
-          <div class="field">
-            <label class="field-label" for="recipe-portions">Portions</label>
-            <input class="number-input" type="number" id="recipe-portions" value="1" min="1" step="1" style="max-width:120px;" oninput="markDirty()"/>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Section: Ingredients ── -->
-      <section class="form-section" aria-labelledby="sec-ingredients">
-        <h2 class="section-heading" id="sec-ingredients">Ingredients</h2>
-        <table class="ingredients-table" aria-label="Ingredients list">
-          <thead>
-            <tr>
-              <th>Ingredient</th>
-              <th class="num">Qty</th>
-              <th>UOM</th>
-              <th class="num">Unit cost</th>
-              <th class="num">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody id="ingredient-rows">
-            <tr data-unit="0.40">
-              <td>Sourdough bread</td>
-              <td class="num"><input class="inline-input ing-qty" type="number" value="2" min="0" step="1" aria-label="Sourdough bread quantity" oninput="recompute()"/></td>
-              <td>slices</td>
-              <td class="num">$0.40</td>
-              <td class="num ing-sub">$0.80</td>
-            </tr>
-            <tr data-unit="1.80">
-              <td>Avocado <span class="spark" id="avo-spark" title="Price set by Mara" style="display:none;font-size:11px;"><i class="ti ti-sparkles"></i></span></td>
-              <td class="num"><input class="inline-input ing-qty" type="number" value="1" min="0" step="1" aria-label="Avocado quantity" oninput="recompute()"/></td>
-              <td>each</td>
-              <td class="num" id="avo-unit">$1.80</td>
-              <td class="num ing-sub">$1.80</td>
-            </tr>
-            <tr data-unit="0.05">
-              <td>Feta cheese</td>
-              <td class="num"><input class="inline-input ing-qty" type="number" value="30" min="0" step="1" aria-label="Feta cheese quantity" oninput="recompute()"/></td>
-              <td>g</td>
-              <td class="num">$0.05/g</td>
-              <td class="num ing-sub">$1.50</td>
-            </tr>
-            <tr data-unit="0.02">
-              <td>Chilli flakes</td>
-              <td class="num"><input class="inline-input ing-qty" type="number" value="2" min="0" step="1" aria-label="Chilli flakes quantity" oninput="recompute()"/></td>
-              <td>g</td>
-              <td class="num">$0.02/g</td>
-              <td class="num ing-sub">$0.04</td>
-            </tr>
-            <tr data-unit="0.01">
-              <td>Olive oil</td>
-              <td class="num"><input class="inline-input ing-qty" type="number" value="5" min="0" step="1" aria-label="Olive oil quantity" oninput="recompute()"/></td>
-              <td>ml</td>
-              <td class="num">$0.01/ml</td>
-              <td class="num ing-sub">$0.06</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td class="total-label" colspan="4">Total cost</td>
-              <td class="total-value" id="total-cost">$4.20</td>
-            </tr>
-          </tfoot>
-        </table>
-        <button class="btn btn-outline btn-sm">
-          <i class="ti ti-plus" aria-hidden="true"></i>
-          Add ingredient
-        </button>
-      </section>
-
-      <!-- ── Margin Agent (Mara) — RC-6, shown when margin breaches target ── -->
-      <article class="agent-surface" id="margin-agent" data-agent-fn="margin" style="margin-bottom:var(--space-xl);display:none;">
-        <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
-          <div class="agent-card-head">
-            <span class="agent-avatar" data-agent="mara" aria-hidden="true">Ma</span>
-            <span class="agent-id">
-              <span class="agent-name">Mara</span>
-              <span class="agent-role">Margin agent</span>
-            </span>
-            <span class="agent-card-spacer"></span>
-            <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
-          </div>
-          <p class="brief-headline" style="font-size:15px;font-weight:600;" id="margin-agent-headline">This recipe has dropped below its 70% target margin</p>
-          <p class="agent-why" id="margin-agent-why">Avocado rose to $2.40/ea on yesterday's invoice, lifting food cost. Here are three ways to restore the target margin — POS prices sync automatically on reprice.</p>
-          <div class="agent-actions">
-            <button class="nb-btn primary" onclick="applyReprice()"><i class="ti ti-currency-dollar" aria-hidden="true"></i>Reprice to $18.90</button>
-            <button class="nb-btn" onclick="showToast('Rebuild: swap feta for ricotta (−$0.35/serve)')">Rebuild recipe</button>
-            <button class="nb-btn" onclick="showToast('Re-source: 2 suppliers offer avocado 8% cheaper')">Re-source</button>
-          </div>
-        </div>
-      </article>
-
-      <!-- ── Section: Pricing ── -->
-      <section class="form-section" aria-labelledby="sec-pricing">
-        <h2 class="section-heading" id="sec-pricing">Pricing &amp; margin</h2>
-        <div class="form-grid">
-          <div class="field">
-            <label class="field-label" for="selling-price">Selling price</label>
-            <div class="input-prefix-wrap">
-              <span class="input-prefix">$</span>
-              <input class="number-input" type="number" id="selling-price" value="18.00" min="0" step="0.01" oninput="recompute()"/>
-            </div>
-            <p class="field-helper"><i class="ti ti-refresh" style="font-size:11px;" aria-hidden="true"></i> Two-way sync with POS · last synced 2h ago</p>
-          </div>
-          <div class="field">
-            <label class="field-label">Food cost %</label>
-            <div class="field-readonly" aria-label="Food cost percentage, auto-calculated">
-              <strong id="food-cost-pct">23.3%</strong>&nbsp;<span style="font-size:12px;color:var(--text-soft);">auto-calculated</span>
-            </div>
-          </div>
-          <div class="field">
-            <label class="field-label">Gross margin</label>
-            <div class="field-readonly" id="margin-readout" aria-label="Gross margin">
-              <strong id="gross-margin-pct">76.7%</strong>&nbsp;<span class="nb-pill ok" id="margin-pill" style="height:20px;"><i class="ti ti-check" aria-hidden="true"></i>On target</span>
-            </div>
-          </div>
-          <div class="field">
-            <label class="field-label" for="target-margin">Target margin</label>
-            <div class="input-prefix-wrap">
-              <input class="number-input" type="number" id="target-margin" value="70" min="0" max="100" step="1" oninput="recompute()"/>
-              <span class="input-prefix" style="border-right:1px solid var(--border);border-left:none;border-radius:0 var(--radius-md) var(--radius-md) 0;">%</span>
-            </div>
-            <p class="field-helper">Mara alerts when margin drops below this</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Section: Allergens & nutrition (RC-8) ── -->
-      <section class="form-section" aria-labelledby="sec-allergen">
-        <h2 class="section-heading" id="sec-allergen">Allergens &amp; nutrition</h2>
-        <div class="field" style="margin-bottom:var(--space-xl);">
-          <label class="field-label">Allergens <span class="field-helper" style="font-weight:400;">— propagated to outlets and POS menu</span></label>
-          <div style="display:flex;flex-wrap:wrap;gap:var(--space-sm);margin-top:var(--space-sm);">
-            <span class="nb-pill warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Gluten</span>
-            <span class="nb-pill warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Dairy</span>
-            <span class="nb-pill neutral" style="cursor:pointer;" onclick="markDirty()"><i class="ti ti-plus" aria-hidden="true"></i>Add allergen</span>
-          </div>
-        </div>
-        <div class="form-grid">
-          <div class="field">
-            <label class="field-label" for="nut-energy">Energy (kcal)</label>
-            <input class="number-input" type="number" id="nut-energy" value="420" min="0" oninput="markDirty()"/>
-          </div>
-          <div class="field">
-            <label class="field-label" for="nut-protein">Protein (g)</label>
-            <input class="number-input" type="number" id="nut-protein" value="12" min="0" oninput="markDirty()"/>
-          </div>
-          <div class="field">
-            <label class="field-label" for="nut-carbs">Carbs (g)</label>
-            <input class="number-input" type="number" id="nut-carbs" value="38" min="0" oninput="markDirty()"/>
-          </div>
-          <div class="field">
-            <label class="field-label" for="nut-fat">Fat (g)</label>
-            <input class="number-input" type="number" id="nut-fat" value="24" min="0" oninput="markDirty()"/>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Section: Lock settings ── -->
-      <section class="form-section" aria-labelledby="sec-lock">
-        <h2 class="section-heading" id="sec-lock">Lock settings</h2>
-        <div class="toggle-row">
-          <div class="toggle-label-group">
-            <p class="toggle-label">Lock recipe for outlets</p>
-            <p class="toggle-helper">When locked, outlet users cannot edit ingredients or pricing.</p>
-          </div>
-          <div class="toggle-wrap">
-            <label class="toggle" aria-label="Lock recipe for outlets">
-              <input type="checkbox" id="lock-toggle" checked onchange="handleLockToggle(this)"/>
-              <span class="toggle-track"></span>
-              <span class="toggle-thumb"></span>
-            </label>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Section: Version history (accordion) ── -->
-      <section class="form-section" aria-labelledby="sec-versions" style="padding:0; overflow:hidden;">
-        <div class="accordion">
-          <button class="accordion-trigger" aria-expanded="false" aria-controls="version-body" id="version-trigger" onclick="toggleAccordion(this,'version-body')">
-            <span id="sec-versions">Version history <span style="color:var(--text-soft);font-weight:400;">(3 versions)</span></span>
-            <i class="ti ti-chevron-down" aria-hidden="true"></i>
-          </button>
-          <div class="accordion-body" id="version-body" role="region" aria-labelledby="version-trigger">
-            <div class="version-list" style="padding-top:var(--space-md);">
-              <div class="version-item">
-                <div class="version-meta">
-                  <p class="version-tag">v3 <span class="version-current">current</span></p>
-                  <p class="version-by">Updated 2h ago · HQ Admin</p>
-                  <p class="version-desc">Updated avocado quantity</p>
-                </div>
-                <!-- no rollback for current -->
-              </div>
-              <div class="version-item">
-                <div class="version-meta">
-                  <p class="version-tag">v2</p>
-                  <p class="version-by">12 Jun 2026, 9:14 am · HQ Admin</p>
-                  <p class="version-desc">Added feta cheese</p>
-                </div>
-                <button class="btn btn-outline btn-sm" onclick="rollbackVersion('v2')">Rollback</button>
-              </div>
-              <div class="version-item">
-                <div class="version-meta">
-                  <p class="version-tag">v1</p>
-                  <p class="version-by">5 Jun 2026, 2:30 pm · HQ Admin</p>
-                  <p class="version-desc">Initial recipe</p>
-                </div>
-                <button class="btn btn-outline btn-sm" onclick="rollbackVersion('v1')">Rollback</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Section: Activity timeline ── -->
-      <section class="form-section" aria-labelledby="sec-activity">
-        <h2 class="section-heading" id="sec-activity">Activity</h2>
-        <div class="timeline" role="list">
-          <div class="timeline-item" role="listitem">
-            <div class="timeline-dot" aria-hidden="true"><i class="ti ti-lock"></i></div>
-            <div class="timeline-body">
-              <p class="timeline-action">Recipe locked for all outlets</p>
-              <p class="timeline-meta">2h ago · <strong>HQ Admin</strong></p>
-            </div>
-          </div>
-          <div class="timeline-item" role="listitem">
-            <div class="timeline-dot" aria-hidden="true"><i class="ti ti-send"></i></div>
-            <div class="timeline-body">
-              <p class="timeline-action">Pushed to 42 outlets</p>
-              <p class="timeline-meta">5h ago · <strong>HQ Admin</strong></p>
-            </div>
-          </div>
-          <div class="timeline-item" role="listitem">
-            <div class="timeline-dot" aria-hidden="true"><i class="ti ti-file-plus"></i></div>
-            <div class="timeline-body">
-              <p class="timeline-action">Recipe created</p>
-              <p class="timeline-meta">1 week ago · <strong>HQ Admin</strong></p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Footer actions -->
-      <div class="footer-actions">
+      <div class="page-actions">
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Opening version history…')"><i class="ti ti-history"></i>v3</button>
+        <button class="btn btn-outline" onclick="showToast('Recipe duplicated.')"><i class="ti ti-copy"></i>Duplicate</button>
         <div class="split-btn">
-          <button class="btn btn-primary">
-            <i class="ti ti-send" aria-hidden="true"></i>
-            Push to outlets
-          </button>
-          <button class="split-caret" aria-label="Push options">
-            <i class="ti ti-chevron-down" aria-hidden="true"></i>
-          </button>
+          <button class="btn btn-primary" onclick="showToast('Pushing to all assigned outlets…')"><i class="ti ti-send"></i>Push to outlets</button>
+          <button class="split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
         </div>
-        <div class="footer-spacer"></div>
-        <button class="btn btn-outline" onclick="discardChanges()">Discard</button>
-        <button class="btn btn-outline" onclick="submitForApproval()">
-          <i class="ti ti-user-check" aria-hidden="true"></i>
-          Submit for approval
-        </button>
-        <button class="btn btn-primary" onclick="saveChanges()">
-          <i class="ti ti-device-floppy" aria-hidden="true"></i>
-          Save changes
-        </button>
       </div>
-
-    </div><!-- /.napp-canvas -->
-  </div><!-- /.page-body -->
-
-  <!-- Save bar -->
-  <div class="save-bar" id="save-bar" role="status" aria-live="polite" aria-atomic="true">
-    <div class="save-bar-message">
-      <i class="ti ti-alert-circle" aria-hidden="true"></i>
-      <span id="unsaved-count">2 unsaved changes</span>
     </div>
-    <div class="save-bar-actions">
-      <button class="btn btn-ghost btn-sm" onclick="discardChanges()">Discard</button>
-      <button class="btn btn-primary btn-sm" onclick="saveChanges()">
-        <i class="ti ti-device-floppy" aria-hidden="true"></i>
-        Save changes
-      </button>
+
+    <!-- KPI strip -->
+    <div class="kpi-strip">
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Prime cost</div>
+        <div class="kpi-tile-value" id="kpi-prime-cost">$9.80</div>
+        <div class="kpi-tile-sub">Ingredients + labour</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Food cost %</div>
+        <div class="kpi-tile-value ok" id="kpi-fc-pct">23.3%</div>
+        <div class="kpi-tile-sub">Ingredient cost only</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Selling price</div>
+        <div class="kpi-tile-value" id="kpi-sell-price">$18.00</div>
+        <div class="kpi-tile-sub">Base price (POS)</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Gross margin</div>
+        <div class="kpi-tile-value ok" id="kpi-margin">45.6%</div>
+        <div class="kpi-tile-sub">After prime cost</div>
+      </div>
     </div>
-  </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Avocado Toast v3'));
+    <!-- Detail layout -->
+    <div class="detail-layout">
+      <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
 
-    let dirtyCount = 0;
+        <!-- Tab nav -->
+        <div class="tab-nav">
+          <button class="tab-nav-btn active" onclick="switchTab('ingredients')"><i class="ti ti-list-details"></i>Ingredients</button>
+          <button class="tab-nav-btn" onclick="switchTab('costing')"><i class="ti ti-calculator"></i>Costing</button>
+          <button class="tab-nav-btn" onclick="switchTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
+          <button class="tab-nav-btn" onclick="switchTab('settings')"><i class="ti ti-settings"></i>Settings</button>
+        </div>
 
-    function markDirty() {
-      dirtyCount = Math.max(dirtyCount + 1, 1);
-      const saveBar = document.getElementById('save-bar');
-      const countEl = document.getElementById('unsaved-count');
-      countEl.textContent = dirtyCount + ' unsaved change' + (dirtyCount !== 1 ? 's' : '');
-      saveBar.classList.add('visible');
-    }
+        <!-- ── Ingredients tab ── -->
+        <div id="tab-ingredients" class="tab-panel active">
 
-    /* ── Live costing + margin (RC-5) ── */
-    function recompute() {
-      markDirty();
-      let total = 0;
-      document.querySelectorAll('#ingredient-rows tr').forEach(tr => {
-        const unit = parseFloat(tr.dataset.unit) || 0;
-        const qty = parseFloat(tr.querySelector('.ing-qty')?.value) || 0;
-        const sub = unit * qty;
-        total += sub;
-        const subCell = tr.querySelector('.ing-sub');
-        if (subCell) subCell.textContent = '$' + sub.toFixed(2);
-      });
-      document.getElementById('total-cost').textContent = '$' + total.toFixed(2);
+          <!-- Basic info card -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-info-circle"></i>Basic details</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div class="form-row">
+                  <div class="field-group">
+                    <label class="field-label">Recipe name</label>
+                    <input class="field-input" type="text" value="Avocado Toast v3"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Category</label>
+                    <select class="field-select">
+                      <option selected>Breakfast</option>
+                      <option>Mains</option>
+                      <option>Desserts</option>
+                      <option>Beverages</option>
+                      <option>Sides</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="field-group">
+                    <label class="field-label">Brand / concept</label>
+                    <select class="field-select">
+                      <option selected>The Burger Co</option>
+                      <option>Pasta Palace</option>
+                      <option>Taco Time</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Portions per batch</label>
+                    <input class="field-input" type="number" value="1" min="1" style="font-feature-settings:'tnum' 1;"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-      const price = parseFloat(document.getElementById('selling-price').value) || 0;
-      const target = parseFloat(document.getElementById('target-margin').value) || 70;
-      const foodCostPct = price > 0 ? (total / price * 100) : 0;
-      const margin = 100 - foodCostPct;
-      document.getElementById('food-cost-pct').textContent = foodCostPct.toFixed(1) + '%';
-      document.getElementById('gross-margin-pct').textContent = margin.toFixed(1) + '%';
+          <!-- Ingredients card -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-list-details"></i>Ingredient list</span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Add ingredient row…')"><i class="ti ti-plus"></i>Add line</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="ing-table" aria-label="Ingredient list">
+                <thead>
+                  <tr>
+                    <th>Ingredient</th>
+                    <th class="num">Qty</th>
+                    <th>Unit</th>
+                    <th class="num">Waste %</th>
+                    <th class="num">Unit cost</th>
+                    <th class="num">Subtotal</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;">Sourdough Bread</div>
+                      <div style="font-size:12px;color:var(--text-soft);">Bakery · sliced</div>
+                    </td>
+                    <td class="num">2</td>
+                    <td>slices</td>
+                    <td class="num"><input class="waste-input" type="number" value="5" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.45</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.95</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;">Avocado</div>
+                      <div style="font-size:12px;color:var(--text-soft);">Produce · each</div>
+                    </td>
+                    <td class="num">1</td>
+                    <td>each</td>
+                    <td class="num"><input class="waste-input" type="number" value="20" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$2.00</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$2.40</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;">Cherry Tomatoes</div>
+                      <div style="font-size:12px;color:var(--text-soft);">Produce · punnet</div>
+                    </td>
+                    <td class="num">50</td>
+                    <td>g</td>
+                    <td class="num"><input class="waste-input" type="number" value="10" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.012</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.60</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;">
+                        Hollandaise Sauce
+                        <span class="ing-type-r"><i class="ti ti-git-fork" style="font-size:9px;"></i>R</span>
+                      </div>
+                      <div style="font-size:12px;color:var(--text-soft);">Preparation · 30ml portion</div>
+                    </td>
+                    <td class="num">30</td>
+                    <td>ml</td>
+                    <td class="num"><input class="waste-input" type="number" value="0" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.04</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$1.20</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;">Micro Herbs</div>
+                      <div style="font-size:12px;color:var(--text-soft);">Garnish</div>
+                    </td>
+                    <td class="num">5</td>
+                    <td>g</td>
+                    <td class="num"><input class="waste-input" type="number" value="0" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.18</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.90</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;">Olive Oil</div>
+                      <div style="font-size:12px;color:var(--text-soft);">Oils · drizzle</div>
+                    </td>
+                    <td class="num">10</td>
+                    <td>ml</td>
+                    <td class="num"><input class="waste-input" type="number" value="0" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.02</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.20</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="5" class="total-label">Ingredient cost total</td>
+                    <td class="total-val">$6.25</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);display:flex;gap:var(--space-sm);">
+              <button class="btn btn-ghost btn-sm" onclick="showToast('Searching ingredients…')"><i class="ti ti-search"></i>Add ingredient</button>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('Searching preparations…')" style="color:var(--text-accent);"><i class="ti ti-git-fork"></i>Add preparation <span class="ing-type-r" style="margin-left:2px;"><i class="ti ti-git-fork" style="font-size:9px;"></i>R</span></button>
+            </div>
+          </div>
 
-      const pill = document.getElementById('margin-pill');
-      const agent = document.getElementById('margin-agent');
-      if (margin < target) {
-        pill.className = 'nb-pill risk';
-        pill.style.height = '20px';
-        pill.innerHTML = '<i class="ti ti-arrow-down" aria-hidden="true"></i>Below target';
-        agent.style.display = 'block';
-        document.getElementById('margin-agent-headline').textContent =
-          'This recipe sits ' + (target - margin).toFixed(1) + ' points below its ' + target + '% target margin';
-      } else {
-        pill.className = 'nb-pill ok';
-        pill.style.height = '20px';
-        pill.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i>On target';
-        agent.style.display = 'none';
-      }
-    }
+          <!-- Method card -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-notes"></i>Method &amp; instructions</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div class="field-group">
+                  <label class="field-label">Method</label>
+                  <textarea class="field-textarea" rows="5">1. Toast sourdough slices until golden.
+2. While toasting, halve and stone the avocado. Season with salt, pepper and a squeeze of lemon.
+3. Smash avocado onto toast. Top with cherry tomatoes (halved), a drizzle of olive oil and chilli flakes.
+4. Finish with a spoon of Hollandaise and micro herb garnish. Serve immediately.</textarea>
+                </div>
+                <div class="form-row">
+                  <div class="field-group">
+                    <label class="field-label">Yield / portion note <span class="opt">(optional)</span></label>
+                    <input class="field-input" type="text" placeholder="e.g. 1 serve, 280g plated weight" value="1 serve · approx. 280g plated weight"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Shelf life after prep <span class="opt">(optional)</span></label>
+                    <input class="field-input" type="text" placeholder="e.g. Serve immediately" value="Serve immediately"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    /* ── Margin Agent actions (RC-6) ── */
-    function applyReprice() {
-      document.getElementById('selling-price').value = '18.90';
-      recompute();
-      const agent = document.getElementById('margin-agent');
-      const state = agent.querySelector('.agent-state');
-      state.className = 'agent-state done';
-      state.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>Done';
-      showToast('Repriced to $18.90 by Mara · POS syncing · margin restored');
-      addActivity('ti-currency-dollar', 'Repriced to $18.90 — margin restored', 'Just now · by Mara');
-      setTimeout(() => { agent.style.display = 'none'; }, 600);
-    }
+        </div><!-- /tab-ingredients -->
 
-    /* ── Approval workflow (RC-7) ── */
-    function submitForApproval() {
-      dirtyCount = 0;
-      document.getElementById('save-bar').classList.remove('visible');
-      const pill = document.querySelector('.header-badges');
-      if (pill && !document.getElementById('approval-pill')) {
-        const p = document.createElement('span');
-        p.id = 'approval-pill';
-        p.className = 'nb-pill warn';
-        p.innerHTML = '<i class="ti ti-clock" aria-hidden="true"></i>Awaiting HQ Approver';
-        pill.appendChild(p);
-      }
-      showToast('Submitted to HQ Approver for sign-off');
-      addActivity('ti-user-check', 'Submitted for approval', 'Just now · Keith Tan');
-    }
+        <!-- ── Costing tab ── -->
+        <div id="tab-costing" class="tab-panel">
 
-    function discardChanges() {
-      dirtyCount = 0;
-      document.getElementById('save-bar').classList.remove('visible');
-    }
+          <!-- Ingredient cost summary -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-list-details"></i>Ingredient cost breakdown</span>
+            </div>
+            <div class="card-body">
+              <div class="cost-section">
+                <div class="cost-row">
+                  <div><div class="cost-row-label">Sourdough Bread <span style="color:var(--text-soft);font-weight:400;">× 2 slices</span></div><div class="cost-row-sub">$0.45/slice · 5% waste</div></div>
+                  <div class="cost-row-val">$0.95</div>
+                </div>
+                <div class="cost-row">
+                  <div><div class="cost-row-label">Avocado <span style="color:var(--text-soft);font-weight:400;">× 1</span></div><div class="cost-row-sub">$2.00/each · 20% waste</div></div>
+                  <div class="cost-row-val">$2.40</div>
+                </div>
+                <div class="cost-row">
+                  <div><div class="cost-row-label">Cherry Tomatoes <span style="color:var(--text-soft);font-weight:400;">× 50g</span></div><div class="cost-row-sub">$0.012/g · 10% waste</div></div>
+                  <div class="cost-row-val">$0.60</div>
+                </div>
+                <div class="cost-row">
+                  <div>
+                    <div class="cost-row-label">Hollandaise Sauce <span class="ing-type-r"><i class="ti ti-git-fork" style="font-size:9px;"></i>R</span> <span style="color:var(--text-soft);font-weight:400;">× 30ml</span></div>
+                    <div class="cost-row-sub">$0.04/ml · preparation cost rollup</div>
+                  </div>
+                  <div class="cost-row-val">$1.20</div>
+                </div>
+                <div class="cost-row">
+                  <div><div class="cost-row-label">Micro Herbs <span style="color:var(--text-soft);font-weight:400;">× 5g</span></div><div class="cost-row-sub">$0.18/g</div></div>
+                  <div class="cost-row-val">$0.90</div>
+                </div>
+                <div class="cost-row">
+                  <div><div class="cost-row-label">Olive Oil <span style="color:var(--text-soft);font-weight:400;">× 10ml</span></div><div class="cost-row-sub">$0.02/ml</div></div>
+                  <div class="cost-row-val">$0.20</div>
+                </div>
+              </div>
+              <div style="margin-top:var(--space-lg);">
+                <div class="cost-total-row">
+                  <span class="cost-total-label">Ingredient cost</span>
+                  <span class="cost-total-val">$6.25</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    function saveChanges() {
-      dirtyCount = 0;
-      document.getElementById('save-bar').classList.remove('visible');
-      showToast('Recipe saved');
-      addActivity('ti-device-floppy', 'Recipe updated and saved', 'Just now · Keith Tan');
-    }
+          <!-- Labour card -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-clock"></i>Labour cost</span>
+              <span style="font-size:12px;color:var(--text-soft);">Active time only — passive time excluded</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+                <div class="labor-row">
+                  <div>
+                    <div class="labor-label">Prep time</div>
+                    <div style="font-size:11px;color:var(--text-soft);">Active prep before cooking</div>
+                  </div>
+                  <span class="labor-sep">×</span>
+                  <input class="field-input" type="number" id="prep-min" value="8" min="0" oninput="calcLabour()" style="height:32px;font-size:13px;text-align:right;font-feature-settings:'tnum' 1;padding-right:var(--space-sm);"/>
+                  <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">min @ $<span id="prep-rate-display">24</span>/hr</span>
+                  <div class="labor-cost" id="prep-cost">$3.20</div>
+                </div>
+                <div class="labor-row">
+                  <div>
+                    <div class="labor-label">Cook time</div>
+                    <div style="font-size:11px;color:var(--text-soft);">Active cooking / assembly</div>
+                  </div>
+                  <span class="labor-sep">×</span>
+                  <input class="field-input" type="number" id="cook-min" value="4" min="0" oninput="calcLabour()" style="height:32px;font-size:13px;text-align:right;font-feature-settings:'tnum' 1;padding-right:var(--space-sm);"/>
+                  <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">min @ $<span id="cook-rate-display">24</span>/hr</span>
+                  <div class="labor-cost" id="cook-cost">$1.60</div>
+                </div>
+                <div class="labor-row">
+                  <div>
+                    <div class="labor-label">Plating time</div>
+                    <div style="font-size:11px;color:var(--text-soft);">Active plating / finishing</div>
+                  </div>
+                  <span class="labor-sep">×</span>
+                  <input class="field-input" type="number" id="plate-min" value="2" min="0" oninput="calcLabour()" style="height:32px;font-size:13px;text-align:right;font-feature-settings:'tnum' 1;padding-right:var(--space-sm);"/>
+                  <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">min @ $<span id="plate-rate-display">24</span>/hr</span>
+                  <div class="labor-cost" id="plate-cost">$0.80</div>
+                </div>
+              </div>
+              <div style="margin-top:var(--space-lg);">
+                <div class="cost-total-row">
+                  <span class="cost-total-label">Labour cost</span>
+                  <span class="cost-total-val" id="labour-total">$5.60</span>
+                </div>
+              </div>
+              <div style="margin-top:var(--space-md);">
+                <div class="field-group">
+                  <label class="field-label">Hourly wage rate <span class="opt">(applies to all time types)</span></label>
+                  <div style="position:relative;max-width:160px;">
+                    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);">$</span>
+                    <input class="field-input" type="number" id="hourly-rate" value="24" min="0" step="0.5" oninput="calcLabour()" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+                  </div>
+                  <span style="font-size:12px;color:var(--text-soft);margin-top:2px;">Configure per-role rates in Settings → Costing defaults</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    /* ── Toast ── */
-    function showToast(msg) {
-      let wrap = document.getElementById('rd-toast');
-      if (!wrap) {
-        wrap = document.createElement('div');
-        wrap.id = 'rd-toast';
-        wrap.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;';
-        document.body.appendChild(wrap);
-      }
-      const t = document.createElement('div');
-      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
-      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;" aria-hidden="true"></i>' + msg;
-      wrap.appendChild(t);
-      setTimeout(() => t.remove(), 3200);
-    }
+          <!-- Prime cost & margin -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-calculator"></i>Prime cost &amp; margin</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+                  <div class="cost-row">
+                    <div class="cost-row-label">Ingredient cost</div>
+                    <div class="cost-row-val muted" id="out-ing-cost">$6.25</div>
+                  </div>
+                  <div class="cost-row">
+                    <div class="cost-row-label">Labour cost</div>
+                    <div class="cost-row-val muted" id="out-labour-cost">$5.60</div>
+                  </div>
+                </div>
+                <div class="cost-total-row" style="background:color-mix(in srgb, var(--spinach) 6%, transparent);border-color:color-mix(in srgb, var(--fern) 20%, transparent);">
+                  <span class="cost-total-label" style="color:var(--spinach);">Prime cost (total)</span>
+                  <span class="cost-total-val" style="color:var(--spinach);" id="out-prime-cost">$11.85</span>
+                </div>
+                <div style="border-top:1px solid var(--border);padding-top:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-lg);">
+                  <div class="form-row">
+                    <div class="field-group">
+                      <label class="field-label">Selling price (base POS price)</label>
+                      <div style="position:relative;">
+                        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);">$</span>
+                        <input class="field-input" type="number" id="sell-price" value="18.00" min="0" step="0.50" oninput="calcMargin()" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+                      </div>
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Target food cost %</label>
+                      <div style="position:relative;">
+                        <input class="field-input" type="number" id="target-fc" value="28" min="0" max="100" step="1" oninput="calcMargin()" style="padding-right:28px;font-feature-settings:'tnum' 1;"/>
+                        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);">%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);">
+                    <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
+                      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);">Food cost %</div>
+                      <div style="font-size:20px;font-weight:700;color:var(--status-ok-fg);font-feature-settings:'tnum' 1;margin-top:4px;" id="out-fc-pct">34.7%</div>
+                      <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">Ingredient ÷ sell price</div>
+                    </div>
+                    <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
+                      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);">Prime cost %</div>
+                      <div style="font-size:20px;font-weight:700;color:var(--text);font-feature-settings:'tnum' 1;margin-top:4px;" id="out-prime-pct">65.8%</div>
+                      <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">Prime cost ÷ sell price</div>
+                    </div>
+                    <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
+                      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);">Gross margin</div>
+                      <div style="font-size:20px;font-weight:700;color:var(--status-ok-fg);font-feature-settings:'tnum' 1;margin-top:4px;" id="out-margin">34.2%</div>
+                      <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">(Sell − prime) ÷ sell</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Target sell price calculator -->
+                <div class="target-calculator">
+                  <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:var(--space-md);">Target sell price calculator</div>
+                  <div class="target-calc-row">
+                    <span style="font-size:13px;color:var(--text-soft);">To hit <strong id="target-pct-display">28%</strong> food cost, you'd need to sell at:</span>
+                    <button class="btn btn-outline btn-sm" onclick="calcTargetSellPrice()"><i class="ti ti-math-function"></i>Calculate</button>
+                  </div>
+                  <div id="target-result" class="target-result" style="display:none;margin-top:var(--space-md);padding:var(--space-md) var(--space-lg);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:15px;font-weight:700;color:var(--text-accent);font-feature-settings:'tnum' 1;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    /* ── Audit entry (RC-3 / §5.10) ── */
-    function addActivity(icon, action, meta) {
-      const tl = document.querySelector('.timeline');
-      if (!tl) return;
-      const item = document.createElement('div');
-      item.className = 'timeline-item';
-      item.setAttribute('role', 'listitem');
-      item.innerHTML = '<div class="timeline-dot" aria-hidden="true"><i class="ti ' + icon + '"></i></div>' +
-        '<div class="timeline-body"><p class="timeline-action">' + action + '</p><p class="timeline-meta">' + meta + '</p></div>';
-      tl.insertBefore(item, tl.firstChild);
-    }
+        </div><!-- /tab-costing -->
 
-    /* ── Rollback with confirm + audit (RC-3) ── */
-    function rollbackVersion(v) {
-      if (confirm('Roll back to ' + v + '? This will create a new version with ' + v + "'s ingredients and pricing.")) {
-        showToast('Rolled back to ' + v + ' — saved as new version');
-        addActivity('ti-history', 'Rolled back to ' + v, 'Just now · Keith Tan');
-      }
-    }
+        <!-- ── Outlets tab ── -->
+        <div id="tab-outlets" class="tab-panel">
 
-    function handleLockToggle(checkbox) {
-      const banner = document.getElementById('lock-banner');
-      const headerPill = document.querySelector('.pill-lock');
-      markDirty();
-      if (checkbox.checked) {
-        banner.style.display = 'flex';
-        if (headerPill) headerPill.style.display = 'inline-flex';
-      } else {
-        banner.style.display = 'none';
-        if (headerPill) headerPill.style.display = 'none';
-      }
-    }
+          <!-- Outlet assignment -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-building-store"></i>Outlet assignment</span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Saving outlet assignments…')"><i class="ti ti-device-floppy"></i>Save</button>
+            </div>
+            <div class="card-body">
+              <p style="font-size:13px;color:var(--text-soft);line-height:1.6;margin-bottom:var(--space-lg);">Select which outlets this recipe is published to. Outlet staff can view the recipe and it will be included in costing for assigned outlets.</p>
+              <div class="access-tree-wrap" id="outlet-tree"></div>
+            </div>
+          </div>
 
-    function toggleAccordion(trigger, bodyId) {
-      const body = document.getElementById(bodyId);
-      const isOpen = body.classList.contains('open');
-      body.classList.toggle('open', !isOpen);
-      trigger.setAttribute('aria-expanded', String(!isOpen));
-    }
+          <!-- Per-outlet pricing -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-currency-dollar"></i>Outlet selling prices</span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Outlet prices saved.')"><i class="ti ti-device-floppy"></i>Save prices</button>
+            </div>
+            <div class="card-body">
+              <div class="info-banner" style="margin-bottom:var(--space-lg);">
+                <i class="ti ti-info-circle"></i>
+                <span>The POS synced price is set by the POS mapping for each outlet. You can enter an override to set a different selling price for costing purposes — the effective price used is the override if set, otherwise the POS price.</span>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="pricing-table" aria-label="Outlet selling prices">
+                  <thead>
+                    <tr>
+                      <th>Outlet</th>
+                      <th class="num">POS synced price</th>
+                      <th class="num">Override price</th>
+                      <th class="num">Effective price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div style="font-weight:600;">Harbour Kitchen</div><div style="font-size:12px;color:var(--text-soft);">CBD Cluster</div></td>
+                      <td class="num"><span class="pricing-synced">$18.00</span></td>
+                      <td class="num"><input class="pricing-override-input" type="number" placeholder="–" step="0.50" onchange="updateEffective(this)"/></td>
+                      <td class="num"><span class="pricing-effective">$18.00</span></td>
+                    </tr>
+                    <tr>
+                      <td><div style="font-weight:600;">Darling St Bistro</div><div style="font-size:12px;color:var(--text-soft);">CBD Cluster</div></td>
+                      <td class="num"><span class="pricing-synced">$18.00</span></td>
+                      <td class="num"><input class="pricing-override-input" type="number" placeholder="–" step="0.50" value="19.00" onchange="updateEffective(this)"/></td>
+                      <td class="num"><span class="pricing-effective" style="color:var(--text-accent);">$19.00</span></td>
+                    </tr>
+                    <tr>
+                      <td><div style="font-weight:600;">The CBD Rooftop</div><div style="font-size:12px;color:var(--text-soft);">CBD Cluster</div></td>
+                      <td class="num"><span class="pricing-synced">$20.00</span></td>
+                      <td class="num"><input class="pricing-override-input" type="number" placeholder="–" step="0.50" onchange="updateEffective(this)"/></td>
+                      <td class="num"><span class="pricing-effective">$20.00</span></td>
+                    </tr>
+                    <tr>
+                      <td><div style="font-weight:600;">Bondi Rooftop</div><div style="font-size:12px;color:var(--text-soft);">Beachside</div></td>
+                      <td class="num"><span class="pricing-synced">$18.00</span></td>
+                      <td class="num"><input class="pricing-override-input" type="number" placeholder="–" step="0.50" onchange="updateEffective(this)"/></td>
+                      <td class="num"><span class="pricing-effective">$18.00</span></td>
+                    </tr>
+                    <tr>
+                      <td><div style="font-weight:600;">Parramatta Table</div><div style="font-size:12px;color:var(--text-soft);">Suburban</div></td>
+                      <td class="num"><span class="pricing-synced">$17.00</span></td>
+                      <td class="num"><input class="pricing-override-input" type="number" placeholder="–" step="0.50" onchange="updateEffective(this)"/></td>
+                      <td class="num"><span class="pricing-effective">$17.00</span></td>
+                    </tr>
+                    <tr>
+                      <td><div style="font-weight:600;">Surry Hills Social</div><div style="font-size:12px;color:var(--text-soft);">Suburban</div></td>
+                      <td class="num"><span class="pricing-synced">$18.00</span></td>
+                      <td class="num"><input class="pricing-override-input" type="number" placeholder="–" step="0.50" onchange="updateEffective(this)"/></td>
+                      <td class="num"><span class="pricing-effective">$18.00</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-    /* Show save bar on load to simulate 2 unsaved changes */
-    window.addEventListener('load', () => {
-      dirtyCount = 2;
-      const saveBar = document.getElementById('save-bar');
-      const countEl = document.getElementById('unsaved-count');
-      countEl.textContent = '2 unsaved changes';
-      setTimeout(() => saveBar.classList.add('visible'), 300);
+        </div><!-- /tab-outlets -->
+
+        <!-- ── Settings tab ── -->
+        <div id="tab-settings" class="tab-panel">
+
+          <!-- Lock settings -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-lock"></i>Lock settings</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div class="lock-toggle-row">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;color:var(--text);">Lock recipe for outlets</div>
+                    <div style="font-size:12px;color:var(--text-soft);margin-top:2px;line-height:1.5;">When locked, outlet users cannot edit ingredients, portions, or method. Costing and outlet-specific pricing remain editable by HQ only.</div>
+                  </div>
+                  <label class="toggle-input">
+                    <input type="checkbox" checked onchange="showToast(this.checked ? 'Recipe locked.' : 'Recipe unlocked.')"/>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="lock-toggle-row" style="border-top:1px solid var(--border);padding-top:var(--space-lg);">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;color:var(--text);">Allow outlet price override</div>
+                    <div style="font-size:12px;color:var(--text-soft);margin-top:2px;line-height:1.5;">When enabled, outlet managers can override the selling price for their outlet. Otherwise only HQ can change prices.</div>
+                  </div>
+                  <label class="toggle-input">
+                    <input type="checkbox" onchange="showToast(this.checked ? 'Outlet price override enabled.' : 'Outlet price override disabled.')"/>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Allergens -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-alert-circle"></i>Allergens</span>
+              <span style="font-size:12px;color:var(--text-soft);">Auto-inherited from ingredients</span>
+            </div>
+            <div class="card-body">
+              <div class="allergen-grid">
+                <label class="allergen-item inherited"><input type="checkbox" checked/> Gluten <span style="font-size:10px;color:var(--text-soft);">(inherited)</span></label>
+                <label class="allergen-item inherited"><input type="checkbox" checked/> Eggs <span style="font-size:10px;color:var(--text-soft);">(inherited)</span></label>
+                <label class="allergen-item"><input type="checkbox"/> Dairy</label>
+                <label class="allergen-item"><input type="checkbox"/> Nuts</label>
+                <label class="allergen-item"><input type="checkbox"/> Peanuts</label>
+                <label class="allergen-item"><input type="checkbox"/> Soy</label>
+                <label class="allergen-item"><input type="checkbox"/> Sesame</label>
+                <label class="allergen-item"><input type="checkbox"/> Fish</label>
+                <label class="allergen-item"><input type="checkbox"/> Shellfish</label>
+                <label class="allergen-item"><input type="checkbox"/> Lupin</label>
+                <label class="allergen-item"><input type="checkbox"/> Celery</label>
+                <label class="allergen-item"><input type="checkbox"/> Mustard</label>
+              </div>
+              <p class="allergen-note" style="margin-top:var(--space-lg);">Inherited allergens are auto-detected from ingredient records. Check/uncheck to add or override manually.</p>
+              <div style="margin-top:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-md);">
+                <div class="section-title">Dietary information</div>
+                <div class="allergen-grid">
+                  <label class="allergen-item"><input type="checkbox"/> Vegetarian</label>
+                  <label class="allergen-item"><input type="checkbox"/> Vegan</label>
+                  <label class="allergen-item"><input type="checkbox"/> Gluten-free</label>
+                  <label class="allergen-item"><input type="checkbox"/> Dairy-free</label>
+                  <label class="allergen-item"><input type="checkbox"/> Halal</label>
+                  <label class="allergen-item"><input type="checkbox"/> Kosher</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Version history -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-history"></i>Version history</span>
+            </div>
+            <div class="version-list">
+              <div class="version-item">
+                <div class="version-meta">
+                  <span class="version-tag current">v3 · Current</span>
+                  <div class="version-name">Avocado Toast v3</div>
+                  <div class="version-by">Updated by Keith Tan · 10 Jun 2026</div>
+                  <div class="version-desc">Added Hollandaise Sauce as a sub-preparation. Updated avocado waste % to 20%.</div>
+                </div>
+              </div>
+              <div class="version-item">
+                <div class="version-meta">
+                  <span class="version-tag old">v2</span>
+                  <div class="version-name">Avocado Toast v2</div>
+                  <div class="version-by">Updated by Sarah Chen · 2 Apr 2026</div>
+                  <div class="version-desc">Changed bread from ciabatta to sourdough. Reduced micro herb portion 8g → 5g.</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="showToast('Restoring v2…')"><i class="ti ti-restore"></i>Restore</button>
+              </div>
+              <div class="version-item">
+                <div class="version-meta">
+                  <span class="version-tag old">v1</span>
+                  <div class="version-name">Avocado Toast v1</div>
+                  <div class="version-by">Created by Keith Tan · 15 Jan 2026</div>
+                  <div class="version-desc">Initial recipe.</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="showToast('Restoring v1…')"><i class="ti ti-restore"></i>Restore</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity log -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-activity"></i>Activity log</span>
+            </div>
+            <div class="card-body">
+              <div class="activity-list">
+                <div class="activity-item">
+                  <div class="activity-dot ok"></div>
+                  <div>
+                    <div class="activity-text"><strong>Pushed to 8 outlets</strong> by Keith Tan — CBD Cluster + Beachside groups</div>
+                    <div class="activity-time">12 Jun 2026 · 07:30am</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot ok"></div>
+                  <div>
+                    <div class="activity-text"><strong>Recipe locked</strong> by Keith Tan — outlet editing disabled</div>
+                    <div class="activity-time">10 Jun 2026 · 03:15pm</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot warn"></div>
+                  <div>
+                    <div class="activity-text"><strong>Version updated to v3</strong> — Hollandaise added as sub-preparation; avocado waste % revised</div>
+                    <div class="activity-time">10 Jun 2026 · 03:10pm</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot ok"></div>
+                  <div>
+                    <div class="activity-text"><strong>Ingredient price updated</strong> — Avocado: $1.80 → $2.00 (invoice sync from Sydney Butchers Co.)</div>
+                    <div class="activity-time">5 Jun 2026 · 09:00am</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /tab-settings -->
+
+      </div><!-- /main col -->
+
+      <!-- ── Aside ── -->
+      <aside class="aside-stack">
+
+        <!-- Recipe info card -->
+        <div class="card">
+          <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Recipe info</span></div>
+          <div class="card-body">
+            <div class="meta-kv">
+              <div class="meta-row">
+                <span class="meta-label">Type</span>
+                <span class="recipe-type-badge finished" style="font-size:10px;padding:2px 7px;"><i class="ti ti-chef-hat" style="font-size:9px;"></i>Finished</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Status</span>
+                <span class="status-pill active" style="font-size:11px;">Active</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Lock</span>
+                <span class="pill-lock" style="font-size:11px;padding:2px 8px;"><i class="ti ti-lock" style="font-size:11px;"></i>Locked</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Portions</span>
+                <span class="meta-val">1 per batch</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Outlets</span>
+                <span class="meta-val">8 outlets</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Version</span>
+                <span class="meta-val">v3 (current)</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Last updated</span>
+                <span class="meta-val">10 Jun 2026</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Margin agent card -->
+        <div class="card" style="border-color:color-mix(in srgb, var(--fern) 25%, transparent);">
+          <div class="card-head" style="background:color-mix(in srgb, var(--fern) 6%, transparent);border-color:color-mix(in srgb, var(--fern) 15%, transparent);">
+            <span class="card-title" style="font-size:13px;">
+              <i class="ti ti-robot" style="color:var(--fern);"></i>
+              Margin agent · Sloan
+            </span>
+            <span style="font-size:11px;font-weight:600;color:var(--fern);">On track</span>
+          </div>
+          <div class="card-body" style="font-size:12px;color:var(--text-soft);line-height:1.6;display:flex;flex-direction:column;gap:var(--space-md);">
+            <p>Food cost at <strong style="color:var(--text);">34.7%</strong> — above your 28% target. Avocado price increased +11% this month. Consider reviewing the base POS selling price.</p>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('costing');showToast('Showing costing details…')"><i class="ti ti-calculator"></i>Review costing</button>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="danger-zone">
+          <div class="danger-title"><i class="ti ti-alert-triangle" style="font-size:14px;"></i> Danger zone</div>
+          <div class="danger-desc">Archiving removes this recipe from active menus at all outlets. Active orders are not affected. The recipe can be restored from archive at any time.</div>
+          <button class="btn btn-danger btn-sm" onclick="showToast('Recipe archived.')"><i class="ti ti-archive"></i>Archive recipe</button>
+        </div>
+
+      </aside>
+    </div>
+
+  </div><!-- /.napp-canvas -->
+</div><!-- /.page-body -->
+
+<div id="toast-wrap"></div>
+
+<script src="../shared/shell.js?v=5" data-active="recipes"></script>
+<script>
+  NomniShell.init('Avocado Toast v3');
+
+  // ─── Tab switching ───────────────────────────────────────────────────────────
+  function switchTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    document.querySelectorAll('.tab-nav-btn').forEach(b => {
+      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
     });
-  </script>
+  }
+
+  // ─── Labour costing ──────────────────────────────────────────────────────────
+  const ING_COST = 6.25;
+
+  function calcLabour() {
+    const rate = parseFloat(document.getElementById('hourly-rate').value) || 0;
+    const prep  = parseFloat(document.getElementById('prep-min').value)  || 0;
+    const cook  = parseFloat(document.getElementById('cook-min').value)  || 0;
+    const plate = parseFloat(document.getElementById('plate-min').value) || 0;
+
+    ['prep','cook','plate'].forEach(k => {
+      document.getElementById(`${k}-rate-display`).textContent = rate.toFixed(0);
+    });
+
+    const prepCost  = (prep  / 60) * rate;
+    const cookCost  = (cook  / 60) * rate;
+    const plateCost = (plate / 60) * rate;
+    const labourTotal = prepCost + cookCost + plateCost;
+
+    document.getElementById('prep-cost').textContent  = '$' + prepCost.toFixed(2);
+    document.getElementById('cook-cost').textContent  = '$' + cookCost.toFixed(2);
+    document.getElementById('plate-cost').textContent = '$' + plateCost.toFixed(2);
+    document.getElementById('labour-total').textContent = '$' + labourTotal.toFixed(2);
+
+    calcMargin(labourTotal);
+  }
+
+  function calcMargin(labourCostOverride) {
+    const labourText = document.getElementById('labour-total').textContent;
+    const labourCost = labourCostOverride !== undefined
+      ? labourCostOverride
+      : parseFloat(labourText.replace('$','')) || 0;
+
+    const prime   = ING_COST + labourCost;
+    const sellStr = document.getElementById('sell-price').value;
+    const sell    = parseFloat(sellStr) || 0;
+    const targetFC = parseFloat(document.getElementById('target-fc').value) || 0;
+
+    document.getElementById('out-ing-cost').textContent   = '$' + ING_COST.toFixed(2);
+    document.getElementById('out-labour-cost').textContent = '$' + labourCost.toFixed(2);
+    document.getElementById('out-prime-cost').textContent  = '$' + prime.toFixed(2);
+
+    const fcPct     = sell > 0 ? (ING_COST / sell * 100) : 0;
+    const primePct  = sell > 0 ? (prime / sell * 100)    : 0;
+    const marginPct = sell > 0 ? ((sell - prime) / sell * 100) : 0;
+
+    const fcEl = document.getElementById('out-fc-pct');
+    fcEl.textContent = fcPct.toFixed(1) + '%';
+    fcEl.style.color = fcPct > targetFC ? 'var(--status-warn-fg)' : 'var(--status-ok-fg)';
+
+    document.getElementById('out-prime-pct').textContent = primePct.toFixed(1) + '%';
+    document.getElementById('out-margin').textContent    = marginPct.toFixed(1) + '%';
+    document.getElementById('out-margin').style.color    = marginPct < 20 ? 'var(--status-risk-fg)' : (marginPct > 35 ? 'var(--status-ok-fg)' : 'var(--text)');
+
+    // Update KPI strip
+    document.getElementById('kpi-prime-cost').textContent = '$' + prime.toFixed(2);
+    document.getElementById('kpi-fc-pct').textContent     = fcPct.toFixed(1) + '%';
+    document.getElementById('kpi-sell-price').textContent = sell > 0 ? '$' + sell.toFixed(2) : '—';
+    document.getElementById('kpi-margin').textContent     = marginPct.toFixed(1) + '%';
+
+    // Update target display
+    document.getElementById('target-pct-display').textContent = targetFC + '%';
+    document.getElementById('target-result').style.display = 'none';
+  }
+
+  function calcTargetSellPrice() {
+    const targetFC = parseFloat(document.getElementById('target-fc').value) || 0;
+    if (targetFC <= 0 || targetFC >= 100) return;
+    const targetSell = ING_COST / (targetFC / 100);
+    const el = document.getElementById('target-result');
+    el.innerHTML = `Sell at <strong>$${targetSell.toFixed(2)}</strong> to hit ${targetFC}% food cost (ingredient cost only)`;
+    el.style.display = 'block';
+  }
+
+  // ─── Outlet pricing overrides ────────────────────────────────────────────────
+  function updateEffective(input) {
+    const val = parseFloat(input.value);
+    const row = input.closest('tr');
+    const effectiveEl = row.querySelector('.pricing-effective');
+    const syncedEl    = row.querySelector('.pricing-synced');
+    if (!isNaN(val) && val > 0) {
+      effectiveEl.textContent = '$' + val.toFixed(2);
+      effectiveEl.style.color = 'var(--text-accent)';
+    } else {
+      effectiveEl.textContent = syncedEl.textContent;
+      effectiveEl.style.color = '';
+    }
+  }
+
+  // ─── Outlet assignment tree ──────────────────────────────────────────────────
+  const OUTLET_GROUPS = [
+    { id: 'g1', name: 'CBD Cluster',  outlets: ['Harbour Kitchen', 'Darling St Bistro', 'The CBD Rooftop', 'Central Brasserie'] },
+    { id: 'g2', name: 'Beachside',    outlets: ['Bondi Rooftop', 'Manly Wharf Bar', 'Coogee Bay Dining'] },
+    { id: 'g3', name: 'Suburban',     outlets: ['Parramatta Table', 'Surry Hills Social', 'Newtown Kitchen', 'Leichhardt Trattoria'] },
+  ];
+  const outletAccess = {
+    g1: new Set(['Harbour Kitchen','Darling St Bistro','The CBD Rooftop','Central Brasserie']),
+    g2: new Set(['Bondi Rooftop','Manly Wharf Bar']),
+    g3: new Set(),
+  };
+  const outletExpanded = new Set();
+
+  function renderOutletTree() {
+    const tree = document.getElementById('outlet-tree');
+    tree.innerHTML = '';
+    OUTLET_GROUPS.forEach(group => {
+      const isExpanded = outletExpanded.has(group.id);
+      const sel = outletAccess[group.id];
+      const total = group.outlets.length;
+      const count = sel.size;
+      let stateLabel, stateClass;
+      if (count === 0)         { stateLabel = 'None';        stateClass = 'group-state-none'; }
+      else if (count === total){ stateLabel = 'All outlets'; stateClass = 'group-state-all'; }
+      else                     { stateLabel = 'Custom';      stateClass = 'group-state-some'; }
+
+      const groupRow = document.createElement('div');
+      groupRow.className = 'group-row';
+      groupRow.innerHTML = `
+        <i class="ti ti-chevron-right group-chevron ${isExpanded ? 'open' : ''}"></i>
+        <span class="group-name">${group.name}</span>
+        <span class="group-outlet-count">${total} outlets</span>
+        <span class="group-state-label ${stateClass}">${stateLabel}</span>
+        <input type="checkbox" class="group-toggle" id="gcb-${group.id}"
+          ${count === total ? 'checked' : ''}
+          onclick="groupToggle(event, '${group.id}')"/>`;
+      groupRow.addEventListener('click', e => {
+        if (e.target.classList.contains('group-toggle')) return;
+        outletExpanded.has(group.id) ? outletExpanded.delete(group.id) : outletExpanded.add(group.id);
+        renderOutletTree();
+      });
+      tree.appendChild(groupRow);
+
+      const cb = groupRow.querySelector(`#gcb-${group.id}`);
+      if (count > 0 && count < total) cb.indeterminate = true;
+
+      const outletList = document.createElement('div');
+      outletList.className = `outlet-list ${isExpanded ? 'open' : ''}`;
+      group.outlets.forEach(name => {
+        const row = document.createElement('div');
+        row.className = 'outlet-row';
+        const slug = name.replace(/\s+/g, '-');
+        row.innerHTML = `
+          <input type="checkbox" class="outlet-check" id="oc-${slug}"
+            ${sel.has(name) ? 'checked' : ''}
+            onchange="outletToggle('${group.id}', '${name}', this)"/>
+          <label class="outlet-name" for="oc-${slug}" style="cursor:pointer;">${name}</label>`;
+        outletList.appendChild(row);
+      });
+      tree.appendChild(outletList);
+    });
+  }
+
+  function groupToggle(e, gid) {
+    e.stopPropagation();
+    const group = OUTLET_GROUPS.find(g => g.id === gid);
+    outletAccess[gid] = e.target.checked ? new Set(group.outlets) : new Set();
+    renderOutletTree();
+  }
+
+  function outletToggle(gid, name, cb) {
+    cb.checked ? outletAccess[gid].add(name) : outletAccess[gid].delete(name);
+    renderOutletTree();
+    if (outletExpanded.has(gid)) outletExpanded.add(gid);
+  }
+
+  // ─── Toast ───────────────────────────────────────────────────────────────────
+  function showToast(msg) {
+    const wrap = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;white-space:nowrap;';
+    t.innerHTML = `<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>${msg}`;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  // ─── Init ─────────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    renderOutletTree();
+    calcLabour();
+  });
+</script>
 </body>
 </html>
