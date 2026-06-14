@@ -866,6 +866,101 @@
     @media (max-width: 480px) {
       .sessions-kpi { grid-template-columns: 1fr; }
     }
+
+    /* ── Record Production drawer ── */
+    .prod-drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(14,55,39,0.22);
+      z-index: 60;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .prod-drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .prod-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 520px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      z-index: 61;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.22s ease;
+    }
+    .prod-drawer.open { transform: translateX(0); }
+    .prod-drawer-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-xl) var(--space-2xl);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .prod-drawer-title { font-size: 18px; font-weight: 700; color: var(--text); }
+    .prod-drawer-sub { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+    .prod-drawer-close {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: var(--radius-md);
+      background: none; border: none; color: var(--text-soft);
+      cursor: pointer; font-size: 18px;
+      transition: background 0.1s;
+    }
+    .prod-drawer-close:hover { background: var(--surface-soft); color: var(--text); }
+    .prod-drawer-body {
+      flex: 1; overflow-y: auto;
+      padding: var(--space-2xl);
+      display: flex; flex-direction: column; gap: var(--space-xl);
+    }
+    .prod-field { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .prod-field label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .prod-field-input {
+      height: var(--control-h);
+      padding-inline: var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit;
+      color: var(--text); background: var(--surface);
+      outline: none; transition: border-color 0.12s;
+    }
+    .prod-field-input:focus { border-color: var(--border-focus); }
+    .prod-field-input::placeholder { color: var(--text-soft); }
+    .prod-field select.prod-field-input { cursor: pointer; }
+    .prod-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .prod-ing-preview {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      display: flex; flex-direction: column; gap: var(--space-sm);
+    }
+    .prod-ing-preview-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-soft);
+      margin-bottom: var(--space-xs);
+    }
+    .prod-ing-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; color: var(--text);
+      padding: var(--space-xs) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .prod-ing-row:last-child { border-bottom: none; }
+    .prod-ing-name { font-weight: 500; }
+    .prod-ing-qty { color: var(--status-risk-fg); font-weight: 600; font-feature-settings: 'tnum' 1; font-size: 12px; }
+    .prod-notice {
+      display: flex; align-items: flex-start; gap: var(--space-sm);
+      padding: var(--space-md);
+      background: color-mix(in srgb, var(--status-warn-bg) 60%, transparent);
+      border: 1px solid var(--status-warn-fg);
+      border-radius: var(--radius-sm);
+      font-size: 12px; color: var(--text);
+    }
+    .prod-notice i { color: var(--status-warn-fg); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .prod-drawer-footer {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: var(--space-sm);
+      padding: var(--space-lg) var(--space-2xl);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -926,6 +1021,7 @@
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('variance')"><i class="ti ti-chart-dots" aria-hidden="true"></i>Variance</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('transfers')"><i class="ti ti-transfer" aria-hidden="true"></i>Transfers</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('waste')"><i class="ti ti-trash-x" aria-hidden="true"></i>Waste</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('production')"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>Production</button>
       </div>
 
       <!-- ══ Panel: Master items — moved to items.html ══ -->
@@ -1287,6 +1383,66 @@
         </div>
       </div>
 
+      <!-- ══ Panel: Production ══ -->
+      <div class="inv-panel" id="panel-production">
+        <div class="sub-card">
+          <div class="sub-card-title">Production log</div>
+          <p class="sub-card-sub">Record completed production batches. Each entry deducts raw ingredients from inventory and adds the finished batch quantity to stock.</p>
+          <button class="btn btn-primary" style="margin-bottom:var(--space-lg);" onclick="openProductionDrawer()"><i class="ti ti-plus"></i>Record production</button>
+          <table class="data-table" id="production-table">
+            <thead>
+              <tr>
+                <th>Recipe</th>
+                <th>Outlet</th>
+                <th style="text-align:right">Batches</th>
+                <th>Yield</th>
+                <th>Ingredients deducted</th>
+                <th>Recorded by</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <p class="cell-name">Chicken Stock</p>
+                  <p style="font-size:11px;color:var(--text-soft);margin-top:1px;">Production batch</p>
+                </td>
+                <td>Surry Hills Social</td>
+                <td class="tabular" style="text-align:right">2</td>
+                <td class="tabular">20 L</td>
+                <td style="font-size:12px;color:var(--text-soft);">Chicken carcass 4 kg · Onion 0.8 kg · Celery 0.4 kg · Carrot 0.4 kg</td>
+                <td>Sarah Kim</td>
+                <td class="cell-timestamp">Today 9:14am</td>
+              </tr>
+              <tr>
+                <td>
+                  <p class="cell-name">Brioche Bun Batch</p>
+                  <p style="font-size:11px;color:var(--text-soft);margin-top:1px;">Production batch</p>
+                </td>
+                <td>Darling Street Bistro</td>
+                <td class="tabular" style="text-align:right">1</td>
+                <td class="tabular">48 buns</td>
+                <td style="font-size:12px;color:var(--text-soft);">Bread flour 1.8 kg · Butter 0.3 kg · Eggs 8 each · Yeast 14 g · Milk 0.24 L</td>
+                <td>James Nguyen</td>
+                <td class="cell-timestamp">Yesterday 7:30am</td>
+              </tr>
+              <tr>
+                <td>
+                  <p class="cell-name">Chicken Stock</p>
+                  <p style="font-size:11px;color:var(--text-soft);margin-top:1px;">Production batch</p>
+                </td>
+                <td>Bondi Rooftop</td>
+                <td class="tabular" style="text-align:right">3</td>
+                <td class="tabular">30 L</td>
+                <td style="font-size:12px;color:var(--text-soft);">Chicken carcass 6 kg · Onion 1.2 kg · Celery 0.6 kg · Carrot 0.6 kg</td>
+                <td>Keith Tan</td>
+                <td class="cell-timestamp">13 Jun 2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Activity timeline -->
       <div class="timeline-card">
         <div class="timeline-heading">Recent activity</div>
@@ -1395,6 +1551,87 @@
     </div>
   </aside>
 
+  <!-- Record Production drawer -->
+  <div class="prod-drawer-backdrop" id="prod-drawer-backdrop" onclick="closeProductionDrawer()"></div>
+  <aside class="prod-drawer" id="prod-drawer" role="dialog" aria-modal="true" aria-label="Record production">
+    <div class="prod-drawer-head">
+      <div>
+        <p class="prod-drawer-title">Record production</p>
+        <p class="prod-drawer-sub">Ingredients will be deducted from inventory on confirm.</p>
+      </div>
+      <button class="prod-drawer-close" onclick="closeProductionDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="prod-drawer-body">
+
+      <!-- Recipe select -->
+      <div class="prod-field">
+        <label for="prod-recipe">Production batch recipe</label>
+        <select class="prod-field-input" id="prod-recipe" onchange="updateIngPreview()">
+          <option value="">Select a recipe…</option>
+          <option value="chicken-stock">Chicken Stock (yields 10 L per batch)</option>
+          <option value="brioche-bun">Brioche Bun Batch (yields 48 buns per batch)</option>
+        </select>
+      </div>
+
+      <!-- Outlet + batches -->
+      <div class="prod-two-col">
+        <div class="prod-field">
+          <label for="prod-outlet">Outlet</label>
+          <select class="prod-field-input" id="prod-outlet">
+            <option value="">Select outlet…</option>
+            <option>Surry Hills Social</option>
+            <option>Darling Street Bistro</option>
+            <option>Bondi Rooftop</option>
+            <option>Manly Wharf Bar</option>
+          </select>
+        </div>
+        <div class="prod-field">
+          <label for="prod-batches">Number of batches</label>
+          <input class="prod-field-input" type="number" id="prod-batches" value="1" min="1" max="99" onchange="updateIngPreview()"/>
+        </div>
+      </div>
+
+      <!-- Date + recorded by -->
+      <div class="prod-two-col">
+        <div class="prod-field">
+          <label for="prod-date">Production date</label>
+          <input class="prod-field-input" type="date" id="prod-date"/>
+        </div>
+        <div class="prod-field">
+          <label for="prod-by">Recorded by</label>
+          <select class="prod-field-input" id="prod-by">
+            <option>Keith Tan</option>
+            <option>Sarah Kim</option>
+            <option>James Nguyen</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="prod-field">
+        <label for="prod-notes">Notes (optional)</label>
+        <input class="prod-field-input" type="text" id="prod-notes" placeholder="e.g. Extra batch for weekend service"/>
+      </div>
+
+      <!-- Ingredient deduction preview -->
+      <div class="prod-ing-preview" id="prod-ing-preview" style="display:none;">
+        <p class="prod-ing-preview-label">Ingredients to deduct</p>
+        <div id="prod-ing-rows"></div>
+      </div>
+
+      <!-- Warning notice -->
+      <div class="prod-notice" id="prod-notice" style="display:none;">
+        <i class="ti ti-alert-triangle"></i>
+        <span>Confirming will immediately deduct these ingredients from the selected outlet's inventory. This cannot be undone — log a waste entry if you need to reverse it.</span>
+      </div>
+
+    </div>
+    <div class="prod-drawer-footer">
+      <button class="btn btn-outline" onclick="closeProductionDrawer()">Cancel</button>
+      <button class="btn btn-primary" id="prod-confirm-btn" disabled onclick="confirmProduction()"><i class="ti ti-check"></i>Confirm production</button>
+    </div>
+  </aside>
+
   <!-- Remove item confirm dialog -->
   <dialog id="remove-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
     <div class="dialog-inner">
@@ -1449,7 +1686,7 @@
       if (e.target === e.currentTarget) closeRemoveDialog();
     });
 
-    /* Tabs (IN-6/7/9/10) */
+    /* Tabs */
     function switchTab(id) {
       document.querySelectorAll('.inv-panel').forEach(p => p.classList.remove('active'));
       document.getElementById('panel-' + id)?.classList.add('active');
@@ -1458,6 +1695,127 @@
         t.classList.toggle('active', !!on);
         t.setAttribute('aria-selected', on ? 'true' : 'false');
       });
+      history.replaceState(null, '', '#' + id);
+    }
+
+    // Hash routing — open correct tab on page load (e.g. from recipes.html "Record production" link)
+    document.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && document.getElementById('panel-' + hash)) {
+        switchTab(hash);
+      }
+    });
+
+    /* ── Production drawer ── */
+    const PROD_RECIPES = {
+      'chicken-stock': {
+        name: 'Chicken Stock',
+        yieldPer: '10 L',
+        ingredients: [
+          { name: 'Chicken carcass', qtyPer: 2, uom: 'kg' },
+          { name: 'Brown onion', qtyPer: 0.4, uom: 'kg' },
+          { name: 'Celery', qtyPer: 0.2, uom: 'kg' },
+          { name: 'Carrot', qtyPer: 0.2, uom: 'kg' },
+          { name: 'Bay leaves', qtyPer: 4, uom: 'each' },
+        ]
+      },
+      'brioche-bun': {
+        name: 'Brioche Bun Batch',
+        yieldPer: '48 buns',
+        ingredients: [
+          { name: 'Bread flour', qtyPer: 1.8, uom: 'kg' },
+          { name: 'Unsalted butter', qtyPer: 0.3, uom: 'kg' },
+          { name: 'Eggs', qtyPer: 8, uom: 'each' },
+          { name: 'Instant yeast', qtyPer: 14, uom: 'g' },
+          { name: 'Whole milk', qtyPer: 240, uom: 'mL' },
+        ]
+      }
+    };
+
+    function openProductionDrawer() {
+      // Pre-fill today's date
+      const d = new Date();
+      const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      document.getElementById('prod-date').value = iso;
+      document.getElementById('prod-recipe').value = '';
+      document.getElementById('prod-batches').value = 1;
+      document.getElementById('prod-notes').value = '';
+      document.getElementById('prod-ing-preview').style.display = 'none';
+      document.getElementById('prod-notice').style.display = 'none';
+      document.getElementById('prod-confirm-btn').disabled = true;
+      document.getElementById('prod-drawer-backdrop').classList.add('open');
+      document.getElementById('prod-drawer').classList.add('open');
+    }
+
+    function closeProductionDrawer() {
+      document.getElementById('prod-drawer-backdrop').classList.remove('open');
+      document.getElementById('prod-drawer').classList.remove('open');
+    }
+
+    function updateIngPreview() {
+      const recipe = document.getElementById('prod-recipe').value;
+      const batches = Math.max(1, parseInt(document.getElementById('prod-batches').value) || 1);
+      const preview = document.getElementById('prod-ing-preview');
+      const notice = document.getElementById('prod-notice');
+      const confirmBtn = document.getElementById('prod-confirm-btn');
+      const rows = document.getElementById('prod-ing-rows');
+
+      if (!recipe || !PROD_RECIPES[recipe]) {
+        preview.style.display = 'none';
+        notice.style.display = 'none';
+        confirmBtn.disabled = true;
+        return;
+      }
+
+      const data = PROD_RECIPES[recipe];
+      rows.innerHTML = data.ingredients.map(ing => {
+        const total = ing.qtyPer * batches;
+        const qty = total % 1 === 0 ? total : total.toFixed(1);
+        return `<div class="prod-ing-row">
+          <span class="prod-ing-name">${ing.name}</span>
+          <span class="prod-ing-qty">−${qty} ${ing.uom}</span>
+        </div>`;
+      }).join('');
+
+      // Update preview label to show yield
+      preview.querySelector('.prod-ing-preview-label').textContent =
+        `Ingredients to deduct · Yield: ${batches} × ${data.yieldPer}`;
+
+      preview.style.display = 'flex';
+      notice.style.display = 'flex';
+      confirmBtn.disabled = false;
+    }
+
+    function confirmProduction() {
+      const recipe = document.getElementById('prod-recipe').value;
+      const batches = parseInt(document.getElementById('prod-batches').value) || 1;
+      const outlet = document.getElementById('prod-outlet').value || 'outlet';
+      const data = PROD_RECIPES[recipe];
+      const recipeName = data ? data.name : 'recipe';
+      const yieldDesc = data ? `${batches} × ${data.yieldPer}` : '';
+
+      closeProductionDrawer();
+
+      // Add row to production log table
+      const tbody = document.querySelector('#production-table tbody');
+      if (tbody) {
+        const ingSummary = data ? data.ingredients.map(i => `${i.name} ${(i.qtyPer*batches).toFixed(1)} ${i.uom}`).join(' · ') : '';
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><p class="cell-name">${recipeName}</p><p style="font-size:11px;color:var(--text-soft);margin-top:1px;">Production batch</p></td>
+          <td>${outlet}</td>
+          <td class="tabular" style="text-align:right">${batches}</td>
+          <td class="tabular">${yieldDesc}</td>
+          <td style="font-size:12px;color:var(--text-soft);">${ingSummary}</td>
+          <td>Keith Tan</td>
+          <td class="cell-timestamp">Today ${timeStr}</td>`;
+        tbody.insertBefore(tr, tbody.firstChild);
+      }
+
+      invToast(`Production recorded — ${yieldDesc} of ${recipeName} added to ${outlet || 'inventory'}`);
+      addInvActivity(`Production recorded: ${batches}× ${recipeName} at ${outlet} · Inventory updated`, 'Keith Tan');
     }
 
     /* Agent resolve */
