@@ -430,6 +430,118 @@
     /* ─── Section separator ─── */
     .section-sep { height: 1px; background: var(--border); margin: var(--space-xl) 0; }
 
+    /* ─── Mapping drawer ─── */
+    .drawer-footer {
+      padding: var(--space-lg) var(--space-xl);
+      border-top: 1px solid var(--border);
+      display: flex; gap: var(--space-sm);
+      position: sticky; bottom: 0;
+      background: var(--surface); z-index: 1;
+    }
+
+    .md-section { margin-bottom: var(--space-2xl); }
+    .md-section-title {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-soft); margin-bottom: var(--space-md);
+      display: flex; align-items: center; gap: var(--space-sm);
+    }
+    .md-section-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 4px;
+      background: var(--border); color: var(--text-soft);
+      border-radius: 9px; font-size: 11px; font-weight: 700;
+    }
+
+    .md-type-toggle {
+      display: flex; background: var(--surface-soft);
+      border: 1px solid var(--border); border-radius: 7px;
+      padding: 3px; gap: 2px; margin-bottom: var(--space-lg); width: fit-content;
+    }
+    .md-type-btn {
+      padding: 5px 16px; border-radius: 5px;
+      font-size: 13px; font-weight: 500;
+      border: none; cursor: pointer;
+      background: transparent; color: var(--text-soft);
+      font-family: inherit; transition: all 120ms;
+    }
+    .md-type-btn.active {
+      background: var(--surface); color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .md-search {
+      width: 100%; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: 7px;
+      font-size: 13px; font-family: inherit;
+      background: var(--surface); color: var(--text);
+      outline: none; box-sizing: border-box;
+    }
+    .md-search:focus { border-color: var(--text-accent); }
+
+    .md-notice {
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: 8px; font-size: 13px; color: var(--text-soft);
+      font-style: italic; margin-top: var(--space-md);
+    }
+
+    .md-mod-group { margin-bottom: var(--space-xl); }
+    .md-group-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-soft); margin-bottom: var(--space-sm);
+      padding-bottom: var(--space-xs); border-bottom: 1px solid var(--border);
+    }
+
+    .md-mod-row {
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 8px; margin-bottom: 6px;
+    }
+    .md-mod-row.unset {
+      border-color: #F59E0B; background: #FFFBEB;
+      border-left: 3px solid #F59E0B;
+    }
+
+    .md-mod-name {
+      font-size: 13px; font-weight: 500; color: var(--text);
+      margin-bottom: 7px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .md-unset-warn {
+      font-size: 11px; font-weight: 600; color: #D97706;
+      display: flex; align-items: center; gap: 3px;
+    }
+
+    .md-action-sel {
+      width: 100%; padding: 6px 10px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: 12px; font-family: inherit;
+      background: var(--surface); color: var(--text);
+      outline: none; cursor: pointer; margin-bottom: 0;
+    }
+    .md-action-sel.unset-sel { border-color: #F59E0B; background: #FFFDF5; }
+
+    .md-detail-row {
+      display: flex; align-items: center;
+      gap: 6px; flex-wrap: wrap; margin-top: 8px;
+    }
+    .md-detail-label {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-soft); white-space: nowrap;
+    }
+    .md-drawer-input {
+      padding: 5px 9px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: 12px; font-family: inherit;
+      background: var(--surface); color: var(--text); outline: none;
+    }
+    .md-drawer-input:focus { border-color: var(--text-accent); }
+    .md-drawer-input.mono  { font-family: 'IBM Plex Mono', monospace; }
+    .md-arrow { font-size: 13px; color: var(--text-soft); }
+
     /* ─── Responsive ─── */
     @media (max-width: 1100px) {
       .summary-strip     { grid-template-columns: repeat(2, 1fr); }
@@ -690,315 +802,82 @@
               <th>PLU</th>
               <th>Category</th>
               <th style="text-align:right">Daily Sales</th>
-              <th>Maps to</th>
               <th>Target</th>
               <th>Modifiers</th>
               <th>Status</th>
-              <th style="width:40px"></th>
             </tr>
           </thead>
           <tbody>
-
-            <!-- ── Flat White — fully mapped ── -->
-            <tr class="item-row" onclick="toggleMods('flat-white',this)">
+            <tr class="item-row" onclick="openMappingDrawer('flat-white')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Flat White</strong></td>
               <td><span class="plu">1001</span></td>
               <td style="color:var(--text-soft)">Beverages</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">145</td>
-              <td><span class="type-badge recipe">Recipe</span></td>
-              <td>Flat White</td>
-              <td><button class="expand-btn" onclick="event.stopPropagation();toggleMods('flat-white',this.closest('tr'))"><span class="exp-arrow" id="arr-flat-white">▶</span> 2 groups · 5 mods</button></td>
+              <td><span class="type-badge recipe">Recipe</span> Flat White</td>
+              <td style="font-size:12px;color:var(--text-soft)">2 groups · 5 mods</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
             </tr>
-            <tr class="mod-tree-row" id="mods-flat-white" style="display:none">
-              <td colspan="10">
-                <div class="mod-tree">
-
-                  <div class="mod-group">
-                    <div class="mod-group-name">Milk</div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Full Cream</div><div class="mod-default">Default — no change</div></div>
-                      <span class="action-badge default">Default</span>
-                      <div class="mod-detail">—</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Oat Milk</div></div>
-                      <span class="action-badge substitute">Substitute ⇄</span>
-                      <div class="mod-detail"><strong>Full cream milk</strong> → <strong>Oat milk</strong></div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Almond Milk</div></div>
-                      <span class="action-badge substitute">Substitute ⇄</span>
-                      <div class="mod-detail"><strong>Full cream milk</strong> → <strong>Almond milk</strong></div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">No Milk</div></div>
-                      <span class="action-badge remove">Remove −</span>
-                      <div class="mod-detail">Remove <strong>Full cream milk</strong> from depletion</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                  </div>
-
-                  <div class="mod-group">
-                    <div class="mod-group-name">Extras</div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Extra Shot</div></div>
-                      <span class="action-badge multiply">Multiply ×</span>
-                      <div class="mod-detail"><strong>Espresso</strong> × 2 (double depletion)</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Extra Sugar</div></div>
-                      <span class="action-badge ignored">Ignored</span>
-                      <div class="mod-detail">Non-inventory — no depletion</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                  </div>
-
-                </div>
-              </td>
-            </tr>
-
-            <!-- ── Avocado Toast — fully mapped ── -->
-            <tr class="item-row" onclick="toggleMods('avo-toast',this)">
+            <tr class="item-row" onclick="openMappingDrawer('avo-toast')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Avocado Toast</strong></td>
               <td><span class="plu">2003</span></td>
               <td style="color:var(--text-soft)">Mains</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">52</td>
-              <td><span class="type-badge recipe">Recipe</span></td>
-              <td>Avocado Toast</td>
-              <td><button class="expand-btn" onclick="event.stopPropagation();toggleMods('avo-toast',this.closest('tr'))"><span class="exp-arrow" id="arr-avo-toast">▶</span> 3 groups · 6 mods</button></td>
+              <td><span class="type-badge recipe">Recipe</span> Avocado Toast</td>
+              <td style="font-size:12px;color:var(--text-soft)">3 groups · 6 mods</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
             </tr>
-            <tr class="mod-tree-row" id="mods-avo-toast" style="display:none">
-              <td colspan="10">
-                <div class="mod-tree">
-
-                  <div class="mod-group">
-                    <div class="mod-group-name">Size</div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Regular</div><div class="mod-default">Default — no change</div></div>
-                      <span class="action-badge default">Default</span>
-                      <div class="mod-detail">—</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Large</div></div>
-                      <span class="action-badge multiply">Multiply ×</span>
-                      <div class="mod-detail">All recipe ingredients <strong>× 1.5</strong></div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                  </div>
-
-                  <div class="mod-group">
-                    <div class="mod-group-name">Bread</div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Sourdough</div><div class="mod-default">Default — no change</div></div>
-                      <span class="action-badge default">Default</span>
-                      <div class="mod-detail">—</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Gluten-Free</div></div>
-                      <span class="action-badge substitute">Substitute ⇄</span>
-                      <div class="mod-detail"><strong>Sourdough bread</strong> → <strong>GF bread roll</strong></div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">No Bread</div></div>
-                      <span class="action-badge remove">Remove −</span>
-                      <div class="mod-detail">Remove <strong>Sourdough bread</strong> from depletion</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                  </div>
-
-                  <div class="mod-group">
-                    <div class="mod-group-name">Extras</div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Add Poached Egg</div></div>
-                      <span class="action-badge add-on">Add-on +</span>
-                      <div class="mod-detail">Add <strong>Free range egg × 1</strong></div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Add Smoked Salmon</div></div>
-                      <span class="action-badge add-on">Add-on +</span>
-                      <div class="mod-detail">Add <strong>Smoked salmon × 60 g</strong></div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                  </div>
-
-                </div>
-              </td>
-            </tr>
-
-            <!-- ── Chicken Burger — partial (2 mods unset) ── -->
-            <tr class="item-row" onclick="toggleMods('chk-burger',this)">
+            <tr class="item-row" onclick="openMappingDrawer('chk-burger')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Chicken Burger</strong></td>
               <td><span class="plu">2001</span></td>
               <td style="color:var(--text-soft)">Mains</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">34</td>
-              <td><span class="type-badge recipe">Recipe</span></td>
-              <td>Chicken Burger</td>
-              <td><button class="expand-btn" onclick="event.stopPropagation();toggleMods('chk-burger',this.closest('tr'))"><span class="exp-arrow" id="arr-chk-burger">▶</span> <span style="color:#D97706;font-weight:600">2 unset</span></button></td>
+              <td><span class="type-badge recipe">Recipe</span> Chicken Burger</td>
+              <td style="font-size:12px"><span style="color:#D97706;font-weight:600">⚠ 2 unset</span> · 2 groups · 5 mods</td>
               <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
             </tr>
-            <tr class="mod-tree-row" id="mods-chk-burger" style="display:none">
-              <td colspan="10">
-                <div class="mod-tree">
-
-                  <div class="mod-group">
-                    <div class="mod-group-name">Bun</div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Brioche Bun</div><div class="mod-default">Default — no change</div></div>
-                      <span class="action-badge default">Default</span>
-                      <div class="mod-detail">—</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item unset">
-                      <div><div class="mod-name">Gluten-Free Bun</div><div style="font-size:11px;color:#D97706">⚠ Action not set</div></div>
-                      <select class="action-sel" onclick="event.stopPropagation()">
-                        <option value="">— Select action —</option>
-                        <option>Add-on</option>
-                        <option>Remove</option>
-                        <option value="substitute" selected>Substitute</option>
-                        <option>Multiply</option>
-                        <option>Ignore</option>
-                      </select>
-                      <div style="display:flex;gap:6px;align-items:center">
-                        <input type="text" class="inline-input" placeholder="Remove: Brioche bun" onclick="event.stopPropagation()">
-                        <span style="font-size:12px;color:var(--text-soft)">→</span>
-                        <input type="text" class="inline-input" placeholder="Add: GF bun" onclick="event.stopPropagation()">
-                      </div>
-                      <button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Save</button>
-                    </div>
-                    <div class="mod-item unset">
-                      <div><div class="mod-name">No Bun</div><div style="font-size:11px;color:#D97706">⚠ Action not set</div></div>
-                      <select class="action-sel" onclick="event.stopPropagation()">
-                        <option value="">— Select action —</option>
-                        <option>Add-on</option>
-                        <option value="remove" selected>Remove</option>
-                        <option>Substitute</option>
-                        <option>Multiply</option>
-                        <option>Ignore</option>
-                      </select>
-                      <div style="display:flex;gap:6px;align-items:center">
-                        <input type="text" class="inline-input" placeholder="Remove: Brioche bun" onclick="event.stopPropagation()">
-                      </div>
-                      <button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Save</button>
-                    </div>
-                  </div>
-
-                  <div class="mod-group">
-                    <div class="mod-group-name">Extras</div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Add Bacon</div></div>
-                      <span class="action-badge add-on">Add-on +</span>
-                      <div class="mod-detail">Add <strong>Bacon × 2 rashers</strong></div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">No Lettuce</div></div>
-                      <span class="action-badge remove">Remove −</span>
-                      <div class="mod-detail">Remove <strong>Iceberg lettuce</strong> from depletion</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                    <div class="mod-item">
-                      <div><div class="mod-name">Double Patty</div></div>
-                      <span class="action-badge multiply">Multiply ×</span>
-                      <div class="mod-detail"><strong>Chicken thigh</strong> × 2 (200 g → 400 g)</div>
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                    </div>
-                  </div>
-
-                </div>
-              </td>
-            </tr>
-
-            <!-- ── Cappuccino — mapped, no modifiers ── -->
-            <tr class="item-row">
+            <tr class="item-row" onclick="openMappingDrawer('cappuccino')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Cappuccino</strong></td>
               <td><span class="plu">1002</span></td>
               <td style="color:var(--text-soft)">Beverages</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">87</td>
-              <td><span class="type-badge recipe">Recipe</span></td>
-              <td>Cappuccino</td>
-              <td style="color:var(--text-soft);font-size:12px">No modifiers</td>
+              <td><span class="type-badge recipe">Recipe</span> Cappuccino</td>
+              <td style="font-size:12px;color:var(--text-soft)">No modifiers</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
             </tr>
-
-            <!-- ── Smashed Avo — UNMAPPED ── -->
-            <tr class="item-row unmapped-row">
+            <tr class="item-row unmapped-row" onclick="openMappingDrawer('smashed-avo')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td>
-                <strong>Smashed Avo</strong>
-                <span style="font-size:11px;color:#D97706;font-weight:500;margin-left:6px">· Not mapped</span>
-              </td>
+              <td><strong>Smashed Avo</strong></td>
               <td><span class="plu">2005</span></td>
               <td style="color:var(--text-soft)">Mains</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#D97706">52</td>
-              <td onclick="event.stopPropagation()">
-                <select class="action-sel" style="font-size:12px">
-                  <option>Recipe</option>
-                  <option>Item</option>
-                </select>
-              </td>
-              <td onclick="event.stopPropagation()">
-                <input type="text" class="inline-input" style="width:180px" placeholder="Search recipe…">
-              </td>
+              <td style="color:var(--text-soft);font-size:12px;font-style:italic">Not mapped</td>
               <td style="color:var(--text-soft);font-size:12px">—</td>
               <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
-              <td><button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Map</button></td>
             </tr>
-
-            <!-- ── Caesar Salad — UNMAPPED ── -->
-            <tr class="item-row unmapped-row">
+            <tr class="item-row unmapped-row" onclick="openMappingDrawer('caesar')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td>
-                <strong>Caesar Salad</strong>
-                <span style="font-size:11px;color:#D97706;font-weight:500;margin-left:6px">· Not mapped</span>
-              </td>
+              <td><strong>Caesar Salad</strong></td>
               <td><span class="plu">3001</span></td>
               <td style="color:var(--text-soft)">Salads</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#D97706">15</td>
-              <td onclick="event.stopPropagation()">
-                <select class="action-sel" style="font-size:12px">
-                  <option>Recipe</option>
-                  <option>Item</option>
-                </select>
-              </td>
-              <td onclick="event.stopPropagation()">
-                <input type="text" class="inline-input" style="width:180px" placeholder="Search recipe…">
-              </td>
+              <td style="color:var(--text-soft);font-size:12px;font-style:italic">Not mapped</td>
               <td style="color:var(--text-soft);font-size:12px">—</td>
               <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
-              <td><button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Map</button></td>
             </tr>
-
-            <!-- ── Gift Card — IGNORED ── -->
-            <tr class="item-row ignored-row">
+            <tr class="item-row ignored-row" onclick="openMappingDrawer('gift-card')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Gift Card</strong></td>
               <td><span class="plu">4001</span></td>
               <td style="color:var(--text-soft)">Other</td>
               <td style="text-align:right;color:var(--text-soft)">—</td>
-              <td colspan="2" style="color:var(--text-soft);font-size:12px;font-style:italic">Non-inventory · ignored</td>
-              <td>—</td>
+              <td style="color:var(--text-soft);font-size:12px;font-style:italic">Non-inventory · ignored</td>
+              <td style="color:var(--text-soft);font-size:12px">—</td>
               <td><span class="pill neutral">Ignored</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">Restore</button></td>
             </tr>
-
           </tbody>
         </table>
 
@@ -1522,6 +1401,31 @@
 </div>
 
 
+<!-- ══════════════════════════════════════════════
+     MAPPING EDIT DRAWER
+══════════════════════════════════════════════ -->
+<div class="drawer" id="mapping-drawer" style="width:520px">
+  <div class="drawer-header">
+    <div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-soft);margin-bottom:4px">POS Item</div>
+      <div class="drawer-title" id="md-item-name"></div>
+      <div class="drawer-sub" style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span class="plu" id="md-plu"></span>
+        <span id="md-status-pill"></span>
+      </div>
+    </div>
+    <button class="close-btn" onclick="closeMappingDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="md-body">
+    <!-- populated by openMappingDrawer() -->
+  </div>
+  <div class="drawer-footer" id="md-footer">
+    <button class="btn btn-primary" style="flex:1">Save changes</button>
+    <button class="btn btn-secondary" onclick="closeMappingDrawer()">Cancel</button>
+  </div>
+</div>
+
+
 <script src="../shared/shell.js?v=5"></script>
 <script>
   /* ─── State ─── */
@@ -1568,17 +1472,6 @@
   function setFilter(el, filter) {
     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-  }
-
-  /* ─── Modifier tree toggle ─── */
-  function toggleMods(id, row) {
-    const modRow = document.getElementById('mods-' + id);
-    const arrow  = document.getElementById('arr-' + id);
-    if (!modRow) return;
-    const isOpen = modRow.style.display !== 'none';
-    modRow.style.display = isOpen ? 'none' : 'table-row';
-    if (arrow) arrow.classList.toggle('open', !isOpen);
-    row.classList.toggle('expanded', !isOpen);
   }
 
   /* ─── Outlet drawer ─── */
@@ -1639,6 +1532,237 @@
   function closeDrawer() {
     document.getElementById('drawer-overlay').classList.remove('open');
     document.getElementById('outlet-drawer').classList.remove('open');
+    document.getElementById('mapping-drawer').classList.remove('open');
+  }
+
+  /* ─── Mapping edit drawer ─── */
+  const MAPPING_DATA = {
+    'flat-white': {
+      name: 'Flat White', plu: '1001', status: 'mapped',
+      targetType: 'recipe', targetName: 'Flat White',
+      modGroups: [
+        { name: 'Milk Type', mods: [
+          { name: 'Oat Milk',    action: 'substitute', from: 'Full cream milk', to: 'Oat milk' },
+          { name: 'Almond Milk', action: 'substitute', from: 'Full cream milk', to: 'Almond milk' },
+          { name: 'Soy Milk',    action: 'substitute', from: 'Full cream milk', to: 'Soy milk' },
+        ]},
+        { name: 'Size & Extras', mods: [
+          { name: 'Large',      action: 'multiply',  target: 'Whole recipe', multiplier: '1.33' },
+          { name: 'Extra Shot', action: 'add-on',    ingredient: 'Espresso', qty: '30', uom: 'mL' },
+        ]},
+      ]
+    },
+    'avo-toast': {
+      name: 'Avocado Toast', plu: '2003', status: 'mapped',
+      targetType: 'recipe', targetName: 'Avocado Toast',
+      modGroups: [
+        { name: 'Egg Options', mods: [
+          { name: 'Add Poached Egg', action: 'add-on',  ingredient: 'Egg', qty: '1', uom: 'each' },
+          { name: 'No Egg',          action: 'default' },
+        ]},
+        { name: 'Bread', mods: [
+          { name: 'Gluten-Free Bread', action: 'substitute', from: 'Sourdough', to: 'GF sourdough' },
+        ]},
+        { name: 'Extras', mods: [
+          { name: 'Add Bacon',  action: 'add-on',  ingredient: 'Bacon',       qty: '30',  uom: 'g' },
+          { name: 'Add Feta',   action: 'add-on',  ingredient: 'Feta cheese', qty: '25',  uom: 'g' },
+          { name: 'Extra Avo',  action: 'multiply', target: 'Avocado',         multiplier: '1.5' },
+        ]},
+      ]
+    },
+    'chk-burger': {
+      name: 'Chicken Burger', plu: '2001', status: 'partial',
+      targetType: 'recipe', targetName: 'Chicken Burger',
+      modGroups: [
+        { name: 'Bun Options', mods: [
+          { name: 'Gluten-Free Bun', action: 'unset' },
+          { name: 'No Bun',          action: 'unset' },
+        ]},
+        { name: 'Customise', mods: [
+          { name: 'No Fries',    action: 'remove',  ingredient: 'Fries' },
+          { name: 'Extra Patty', action: 'add-on',  ingredient: 'Chicken breast', qty: '180', uom: 'g' },
+          { name: 'No Sauce',    action: 'remove',  ingredient: 'Aioli sauce' },
+        ]},
+      ]
+    },
+    'cappuccino': {
+      name: 'Cappuccino', plu: '1002', status: 'mapped',
+      targetType: 'recipe', targetName: 'Cappuccino',
+      modGroups: []
+    },
+    'smashed-avo': {
+      name: 'Smashed Avo', plu: '2005', status: 'unmapped',
+      targetType: null, targetName: '',
+      modGroups: []
+    },
+    'caesar': {
+      name: 'Caesar Salad', plu: '3001', status: 'unmapped',
+      targetType: null, targetName: '',
+      modGroups: []
+    },
+    'gift-card': {
+      name: 'Gift Card', plu: '4001', status: 'ignored',
+      targetType: null, targetName: '',
+      modGroups: []
+    },
+  };
+
+  function renderModRow(mod) {
+    const isUnset = mod.action === 'unset';
+    const actionOptions = ['default','add-on','remove','substitute','multiply','ignore'].map(a => {
+      const labels = { default:'Default — no change', 'add-on':'Add-on (+)', remove:'Remove (−)',
+                       substitute:'Substitute (⇄)', multiply:'Multiply (×)', ignore:'Ignore' };
+      return `<option value="${a}" ${mod.action===a?'selected':''}>${labels[a]}</option>`;
+    }).join('');
+
+    let detail = '';
+    if (mod.action === 'add-on') {
+      detail = `<div class="md-detail-row">
+        <span class="md-detail-label">Ingredient:</span>
+        <input class="md-drawer-input" style="width:130px" value="${mod.ingredient||''}">
+        <input class="md-drawer-input mono" style="width:48px" value="${mod.qty||''}">
+        <input class="md-drawer-input" style="width:44px" value="${mod.uom||''}">
+      </div>`;
+    } else if (mod.action === 'remove') {
+      detail = `<div class="md-detail-row">
+        <span class="md-detail-label">Remove:</span>
+        <input class="md-drawer-input" style="width:180px" value="${mod.ingredient||''}">
+      </div>`;
+    } else if (mod.action === 'substitute') {
+      detail = `<div class="md-detail-row">
+        <input class="md-drawer-input" style="width:130px" value="${mod.from||''}">
+        <span class="md-arrow">→</span>
+        <input class="md-drawer-input" style="width:130px" value="${mod.to||''}">
+      </div>`;
+    } else if (mod.action === 'multiply') {
+      detail = `<div class="md-detail-row">
+        <span class="md-detail-label">Target:</span>
+        <input class="md-drawer-input" style="width:130px" value="${mod.target||'Whole recipe'}">
+        <span class="md-arrow">×</span>
+        <input class="md-drawer-input mono" style="width:56px" value="${mod.multiplier||'1'}">
+      </div>`;
+    } else if (mod.action === 'default') {
+      detail = `<div class="md-detail-row">
+        <span style="font-size:12px;color:var(--text-soft);font-style:italic">No depletion change for this modifier</span>
+      </div>`;
+    }
+
+    return `<div class="md-mod-row ${isUnset ? 'unset' : ''}">
+      <div class="md-mod-name">
+        ${mod.name}
+        ${isUnset ? '<span class="md-unset-warn">⚠ Action required</span>' : ''}
+      </div>
+      <select class="md-action-sel ${isUnset ? 'unset-sel' : ''}">
+        ${isUnset ? '<option value="" disabled selected>Select action…</option>' : ''}
+        ${actionOptions}
+      </select>
+      ${detail}
+    </div>`;
+  }
+
+  function openMappingDrawer(itemKey) {
+    const item = MAPPING_DATA[itemKey];
+    if (!item) return;
+
+    document.getElementById('md-item-name').textContent = item.name;
+    document.getElementById('md-plu').textContent = item.plu;
+
+    const pillMap = {
+      mapped:   '<span class="pill ok"><span class="pill-dot"></span>Mapped</span>',
+      partial:  '<span class="pill warn"><span class="pill-dot"></span>Partial</span>',
+      unmapped: '<span class="pill warn"><span class="pill-dot"></span>Unmapped</span>',
+      ignored:  '<span class="pill neutral">Ignored</span>',
+    };
+    document.getElementById('md-status-pill').innerHTML = pillMap[item.status] || '';
+
+    const totalMods = item.modGroups.reduce((sum, g) => sum + g.mods.length, 0);
+    const unsetCount = item.modGroups.reduce((sum, g) => sum + g.mods.filter(m => m.action === 'unset').length, 0);
+
+    /* — Mapping section — */
+    let mappingSection = '';
+    if (item.status === 'ignored') {
+      mappingSection = `
+        <div class="md-section">
+          <div class="md-section-title">Mapping</div>
+          <div class="md-notice" style="background:#FEF9F0;border-color:#F59E0B;color:#92400E">
+            This item is marked as <strong>ignored</strong> — no inventory depletion will occur when it sells.
+            This is typical for non-inventory items (gift cards, service charges, etc.).
+          </div>
+          <div style="margin-top:var(--space-lg)">
+            <button class="btn btn-secondary btn-sm">Unignore — map to recipe or item</button>
+          </div>
+        </div>`;
+    } else {
+      const recipeActive = item.targetType === 'recipe' ? 'active' : '';
+      const itemActive   = item.targetType === 'item'   ? 'active' : '';
+      const placeholder  = item.targetType === 'item' ? 'Search internal items…' : 'Search recipes…';
+      mappingSection = `
+        <div class="md-section">
+          <div class="md-section-title">Maps to</div>
+          <div class="md-type-toggle">
+            <button class="md-type-btn ${recipeActive}" onclick="mdToggleType(this,'recipe')">Recipe</button>
+            <button class="md-type-btn ${itemActive}"   onclick="mdToggleType(this,'item')">Internal Item</button>
+          </div>
+          <input class="md-search" id="md-target-search"
+            value="${item.targetName||''}"
+            placeholder="${placeholder}">
+          ${item.status === 'unmapped' ? `
+            <div class="md-notice" style="margin-top:var(--space-md);background:#FEF9F0;border-color:#F59E0B;color:#92400E">
+              ⚠ No target assigned yet — inventory depletion cannot occur until this item is mapped.
+            </div>` : ''}
+        </div>`;
+    }
+
+    /* — Modifiers section — */
+    let modsSection = '';
+    if (item.status !== 'ignored') {
+      if (totalMods === 0) {
+        modsSection = `
+          <div class="md-section">
+            <div class="md-section-title">Modifier Actions</div>
+            <div class="md-notice">No modifier groups found for this POS item. If modifiers are configured in your POS, re-sync to pull them in.</div>
+          </div>`;
+      } else {
+        const unsetBadge = unsetCount > 0
+          ? `<span class="md-section-count" style="background:#FEF3C7;color:#92400E">${unsetCount} unset</span>`
+          : `<span class="md-section-count">${totalMods}</span>`;
+
+        const groupsHtml = item.modGroups.map(g => `
+          <div class="md-mod-group">
+            <div class="md-group-label">${g.name}</div>
+            ${g.mods.map(renderModRow).join('')}
+          </div>`).join('');
+
+        modsSection = `
+          <div class="md-section">
+            <div class="md-section-title">Modifier Actions ${unsetBadge}</div>
+            <p style="font-size:13px;color:var(--text-soft);margin:0 0 var(--space-xl)">
+              Set how each modifier affects ingredient depletion when this item is sold.
+            </p>
+            ${groupsHtml}
+          </div>`;
+      }
+    }
+
+    document.getElementById('md-body').innerHTML = mappingSection + modsSection;
+
+    const footer = document.getElementById('md-footer');
+    footer.style.display = item.status === 'ignored' ? 'none' : 'flex';
+
+    document.getElementById('drawer-overlay').classList.add('open');
+    document.getElementById('mapping-drawer').classList.add('open');
+  }
+
+  function closeMappingDrawer() {
+    document.getElementById('drawer-overlay').classList.remove('open');
+    document.getElementById('mapping-drawer').classList.remove('open');
+  }
+
+  function mdToggleType(btn, type) {
+    btn.closest('.md-type-toggle').querySelectorAll('.md-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const search = document.getElementById('md-target-search');
+    if (search) search.placeholder = type === 'recipe' ? 'Search recipes…' : 'Search internal items…';
   }
 
   /* ─── Override form toggle ─── */
