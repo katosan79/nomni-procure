@@ -361,6 +361,106 @@
 
     /* Toast */
     #toast-wrap { position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center; }
+
+    /* ── Catalogue tab ── */
+    .cat-sync-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      background: color-mix(in srgb, var(--fern) 10%, transparent);
+      color: var(--fern); border: 1px solid color-mix(in srgb, var(--fern) 22%, transparent);
+    }
+    .cat-sync-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--fern);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+    .cat-sync-banner {
+      display: flex; align-items: flex-start; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      background: color-mix(in srgb, var(--fern) 6%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--fern) 14%, transparent);
+      font-size: 13px; color: var(--text-soft);
+    }
+    .cat-sync-banner i { color: var(--fern); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .cat-filter-bar {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      border-bottom: 1px solid var(--border);
+    }
+    .cat-search-wrap {
+      position: relative; flex: 1; max-width: 320px;
+    }
+    .cat-search-wrap i {
+      position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+      color: var(--text-soft); font-size: 14px; pointer-events: none;
+    }
+    .cat-search-input {
+      width: 100%; height: var(--control-h); padding: 0 var(--space-sm) 0 30px;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); color: var(--text); font-size: 13px;
+      outline: none;
+    }
+    .cat-search-input:focus { border-color: var(--border-focus); }
+    .cat-select {
+      height: var(--control-h); padding: 0 var(--space-sm);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); color: var(--text); font-size: 13px;
+      outline: none; cursor: pointer;
+    }
+    .cat-count { font-size: 12px; color: var(--text-soft); margin-left: auto; }
+    .sku-code {
+      font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+      color: var(--text-soft); white-space: nowrap;
+    }
+    .cat-prod-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cat-prod-sub { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .cat-source-ns {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 600;
+      color: var(--fern); white-space: nowrap;
+    }
+    .cat-source-own {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 600; color: var(--text-soft);
+    }
+    .cat-actions { display: flex; gap: var(--space-xs); align-items: center; }
+    .cat-edit-btn, .cat-del-btn {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: transparent; color: var(--text-soft); cursor: pointer;
+      font-size: 13px; transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .cat-edit-btn:hover { background: var(--surface-soft); color: var(--text); border-color: var(--border-focus); }
+    .cat-del-btn:hover { background: color-mix(in srgb, var(--status-risk-bg) 60%, transparent); color: var(--status-risk-fg); border-color: transparent; }
+    .cat-ml-callout {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-soft);
+    }
+    .cat-ml-callout i { color: var(--text-soft); font-size: 14px; flex-shrink: 0; }
+    /* inline add-row form */
+    .cat-add-row td { background: color-mix(in srgb, var(--mint) 35%, transparent); }
+    .cat-add-row input, .cat-add-row select {
+      width: 100%; padding: 4px 6px; font-size: 12px;
+      border: 1px solid var(--border-focus); border-radius: var(--radius-sm);
+      background: var(--surface); color: var(--text); outline: none;
+      font-family: inherit;
+    }
+    .cat-add-row input:focus, .cat-add-row select:focus { border-color: var(--fern); }
+    .cat-save-btn {
+      padding: 4px 10px; font-size: 12px; font-weight: 600;
+      border-radius: var(--radius-sm); border: none;
+      background: var(--fern); color: #fff; cursor: pointer;
+    }
+    .cat-cancel-btn {
+      padding: 4px 10px; font-size: 12px; font-weight: 600;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: transparent; color: var(--text-soft); cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -403,7 +503,7 @@
           <button class="tab-nav-btn active" data-tab="profile"     onclick="switchTab('profile')"><i class="ti ti-building" style="font-size:13px;margin-right:4px;"></i>Profile</button>
           <button class="tab-nav-btn"        data-tab="outlets"     onclick="switchTab('outlets')"><i class="ti ti-building-store" style="font-size:13px;margin-right:4px;"></i>Outlet assignments</button>
           <button class="tab-nav-btn"        data-tab="orders"      onclick="switchTab('orders')"><i class="ti ti-receipt" style="font-size:13px;margin-right:4px;"></i>Order history</button>
-          <button class="tab-nav-btn"        data-tab="skus"        onclick="switchTab('skus')"><i class="ti ti-link" style="font-size:13px;margin-right:4px;"></i>SKU links</button>
+          <button class="tab-nav-btn"        data-tab="skus"        onclick="switchTab('skus')"><i class="ti ti-book-2" style="font-size:13px;margin-right:4px;"></i>Catalogue</button>
         </div>
 
         <!-- ── Profile tab ── -->
@@ -656,89 +756,123 @@
           </div>
         </div><!-- /tab-orders -->
 
-        <!-- ── SKU links tab ── -->
+        <!-- ── Catalogue tab ── -->
         <div id="tab-skus" class="tab-panel">
-          <div class="card">
+          <div class="card" style="overflow:visible;">
             <div class="card-head">
-              <span class="card-title"><i class="ti ti-link"></i>Supplier SKU links</span>
-              <button class="btn btn-outline btn-sm" onclick="showToast('Opening Market Lists to manage catalogue links…')"><i class="ti ti-external-link"></i>Manage in Market Lists</button>
-            </div>
-            <div class="card-body" style="padding-bottom:0;">
-              <div class="info-banner" style="margin-bottom:var(--space-lg);">
-                <i class="ti ti-info-circle"></i>
-                <span>SKU links are managed through <strong>Market Lists</strong>. This view shows all internal items currently linked to this supplier — edit them in the Market Lists section.</span>
+              <span class="card-title"><i class="ti ti-book-2"></i>Product catalogue</span>
+              <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                <span id="cat-ns-pill" class="cat-sync-pill"><span class="cat-sync-dot"></span>Synced · Nomni Supply</span>
+                <button class="btn btn-primary btn-sm" onclick="catAddRow()"><i class="ti ti-plus"></i>Add SKU</button>
               </div>
             </div>
+            <!-- Nomni Supply sync notice (NS-connected suppliers only) -->
+            <div id="cat-ns-banner" class="cat-sync-banner">
+              <i class="ti ti-plug-connected"></i>
+              <span>This supplier's catalogue is kept up to date by <strong>Sydney Butchers Co.</strong> on Nomni Supply. You can also add your own SKUs below — they'll only be visible to your account.</span>
+            </div>
+            <!-- Non-NS notice (shown for suppliers not on Nomni Supply) -->
+            <div id="cat-non-ns-banner" class="info-banner" style="margin:var(--space-sm) var(--space-lg);display:none;">
+              <i class="ti ti-info-circle"></i>
+              <span>This supplier isn't on Nomni Supply, so you manage this catalogue manually. Add the SKUs they sell and set pricing in <strong>Market Lists</strong>.</span>
+            </div>
+            <!-- Search + filter bar -->
+            <div class="cat-filter-bar">
+              <div class="cat-search-wrap">
+                <i class="ti ti-search"></i>
+                <input class="cat-search-input" type="search" placeholder="Search SKU or product name…" oninput="catFilter(this.value)" aria-label="Search catalogue"/>
+              </div>
+              <select class="cat-select" onchange="catFilterCat(this.value)" aria-label="Filter by category">
+                <option value="">All categories</option>
+                <option>Poultry</option>
+                <option>Beef</option>
+                <option>Pork</option>
+                <option>Lamb</option>
+              </select>
+              <span class="cat-count" id="cat-count">6 SKUs</span>
+            </div>
             <div class="table-card" style="border:none;border-radius:0;border-top:1px solid var(--border);">
-              <table class="data-table" aria-label="Supplier SKU links">
+              <table class="data-table" id="cat-table" aria-label="Supplier product catalogue">
                 <thead>
                   <tr>
-                    <th>Internal item</th>
-                    <th>Supplier SKU</th>
+                    <th>SKU code</th>
+                    <th>Product name</th>
+                    <th>Category</th>
                     <th>Pack / UOM</th>
-                    <th class="num">Unit price</th>
                     <th class="num">Lead time</th>
-                    <th>Preferred</th>
-                    <th>Outlets</th>
+                    <th class="num">MOQ</th>
+                    <th>Source</th>
+                    <th style="width:80px;"></th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td><div style="font-weight:600;">Chicken Breast 500g</div><div style="font-size:12px;color:var(--text-soft);">Poultry · Protein</div></td>
-                    <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SBC-CHK-500</span></td>
+                <tbody id="cat-tbody">
+                  <tr data-sku="SBC-CHK-500" data-cat="Poultry">
+                    <td><span class="sku-code">SBC-CHK-500</span></td>
+                    <td><div class="cat-prod-name">Premium Chicken Breast</div><div class="cat-prod-sub">Skin-off, individually frozen</div></td>
+                    <td>Poultry</td>
                     <td>5 kg carton</td>
-                    <td class="num">$7.15/kg</td>
                     <td class="num">1 day</td>
-                    <td><span class="preferred-badge"><i class="ti ti-check" style="font-size:10px;"></i>Preferred</span></td>
-                    <td style="font-size:12px;color:var(--text-soft);">8 outlets</td>
+                    <td class="num">1 carton</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
                   </tr>
-                  <tr>
-                    <td><div style="font-weight:600;">Beef Mince 80/20</div><div style="font-size:12px;color:var(--text-soft);">Beef · Ground</div></td>
-                    <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SBC-BEF-220</span></td>
-                    <td>2 kg pack</td>
-                    <td class="num">$11.20/kg</td>
-                    <td class="num">1 day</td>
-                    <td><span style="font-size:12px;color:var(--text-soft);">Fallback</span></td>
-                    <td style="font-size:12px;color:var(--text-soft);">5 outlets</td>
-                  </tr>
-                  <tr>
-                    <td><div style="font-weight:600;">Pork Sausage</div><div style="font-size:12px;color:var(--text-soft);">Pork · Processed</div></td>
-                    <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SBC-PRK-300</span></td>
-                    <td>3 kg pack</td>
-                    <td class="num">$8.90/kg</td>
-                    <td class="num">2 days</td>
-                    <td><span class="preferred-badge"><i class="ti ti-check" style="font-size:10px;"></i>Preferred</span></td>
-                    <td style="font-size:12px;color:var(--text-soft);">6 outlets</td>
-                  </tr>
-                  <tr>
-                    <td><div style="font-weight:600;">Lamb Rack (French)</div><div style="font-size:12px;color:var(--text-soft);">Lamb · Whole cut</div></td>
-                    <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SBC-LMB-410</span></td>
-                    <td>1 rack (~1.2 kg)</td>
-                    <td class="num">$28.50/kg</td>
-                    <td class="num">2 days</td>
-                    <td><span class="preferred-badge"><i class="ti ti-check" style="font-size:10px;"></i>Preferred</span></td>
-                    <td style="font-size:12px;color:var(--text-soft);">4 outlets</td>
-                  </tr>
-                  <tr>
-                    <td><div style="font-weight:600;">Beef Scotch Fillet</div><div style="font-size:12px;color:var(--text-soft);">Beef · Premium</div></td>
-                    <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SBC-BEF-700</span></td>
-                    <td>200 g portion</td>
-                    <td class="num">$42.00/kg</td>
-                    <td class="num">1 day</td>
-                    <td><span style="font-size:12px;color:var(--text-soft);">Fallback</span></td>
-                    <td style="font-size:12px;color:var(--text-soft);">3 outlets</td>
-                  </tr>
-                  <tr>
-                    <td><div style="font-weight:600;">Chicken Thigh Bone-in</div><div style="font-size:12px;color:var(--text-soft);">Poultry · Protein</div></td>
-                    <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SBC-CHK-810</span></td>
+                  <tr data-sku="SBC-CHK-810" data-cat="Poultry">
+                    <td><span class="sku-code">SBC-CHK-810</span></td>
+                    <td><div class="cat-prod-name">Free Range Chicken Thigh</div><div class="cat-prod-sub">Bone-in, fresh</div></td>
+                    <td>Poultry</td>
                     <td>4 kg carton</td>
-                    <td class="num">$6.40/kg</td>
                     <td class="num">1 day</td>
-                    <td><span class="preferred-badge"><i class="ti ti-check" style="font-size:10px;"></i>Preferred</span></td>
-                    <td style="font-size:12px;color:var(--text-soft);">8 outlets</td>
+                    <td class="num">1 carton</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-BEF-220" data-cat="Beef">
+                    <td><span class="sku-code">SBC-BEF-220</span></td>
+                    <td><div class="cat-prod-name">Premium Beef Mince 80/20</div><div class="cat-prod-sub">Fresh, grass-fed</div></td>
+                    <td>Beef</td>
+                    <td>2 kg pack</td>
+                    <td class="num">1 day</td>
+                    <td class="num">2 packs</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-BEF-700" data-cat="Beef">
+                    <td><span class="sku-code">SBC-BEF-700</span></td>
+                    <td><div class="cat-prod-name">Grain Fed Scotch Fillet</div><div class="cat-prod-sub">200 g portions, vac-packed</div></td>
+                    <td>Beef</td>
+                    <td>200 g portion</td>
+                    <td class="num">1 day</td>
+                    <td class="num">10 portions</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-PRK-300" data-cat="Pork">
+                    <td><span class="sku-code">SBC-PRK-300</span></td>
+                    <td><div class="cat-prod-name">Pork Sausage Traditional</div><div class="cat-prod-sub">Thick, 8 per kg</div></td>
+                    <td>Pork</td>
+                    <td>3 kg pack</td>
+                    <td class="num">2 days</td>
+                    <td class="num">1 pack</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-LMB-410" data-cat="Lamb">
+                    <td><span class="sku-code">SBC-LMB-410</span></td>
+                    <td><div class="cat-prod-name">French Trimmed Lamb Rack</div><div class="cat-prod-sub">~1.2 kg, 8 bone</div></td>
+                    <td>Lamb</td>
+                    <td>1 rack</td>
+                    <td class="num">2 days</td>
+                    <td class="num">2 racks</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <!-- Market list callout -->
+            <div class="cat-ml-callout">
+              <i class="ti ti-tag"></i>
+              <span>Pricing is not stored here. To set your prices and link catalogue SKUs to your internal items, go to <a class="link" href="market-list.html">Market Lists</a>.</span>
             </div>
           </div>
         </div><!-- /tab-skus -->
@@ -887,6 +1021,12 @@
 <script>
   NomniShell.init('Sydney Butchers Co.');
 
+  // ─── Supplier config ──────────────────────────────────────────────────────────
+  const SUPPLIER = {
+    name: 'Sydney Butchers Co.',
+    nsConnected: true,        // flip to false for a non-NS supplier
+  };
+
   // ─── Tab switching ────────────────────────────────────────────────────────────
   function switchTab(tabId) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -1015,6 +1155,172 @@
     }
   }
 
+  // ─── Catalogue tab ───────────────────────────────────────────────────────────
+  function catFilter(q) {
+    const rows = document.querySelectorAll('#cat-tbody tr[data-sku]');
+    const lq = q.toLowerCase();
+    let visible = 0;
+    rows.forEach(r => {
+      const match = r.dataset.sku.toLowerCase().includes(lq) ||
+        r.querySelector('.cat-prod-name').textContent.toLowerCase().includes(lq);
+      r.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    document.getElementById('cat-count').textContent = visible + ' SKU' + (visible !== 1 ? 's' : '');
+  }
+
+  function catFilterCat(cat) {
+    const rows = document.querySelectorAll('#cat-tbody tr[data-sku]');
+    let visible = 0;
+    rows.forEach(r => {
+      const match = !cat || r.dataset.cat === cat;
+      r.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    document.getElementById('cat-count').textContent = visible + ' SKU' + (visible !== 1 ? 's' : '');
+  }
+
+  function catAddRow() {
+    // remove any existing add-row first
+    const existing = document.querySelector('.cat-add-row');
+    if (existing) existing.remove();
+
+    const tbody = document.getElementById('cat-tbody');
+    const tr = document.createElement('tr');
+    tr.className = 'cat-add-row';
+    tr.innerHTML = `
+      <td><input id="cat-new-sku" placeholder="SKU code" style="font-family:'IBM Plex Mono',monospace;font-size:12px;"/></td>
+      <td><input id="cat-new-name" placeholder="Product name"/></td>
+      <td>
+        <select id="cat-new-cat">
+          <option value="">Category</option>
+          <option>Poultry</option><option>Beef</option>
+          <option>Pork</option><option>Lamb</option>
+          <option>Seafood</option><option>Dairy</option>
+          <option>Produce</option><option>Dry goods</option>
+        </select>
+      </td>
+      <td><input id="cat-new-pack" placeholder="e.g. 5 kg carton"/></td>
+      <td><input id="cat-new-lead" placeholder="1 day" style="width:70px;"/></td>
+      <td><input id="cat-new-moq" placeholder="1 unit" style="width:70px;"/></td>
+      <td></td>
+      <td class="cat-actions">
+        <button class="cat-save-btn" onclick="catConfirmAdd()">Save</button>
+        <button class="cat-cancel-btn" onclick="document.querySelector('.cat-add-row').remove()">Cancel</button>
+      </td>`;
+    tbody.insertBefore(tr, tbody.firstChild);
+    document.getElementById('cat-new-sku').focus();
+  }
+
+  function catConfirmAdd() {
+    const sku   = document.getElementById('cat-new-sku').value.trim();
+    const name  = document.getElementById('cat-new-name').value.trim();
+    const cat   = document.getElementById('cat-new-cat').value;
+    const pack  = document.getElementById('cat-new-pack').value.trim();
+    const lead  = document.getElementById('cat-new-lead').value.trim();
+    const moq   = document.getElementById('cat-new-moq').value.trim();
+    if (!sku || !name) { showToast('SKU code and product name are required.'); return; }
+
+    document.querySelector('.cat-add-row').remove();
+    const tbody = document.getElementById('cat-tbody');
+    const tr = document.createElement('tr');
+    tr.dataset.sku = sku;
+    tr.dataset.cat = cat;
+    tr.innerHTML = `
+      <td><span class="sku-code">${sku}</span></td>
+      <td><div class="cat-prod-name">${name}</div></td>
+      <td>${cat || '—'}</td>
+      <td>${pack || '—'}</td>
+      <td class="num">${lead || '—'}</td>
+      <td class="num">${moq || '—'}</td>
+      <td><span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span></td>
+      <td class="cat-actions">
+        <button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button>
+      </td>`;
+    tbody.insertBefore(tr, tbody.firstChild);
+
+    // update count
+    const total = tbody.querySelectorAll('tr[data-sku]').length;
+    document.getElementById('cat-count').textContent = total + ' SKU' + (total !== 1 ? 's' : '');
+    showToast(sku + ' added to catalogue.');
+  }
+
+  function catEditRow(btn) {
+    const tr = btn.closest('tr');
+    const cells = tr.querySelectorAll('td');
+    const skuVal  = cells[0].querySelector('.sku-code').textContent;
+    const nameVal = cells[1].querySelector('.cat-prod-name').textContent;
+    const catVal  = cells[2].textContent.trim();
+    const packVal = cells[3].textContent.trim();
+    const leadVal = cells[4].textContent.trim();
+    const moqVal  = cells[5].textContent.trim();
+
+    tr.dataset.origHtml = tr.innerHTML;
+    tr.className = 'cat-add-row';
+    const catOptions = ['Poultry','Beef','Pork','Lamb','Seafood','Dairy','Produce','Dry goods']
+      .map(c => `<option${c===catVal?' selected':''}>${c}</option>`).join('');
+
+    tr.innerHTML = `
+      <td><input class="cat-edit-sku" value="${skuVal}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;"/></td>
+      <td><input class="cat-edit-name" value="${nameVal}"/></td>
+      <td><select class="cat-edit-cat"><option value="">Category</option>${catOptions}</select></td>
+      <td><input class="cat-edit-pack" value="${packVal}"/></td>
+      <td><input class="cat-edit-lead" value="${leadVal}" style="width:70px;"/></td>
+      <td><input class="cat-edit-moq" value="${moqVal}" style="width:70px;"/></td>
+      <td></td>
+      <td class="cat-actions">
+        <button class="cat-save-btn" onclick="catSaveEdit(this)">Save</button>
+        <button class="cat-cancel-btn" onclick="catCancelEdit(this)">Cancel</button>
+      </td>`;
+  }
+
+  function catSaveEdit(btn) {
+    const tr = btn.closest('tr');
+    const sku  = tr.querySelector('.cat-edit-sku').value.trim();
+    const name = tr.querySelector('.cat-edit-name').value.trim();
+    const cat  = tr.querySelector('.cat-edit-cat').value;
+    const pack = tr.querySelector('.cat-edit-pack').value.trim();
+    const lead = tr.querySelector('.cat-edit-lead').value.trim();
+    const moq  = tr.querySelector('.cat-edit-moq').value.trim();
+    if (!sku || !name) { showToast('SKU code and product name are required.'); return; }
+
+    tr.className = '';
+    tr.dataset.sku = sku;
+    tr.dataset.cat = cat;
+    // preserve the source badge from orig
+    const origSource = (tr.dataset.origHtml || '').includes('cat-source-ns')
+      ? `<span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span>`
+      : `<span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span>`;
+    tr.innerHTML = `
+      <td><span class="sku-code">${sku}</span></td>
+      <td><div class="cat-prod-name">${name}</div></td>
+      <td>${cat || '—'}</td>
+      <td>${pack || '—'}</td>
+      <td class="num">${lead || '—'}</td>
+      <td class="num">${moq || '—'}</td>
+      <td>${origSource}</td>
+      <td class="cat-actions">
+        <button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button>
+      </td>`;
+    showToast(sku + ' updated.');
+  }
+
+  function catCancelEdit(btn) {
+    const tr = btn.closest('tr');
+    tr.outerHTML = tr.dataset.origHtml || '';
+  }
+
+  function catDeleteRow(btn) {
+    const tr = btn.closest('tr');
+    const sku = tr.dataset.sku;
+    tr.remove();
+    const total = document.querySelectorAll('#cat-tbody tr[data-sku]').length;
+    document.getElementById('cat-count').textContent = total + ' SKU' + (total !== 1 ? 's' : '');
+    showToast(sku + ' removed from catalogue.');
+  }
+
   // ─── Toast ───────────────────────────────────────────────────────────────────
   function showToast(msg) {
     const wrap = document.getElementById('toast-wrap');
@@ -1036,6 +1342,25 @@
         window.location.href = 'orders.html?supplier=sydney-butchers';
       });
     });
+
+    // ── Catalogue tab: NS vs non-NS rendering ──────────────────────────────────
+    const syncBanner  = document.getElementById('cat-ns-banner');
+    const syncPill    = document.getElementById('cat-ns-pill');
+    const nonNsBanner = document.getElementById('cat-non-ns-banner');
+
+    if (SUPPLIER.nsConnected) {
+      if (syncBanner)  syncBanner.style.display  = '';
+      if (syncPill)    syncPill.style.display     = '';
+      if (nonNsBanner) nonNsBanner.style.display  = 'none';
+    } else {
+      if (syncBanner)  syncBanner.style.display   = 'none';
+      if (syncPill)    syncPill.style.display      = 'none';
+      if (nonNsBanner) nonNsBanner.style.display   = '';
+      // For non-NS suppliers: all rows are "My account", show no NS source badges
+      document.querySelectorAll('#cat-tbody .cat-source-ns').forEach(el => {
+        el.outerHTML = '<span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span>';
+      });
+    }
   });
 </script>
 </body>
