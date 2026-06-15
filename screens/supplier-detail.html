@@ -73,12 +73,18 @@
 
     /* Detail layout */
     .detail-layout {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+    /* Profile tab gets its own 2-col layout */
+    .profile-layout {
       display: grid;
       grid-template-columns: 1fr 280px;
       gap: var(--space-2xl);
       align-items: start;
     }
-    @media (max-width: 900px) { .detail-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .profile-layout { grid-template-columns: 1fr; } }
 
     /* Cards */
     .card {
@@ -508,6 +514,7 @@
 
         <!-- ── Profile tab ── -->
         <div id="tab-profile" class="tab-panel active">
+          <div class="profile-layout">
           <div style="display:flex;flex-direction:column;gap:var(--space-xl);">
 
             <!-- Company details -->
@@ -641,7 +648,140 @@
               </div>
             </div>
 
-          </div>
+          </div><!-- /profile left col -->
+
+          <!-- Profile right col (was global aside) -->
+          <aside class="aside-stack">
+
+            <!-- Nomni Supply connection card -->
+            <div id="sup-ns-card" class="ns-connection-card">
+              <div class="ns-connection-head">
+                <i class="ti ti-plug-connected"></i>
+                <span class="ns-connection-title">Nomni Supply</span>
+                <span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--fern);">Connected</span>
+              </div>
+              <div class="ns-connection-body">
+                <div class="meta-kv">
+                  <div class="meta-row">
+                    <span class="meta-row-label">Connected since</span>
+                    <span class="meta-row-val">Mar 2024</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Last sync</span>
+                    <span class="meta-row-val">Today · 6:00am</span>
+                  </div>
+                </div>
+                <p style="font-size:11px;color:var(--text-soft);margin-top:var(--space-sm);line-height:1.5;">ABN and bank details are managed by the supplier directly on Nomni Supply.</p>
+              </div>
+            </div>
+
+            <!-- Status card -->
+            <div class="card">
+              <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Supplier status</span></div>
+              <div class="card-body">
+                <div class="meta-kv">
+                  <div class="meta-row">
+                    <span class="meta-row-label">Status</span>
+                    <span class="status-pill active" style="font-size:11px;">Active</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Verification</span>
+                    <span style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--spinach);"><i class="ti ti-rosette-discount-check-filled" style="font-size:14px;"></i>Verified</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Rating</span>
+                    <div style="display:flex;align-items:center;gap:4px;">
+                      <div class="star-row">
+                        <i class="ti ti-star-filled star"></i>
+                        <i class="ti ti-star-filled star"></i>
+                        <i class="ti ti-star-filled star"></i>
+                        <i class="ti ti-star-filled star"></i>
+                        <i class="ti ti-star-half-filled star"></i>
+                      </div>
+                      <span style="font-size:12px;font-weight:600;color:var(--text);">4.7</span>
+                    </div>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Delivery</span>
+                    <span class="meta-row-val">Next-day · Sydney metro</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Min. order</span>
+                    <span class="meta-row-val" style="font-feature-settings:'tnum' 1;">$250.00</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Outlets</span>
+                    <span class="meta-row-val">8 outlets</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Added</span>
+                    <span class="meta-row-val">14 Mar 2024</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price benchmark -->
+            <div class="card">
+              <div class="card-head"><span class="card-title"><i class="ti ti-chart-histogram"></i>Price benchmark</span></div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+                  <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                    <span class="nb-pill ok" style="font-size:12px;"><i class="ti ti-arrow-down"></i>4% below</span>
+                    <span style="font-size:12px;color:var(--text-soft);">network median</span>
+                  </div>
+                  <p style="font-size:12px;color:var(--text-soft);line-height:1.6;">Across Meat &amp; Seafood, NSW — compared against 12 other suppliers in the Nomni network.</p>
+                  <button class="btn btn-outline btn-sm" onclick="showToast('Opening full benchmark report…')"><i class="ti ti-external-link"></i>Full benchmark</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent activity -->
+            <div class="card">
+              <div class="card-head"><span class="card-title"><i class="ti ti-activity"></i>Recent activity</span></div>
+              <div class="card-body">
+                <div class="activity-list">
+                  <div class="activity-item">
+                    <div class="activity-dot ok"></div>
+                    <div>
+                      <div class="activity-text"><strong>Order received</strong> — PO-2026-0887 fully received by Harbour Kitchen</div>
+                      <div class="activity-time">10 Jun 2026 · 08:42am</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-dot ok"></div>
+                    <div>
+                      <div class="activity-text"><strong>New order sent</strong> — PO-2026-0914 dispatched to Sydney Butchers Co.</div>
+                      <div class="activity-time">12 Jun 2026 · 07:15am</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-dot warn"></div>
+                    <div>
+                      <div class="activity-text"><strong>Price change</strong> — Beef Scotch Fillet updated from $39.50/kg to $42.00/kg</div>
+                      <div class="activity-time">1 Jun 2026 · 02:10pm</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-dot ok"></div>
+                    <div>
+                      <div class="activity-text"><strong>Assigned to outlet</strong> — Parramatta Table added by Keith Tan</div>
+                      <div class="activity-time">20 May 2026 · 11:30am</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Danger zone -->
+            <div class="danger-zone">
+              <div class="danger-title"><i class="ti ti-alert-triangle" style="font-size:14px;"></i> Danger zone</div>
+              <div class="danger-desc">Deactivating this supplier will prevent new orders from being raised across all outlets. Existing open orders will not be affected.</div>
+              <button class="btn btn-danger btn-sm" onclick="confirmDeactivate()"><i class="ti ti-circle-off"></i>Deactivate supplier</button>
+            </div>
+
+          </aside>
+          </div><!-- /profile-layout -->
         </div><!-- /tab-profile -->
 
         <!-- ── Outlet assignments tab ── -->
@@ -879,11 +1019,9 @@
 
       </div><!-- /main column -->
 
-      <!-- ── Aside ── -->
-      <aside class="aside-stack">
-
-        <!-- Nomni Supply connection card -->
-        <div id="sup-ns-card" class="ns-connection-card">
+      <!-- OLD ASIDE REMOVED — content moved into Profile tab -->
+      <aside class="aside-stack" style="display:none;">
+        <div id="sup-ns-card-old" class="ns-connection-card">
           <div class="ns-connection-head">
             <i class="ti ti-plug-connected"></i>
             <span class="ns-connection-title">Nomni Supply</span>
