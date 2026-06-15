@@ -1019,8 +1019,6 @@
 
 <script src="../shared/shell.js?v=5" data-active="suppliers"></script>
 <script>
-  NomniShell.init(SUPPLIER.name);
-
   // ─── Supplier data map ────────────────────────────────────────────────────────
   const SUPPLIERS = {
     'sydney-butchers': {
@@ -1069,6 +1067,7 @@
 
   const _urlId = new URLSearchParams(window.location.search).get('id') || 'sydney-butchers';
   const SUPPLIER = SUPPLIERS[_urlId] || SUPPLIERS['sydney-butchers'];
+  NomniShell.init(SUPPLIER.name);
 
   // ─── Tab switching ────────────────────────────────────────────────────────────
   function switchTab(tabId) {
