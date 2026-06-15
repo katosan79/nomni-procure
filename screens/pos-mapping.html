@@ -3,1037 +3,1680 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>POS mapping — Nomni HQ</title>
+  <title>POS Mapping — Nomni Procure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
   <style>
     body { background: var(--surface-soft); }
 
-    .page-body {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3xl);
-      padding-block: var(--space-2xl);
-    }
-
-    /* Page header */
-    .page-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: var(--space-xl);
-    }
-    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
-    .page-eyebrow {
-      font-size: 11px; font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-accent);
-    }
-    .page-title {
-      font-size: 35px; font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.025em;
-      line-height: 1.1;
-    }
-    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
-
-    /* Buttons */
-    .btn {
-      display: inline-flex; align-items: center; gap: var(--space-xs);
-      height: var(--control-h);
-      padding-inline: var(--space-lg);
-      border-radius: var(--radius-md);
-      font-size: 14px; font-weight: 600;
-      cursor: pointer;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      border: 1.5px solid transparent;
-      font-family: inherit;
-      white-space: nowrap;
-    }
-    .btn-outline {
-      background: var(--surface);
-      border-color: var(--border);
-      color: var(--text);
-    }
-    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
-    .btn-primary {
-      background: var(--btn-primary-bg);
-      color: var(--btn-primary-fg);
-      border-color: var(--btn-primary-bg);
-    }
-    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
-    .btn-primary:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-    .btn i { font-size: 15px; }
-
-    /* Split button */
-    .split-btn {
-      display: inline-flex;
-      align-items: stretch;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      border: 1.5px solid var(--btn-primary-bg);
-      position: relative;
-    }
-    .split-btn-main {
-      display: inline-flex; align-items: center; gap: var(--space-xs);
-      padding-inline: var(--space-lg);
-      height: var(--control-h);
-      background: var(--btn-primary-bg);
-      color: var(--btn-primary-fg);
-      font-size: 14px; font-weight: 600;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background 0.12s;
-    }
-    .split-btn-main:hover { background: var(--spinach); }
-    .split-btn-arrow {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 36px;
-      background: var(--btn-primary-bg);
-      color: var(--btn-primary-fg);
-      border: none;
-      border-left: 1px solid rgba(255,255,255,0.25);
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.12s;
-      position: relative;
-    }
-    .split-btn-arrow:hover { background: var(--spinach); }
-    .split-dropdown {
-      position: absolute;
-      top: calc(100% + 4px);
-      right: 0;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-md);
-      min-width: 160px;
-      z-index: 50;
-      padding: var(--space-xs) 0;
-      display: none;
-    }
-    .split-dropdown.open { display: block; }
-    .split-dropdown-item {
-      display: flex; align-items: center; gap: var(--space-sm);
-      padding: var(--space-sm) var(--space-lg);
-      font-size: 13px; font-weight: 500;
-      color: var(--text);
-      cursor: pointer;
-      background: none;
-      border: none;
-      width: 100%;
-      text-align: left;
-      font-family: inherit;
-    }
-    .split-dropdown-item:hover { background: var(--surface-soft); }
-
-    /* Notification banner */
-    .page-banner {
+    /* ─── Page header ─── */
+    .pm-header {
       display: flex;
       align-items: flex-start;
-      gap: var(--space-md);
-      padding: var(--space-md) var(--space-lg);
-      border-radius: var(--radius-md);
-      font-size: 13px; font-weight: 500;
-      line-height: 1.5;
-    }
-    .page-banner.info {
-      background: var(--status-info-bg);
-      color: var(--status-info-fg);
-      border: 1px solid rgba(63,195,251,0.3);
-    }
-    .page-banner i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-    /* Filter bar */
-    .filter-bar {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      flex-wrap: wrap;
-    }
-    .search-wrap {
-      position: relative;
-      flex: 1;
-      min-width: 200px;
-    }
-    .search-wrap i {
-      position: absolute;
-      left: var(--space-md);
-      top: 50%; transform: translateY(-50%);
-      color: var(--text-soft);
-      font-size: 15px;
-      pointer-events: none;
-    }
-    .search-input {
-      width: 100%;
-      height: var(--control-h);
-      padding-inline: var(--space-3xl) var(--space-lg);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      font-size: 14px;
-      font-family: inherit;
-      background: var(--surface);
-      color: var(--text);
-      outline: none;
-    }
-    .search-input:focus { border-color: var(--border-focus); }
-    .filter-select {
-      height: var(--control-h);
-      padding-inline: var(--space-md) var(--space-2xl);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      font-size: 14px;
-      font-family: inherit;
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-      outline: none;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right var(--space-sm) center;
-    }
-    .filter-select:focus { border-color: var(--border-focus); }
-
-    /* Table */
-    .table-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .data-table {
-      width: 100%;
-      min-width: 760px;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    .data-table thead tr { border-bottom: 1px solid var(--border); }
-    .data-table th {
-      padding: var(--space-md) var(--space-lg);
-      text-align: left;
-      font-size: 11px; font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-soft);
-      white-space: nowrap;
-    }
-    .data-table td {
-      padding: var(--space-md) var(--space-lg);
-      color: var(--text);
-      border-bottom: 1px solid var(--border);
-      vertical-align: middle;
-    }
-    .data-table tbody tr:last-child td { border-bottom: none; }
-    .data-table tbody tr:hover td { background: var(--surface-soft); }
-
-    .cell-name { font-weight: 600; color: var(--text); white-space: nowrap; }
-    .cell-code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
-    .cell-price { font-feature-settings: 'tnum' 1; font-weight: 500; white-space: nowrap; }
-    .cell-outlets { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
-    .cell-dash { color: var(--text-soft); }
-
-    /* Status pills */
-    .status-pill {
-      display: inline-flex; align-items: center; gap: var(--space-xs);
-      padding: 2px var(--space-sm);
-      border-radius: var(--radius-pill);
-      font-size: 11px; font-weight: 600;
-      white-space: nowrap;
-    }
-    .status-pill::before {
-      content: '';
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .status-pill.ok {
-      background: var(--status-ok-bg);
-      color: var(--status-ok-fg);
-    }
-    .status-pill.ok::before { background: var(--status-ok-fg); }
-    .status-pill.warn {
-      background: var(--status-warn-bg);
-      color: var(--status-warn-fg);
-    }
-    .status-pill.warn::before { background: var(--sun); }
-    .status-pill.risk {
-      background: var(--status-risk-bg);
-      color: var(--status-risk-fg);
-    }
-    .status-pill.risk::before { background: var(--rose); }
-
-    /* Row actions */
-    .row-actions {
-      display: flex; align-items: center;
-      gap: var(--space-sm);
-      white-space: nowrap;
-    }
-    .link-action {
-      font-size: 12px; font-weight: 600;
-      color: var(--text-accent);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      font-family: inherit;
-    }
-    .link-action:hover { color: var(--spinach); text-decoration: underline; }
-    .overflow-btn {
-      width: 26px; height: 26px;
-      border-radius: var(--radius-sm);
-      background: none;
-      border: 1.5px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      color: var(--text-soft);
-      position: relative;
-      font-size: 13px;
-    }
-    .overflow-btn:hover { background: var(--surface-soft); }
-    .overflow-menu {
-      position: absolute;
-      right: 0; top: 100%;
-      margin-top: var(--space-xs);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-md);
-      min-width: 160px;
-      z-index: 50;
-      padding: var(--space-xs) 0;
-      display: none;
-    }
-    .overflow-menu.open { display: block; }
-    .overflow-menu-item {
-      display: flex; align-items: center; gap: var(--space-sm);
-      padding: var(--space-sm) var(--space-lg);
-      font-size: 12px; font-weight: 500;
-      color: var(--text);
-      cursor: pointer;
-      background: none;
-      border: none;
-      width: 100%;
-      text-align: left;
-      font-family: inherit;
-    }
-    .overflow-menu-item:hover { background: var(--surface-soft); }
-    .overflow-wrap { position: relative; display: inline-block; }
-    .overflow-cell { position: relative; }
-
-    /* Activity timeline */
-    .timeline-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: var(--space-xl);
-    }
-    .timeline-heading {
-      font-size: 14px; font-weight: 600;
-      color: var(--text);
-      margin-bottom: var(--space-xl);
-    }
-    .timeline-item {
-      display: grid;
-      grid-template-columns: var(--space-xl) 1fr auto;
-      gap: var(--space-sm);
-      align-items: start;
-      padding-bottom: var(--space-lg);
-      position: relative;
-    }
-    .timeline-item:not(:last-child)::before {
-      content: '';
-      position: absolute;
-      left: 7px; top: 20px;
-      bottom: 0;
-      width: 1px;
-      background: var(--border);
-    }
-    .timeline-dot {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 2px solid var(--fern);
-      margin-top: 3px;
-    }
-    .timeline-text { font-size: 13px; font-weight: 500; color: var(--text); }
-    .timeline-meta { font-size: 11px; color: var(--text-soft); margin-top: var(--space-xs); }
-    .timeline-time { font-size: 11px; color: var(--text-soft); white-space: nowrap; font-feature-settings: 'tnum' 1; }
-
-    /* Overwrite confirm dialog */
-    dialog {
-      border: none;
-      border-radius: var(--radius-lg);
-      padding: 0;
-      box-shadow: var(--shadow-lg);
-      max-width: 440px;
-      width: 90%;
-    }
-    dialog::backdrop { background: rgba(14,55,39,0.35); }
-    .dialog-inner {
-      padding: var(--space-2xl);
-      display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      padding: var(--space-2xl) 0 var(--space-xl);
       gap: var(--space-xl);
     }
-    .dialog-banner {
-      display: flex; align-items: flex-start; gap: var(--space-md);
-      padding: var(--space-md) var(--space-lg);
-      border-radius: var(--radius-md);
-      background: var(--status-warn-bg);
-      border: 1px solid rgba(245,194,25,0.3);
-      color: var(--status-warn-fg);
-      font-size: 13px; font-weight: 500;
+    .pm-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-accent); margin-bottom: var(--space-xs);
     }
-    .dialog-banner i { font-size: 16px; flex-shrink: 0; }
-    .dialog-title {
-      font-size: 20px; font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.01em;
+    .pm-header h1 {
+      font-size: 28px; font-weight: 700;
+      color: var(--text); letter-spacing: -0.02em;
+      margin: 0 0 var(--space-xs);
     }
-    .dialog-body {
-      font-size: 14px;
-      color: var(--text-soft);
-      line-height: 1.6;
-    }
-    .dialog-body strong { color: var(--text); }
-    .dialog-checkbox-row {
-      display: flex; align-items: flex-start; gap: var(--space-md);
-      padding: var(--space-md) var(--space-lg);
-      border-radius: var(--radius-md);
-      background: var(--surface-soft);
+    .pm-subtitle { font-size: 14px; color: var(--text-soft); margin: 0; }
+    .pm-header-right { display: flex; align-items: center; gap: var(--space-md); flex-shrink: 0; }
+
+    /* ─── Mode toggle ─── */
+    .mode-toggle {
+      display: flex;
+      background: var(--surface);
       border: 1px solid var(--border);
-      cursor: pointer;
-      user-select: none;
+      border-radius: 8px;
+      padding: 3px; gap: 2px;
     }
-    .dialog-checkbox-row input[type="checkbox"] {
-      width: 16px; height: 16px;
-      accent-color: var(--fern);
-      flex-shrink: 0;
-      margin-top: 2px;
-      cursor: pointer;
-    }
-    .dialog-checkbox-label {
+    .mode-btn {
+      padding: 6px 18px; border-radius: 6px;
       font-size: 13px; font-weight: 500;
+      color: var(--text-soft); background: transparent;
+      border: none; cursor: pointer; transition: all 150ms;
+      font-family: inherit;
+    }
+    .mode-btn.active {
+      background: var(--surface-soft);
       color: var(--text);
-      line-height: 1.5;
-      cursor: pointer;
-    }
-    .dialog-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--space-sm);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.09);
     }
 
-    /* ── Responsive breakpoints ── */
+    /* ─── Tab nav ─── */
+    .tab-nav {
+      display: flex; border-bottom: 1px solid var(--border);
+      margin-bottom: var(--space-xl); gap: 0;
+    }
+    .tab-btn {
+      padding: 10px 18px; font-size: 14px; font-weight: 500;
+      color: var(--text-soft); background: transparent;
+      border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; cursor: pointer;
+      transition: color 150ms, border-color 150ms;
+      white-space: nowrap; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--text-accent); border-bottom-color: var(--text-accent); }
+    .tab-btn.hq-only { display: none; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
-    /* Tablet ≤1024px: allow dense table to scroll horizontally */
-    @media (max-width: 1024px) {
-      .table-card {
-        overflow-x: auto;
-      }
-      .data-table {
-        min-width: 760px;
-      }
+    /* ─── Shared buttons ─── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; font-family: inherit;
+      cursor: pointer; border: none; transition: all 150ms;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); }
+    .btn-primary:hover { background: var(--spinach); }
+    .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--surface-soft); }
+    .btn-ghost { background: transparent; color: var(--text-soft); padding: 6px 10px; }
+    .btn-ghost:hover { background: var(--surface-soft); color: var(--text); }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .btn-danger { background: transparent; color: #DC2626; border: 1px solid #FECACA; }
+    .btn-danger:hover { background: #FEF2F2; }
+
+    /* ─── Summary strip ─── */
+    .summary-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg); margin-bottom: var(--space-xl);
+    }
+    .summary-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: var(--space-lg) var(--space-xl);
+    }
+    .s-label {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--text-soft); margin-bottom: var(--space-xs);
+    }
+    .s-value {
+      font-size: 28px; font-weight: 700; letter-spacing: -0.01em;
+      font-variant-numeric: tabular-nums; color: var(--text); line-height: 1; margin-bottom: 4px;
+    }
+    .s-sub { font-size: 12px; color: var(--text-soft); }
+    .summary-card.ok .s-value { color: var(--text-accent); }
+    .summary-card.warn .s-value { color: #D97706; }
+    .summary-card.risk .s-value { color: #DC2626; }
+
+    /* ─── Status pills ─── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 99px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .pill.ok  { background: #D1FAE5; color: #065F46; }
+    .pill.ok  .pill-dot { background: #059669; }
+    .pill.warn { background: #FEF3C7; color: #92400E; }
+    .pill.warn .pill-dot { background: #D97706; }
+    .pill.risk { background: #FEE2E2; color: #991B1B; }
+    .pill.risk .pill-dot { background: #DC2626; }
+    .pill.info { background: #EFF6FF; color: #1D4ED8; }
+    .pill.info .pill-dot { background: #2563EB; }
+    .pill.neutral { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+
+    /* ─── Connection cards ─── */
+    .conn-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg); margin-bottom: var(--space-xl);
+    }
+    .conn-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: var(--space-xl);
+      border-left-width: 3px;
+    }
+    .conn-card.connected { border-left-color: var(--text-accent); }
+    .conn-card.batch     { border-left-color: #D97706; }
+    .conn-card.dark      { border-left-color: #DC2626; }
+    .conn-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-md);
+    }
+    .conn-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .conn-meta  { font-size: 13px; color: var(--text-soft); margin-bottom: 4px; }
+    .conn-sync  { font-size: 12px; color: var(--text-soft); font-family: 'IBM Plex Mono', monospace; }
+    .conn-actions { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
+
+    /* ─── Issue rows ─── */
+    .issues-section { margin-bottom: var(--space-2xl); }
+    .issues-section h3 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: var(--space-md); }
+    .issue-row {
+      display: flex; align-items: flex-start; gap: var(--space-lg);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; margin-bottom: var(--space-sm);
+    }
+    .issue-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0; margin-top: 2px;
+    }
+    .issue-icon.risk { background: #FEE2E2; color: #DC2626; }
+    .issue-icon.warn { background: #FEF3C7; color: #D97706; }
+    .issue-icon.info { background: #EFF6FF; color: #2563EB; }
+    .issue-body  { flex: 1; }
+    .issue-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+    .issue-detail { font-size: 12px; color: var(--text-soft); }
+    .issue-cta   { flex-shrink: 0; }
+
+    /* ─── Mapping table toolbar ─── */
+    .mapping-toolbar {
+      display: flex; align-items: center;
+      gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap: wrap;
+    }
+    .filter-tabs {
+      display: flex; gap: 3px;
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: 8px; padding: 3px;
+    }
+    .filter-tab {
+      padding: 5px 12px; border-radius: 5px;
+      font-size: 13px; font-weight: 500; color: var(--text-soft);
+      background: transparent; border: none; cursor: pointer;
+      transition: all 120ms; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .filter-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .ftab-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 4px;
+      border-radius: 9px; font-size: 11px; font-weight: 700;
+    }
+    .filter-tab.active .ftab-count { background: var(--text-accent); color: #fff; }
+    .filter-tab:not(.active) .ftab-count { background: var(--border); color: var(--text-soft); }
+    .filter-tab.ftab-warn .ftab-count { background: #FEF3C7; color: #92400E; }
+
+    .search-box {
+      flex: 1; max-width: 260px;
+      padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; font-family: inherit;
+      background: var(--surface); color: var(--text); outline: none;
+    }
+    .search-box:focus { border-color: var(--text-accent); }
+
+    .sort-sel {
+      padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; font-family: inherit;
+      background: var(--surface); color: var(--text); outline: none; cursor: pointer;
     }
 
-    /* Mobile ≤768px: reduce typography, stack header actions, table scroll */
+    /* ─── Mapping table ─── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .card-header {
+      padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+
+    .map-table { width: 100%; border-collapse: collapse; }
+    .map-table th {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text-soft); padding: 10px 14px; text-align: left;
+      background: var(--surface-soft); border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .map-table td {
+      padding: 0 14px; height: 48px;
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+      font-size: 13px; color: var(--text);
+    }
+    .map-table tr.item-row:hover td { background: #FAFBFA; cursor: pointer; }
+    .map-table tr.item-row.expanded > td { background: #F2F8F3; }
+    .map-table tr.unmapped-row td { background: #FFFBEB; }
+    .map-table tr.ignored-row { opacity: 0.5; }
+
+    .plu { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
+
+    .type-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 4px;
+    }
+    .type-badge.recipe { background: #EDE9FE; color: #5B21B6; }
+    .type-badge.item   { background: #E0F2FE; color: #0369A1; }
+
+    .expand-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--text-soft);
+      background: none; border: none; cursor: pointer;
+      padding: 4px 8px; border-radius: 6px; font-family: inherit;
+      transition: background 120ms;
+    }
+    .expand-btn:hover { background: var(--border); }
+    .exp-arrow { transition: transform 200ms; font-size: 9px; display: inline-block; }
+    .exp-arrow.open { transform: rotate(90deg); }
+
+    /* ─── Modifier tree ─── */
+    .mod-tree-row td { padding: 0 !important; height: auto !important; }
+    .mod-tree {
+      padding: var(--space-md) var(--space-xl) var(--space-lg) 54px;
+      background: #F6FBF7;
+      border-bottom: 1px solid var(--border);
+    }
+    .mod-group { margin-bottom: var(--space-lg); }
+    .mod-group-name {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--text-soft);
+      margin-bottom: var(--space-sm);
+    }
+    .mod-item {
+      display: grid;
+      grid-template-columns: 200px 130px 1fr auto;
+      align-items: center; gap: var(--space-md);
+      padding: 8px 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 7px; margin-bottom: 4px;
+    }
+    .mod-item.unset { border-color: #F59E0B; background: #FFFBEB; }
+    .mod-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .mod-default { font-size: 11px; color: var(--text-soft); font-style: italic; }
+
+    .action-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 5px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .action-badge.add-on     { background: #D1FAE5; color: #065F46; }
+    .action-badge.remove     { background: #FEE2E2; color: #991B1B; }
+    .action-badge.substitute { background: #E0F2FE; color: #0C4A6E; }
+    .action-badge.multiply   { background: #FEF3C7; color: #92400E; }
+    .action-badge.default    { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .action-badge.ignored    { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+
+    .mod-detail { font-size: 12px; color: var(--text-soft); }
+    .mod-detail strong { color: var(--text); }
+
+    .action-sel {
+      padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 12px; font-family: inherit; background: var(--surface);
+      color: var(--text); outline: none; cursor: pointer;
+    }
+
+    .inline-input {
+      padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 12px; font-family: inherit; background: var(--surface); color: var(--text);
+      outline: none; min-width: 140px;
+    }
+    .inline-input:focus { border-color: var(--text-accent); }
+
+    /* ─── Outlet coverage ─── */
+    .cov-summary {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-lg); margin-bottom: var(--space-xl);
+    }
+    .cov-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: var(--space-lg) var(--space-xl);
+      display: flex; align-items: center; gap: var(--space-lg);
+    }
+    .cov-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .cov-icon.ok   { background: #D1FAE5; }
+    .cov-icon.warn { background: #FEF3C7; }
+    .cov-icon.risk { background: #FEE2E2; }
+    .cov-label { font-size: 12px; color: var(--text-soft); margin-bottom: 2px; }
+    .cov-value { font-size: 24px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text-soft); padding: 10px 14px; text-align: left;
+      background: var(--surface-soft); border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 0 14px; height: 48px; border-bottom: 1px solid var(--border);
+      vertical-align: middle; font-size: 13px; color: var(--text);
+    }
+    .data-table tr:hover td { background: var(--surface-soft); cursor: pointer; }
+
+    .prog-wrap { display: flex; align-items: center; gap: var(--space-sm); }
+    .prog-bar  { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; max-width: 80px; }
+    .prog-fill { height: 100%; border-radius: 2px; background: var(--text-accent); transition: width 300ms; }
+    .prog-fill.warn { background: #D97706; }
+    .prog-fill.risk { background: #DC2626; }
+
+    /* ─── Overrides ─── */
+    .overrides-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg);
+    }
+    .overrides-header h2 { font-size: 18px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
+    .overrides-header p  { font-size: 13px; color: var(--text-soft); margin: 0; }
+
+    /* ─── Wastage ─── */
+    .wastage-layout {
+      display: grid; grid-template-columns: 360px 1fr; gap: var(--space-2xl);
+    }
+    .wastage-form {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: var(--space-xl);
+    }
+    .wastage-form h3 { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 var(--space-lg); }
+    .form-group { margin-bottom: var(--space-lg); }
+    .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--text-soft); margin-bottom: 6px; }
+    .form-input, .form-select {
+      width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px;
+      font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text);
+      outline: none; box-sizing: border-box;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--text-accent); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+
+    /* ─── Drawer ─── */
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.28);
+      z-index: 40; opacity: 0; pointer-events: none; transition: opacity 200ms;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: all; }
+    .drawer {
+      position: fixed; right: 0; top: 0; bottom: 0; width: 480px;
+      background: var(--surface); box-shadow: -4px 0 32px rgba(0,0,0,0.14);
+      z-index: 50; transform: translateX(100%); transition: transform 250ms ease;
+      overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header {
+      padding: var(--space-xl); border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between;
+      position: sticky; top: 0; background: var(--surface); z-index: 1;
+    }
+    .drawer-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .drawer-sub   { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .drawer-body  { padding: var(--space-xl); flex: 1; }
+    .close-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-soft); font-size: 16px;
+      padding: 4px 8px; border-radius: 6px; font-family: inherit;
+    }
+    .close-btn:hover { background: var(--surface-soft); }
+
+    /* ─── Batch import methods ─── */
+    .batch-methods {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md); margin-top: var(--space-lg);
+    }
+    .batch-method {
+      border: 1.5px solid var(--border); border-radius: 8px;
+      padding: var(--space-md) var(--space-lg); cursor: pointer;
+      transition: border-color 150ms; background: var(--surface-soft);
+      text-align: center;
+    }
+    .batch-method:hover     { border-color: var(--text-accent); }
+    .batch-method.selected  { border-color: var(--text-accent); background: #F0FDF4; }
+    .batch-icon { font-size: 22px; margin-bottom: 4px; }
+    .batch-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .batch-desc { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+
+    /* ─── Create override form ─── */
+    #create-override-panel { display: none; margin-top: var(--space-xl); }
+
+    /* ─── Section separator ─── */
+    .section-sep { height: 1px; background: var(--border); margin: var(--space-xl) 0; }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1100px) {
+      .summary-strip     { grid-template-columns: repeat(2, 1fr); }
+      .cov-summary       { grid-template-columns: 1fr 1fr; }
+      .conn-grid         { grid-template-columns: 1fr; }
+      .wastage-layout    { grid-template-columns: 1fr; }
+      .mod-item          { grid-template-columns: 180px 120px 1fr auto; }
+    }
     @media (max-width: 768px) {
-      .page-title {
-        font-size: 24px;
-      }
-      .page-header {
-        flex-wrap: wrap;
-        align-items: flex-start;
-        gap: var(--space-md);
-      }
-      .page-actions {
-        flex-wrap: wrap;
-      }
-      .table-card {
-        overflow-x: auto;
-      }
-      .data-table {
-        min-width: 700px;
-      }
-      .page-banner {
-        flex-wrap: wrap;
-      }
+      .cov-summary       { grid-template-columns: 1fr; }
+      .mod-item          { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
     }
-
-    /* Mobile ≤640px: stack filter bar, stack header actions */
-    @media (max-width: 640px) {
-      .page-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .page-actions {
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
-      .filter-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .search-wrap {
-        min-width: 0;
-      }
-      .filter-select {
-        width: 100%;
-      }
-    }
-
-    /* Small mobile ≤480px: reduce padding, single-column actions, full-width dialog */
-    @media (max-width: 480px) {
-      .page-body {
-        padding-block: var(--space-lg);
-        gap: var(--space-xl);
-      }
-      .page-actions {
-        flex-direction: column;
-        align-items: stretch;
-        width: 100%;
-      }
-      .page-actions .btn,
-      .page-actions .split-btn {
-        width: 100%;
-      }
-      .split-btn {
-        display: flex;
-      }
-      .split-btn-main {
-        flex: 1;
-      }
-      .page-banner {
-        padding: var(--space-sm) var(--space-md);
-      }
-      dialog {
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-        align-self: flex-end;
-      }
-      .dialog-inner {
-        padding: var(--space-lg);
-      }
-    }
-      /* Section spacing — flex gap on canvas, not page-body */
-    .page-body .napp-canvas {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3xl);
-    }
-
-    /* Role switcher */
-    .role-switch { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
-    .role-btn {
-      padding: 0 var(--space-md); height: var(--control-h);
-      background: var(--surface); border: none; cursor: pointer;
-      font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-soft);
-      transition: background var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
-    }
-    .role-btn.active { background: var(--surface-deep); color: var(--cream); }
-
-    /* Health monitor strip */
-    .health-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-lg); }
-    .health-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); }
-    .health-num { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; line-height: 1; }
-    .health-num.ok { color: var(--status-ok-fg); }
-    .health-num.warn { color: var(--status-warn-fg); }
-    .health-num.risk { color: var(--status-risk-fg); }
-    .health-label { display: flex; align-items: center; gap: var(--space-xs); font-size: 12px; font-weight: 600; color: var(--text-soft); margin-top: var(--space-sm); }
-    .health-label i { font-size: 14px; }
-    @media (max-width: 768px) { .health-strip { grid-template-columns: 1fr 1fr; } }
-
-    /* Outlet read-only mode: hide HQ controls + checkboxes */
-    body[data-role="outlet"] .hq-only { display: none !important; }
-    body[data-role="outlet"] .row-actions { display: none; }
-    body[data-role="hq"] .outlet-only { display: none !important; }
-
-    .agent-surface.resolved { opacity: 0.62; }
-    .agent-surface.resolved .agent-actions { display: none; }
-
-    /* Row checkbox */
-    .row-check { width: 16px; height: 16px; accent-color: var(--fern); cursor: pointer; }
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=5" data-active="pos-mapping"></script>
-  <div class="page-body">
-    <div class="napp-canvas" data-measure="wide">
+<div id="shell-mount"></div>
 
-      <!-- Notification banner -->
-      <div class="page-banner info" role="status">
-        <i class="ti ti-info-circle"></i>
-        Pushing to outlets with existing mappings will trigger a confirmation step.
+<main class="main">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- ── Page header ── -->
+    <div class="pm-header">
+      <div>
+        <div class="pm-eyebrow">Configuration</div>
+        <h1>POS Mapping</h1>
+        <p class="pm-subtitle">Connect your point-of-sale system and map menu items to recipes and inventory</p>
+      </div>
+      <div class="pm-header-right">
+        <div class="mode-toggle">
+          <button class="mode-btn active" onclick="switchMode('standalone')">Standalone</button>
+          <button class="mode-btn" onclick="switchMode('hq')">HQ View</button>
+        </div>
+        <button class="btn btn-primary" onclick="alert('Syncing POS now…')">↻ Sync now</button>
+      </div>
+    </div>
+
+    <!-- ── Tab navigation ── -->
+    <nav class="tab-nav" role="tablist">
+      <button class="tab-btn active" data-tab="health"   onclick="switchTab('health')">Health Monitor</button>
+      <button class="tab-btn"        data-tab="mapping"  onclick="switchTab('mapping')">
+        <span class="lbl-standalone">Menu Mapping</span>
+        <span class="lbl-hq" style="display:none">Master Mapping</span>
+      </button>
+      <button class="tab-btn hq-only" data-tab="coverage"  onclick="switchTab('coverage')">Outlet Coverage</button>
+      <button class="tab-btn hq-only" data-tab="overrides" onclick="switchTab('overrides')">
+        Overrides
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;background:#EDE9FE;color:#5B21B6;border-radius:9px;font-size:11px;font-weight:700">2</span>
+      </button>
+      <button class="tab-btn"        data-tab="wastage"  onclick="switchTab('wastage')">Wastage</button>
+    </nav>
+
+
+    <!-- ══════════════════════════════════════════════
+         TAB · HEALTH MONITOR
+    ══════════════════════════════════════════════ -->
+    <div id="tab-health" class="tab-panel active">
+
+      <!-- Connection cards -->
+      <div class="conn-grid">
+        <div class="conn-card connected">
+          <div class="conn-header">
+            <div class="conn-title">Abacus POS — Live API</div>
+            <span class="pill ok"><span class="pill-dot"></span>Connected</span>
+          </div>
+          <div class="conn-meta">Venue: <strong>Bondi Beach</strong> &nbsp;·&nbsp; Terminal ID: <span class="plu">ABX-0042</span></div>
+          <div class="conn-sync">Last sync: 14 Jun 2026 · 11:58 PM &nbsp;·&nbsp; 847 transactions received</div>
+          <div class="conn-actions">
+            <button class="btn btn-secondary btn-sm">Settings</button>
+            <button class="btn btn-secondary btn-sm">View sync log</button>
+          </div>
+        </div>
+
+        <div class="conn-card batch">
+          <div class="conn-header">
+            <div class="conn-title">Batch Import — Other POS</div>
+            <span class="pill warn"><span class="pill-dot"></span>Configured</span>
+          </div>
+          <div class="conn-meta">Source: <strong>Google Drive</strong> &nbsp;·&nbsp; /pos-exports/bondi &nbsp;·&nbsp; Polls every 24 h</div>
+          <div class="conn-sync">Last import: 14 Jun 2026 · 11:45 PM &nbsp;·&nbsp; 1 file · 312 transactions</div>
+          <div class="conn-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openBatchSetup()">Configure</button>
+            <button class="btn btn-secondary btn-sm">Import history</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Page header -->
-      <header class="page-header">
-        <div class="page-header-left">
-          <span class="page-eyebrow">POS Mapping</span>
-          <h1 class="page-title">Master mapping set</h1>
+      <!-- Summary strip -->
+      <div class="summary-strip">
+        <div class="summary-card">
+          <div class="s-label">Total POS Items</div>
+          <div class="s-value">48</div>
+          <div class="s-sub">Across 4 categories</div>
         </div>
-        <div class="page-actions">
-          <!-- Role switcher: preview the outlet (read-only) view (PM-2) -->
-          <div class="role-switch" role="group" aria-label="View as">
-            <button class="role-btn active" id="role-hq" onclick="setRole('hq')">HQ admin</button>
-            <button class="role-btn" id="role-outlet" onclick="setRole('outlet')">Outlet view</button>
+        <div class="summary-card ok">
+          <div class="s-label">Mapped</div>
+          <div class="s-value">38</div>
+          <div class="s-sub">79% coverage</div>
+        </div>
+        <div class="summary-card warn">
+          <div class="s-label">Unmapped</div>
+          <div class="s-value">7</div>
+          <div class="s-sub">Sold in last 30 days</div>
+        </div>
+        <div class="summary-card">
+          <div class="s-label">Ignored</div>
+          <div class="s-value">3</div>
+          <div class="s-sub">Non-inventory items</div>
+        </div>
+      </div>
+
+      <!-- Issues -->
+      <div class="issues-section">
+        <h3>Active Issues</h3>
+
+        <div class="issue-row">
+          <div class="issue-icon warn">⚠</div>
+          <div class="issue-body">
+            <div class="issue-title">7 POS items sold but not yet mapped</div>
+            <div class="issue-detail">Inventory is not depleting for these sales · Highest impact: Smashed Avo (52/day), Caesar Salad (15/day), Greek Salad (8/day)</div>
           </div>
-          <button class="btn btn-outline hq-only"><i class="ti ti-download"></i>Export</button>
-          <div class="split-btn hq-only" style="position:relative">
-            <button class="split-btn-main" onclick="pushAll()"><i class="ti ti-send"></i>Push to all</button>
-            <button class="split-btn-arrow" onclick="toggleSplitMenu(this)" aria-label="More push options" aria-haspopup="true" aria-expanded="false">
-              <i class="ti ti-chevron-down"></i>
-            </button>
-            <div class="split-dropdown" id="push-dropdown" role="menu">
-              <button class="split-dropdown-item" role="menuitem" onclick="pushAll()"><i class="ti ti-send"></i>Push to all</button>
-              <button class="split-dropdown-item" role="menuitem" onclick="posToast('Select variants to push to partial-menu outlets')"><i class="ti ti-list-check"></i>Push selected variants</button>
+          <div class="issue-cta">
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('mapping');setFilter('unmapped')">Map now →</button>
+          </div>
+        </div>
+
+        <div class="issue-row">
+          <div class="issue-icon warn">⚠</div>
+          <div class="issue-body">
+            <div class="issue-title">2 modifier groups on Chicken Burger have no action assigned</div>
+            <div class="issue-detail">Gluten-Free Bun and No Bun modifiers will not affect ingredient depletion until configured</div>
+          </div>
+          <div class="issue-cta">
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('mapping')">Review →</button>
+          </div>
+        </div>
+
+        <div class="issue-row" style="opacity:0.6">
+          <div class="issue-icon info">ℹ</div>
+          <div class="issue-body">
+            <div class="issue-title">1 mapping may be stale</div>
+            <div class="issue-detail">Greek Salad (PLU 3002) was mapped 47 days ago but has not appeared in sales for 12 days — may have been removed from menu</div>
+          </div>
+          <div class="issue-cta">
+            <button class="btn btn-ghost btn-sm">Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HQ-only: cross-outlet severity (hidden by default) -->
+      <div id="hq-severity" style="display:none">
+        <div class="section-sep"></div>
+        <div class="issues-section">
+          <h3>Outlet Connection Issues</h3>
+
+          <div class="issue-row">
+            <div class="issue-icon risk">✕</div>
+            <div class="issue-body">
+              <div class="issue-title">2 outlets have no POS connected — no sales data flowing</div>
+              <div class="issue-detail">Brisbane CBD, Gold Coast &nbsp;·&nbsp; Inventory depletion is not occurring &nbsp;·&nbsp; Variance data will be unreliable</div>
+            </div>
+            <div class="issue-cta">
+              <button class="btn btn-secondary btn-sm" onclick="switchTab('coverage')">View outlets →</button>
+            </div>
+          </div>
+
+          <div class="issue-row">
+            <div class="issue-icon warn">⚠</div>
+            <div class="issue-body">
+              <div class="issue-title">2 outlets connected but have mapping gaps</div>
+              <div class="issue-detail">Surry Hills (18 unmapped), St Kilda (24 unmapped) &nbsp;·&nbsp; Push master mapping to resolve quickly</div>
+            </div>
+            <div class="issue-cta">
+              <button class="btn btn-secondary btn-sm" onclick="switchTab('coverage')">View coverage →</button>
             </div>
           </div>
         </div>
-      </header>
-
-      <!-- Outlet read-only banner (PM-2) -->
-      <div class="page-banner info outlet-only" role="status">
-        <i class="ti ti-lock"></i>
-        Managed by HQ — POS mappings are set centrally and can't be edited here. Contact your administrator for changes.
       </div>
 
-      <!-- Mapping health monitor (PM-5) -->
-      <div class="health-strip hq-only" aria-label="Mapping health">
-        <div class="health-tile"><div class="health-num ok">312</div><div class="health-label"><i class="ti ti-circle-check" aria-hidden="true"></i>Mapped</div></div>
-        <div class="health-tile"><div class="health-num warn">14</div><div class="health-label"><i class="ti ti-circle-dashed" aria-hidden="true"></i>Partial</div></div>
-        <div class="health-tile"><div class="health-num risk">6</div><div class="health-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Unmapped</div></div>
-        <div class="health-tile"><div class="health-num warn">3</div><div class="health-label"><i class="ti ti-clock-exclamation" aria-hidden="true"></i>Stale &gt; 90d</div></div>
-      </div>
-
-      <!-- Sloan agent: suggested mapping for unmapped item (PM-6) -->
-      <article class="agent-surface hq-only" id="sloan-pos" data-agent-fn="governance">
-        <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
-          <div class="agent-card-head">
-            <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
-            <span class="agent-id"><span class="agent-name">Sloan</span><span class="agent-role">Governance agent</span></span>
-            <span class="agent-card-spacer" style="flex:1"></span>
-            <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+      <!-- Batch setup panel (hidden) -->
+      <div id="batch-setup-panel" style="display:none;margin-top:var(--space-xl)">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Batch Import Configuration</div>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('batch-setup-panel').style.display='none'">✕</button>
           </div>
-          <p style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">“Tiramisu” arrived from the POS unmapped — I found a likely match</p>
-          <p class="agent-why">A new POS item <strong>PST-020 “Tiramisu”</strong> at 18 outlets has no internal mapping. By name and recipe similarity it matches your internal item <strong>Tiramisu (Dessert)</strong> at <strong>96% confidence</strong>. Approve to map it across all 18 outlets.</p>
-          <div class="agent-actions">
-            <button class="nb-btn primary" onclick="approveMapping()"><i class="ti ti-check" aria-hidden="true"></i>Approve mapping</button>
-            <button class="nb-btn" onclick="posToast('Showing alternative matches…')">See alternatives</button>
-            <button class="nb-btn ghost" onclick="resolvePos('sloan-pos')">Dismiss</button>
+          <div style="padding:var(--space-xl)">
+            <p style="font-size:13px;color:var(--text-soft);margin:0 0 var(--space-lg)">
+              For POS systems without a direct API, configure an end-of-day sales report delivered via one of the methods below. Nomni will process the file automatically each night.
+            </p>
+            <div class="batch-methods">
+              <div class="batch-method selected" onclick="selectBatch(this)">
+                <div class="batch-icon">📁</div>
+                <div class="batch-name">Google Drive</div>
+                <div class="batch-desc">Watch a Drive folder for new CSV/Excel files</div>
+              </div>
+              <div class="batch-method" onclick="selectBatch(this)">
+                <div class="batch-icon">📧</div>
+                <div class="batch-name">Email</div>
+                <div class="batch-desc">Receive files sent to a dedicated Nomni inbox</div>
+              </div>
+              <div class="batch-method" onclick="selectBatch(this)">
+                <div class="batch-icon">🗄</div>
+                <div class="batch-name">FTP / SFTP</div>
+                <div class="batch-desc">Pull files from your POS SFTP endpoint</div>
+              </div>
+            </div>
+            <div style="margin-top:var(--space-xl);display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
+              <div class="form-group">
+                <label class="form-label">POS System Name</label>
+                <input type="text" class="form-input" value="Lightspeed Restaurant">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Google Drive Folder Path</label>
+                <input type="text" class="form-input" value="/pos-exports/bondi">
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--space-sm)">
+              <button class="btn btn-primary">Save configuration</button>
+              <button class="btn btn-secondary" onclick="document.getElementById('batch-setup-panel').style.display='none'">Cancel</button>
+            </div>
           </div>
         </div>
-      </article>
-
-      <div class="agent-fallback role-hq-only" data-fallback-fn="governance" style="align-items:center;gap:var(--space-md);padding:var(--space-lg) var(--space-xl);border:1px dashed var(--border);border-radius:var(--radius-lg);background:var(--surface);font-size:14px;color:var(--text);margin-bottom:var(--space-2xl);"><i class="ti ti-pencil-plus" style="font-size:20px;color:var(--text-accent);"></i><div style="flex:1;">Governance agent is off. Map new POS items manually using the table below.</div></div>
-
-      <!-- Filter bar -->
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <i class="ti ti-search"></i>
-          <input class="search-input" type="search" placeholder="Search items…" aria-label="Search POS mappings"/>
-        </div>
-        <select class="filter-select" aria-label="Filter by brand">
-          <option value="">All brands</option>
-          <option>Brand A</option>
-          <option>Brand B</option>
-        </select>
-        <select class="filter-select" aria-label="Filter by menu category">
-          <option value="">All menu categories</option>
-          <option>Breakfast</option>
-          <option>Mains</option>
-          <option>Desserts</option>
-          <option>Beverages</option>
-          <option>Sides</option>
-        </select>
-        <select class="filter-select" aria-label="Filter by outlet">
-          <option value="">All outlets</option>
-          <option>Circular Quay</option>
-          <option>Surry Hills</option>
-          <option>Bondi Beach</option>
-          <option>Melbourne CBD</option>
-        </select>
       </div>
 
-      <!-- Dense mapping table -->
-      <div class="table-card">
-        <table class="data-table" aria-label="POS master mapping set">
+    </div><!-- /tab-health -->
+
+
+    <!-- ══════════════════════════════════════════════
+         TAB · MENU MAPPING / MASTER MAPPING
+    ══════════════════════════════════════════════ -->
+    <div id="tab-mapping" class="tab-panel">
+
+      <div class="mapping-toolbar">
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="setFilter(this,'all')">All <span class="ftab-count">48</span></button>
+          <button class="filter-tab ftab-warn" onclick="setFilter(this,'unmapped')">Unmapped <span class="ftab-count">7</span></button>
+          <button class="filter-tab" onclick="setFilter(this,'partial')">Partial <span class="ftab-count">3</span></button>
+          <button class="filter-tab" onclick="setFilter(this,'mapped')">Mapped <span class="ftab-count">35</span></button>
+          <button class="filter-tab" onclick="setFilter(this,'ignored')">Ignored <span class="ftab-count">3</span></button>
+        </div>
+        <input type="search" class="search-box" placeholder="Search by name or PLU…">
+        <select class="sort-sel">
+          <option>Sort: Sales volume ↓</option>
+          <option>Sort: Name A → Z</option>
+          <option>Sort: Recently mapped</option>
+          <option>Sort: Unmapped first</option>
+        </select>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary btn-sm">↓ Import via Excel</button>
+        <button class="btn btn-primary btn-sm hq-only" style="display:none">Push to outlets ▾</button>
+      </div>
+
+      <div class="card">
+        <table class="map-table">
           <thead>
             <tr>
-              <th>Item name</th>
-              <th>Menu category</th>
-              <th>POS code</th>
-              <th>Variant</th>
-              <th style="text-align:right">Price</th>
-              <th>Assigned outlets</th>
-              <th>Mapped</th>
-              <th><span class="sr-only">Actions</span></th>
+              <th style="width:36px"><input type="checkbox" onchange="toggleAllCheck(this)"></th>
+              <th>POS Item</th>
+              <th>PLU</th>
+              <th>Category</th>
+              <th style="text-align:right">Daily Sales</th>
+              <th>Maps to</th>
+              <th>Target</th>
+              <th>Modifiers</th>
+              <th>Status</th>
+              <th style="width:40px"></th>
             </tr>
           </thead>
           <tbody>
-            <!-- Row 1 -->
-            <tr>
-              <td class="cell-name">Avocado Toast v3</td>
-              <td>Breakfast</td>
-              <td class="cell-code">BRG-001</td>
-              <td>Regular</td>
-              <td class="cell-price" style="text-align:right">$18.00</td>
-              <td class="cell-outlets">42 outlets</td>
-              <td><span class="status-pill ok">Mapped</span></td>
-              <td class="overflow-cell">
-                <div class="row-actions">
-                  <button class="link-action">Edit</button>
-                  <button class="link-action" onclick="openOverwriteDialog('Avocado Toast v3', 42)">Push</button>
-                  <div class="overflow-wrap">
-                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
-                    <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
-                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+
+            <!-- ── Flat White — fully mapped ── -->
+            <tr class="item-row" onclick="toggleMods('flat-white',this)">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Flat White</strong></td>
+              <td><span class="plu">1001</span></td>
+              <td style="color:var(--text-soft)">Beverages</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">145</td>
+              <td><span class="type-badge recipe">Recipe</span></td>
+              <td>Flat White</td>
+              <td><button class="expand-btn" onclick="event.stopPropagation();toggleMods('flat-white',this.closest('tr'))"><span class="exp-arrow" id="arr-flat-white">▶</span> 2 groups · 5 mods</button></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
+            </tr>
+            <tr class="mod-tree-row" id="mods-flat-white" style="display:none">
+              <td colspan="10">
+                <div class="mod-tree">
+
+                  <div class="mod-group">
+                    <div class="mod-group-name">Milk</div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Full Cream</div><div class="mod-default">Default — no change</div></div>
+                      <span class="action-badge default">Default</span>
+                      <div class="mod-detail">—</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Oat Milk</div></div>
+                      <span class="action-badge substitute">Substitute ⇄</span>
+                      <div class="mod-detail"><strong>Full cream milk</strong> → <strong>Oat milk</strong></div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Almond Milk</div></div>
+                      <span class="action-badge substitute">Substitute ⇄</span>
+                      <div class="mod-detail"><strong>Full cream milk</strong> → <strong>Almond milk</strong></div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">No Milk</div></div>
+                      <span class="action-badge remove">Remove −</span>
+                      <div class="mod-detail">Remove <strong>Full cream milk</strong> from depletion</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
                     </div>
                   </div>
+
+                  <div class="mod-group">
+                    <div class="mod-group-name">Extras</div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Extra Shot</div></div>
+                      <span class="action-badge multiply">Multiply ×</span>
+                      <div class="mod-detail"><strong>Espresso</strong> × 2 (double depletion)</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Extra Sugar</div></div>
+                      <span class="action-badge ignored">Ignored</span>
+                      <div class="mod-detail">Non-inventory — no depletion</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                  </div>
+
                 </div>
               </td>
             </tr>
-            <!-- Row 2 -->
-            <tr>
-              <td class="cell-name">Avocado Toast v3</td>
-              <td>Breakfast</td>
-              <td class="cell-code">BRG-001-L</td>
-              <td>Large</td>
-              <td class="cell-price" style="text-align:right">$22.00</td>
-              <td class="cell-outlets">42 outlets</td>
-              <td><span class="status-pill ok">Mapped</span></td>
-              <td class="overflow-cell">
-                <div class="row-actions">
-                  <button class="link-action">Edit</button>
-                  <button class="link-action" onclick="openOverwriteDialog('Avocado Toast v3 Large', 42)">Push</button>
-                  <div class="overflow-wrap">
-                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
-                    <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
-                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+
+            <!-- ── Avocado Toast — fully mapped ── -->
+            <tr class="item-row" onclick="toggleMods('avo-toast',this)">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Avocado Toast</strong></td>
+              <td><span class="plu">2003</span></td>
+              <td style="color:var(--text-soft)">Mains</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">52</td>
+              <td><span class="type-badge recipe">Recipe</span></td>
+              <td>Avocado Toast</td>
+              <td><button class="expand-btn" onclick="event.stopPropagation();toggleMods('avo-toast',this.closest('tr'))"><span class="exp-arrow" id="arr-avo-toast">▶</span> 3 groups · 6 mods</button></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
+            </tr>
+            <tr class="mod-tree-row" id="mods-avo-toast" style="display:none">
+              <td colspan="10">
+                <div class="mod-tree">
+
+                  <div class="mod-group">
+                    <div class="mod-group-name">Size</div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Regular</div><div class="mod-default">Default — no change</div></div>
+                      <span class="action-badge default">Default</span>
+                      <div class="mod-detail">—</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Large</div></div>
+                      <span class="action-badge multiply">Multiply ×</span>
+                      <div class="mod-detail">All recipe ingredients <strong>× 1.5</strong></div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
                     </div>
                   </div>
+
+                  <div class="mod-group">
+                    <div class="mod-group-name">Bread</div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Sourdough</div><div class="mod-default">Default — no change</div></div>
+                      <span class="action-badge default">Default</span>
+                      <div class="mod-detail">—</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Gluten-Free</div></div>
+                      <span class="action-badge substitute">Substitute ⇄</span>
+                      <div class="mod-detail"><strong>Sourdough bread</strong> → <strong>GF bread roll</strong></div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">No Bread</div></div>
+                      <span class="action-badge remove">Remove −</span>
+                      <div class="mod-detail">Remove <strong>Sourdough bread</strong> from depletion</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                  </div>
+
+                  <div class="mod-group">
+                    <div class="mod-group-name">Extras</div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Add Poached Egg</div></div>
+                      <span class="action-badge add-on">Add-on +</span>
+                      <div class="mod-detail">Add <strong>Free range egg × 1</strong></div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Add Smoked Salmon</div></div>
+                      <span class="action-badge add-on">Add-on +</span>
+                      <div class="mod-detail">Add <strong>Smoked salmon × 60 g</strong></div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                  </div>
+
                 </div>
               </td>
             </tr>
-            <!-- Row 3 -->
-            <tr>
-              <td class="cell-name">Classic Cheeseburger</td>
-              <td>Mains</td>
-              <td class="cell-code">BRG-010</td>
-              <td>Single</td>
-              <td class="cell-price" style="text-align:right">$22.00</td>
-              <td class="cell-outlets">38 outlets</td>
-              <td><span class="status-pill warn">Partial</span></td>
-              <td class="overflow-cell">
-                <div class="row-actions">
-                  <button class="link-action">Edit</button>
-                  <button class="link-action" onclick="openOverwriteDialog('Classic Cheeseburger', 38)">Push</button>
-                  <div class="overflow-wrap">
-                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
-                    <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
-                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
+
+            <!-- ── Chicken Burger — partial (2 mods unset) ── -->
+            <tr class="item-row" onclick="toggleMods('chk-burger',this)">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Chicken Burger</strong></td>
+              <td><span class="plu">2001</span></td>
+              <td style="color:var(--text-soft)">Mains</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">34</td>
+              <td><span class="type-badge recipe">Recipe</span></td>
+              <td>Chicken Burger</td>
+              <td><button class="expand-btn" onclick="event.stopPropagation();toggleMods('chk-burger',this.closest('tr'))"><span class="exp-arrow" id="arr-chk-burger">▶</span> <span style="color:#D97706;font-weight:600">2 unset</span></button></td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
+            </tr>
+            <tr class="mod-tree-row" id="mods-chk-burger" style="display:none">
+              <td colspan="10">
+                <div class="mod-tree">
+
+                  <div class="mod-group">
+                    <div class="mod-group-name">Bun</div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Brioche Bun</div><div class="mod-default">Default — no change</div></div>
+                      <span class="action-badge default">Default</span>
+                      <div class="mod-detail">—</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item unset">
+                      <div><div class="mod-name">Gluten-Free Bun</div><div style="font-size:11px;color:#D97706">⚠ Action not set</div></div>
+                      <select class="action-sel" onclick="event.stopPropagation()">
+                        <option value="">— Select action —</option>
+                        <option>Add-on</option>
+                        <option>Remove</option>
+                        <option value="substitute" selected>Substitute</option>
+                        <option>Multiply</option>
+                        <option>Ignore</option>
+                      </select>
+                      <div style="display:flex;gap:6px;align-items:center">
+                        <input type="text" class="inline-input" placeholder="Remove: Brioche bun" onclick="event.stopPropagation()">
+                        <span style="font-size:12px;color:var(--text-soft)">→</span>
+                        <input type="text" class="inline-input" placeholder="Add: GF bun" onclick="event.stopPropagation()">
+                      </div>
+                      <button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Save</button>
+                    </div>
+                    <div class="mod-item unset">
+                      <div><div class="mod-name">No Bun</div><div style="font-size:11px;color:#D97706">⚠ Action not set</div></div>
+                      <select class="action-sel" onclick="event.stopPropagation()">
+                        <option value="">— Select action —</option>
+                        <option>Add-on</option>
+                        <option value="remove" selected>Remove</option>
+                        <option>Substitute</option>
+                        <option>Multiply</option>
+                        <option>Ignore</option>
+                      </select>
+                      <div style="display:flex;gap:6px;align-items:center">
+                        <input type="text" class="inline-input" placeholder="Remove: Brioche bun" onclick="event.stopPropagation()">
+                      </div>
+                      <button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Save</button>
                     </div>
                   </div>
+
+                  <div class="mod-group">
+                    <div class="mod-group-name">Extras</div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Add Bacon</div></div>
+                      <span class="action-badge add-on">Add-on +</span>
+                      <div class="mod-detail">Add <strong>Bacon × 2 rashers</strong></div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">No Lettuce</div></div>
+                      <span class="action-badge remove">Remove −</span>
+                      <div class="mod-detail">Remove <strong>Iceberg lettuce</strong> from depletion</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                    <div class="mod-item">
+                      <div><div class="mod-name">Double Patty</div></div>
+                      <span class="action-badge multiply">Multiply ×</span>
+                      <div class="mod-detail"><strong>Chicken thigh</strong> × 2 (200 g → 400 g)</div>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                  </div>
+
                 </div>
               </td>
             </tr>
-            <!-- Row 4 -->
-            <tr>
-              <td class="cell-name">Classic Cheeseburger</td>
-              <td>Mains</td>
-              <td class="cell-code">BRG-010-D</td>
-              <td>Double</td>
-              <td class="cell-price" style="text-align:right">$26.00</td>
-              <td class="cell-outlets">38 outlets</td>
-              <td><span class="status-pill warn">Partial</span></td>
-              <td class="overflow-cell">
-                <div class="row-actions">
-                  <button class="link-action">Edit</button>
-                  <button class="link-action" onclick="openOverwriteDialog('Classic Cheeseburger Double', 38)">Push</button>
-                  <div class="overflow-wrap">
-                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
-                    <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
-                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
-                    </div>
-                  </div>
-                </div>
-              </td>
+
+            <!-- ── Cappuccino — mapped, no modifiers ── -->
+            <tr class="item-row">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Cappuccino</strong></td>
+              <td><span class="plu">1002</span></td>
+              <td style="color:var(--text-soft)">Beverages</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">87</td>
+              <td><span class="type-badge recipe">Recipe</span></td>
+              <td>Cappuccino</td>
+              <td style="color:var(--text-soft);font-size:12px">No modifiers</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
             </tr>
-            <!-- Row 5 -->
-            <tr>
-              <td class="cell-name">Flat White</td>
-              <td>Beverages</td>
-              <td class="cell-code">BRG-050</td>
-              <td>Regular</td>
-              <td class="cell-price" style="text-align:right">$6.00</td>
-              <td class="cell-outlets">42 outlets</td>
-              <td><span class="status-pill ok">Mapped</span></td>
-              <td class="overflow-cell">
-                <div class="row-actions">
-                  <button class="link-action">Edit</button>
-                  <button class="link-action" onclick="openOverwriteDialog('Flat White', 42)">Push</button>
-                  <div class="overflow-wrap">
-                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
-                    <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
-                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
-                    </div>
-                  </div>
-                </div>
+
+            <!-- ── Smashed Avo — UNMAPPED ── -->
+            <tr class="item-row unmapped-row">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td>
+                <strong>Smashed Avo</strong>
+                <span style="font-size:11px;color:#D97706;font-weight:500;margin-left:6px">· Not mapped</span>
               </td>
+              <td><span class="plu">2005</span></td>
+              <td style="color:var(--text-soft)">Mains</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#D97706">52</td>
+              <td onclick="event.stopPropagation()">
+                <select class="action-sel" style="font-size:12px">
+                  <option>Recipe</option>
+                  <option>Item</option>
+                </select>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <input type="text" class="inline-input" style="width:180px" placeholder="Search recipe…">
+              </td>
+              <td style="color:var(--text-soft);font-size:12px">—</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
+              <td><button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Map</button></td>
             </tr>
-            <!-- Row 6 -->
-            <tr>
-              <td class="cell-name">Flat White</td>
-              <td>Beverages</td>
-              <td class="cell-code">BRG-050-L</td>
-              <td>Large</td>
-              <td class="cell-price" style="text-align:right">$7.00</td>
-              <td class="cell-outlets">42 outlets</td>
-              <td><span class="status-pill ok">Mapped</span></td>
-              <td class="overflow-cell">
-                <div class="row-actions">
-                  <button class="link-action">Edit</button>
-                  <button class="link-action" onclick="openOverwriteDialog('Flat White Large', 42)">Push</button>
-                  <div class="overflow-wrap">
-                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
-                    <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
-                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
-                    </div>
-                  </div>
-                </div>
+
+            <!-- ── Caesar Salad — UNMAPPED ── -->
+            <tr class="item-row unmapped-row">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td>
+                <strong>Caesar Salad</strong>
+                <span style="font-size:11px;color:#D97706;font-weight:500;margin-left:6px">· Not mapped</span>
               </td>
+              <td><span class="plu">3001</span></td>
+              <td style="color:var(--text-soft)">Salads</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#D97706">15</td>
+              <td onclick="event.stopPropagation()">
+                <select class="action-sel" style="font-size:12px">
+                  <option>Recipe</option>
+                  <option>Item</option>
+                </select>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <input type="text" class="inline-input" style="width:180px" placeholder="Search recipe…">
+              </td>
+              <td style="color:var(--text-soft);font-size:12px">—</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
+              <td><button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Map</button></td>
             </tr>
-            <!-- Row 7 -->
-            <tr>
-              <td class="cell-name">Tiramisu</td>
-              <td>Desserts</td>
-              <td class="cell-code">PST-020</td>
-              <td class="cell-dash" id="tiramisu-variant">—</td>
-              <td class="cell-price" style="text-align:right">$14.00</td>
-              <td class="cell-outlets">18 outlets</td>
-              <td><span class="status-pill risk" id="tiramisu-status">Unmapped</span></td>
-              <td class="overflow-cell">
-                <div class="row-actions">
-                  <button class="link-action">Edit</button>
-                  <button class="link-action">Push</button>
-                  <div class="overflow-wrap">
-                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
-                    <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
-                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
-                    </div>
-                  </div>
-                </div>
-              </td>
+
+            <!-- ── Gift Card — IGNORED ── -->
+            <tr class="item-row ignored-row">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Gift Card</strong></td>
+              <td><span class="plu">4001</span></td>
+              <td style="color:var(--text-soft)">Other</td>
+              <td style="text-align:right;color:var(--text-soft)">—</td>
+              <td colspan="2" style="color:var(--text-soft);font-size:12px;font-style:italic">Non-inventory · ignored</td>
+              <td>—</td>
+              <td><span class="pill neutral">Ignored</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">Restore</button></td>
             </tr>
-            <!-- Row 8 -->
+
+          </tbody>
+        </table>
+
+        <!-- Pagination footer -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border)">
+          <span style="font-size:12px;color:var(--text-soft)">Showing 7 of 48 items</span>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-secondary btn-sm">← Prev</button>
+            <button class="btn btn-primary btn-sm">Next →</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-mapping -->
+
+
+    <!-- ══════════════════════════════════════════════
+         TAB · OUTLET COVERAGE (HQ only)
+    ══════════════════════════════════════════════ -->
+    <div id="tab-coverage" class="tab-panel">
+
+      <div class="cov-summary">
+        <div class="cov-card">
+          <div class="cov-icon ok">✓</div>
+          <div><div class="cov-label">Fully Mapped</div><div class="cov-value">2</div></div>
+        </div>
+        <div class="cov-card">
+          <div class="cov-icon warn">◑</div>
+          <div><div class="cov-label">Partial Coverage</div><div class="cov-value">2</div></div>
+        </div>
+        <div class="cov-card">
+          <div class="cov-icon risk">○</div>
+          <div><div class="cov-label">Dark — No POS</div><div class="cov-value">2</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+        <div style="display:flex;gap:var(--space-md)">
+          <select class="sort-sel">
+            <option>All groups</option>
+            <option>Sydney Cafes</option>
+            <option>Melbourne</option>
+            <option>Queensland</option>
+          </select>
+          <select class="sort-sel">
+            <option>All statuses</option>
+            <option>Full</option>
+            <option>Partial</option>
+            <option>Dark</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:var(--space-sm)">
+          <button class="btn btn-secondary">Push to selected outlets</button>
+          <button class="btn btn-primary">Push master mapping to all ▾</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td class="cell-name">Caesar Salad</td>
-              <td>Mains</td>
-              <td class="cell-code">PST-030</td>
-              <td class="cell-dash">—</td>
-              <td class="cell-price" style="text-align:right">$19.00</td>
-              <td class="cell-outlets">18 outlets</td>
-              <td><span class="status-pill ok">Mapped</span></td>
-              <td class="overflow-cell">
-                <div class="row-actions">
-                  <button class="link-action">Edit</button>
-                  <button class="link-action" onclick="openOverwriteDialog('Caesar Salad', 18)">Push</button>
-                  <div class="overflow-wrap">
-                    <button class="overflow-btn" aria-label="More actions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
-                    <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item"><i class="ti ti-edit"></i>Edit mapping</button>
-                      <button class="overflow-menu-item"><i class="ti ti-copy"></i>Duplicate</button>
-                    </div>
-                  </div>
+              <th style="width:36px"><input type="checkbox"></th>
+              <th>Outlet</th>
+              <th>Group</th>
+              <th>POS System</th>
+              <th>Connection</th>
+              <th>Last Sync</th>
+              <th>Coverage</th>
+              <th>Status</th>
+              <th style="width:40px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="openDrawer('bondi')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Bondi Beach</strong></td>
+              <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td>Abacus</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
+              <td class="plu" style="font-size:12px">14 Jun · 11:58 PM</td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+                  <span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span>
                 </div>
               </td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
+            </tr>
+            <tr onclick="openDrawer('surry')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Surry Hills</strong></td>
+              <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td>Abacus</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
+              <td class="plu" style="font-size:12px">14 Jun · 11:55 PM</td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill warn" style="width:63%"></div></div>
+                  <span style="font-size:12px;font-variant-numeric:tabular-nums">30/48</span>
+                </div>
+              </td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
+            </tr>
+            <tr onclick="openDrawer('stk')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>St Kilda</strong></td>
+              <td style="color:var(--text-soft)">Melbourne</td>
+              <td>Abacus</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
+              <td class="plu" style="font-size:12px">14 Jun · 11:50 PM</td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill warn" style="width:50%"></div></div>
+                  <span style="font-size:12px;font-variant-numeric:tabular-nums">24/48</span>
+                </div>
+              </td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
+            </tr>
+            <tr onclick="openDrawer('fitzroy')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Fitzroy</strong></td>
+              <td style="color:var(--text-soft)">Melbourne</td>
+              <td>Lightspeed</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Batch</span></td>
+              <td class="plu" style="font-size:12px">14 Jun · 11:45 PM</td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+                  <span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span>
+                </div>
+              </td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
+            </tr>
+            <tr onclick="openDrawer('brisbane')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Brisbane CBD</strong></td>
+              <td style="color:var(--text-soft)">Queensland</td>
+              <td>Square</td>
+              <td><span class="pill risk"><span class="pill-dot"></span>Not configured</span></td>
+              <td class="plu" style="font-size:12px;color:var(--text-soft)">Never</td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div>
+                  <span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span>
+                </div>
+              </td>
+              <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
+            </tr>
+            <tr onclick="openDrawer('goldcoast')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Gold Coast</strong></td>
+              <td style="color:var(--text-soft)">Queensland</td>
+              <td style="color:var(--text-soft)">—</td>
+              <td><span class="pill risk"><span class="pill-dot"></span>No POS</span></td>
+              <td class="plu" style="font-size:12px;color:var(--text-soft)">Never</td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div>
+                  <span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span>
+                </div>
+              </td>
+              <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⋯</button></td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Activity timeline -->
-      <div class="timeline-card">
-        <div class="timeline-heading">Recent activity</div>
-        <div class="timeline">
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div>
-              <div class="timeline-text">"Weekend Brunch" mapping set synced to <strong>42 outlets</strong></div>
-              <div class="timeline-meta">HQ Administrator</div>
-            </div>
-            <div class="timeline-time">2 days ago</div>
+    </div><!-- /tab-coverage -->
+
+
+    <!-- ══════════════════════════════════════════════
+         TAB · OVERRIDES (HQ only)
+    ══════════════════════════════════════════════ -->
+    <div id="tab-overrides" class="tab-panel">
+
+      <div class="overrides-header">
+        <div>
+          <h2>Outlet Overrides</h2>
+          <p>Outlet-specific mappings that differ from the HQ master. Created and managed by HQ on behalf of outlets.</p>
+        </div>
+        <button class="btn btn-primary" onclick="toggleOverrideForm()">+ Create override</button>
+      </div>
+
+      <!-- Create override form (hidden by default) -->
+      <div id="create-override-panel">
+        <div class="card" style="margin-bottom:var(--space-xl)">
+          <div class="card-header">
+            <div class="card-title">New Outlet Override</div>
+            <button class="btn btn-ghost btn-sm" onclick="toggleOverrideForm()">✕ Cancel</button>
           </div>
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div>
-              <div class="timeline-text">POS code <strong>BRG-010</strong> updated</div>
-              <div class="timeline-meta">HQ Administrator</div>
+          <div style="padding:var(--space-xl)">
+            <p style="font-size:13px;color:var(--text-soft);margin:0 0 var(--space-xl)">
+              Use this to map a POS item that only exists at a specific outlet — for example, a seasonal item or a brand-exclusive dish not in the HQ master.
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-lg)">
+              <div class="form-group">
+                <label class="form-label">Outlet</label>
+                <select class="form-select">
+                  <option>Select outlet…</option>
+                  <option>Bondi Beach</option>
+                  <option>Surry Hills</option>
+                  <option>St Kilda</option>
+                  <option>Fitzroy</option>
+                  <option>Brisbane CBD</option>
+                  <option>Gold Coast</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">POS Item Name</label>
+                <input type="text" class="form-input" placeholder="e.g. Matcha Latte">
+              </div>
+              <div class="form-group">
+                <label class="form-label">PLU / Button ID</label>
+                <input type="text" class="form-input" style="font-family:'IBM Plex Mono',monospace" placeholder="e.g. 2020">
+              </div>
             </div>
-            <div class="timeline-time">3 days ago</div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div>
-              <div class="timeline-text"><strong>Tiramisu</strong> added to master mapping set</div>
-              <div class="timeline-meta">HQ Administrator</div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:var(--space-lg)">
+              <div class="form-group">
+                <label class="form-label">Maps to</label>
+                <select class="form-select">
+                  <option>Recipe</option>
+                  <option>Internal Item</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Target Recipe / Item</label>
+                <input type="text" class="form-input" placeholder="Search recipe or item…">
+              </div>
             </div>
-            <div class="timeline-time">1 week ago</div>
+            <div style="display:flex;gap:var(--space-md)">
+              <button class="btn btn-primary">Save Override</button>
+              <button class="btn btn-secondary" onclick="toggleOverrideForm()">Cancel</button>
+            </div>
           </div>
         </div>
       </div>
 
-    </div><!-- /napp-canvas -->
-  </div><!-- /page-body -->
-
-  <!-- Overwrite confirm dialog -->
-  <dialog id="overwrite-dialog" aria-labelledby="ow-title" aria-describedby="ow-desc">
-    <div class="dialog-inner">
-      <div class="dialog-banner">
-        <i class="ti ti-alert-triangle"></i>
-        Overwrite warning — this action will modify existing outlet configurations.
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Outlet</th>
+              <th>POS Item</th>
+              <th>PLU</th>
+              <th>Override Type</th>
+              <th>Maps to</th>
+              <th>Target</th>
+              <th>Created by</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bondi Beach</strong></td>
+              <td>Acai Bowl</td>
+              <td><span class="plu">2010</span></td>
+              <td><span style="font-size:12px;color:#5B21B6;font-weight:500">Outlet-exclusive item</span></td>
+              <td><span class="type-badge recipe">Recipe</span></td>
+              <td>Acai Bowl</td>
+              <td style="color:var(--text-soft);font-size:12px">HQ Admin</td>
+              <td class="plu" style="font-size:12px;color:var(--text-soft)">10 Jun 2026</td>
+              <td>
+                <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
+                  <button class="btn btn-ghost btn-sm">Edit</button>
+                  <button class="btn btn-ghost btn-sm" style="color:#DC2626">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Fitzroy</strong></td>
+              <td>Vegan Burger</td>
+              <td><span class="plu">2015</span></td>
+              <td><span style="font-size:12px;color:#5B21B6;font-weight:500">Outlet-exclusive item</span></td>
+              <td><span class="type-badge recipe">Recipe</span></td>
+              <td>Vegan Burger</td>
+              <td style="color:var(--text-soft);font-size:12px">HQ Admin</td>
+              <td class="plu" style="font-size:12px;color:var(--text-soft)">2 Jun 2026</td>
+              <td>
+                <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
+                  <button class="btn btn-ghost btn-sm">Edit</button>
+                  <button class="btn btn-ghost btn-sm" style="color:#DC2626">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:var(--space-lg) var(--space-xl);border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--text-soft)">
+          2 overrides across 2 outlets
+        </div>
       </div>
-      <h2 class="dialog-title" id="ow-title">Overwrite existing POS mappings?</h2>
-      <p class="dialog-body" id="ow-desc">
-        This item is already mapped on outlets. Pushing will overwrite their current configuration.
-      </p>
-      <label class="dialog-checkbox-row">
-        <input type="checkbox" id="ow-checkbox" onchange="updateConfirmBtn()"/>
-        <span class="dialog-checkbox-label">I understand this will overwrite existing mappings</span>
-      </label>
-      <div class="dialog-footer">
-        <button class="btn btn-outline" onclick="closeOverwriteDialog()">Cancel</button>
-        <button class="btn btn-primary" id="ow-confirm-btn" disabled><i class="ti ti-send"></i>Push and overwrite</button>
+
+    </div><!-- /tab-overrides -->
+
+
+    <!-- ══════════════════════════════════════════════
+         TAB · WASTAGE
+    ══════════════════════════════════════════════ -->
+    <div id="tab-wastage" class="tab-panel">
+      <div class="wastage-layout">
+
+        <!-- Left: entry + POS voids -->
+        <div>
+          <div class="wastage-form">
+            <h3>Log Wastage</h3>
+            <div class="form-group">
+              <label class="form-label">Item (recipe or ingredient)</label>
+              <input type="text" class="form-input" placeholder="Search recipe or ingredient…">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Quantity</label>
+                <input type="number" class="form-input" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Unit</label>
+                <select class="form-select">
+                  <option>each / portion</option>
+                  <option>kg</option>
+                  <option>g</option>
+                  <option>L</option>
+                  <option>mL</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reason</label>
+              <select class="form-select">
+                <option>Spoilage / expired</option>
+                <option>Overproduction</option>
+                <option>Spill / accident</option>
+                <option>Quality rejection</option>
+                <option>Theft / shrinkage</option>
+                <option>Training / tasting</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notes (optional)</label>
+              <input type="text" class="form-input" placeholder="e.g. Fridge breakdown overnight">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date &amp; Time</label>
+              <input type="datetime-local" class="form-input" value="2026-06-15T14:00">
+            </div>
+            <button class="btn btn-primary" style="width:100%">Log Wastage</button>
+          </div>
+
+          <!-- POS void events -->
+          <div style="margin-top:var(--space-lg)">
+            <div class="card-header" style="background:var(--surface);border:1px solid var(--border);border-radius:10px 10px 0 0">
+              <div class="card-title">POS Void / Waste Events</div>
+              <span class="pill info">3 today</span>
+            </div>
+            <div class="card" style="border-radius:0 0 10px 10px">
+              <div style="padding:12px var(--space-lg);border-bottom:1px solid var(--border);font-size:13px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                  <span><strong>Chicken Burger</strong> × 1</span>
+                  <span class="plu">2001</span>
+                </div>
+                <div style="color:var(--text-soft);font-size:12px">Reason: Wrong order &nbsp;·&nbsp; 11:43 AM via Abacus</div>
+              </div>
+              <div style="padding:12px var(--space-lg);border-bottom:1px solid var(--border);font-size:13px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                  <span><strong>Flat White</strong> × 2</span>
+                  <span class="plu">1001</span>
+                </div>
+                <div style="color:var(--text-soft);font-size:12px">Reason: Spill &nbsp;·&nbsp; 09:20 AM via Abacus</div>
+              </div>
+              <div style="padding:12px var(--space-lg);font-size:13px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                  <span><strong>Avocado Toast</strong> × 1</span>
+                  <span class="plu">2003</span>
+                </div>
+                <div style="color:var(--text-soft);font-size:12px">Reason: Quality issue — ingredient &nbsp;·&nbsp; 08:05 AM via Abacus</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: wastage log -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+            <h3 style="font-size:15px;font-weight:600;color:var(--text);margin:0">Wastage Log</h3>
+            <div style="display:flex;gap:var(--space-sm)">
+              <select class="sort-sel">
+                <option>Last 7 days</option>
+                <option>Last 30 days</option>
+                <option>This month</option>
+              </select>
+              <button class="btn btn-secondary btn-sm">↓ Export</button>
+            </div>
+          </div>
+          <div class="card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Source</th>
+                  <th>Qty</th>
+                  <th>Reason</th>
+                  <th style="text-align:right">Est. Cost</th>
+                  <th>Logged by</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Chicken Burger</strong></td>
+                  <td><span class="pill info"><span class="pill-dot"></span>POS void</span></td>
+                  <td style="font-variant-numeric:tabular-nums">× 1</td>
+                  <td>Wrong order</td>
+                  <td style="font-variant-numeric:tabular-nums;text-align:right">$8.40</td>
+                  <td style="color:var(--text-soft);font-size:12px">Abacus POS</td>
+                  <td class="plu" style="font-size:12px;color:var(--text-soft)">14 Jun · 11:43</td>
+                </tr>
+                <tr>
+                  <td><strong>Flat White</strong></td>
+                  <td><span class="pill info"><span class="pill-dot"></span>POS void</span></td>
+                  <td style="font-variant-numeric:tabular-nums">× 2</td>
+                  <td>Spill</td>
+                  <td style="font-variant-numeric:tabular-nums;text-align:right">$1.20</td>
+                  <td style="color:var(--text-soft);font-size:12px">Abacus POS</td>
+                  <td class="plu" style="font-size:12px;color:var(--text-soft)">14 Jun · 09:20</td>
+                </tr>
+                <tr>
+                  <td><strong>Avocado</strong></td>
+                  <td><span class="pill neutral">Manual</span></td>
+                  <td style="font-variant-numeric:tabular-nums">3 each</td>
+                  <td>Spoilage</td>
+                  <td style="font-variant-numeric:tabular-nums;text-align:right">$7.50</td>
+                  <td style="color:var(--text-soft);font-size:12px">Jane K.</td>
+                  <td class="plu" style="font-size:12px;color:var(--text-soft)">13 Jun · 16:30</td>
+                </tr>
+                <tr>
+                  <td><strong>Sourdough bread</strong></td>
+                  <td><span class="pill neutral">Manual</span></td>
+                  <td style="font-variant-numeric:tabular-nums">1 loaf</td>
+                  <td>Overproduction</td>
+                  <td style="font-variant-numeric:tabular-nums;text-align:right">$4.80</td>
+                  <td style="color:var(--text-soft);font-size:12px">Jane K.</td>
+                  <td class="plu" style="font-size:12px;color:var(--text-soft)">13 Jun · 09:00</td>
+                </tr>
+                <tr>
+                  <td><strong>Full cream milk</strong></td>
+                  <td><span class="pill neutral">Manual</span></td>
+                  <td style="font-variant-numeric:tabular-nums">2 L</td>
+                  <td>Spoilage</td>
+                  <td style="font-variant-numeric:tabular-nums;text-align:right">$3.60</td>
+                  <td style="color:var(--text-soft);font-size:12px">Mark T.</td>
+                  <td class="plu" style="font-size:12px;color:var(--text-soft)">12 Jun · 17:15</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);font-size:12px;color:var(--text-soft)">
+              <span>5 entries &nbsp;·&nbsp; Est. total: <strong style="color:var(--text)">$25.50</strong></span>
+              <span>Page 1 of 3</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-wastage -->
+
+  </div><!-- /napp-canvas -->
+</main>
+
+
+<!-- ══════════════════════════════════════════════
+     OUTLET COVERAGE DRAWER
+══════════════════════════════════════════════ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="outlet-drawer">
+  <div class="drawer-header">
+    <div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-soft);margin-bottom:4px">Outlet Coverage</div>
+      <div class="drawer-title" id="d-outlet-name">Surry Hills</div>
+      <div class="drawer-sub" id="d-outlet-group">Sydney Cafes</div>
+    </div>
+    <button class="close-btn" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-xl)">
+      <div class="summary-card" style="padding:var(--space-md) var(--space-lg)">
+        <div class="s-label">Coverage</div>
+        <div class="s-value" id="d-coverage">30/48</div>
+      </div>
+      <div class="summary-card warn" style="padding:var(--space-md) var(--space-lg)">
+        <div class="s-label">Unmapped</div>
+        <div class="s-value" id="d-unmapped">18</div>
       </div>
     </div>
-  </dialog>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      NomniShell.init('POS mapping');
-      document.body.setAttribute('data-role', 'hq');
-    });
+    <div id="d-issues-section" style="margin-bottom:var(--space-xl)">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);margin-bottom:var(--space-md)">High-impact unmapped items</div>
+      <div id="d-issues">
+        <!-- populated by JS -->
+      </div>
+    </div>
 
-    /* Role switch (PM-2) */
-    function setRole(role) {
-      document.body.setAttribute('data-role', role);
-      document.getElementById('role-hq').classList.toggle('active', role === 'hq');
-      document.getElementById('role-outlet').classList.toggle('active', role === 'outlet');
+    <div id="d-dark-notice" style="display:none;margin-bottom:var(--space-xl)">
+      <div class="issue-row" style="border-color:#FECACA;background:#FEF2F2">
+        <div class="issue-icon risk">✕</div>
+        <div class="issue-body">
+          <div class="issue-title" style="color:#991B1B">No POS connected for this outlet</div>
+          <div class="issue-detail">Sales data is not flowing. Configure Abacus, a batch import, or another supported POS to begin tracking inventory depletion.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding-top:var(--space-lg);border-top:1px solid var(--border);display:flex;flex-direction:column;gap:var(--space-sm)">
+      <button class="btn btn-primary" id="d-push-btn" style="width:100%">Push master mapping to this outlet</button>
+      <button class="btn btn-secondary" style="width:100%">View full mapping for this outlet →</button>
+    </div>
+
+  </div>
+</div>
+
+
+<script src="../shared/shell.js?v=5"></script>
+<script>
+  /* ─── State ─── */
+  let currentMode = 'standalone';
+  let currentTab  = 'health';
+
+  /* ─── Mode switch ─── */
+  function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.mode-btn[onclick="switchMode('${mode}')"]`).classList.add('active');
+
+    const hqEls       = document.querySelectorAll('.hq-only');
+    const hqSeverity  = document.getElementById('hq-severity');
+    const lblStand    = document.querySelectorAll('.lbl-standalone');
+    const lblHq       = document.querySelectorAll('.lbl-hq');
+
+    if (mode === 'hq') {
+      hqEls.forEach(el => el.style.display = el.tagName === 'BUTTON' ? 'inline-flex' : 'block');
+      if (hqSeverity) hqSeverity.style.display = 'block';
+      lblStand.forEach(l => l.style.display = 'none');
+      lblHq.forEach(l => l.style.display = 'inline');
+    } else {
+      hqEls.forEach(el => el.style.display = 'none');
+      if (hqSeverity) hqSeverity.style.display = 'none';
+      lblStand.forEach(l => l.style.display = 'inline');
+      lblHq.forEach(l => l.style.display = 'none');
+      if (currentTab === 'coverage' || currentTab === 'overrides') switchTab('health');
+    }
+  }
+
+  /* ─── Tab switch ─── */
+  function switchTab(id) {
+    currentTab = id;
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('tab-' + id);
+    const btn   = document.querySelector(`[data-tab="${id}"]`);
+    if (panel) panel.classList.add('active');
+    if (btn)   btn.classList.add('active');
+  }
+
+  /* ─── Filter tabs ─── */
+  function setFilter(el, filter) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  /* ─── Modifier tree toggle ─── */
+  function toggleMods(id, row) {
+    const modRow = document.getElementById('mods-' + id);
+    const arrow  = document.getElementById('arr-' + id);
+    if (!modRow) return;
+    const isOpen = modRow.style.display !== 'none';
+    modRow.style.display = isOpen ? 'none' : 'table-row';
+    if (arrow) arrow.classList.toggle('open', !isOpen);
+    row.classList.toggle('expanded', !isOpen);
+  }
+
+  /* ─── Outlet drawer ─── */
+  const OUTLET_DATA = {
+    bondi:     { name: 'Bondi Beach',  group: 'Sydney Cafes',  coverage: '48/48', unmapped: 0,   dark: false },
+    surry:     { name: 'Surry Hills',  group: 'Sydney Cafes',  coverage: '30/48', unmapped: 18,  dark: false },
+    stk:       { name: 'St Kilda',     group: 'Melbourne',     coverage: '24/48', unmapped: 24,  dark: false },
+    fitzroy:   { name: 'Fitzroy',      group: 'Melbourne',     coverage: '48/48', unmapped: 0,   dark: false },
+    brisbane:  { name: 'Brisbane CBD', group: 'Queensland',    coverage: '0/48',  unmapped: 48,  dark: true  },
+    goldcoast: { name: 'Gold Coast',   group: 'Queensland',    coverage: '0/—',   unmapped: null, dark: true  },
+  };
+
+  const OUTLET_ISSUES = {
+    surry:    [{ name:'Smashed Avo',    plu:'2005', sales:52 }, { name:'Caesar Salad', plu:'3001', sales:15 }, { name:'Greek Salad', plu:'3002', sales:8 }],
+    stk:      [{ name:'Smashed Avo',    plu:'2005', sales:48 }, { name:'Caesar Salad', plu:'3001', sales:12 }],
+    brisbane: [],
+    goldcoast:[],
+  };
+
+  function openDrawer(outletKey) {
+    const d  = OUTLET_DATA[outletKey] || OUTLET_DATA.surry;
+    const iss = OUTLET_ISSUES[outletKey] || [];
+
+    document.getElementById('d-outlet-name').textContent  = d.name;
+    document.getElementById('d-outlet-group').textContent = d.group;
+    document.getElementById('d-coverage').textContent     = d.coverage;
+    document.getElementById('d-unmapped').textContent     = d.unmapped != null ? d.unmapped : '—';
+
+    const darkNotice   = document.getElementById('d-dark-notice');
+    const issSection   = document.getElementById('d-issues-section');
+    const issContainer = document.getElementById('d-issues');
+    const pushBtn      = document.getElementById('d-push-btn');
+
+    if (d.dark) {
+      darkNotice.style.display = 'block';
+      issSection.style.display = 'none';
+      pushBtn.disabled = true;
+      pushBtn.textContent = 'Connect POS first';
+    } else {
+      darkNotice.style.display = 'none';
+      issSection.style.display = d.unmapped > 0 ? 'block' : 'none';
+      pushBtn.disabled = false;
+      pushBtn.textContent = 'Push master mapping to this outlet';
+      issContainer.innerHTML = iss.map(i => `
+        <div class="issue-row" style="margin-bottom:6px">
+          <div class="issue-body">
+            <div class="issue-title">${i.name} <span class="plu" style="margin-left:6px">${i.plu}</span></div>
+            <div class="issue-detail">${i.sales} sales/day</div>
+          </div>
+          <button class="btn btn-primary btn-sm">Map</button>
+        </div>`).join('') || '<p style="font-size:13px;color:var(--text-soft)">No unmapped items.</p>';
     }
 
-    /* Toast */
-    function posToast(msg) {
-      let wrap = document.getElementById('pos-toast');
-      if (!wrap) {
-        wrap = document.createElement('div');
-        wrap.id = 'pos-toast';
-        wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;';
-        document.body.appendChild(wrap);
-      }
-      const t = document.createElement('div');
-      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
-      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
-      wrap.appendChild(t);
-      setTimeout(() => t.remove(), 3000);
-    }
+    document.getElementById('drawer-overlay').classList.add('open');
+    document.getElementById('outlet-drawer').classList.add('open');
+  }
 
-    /* Audit entry */
-    function addPosActivity(text, actor) {
-      const tl = document.querySelector('.timeline');
-      if (!tl) return;
-      const isAgent = (actor||'').startsWith('by ');
-      const item = document.createElement('div');
-      item.className = 'timeline-item';
-      item.innerHTML = '<div class="timeline-dot"' + (isAgent ? ' style="border-color:var(--procurement)"' : '') + '></div>' +
-        '<div><div class="timeline-text">' + text + '</div><div class="timeline-meta">' + (actor||'HQ Administrator') + '</div></div>' +
-        '<div class="timeline-time">Just now</div>';
-      tl.insertBefore(item, tl.firstChild);
-    }
+  function closeDrawer() {
+    document.getElementById('drawer-overlay').classList.remove('open');
+    document.getElementById('outlet-drawer').classList.remove('open');
+  }
 
-    /* Push to all → overwrite confirm (PM-4) */
-    function pushAll() {
-      document.querySelectorAll('.split-dropdown.open').forEach(m => m.classList.remove('open'));
-      openOverwriteDialog('the full master mapping set', 124);
-    }
+  /* ─── Override form toggle ─── */
+  function toggleOverrideForm() {
+    const panel = document.getElementById('create-override-panel');
+    const visible = panel.style.display !== 'none';
+    panel.style.display = visible ? 'none' : 'block';
+    if (!visible) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
-    /* Agent mapping approval (PM-6) */
-    function approveMapping() {
-      const status = document.getElementById('tiramisu-status');
-      const variant = document.getElementById('tiramisu-variant');
-      if (status) { status.className = 'status-pill ok'; status.textContent = 'Mapped'; }
-      if (variant) { variant.className = ''; variant.textContent = 'Regular'; }
-      resolvePos('sloan-pos', true);
-      posToast('Tiramisu mapped across 18 outlets by Sloan');
-      addPosActivity('<strong>Tiramisu</strong> mapped to internal item across 18 outlets', 'by Sloan');
-    }
-    function resolvePos(id, done) {
-      const card = document.getElementById(id);
-      if (!card) return;
-      const state = card.querySelector('.agent-state');
-      if (state) {
-        if (done) { state.className = 'agent-state done'; state.innerHTML = '<i class="ti ti-circle-check"></i>Done'; }
-        else { state.className = 'agent-state stepped-back'; state.innerHTML = '<i class="ti ti-player-pause"></i>Stepped back'; posToast('Dismissed — Sloan keeps watching'); }
-      }
-      card.classList.add('resolved');
-    }
+  /* ─── Batch setup ─── */
+  function openBatchSetup() {
+    const panel = document.getElementById('batch-setup-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    if (panel.style.display === 'block') panel.scrollIntoView({ behavior: 'smooth' });
+  }
+  function selectBatch(el) {
+    document.querySelectorAll('.batch-method').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
 
-    function toggleMenu(btn) {
-      const menu = btn.nextElementSibling;
-      document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
-      menu.classList.toggle('open');
-    }
-    document.addEventListener('click', e => {
-      if (!e.target.closest('.overflow-btn') && !e.target.closest('.split-btn-arrow')) {
-        document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
-        document.querySelectorAll('.split-dropdown.open').forEach(m => m.classList.remove('open'));
-      }
-    });
+  /* ─── Bulk checkbox ─── */
+  function toggleAllCheck(master) {
+    document.querySelectorAll('#mapping-tbody input[type="checkbox"]').forEach(c => c.checked = master.checked);
+  }
 
-    function toggleSplitMenu(btn) {
-      const dd = btn.nextElementSibling;
-      dd.classList.toggle('open');
-      btn.setAttribute('aria-expanded', dd.classList.contains('open'));
-    }
+  /* ─── Keyboard: Escape closes drawer ─── */
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
-    function openOverwriteDialog(name, outlets) {
-      document.getElementById('ow-desc').innerHTML =
-        `<strong>${name}</strong> is already mapped on <strong>${outlets} outlets</strong>. ` +
-        `Pushing will overwrite their current configuration.`;
-      document.getElementById('ow-checkbox').checked = false;
-      document.getElementById('ow-confirm-btn').disabled = true;
-      document.getElementById('overwrite-dialog').showModal();
-      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
-    }
-    function closeOverwriteDialog() {
-      document.getElementById('overwrite-dialog').close();
-    }
-    function updateConfirmBtn() {
-      document.getElementById('ow-confirm-btn').disabled = !document.getElementById('ow-checkbox').checked;
-    }
-    document.getElementById('overwrite-dialog')?.addEventListener('click', e => {
-      if (e.target === e.currentTarget) closeOverwriteDialog();
-    });
-    document.getElementById('ow-confirm-btn')?.addEventListener('click', () => {
-      closeOverwriteDialog();
-      posToast('Mappings pushed — outlets updated');
-      addPosActivity('Master mapping set pushed (overwrite confirmed)', 'HQ Administrator');
-    });
-  </script>
+  /* ─── Init ─── */
+  document.addEventListener('DOMContentLoaded', () => {
+    // default: create override panel hidden
+    document.getElementById('create-override-panel').style.display = 'none';
+  });
+</script>
 </body>
 </html>
