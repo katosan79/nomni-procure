@@ -48,38 +48,6 @@
     }
     .ask-chip:hover { border-color: var(--text-accent); color: var(--text); }
 
-    /* ── Agent brief ── */
-    .brief-head {
-      display: flex; align-items: baseline; justify-content: space-between;
-      gap: var(--space-md); margin-bottom: var(--space-lg);
-    }
-    .brief-title { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
-    .brief-meta { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
-    .brief-feed { display: flex; flex-direction: column; gap: var(--space-lg); }
-
-    /* Each callout is its own agent surface card */
-    .brief-card { padding: var(--space-lg) var(--space-xl); }
-    .brief-card-top {
-      display: flex; align-items: center; gap: var(--space-md);
-      margin-bottom: var(--space-md);
-    }
-    .brief-card-top .agent-card-spacer { flex: 1; }
-    .brief-headline {
-      font-size: 15px; font-weight: 600; color: var(--text);
-      line-height: 1.4; margin-bottom: var(--space-xs);
-    }
-    .brief-why { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
-    .brief-why .spark { font-weight: 600; }
-    .brief-actions {
-      display: flex; align-items: center; gap: var(--space-sm);
-      margin-top: var(--space-md); flex-wrap: wrap;
-    }
-    /* Resolved (approved/undone) state */
-    .brief-card.resolved { opacity: 0.62; }
-    .brief-card.resolved .brief-actions { display: none; }
-    .brief-resolved-line { display: none; margin-top: var(--space-md); }
-    .brief-card.resolved .brief-resolved-line { display: flex; }
-
     /* ── Network revenue pulse ── */
     .pulse-row {
       display: grid;
@@ -132,7 +100,6 @@
       margin-top: var(--space-xs);
       font-feature-settings: 'tnum' 1;
     }
-    /* live sub-stats: COGS + variance */
     .pulse-substats {
       display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);
       padding-top: var(--space-lg);
@@ -148,7 +115,7 @@
       display: flex; align-items: baseline; gap: var(--space-xs);
     }
     .pulse-substat-value .delta { font-size: 11px; font-weight: 600; }
-    .pulse-substat-value .delta.up   { color: var(--rose); }   /* COGS up = bad */
+    .pulse-substat-value .delta.up   { color: var(--rose); }
     .pulse-substat-value .delta.down { color: var(--spring); }
     .pulse-sparkline {
       display: flex; align-items: flex-end;
@@ -202,12 +169,43 @@
     .group-bar-delta.up { color: var(--status-ok-fg); }
     .group-bar-delta.down { color: var(--status-risk-fg); }
 
+    /* ── Agent brief ── */
+    .brief-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: var(--space-md); margin-bottom: var(--space-lg);
+    }
+    .brief-title { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+    .brief-meta { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .brief-feed { display: flex; flex-direction: column; gap: var(--space-lg); }
+
+    .brief-card { padding: var(--space-lg) var(--space-xl); }
+    .brief-card-top {
+      display: flex; align-items: center; gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+    .brief-card-top .agent-card-spacer { flex: 1; }
+    .brief-headline {
+      font-size: 15px; font-weight: 600; color: var(--text);
+      line-height: 1.4; margin-bottom: var(--space-xs);
+    }
+    .brief-why { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+    .brief-why .spark { font-weight: 600; }
+    .brief-actions {
+      display: flex; align-items: center; gap: var(--space-sm);
+      margin-top: var(--space-md); flex-wrap: wrap;
+    }
+    .brief-card.resolved { opacity: 0.62; }
+    .brief-card.resolved .brief-actions { display: none; }
+    .brief-resolved-line { display: none; margin-top: var(--space-md); }
+    .brief-card.resolved .brief-resolved-line { display: flex; }
+
     /* ── KPI strip ── */
     .kpi-strip {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: var(--space-lg);
     }
+    .kpi-strip.kpi-five { grid-template-columns: repeat(5, 1fr); }
     .kpi-tile {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -236,15 +234,6 @@
     .kpi-context .ok   { color: var(--status-ok-fg); }
     .kpi-context .warn { color: var(--status-warn-fg); }
     .kpi-context .risk { color: var(--status-risk-fg); }
-    .kpi-spark {
-      display: flex; align-items: flex-end;
-      gap: 2px; height: 24px; margin-top: var(--space-xs);
-    }
-    .kpi-spark-bar {
-      flex: 1; border-radius: var(--radius-xs) var(--radius-xs) 0 0;
-      background: color-mix(in srgb, var(--fern) 22%, transparent);
-    }
-    .kpi-spark-bar.hi { background: var(--text-accent); }
 
     /* ── Pending actions ── */
     .pending-strip {
@@ -369,7 +358,6 @@
     }
     .group-health-item:last-child { border-bottom: none; }
     .group-health-item:hover { background: var(--surface-soft); }
-    /* dot now carries an icon — shape conveys state, not colour alone */
     .group-dot {
       width: 20px; height: 20px; border-radius: var(--radius-pill); flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
@@ -387,13 +375,18 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .group-count { font-size: 11px; color: var(--text-soft); margin-top: 1px; font-feature-settings: 'tnum' 1; }
+    .group-signals { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; align-items: flex-end; }
     .group-issue {
       font-size: 11px; font-weight: 600; color: var(--text-soft);
-      text-align: right; white-space: nowrap;
+      white-space: nowrap;
     }
     .group-issue.warn { color: var(--status-warn-fg); }
     .group-issue.risk { color: var(--status-risk-fg); }
     .group-issue.ok { color: var(--status-ok-fg); }
+    .group-issue-sub {
+      font-size: 10px; color: var(--text-soft); white-space: nowrap;
+    }
+    .group-issue-sub.warn { color: var(--status-warn-fg); opacity: 0.8; }
 
     /* ── Top-moving items ── */
     .mover-list { display: flex; flex-direction: column; }
@@ -410,7 +403,12 @@
     }
     .mover-info { flex: 1; min-width: 0; }
     .mover-name { font-size: 13px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: var(--space-xs); }
-    .mover-category { font-size: 11px; color: var(--text-soft); margin-top: 1px; font-feature-settings: 'tnum' 1; }
+    .mover-sub { font-size: 11px; color: var(--text-soft); margin-top: 1px; font-feature-settings: 'tnum' 1; display: flex; align-items: center; gap: var(--space-sm); }
+    .mover-list-link {
+      font-size: 11px; font-weight: 600; color: var(--text-link);
+      text-decoration: none;
+    }
+    .mover-list-link:hover { text-decoration: underline; }
     .mover-velocity {
       display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
     }
@@ -445,12 +443,14 @@
     /* ── Responsive ── */
     @media (max-width: 1024px) {
       .pulse-row { grid-template-columns: 1fr; }
-      .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+      .kpi-strip,
+      .kpi-strip.kpi-five { grid-template-columns: repeat(3, 1fr); }
       .two-col { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .greeting-title { font-size: 26px; }
-      .kpi-strip { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+      .kpi-strip,
+      .kpi-strip.kpi-five { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
       .kpi-value { font-size: 28px; }
       .page-body { padding-block: var(--space-lg); }
       .page-body .napp-canvas { gap: var(--space-2xl); }
@@ -466,14 +466,14 @@
 
       <!-- 1 · Greeting + ask bar -->
       <header class="greeting">
-        <p class="greeting-eyebrow" id="greeting-date">Tuesday, 10 June 2025</p>
+        <p class="greeting-eyebrow" id="greeting-date">Sunday, 15 June 2025</p>
         <h1 class="greeting-title" id="greeting-text">Good morning, Keith.</h1>
-        <p class="greeting-sub">Your agents worked overnight. Here's what needs you across your 124 outlets.</p>
+        <p class="greeting-sub" id="greeting-sub">Your agents worked overnight. Here's what needs you across your 124 outlets.</p>
 
         <div class="ask-block agent-feature">
           <form class="ask-bar" onsubmit="askSubmit(event)" role="search" aria-label="Ask Nomni">
             <span class="agent-mark" aria-hidden="true"></span>
-            <input type="text" id="ask-input" placeholder="Ask anything — “which outlets exceeded variance last week?”" aria-label="Ask Nomni a question"/>
+            <input type="text" id="ask-input" placeholder="Ask anything — "which outlets exceeded variance last week?"" aria-label="Ask Nomni a question"/>
             <button type="submit" class="nb-btn primary" aria-label="Ask">
               <i class="ti ti-arrow-up" aria-hidden="true"></i>
             </button>
@@ -486,17 +486,88 @@
         </div>
       </header>
 
-      <!-- 2 · Agent morning brief -->
+      <!-- 2 · Network revenue pulse -->
+      <section aria-label="Network revenue pulse" class="pulse-row">
+
+        <div class="pulse-hero">
+          <div>
+            <p class="pulse-eyebrow">
+              Network revenue
+              <span class="live-pill"><span class="live-dot" aria-hidden="true"></span>LIVE</span>
+            </p>
+          </div>
+          <div>
+            <p class="pulse-value"><sup>$</sup>248k</p>
+            <div class="pulse-delta up"><i class="ti ti-trending-up" aria-hidden="true"></i>+9% vs last week</div>
+            <p class="pulse-context">Yesterday · 124 outlets · AUD</p>
+            <div class="pulse-sparkline" aria-label="7-day revenue trend" style="margin-top:var(--space-md);">
+              <div class="spark-bar" style="height:55%" title="Mon"></div>
+              <div class="spark-bar" style="height:72%" title="Tue"></div>
+              <div class="spark-bar" style="height:61%" title="Wed"></div>
+              <div class="spark-bar" style="height:80%" title="Thu"></div>
+              <div class="spark-bar" style="height:91%" title="Fri"></div>
+              <div class="spark-bar today" style="height:100%" title="Sat (yesterday)"></div>
+              <div class="spark-bar" style="height:0%" title="Sun (today, in progress)"></div>
+            </div>
+          </div>
+          <div class="pulse-substats">
+            <div>
+              <p class="pulse-substat-label">Food cost %</p>
+              <p class="pulse-substat-value">28.4<sup style="font-size:12px;">%</sup> <span class="delta up">▲ 1.4pts</span></p>
+            </div>
+            <div>
+              <p class="pulse-substat-label">Avg variance</p>
+              <p class="pulse-substat-value">3.2<sup style="font-size:12px;">%</sup> <span class="delta down">▼ 0.8pts</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-chart-panel">
+          <div class="group-chart-header">
+            <span class="group-chart-title">Revenue by group · Yesterday</span>
+            <a class="panel-action" href="reporting.html">Full report →</a>
+          </div>
+          <div class="group-bars">
+            <div class="group-bar-row">
+              <span class="group-bar-label">NSW Metro</span>
+              <div class="group-bar-track"><div class="group-bar-fill highlight" style="width:100%"></div></div>
+              <span class="group-bar-amt">$98k</span>
+              <span class="group-bar-delta up"><i class="ti ti-arrow-up"></i>11%</span>
+            </div>
+            <div class="group-bar-row">
+              <span class="group-bar-label">QLD Coastal</span>
+              <div class="group-bar-track"><div class="group-bar-fill" style="width:73%"></div></div>
+              <span class="group-bar-amt">$72k</span>
+              <span class="group-bar-delta up"><i class="ti ti-arrow-up"></i>7%</span>
+            </div>
+            <div class="group-bar-row">
+              <span class="group-bar-label">VIC Metro</span>
+              <div class="group-bar-track"><div class="group-bar-fill" style="width:55%"></div></div>
+              <span class="group-bar-amt">$54k</span>
+              <span class="group-bar-delta down"><i class="ti ti-arrow-down"></i>3%</span>
+            </div>
+            <div class="group-bar-row">
+              <span class="group-bar-label">SA &amp; WA</span>
+              <div class="group-bar-track"><div class="group-bar-fill" style="width:24%"></div></div>
+              <span class="group-bar-amt">$24k</span>
+              <span class="group-bar-delta up"><i class="ti ti-arrow-up"></i>5%</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 3 · Agent morning brief -->
       <section class="role-hq-only agent-feature" aria-label="Agent morning brief">
         <div class="brief-head">
           <h2 class="brief-title">Your morning brief</h2>
-          <span class="brief-meta" id="brief-meta">4 agents reporting · updated 6:42 am</span>
+          <span class="brief-meta" id="brief-meta">5 agents reporting · updated 6:42 am</span>
         </div>
 
         <div class="brief-feed">
 
-          <!-- Otto · Ordering · Proposed -->
-          <article class="agent-surface brief-card" id="card-otto" data-agent-fn="ordering" aria-label="Ordering agent proposal">
+          <!-- Otto · Ordering -->
+          <article class="agent-surface brief-card" id="card-otto" data-agent-fn="ordering" aria-label="Ordering agent">
             <div class="brief-card-top">
               <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
               <span class="agent-id">
@@ -504,23 +575,23 @@
                 <span class="agent-role">Ordering agent</span>
               </span>
               <span class="agent-card-spacer"></span>
-              <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+              <span class="agent-state" id="otto-state"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
             </div>
-            <p class="brief-headline">Drafted replenishment POs for 12 outlets running short on Chicken Breast 500g</p>
-            <p class="brief-why">Sell-through ran <span class="spark">22% above forecast</span> this week. At current par levels these 12 NSW &amp; VIC outlets hit zero before Friday's delivery. I've staged 12 draft orders totalling <span class="spark">$8,240</span> to the preferred supplier — outlets approve with one tap.</p>
-            <div class="brief-actions">
-              <button class="nb-btn primary" onclick="approveCard('otto','Approved — 12 draft POs sent to outlets for confirmation')"><i class="ti ti-check" aria-hidden="true"></i>Approve all 12</button>
+            <p class="brief-headline" id="otto-headline">Drafted replenishment POs for 12 outlets running short on Chicken Breast 500g</p>
+            <p class="brief-why" id="otto-why">Sell-through ran <span class="spark">22% above forecast</span> this week. At current par levels these 12 NSW &amp; VIC outlets hit zero before Friday's delivery. I've staged 12 draft orders totalling <span class="spark">$8,240</span> to the preferred supplier — outlets approve with one tap.</p>
+            <div class="brief-actions" id="otto-actions">
+              <button class="nb-btn primary" id="otto-cta" onclick="approveCard('otto','Approved — 12 draft POs sent to outlets for confirmation')"><i class="ti ti-check" aria-hidden="true"></i><span id="otto-cta-label">Approve all 12</span></button>
               <button class="nb-btn" onclick="toast('Opening draft orders…')">Review drafts</button>
               <button class="nb-btn ghost" onclick="dismissCard('otto')">Dismiss</button>
             </div>
             <div class="brief-resolved-line agent-byline">
-              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Approved by you · 12 POs sent ·
+              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Approved by you · POs sent ·
               <a class="undo-link" onclick="undoCard('otto')">Undo</a>
             </div>
           </article>
 
-          <!-- Sloan · Governance · Needs-you -->
-          <article class="agent-surface brief-card" id="card-sloan" data-agent-fn="governance" aria-label="Governance agent — needs you">
+          <!-- Sloan · Governance -->
+          <article class="agent-surface brief-card" id="card-sloan" data-agent-fn="governance" aria-label="Governance agent">
             <div class="brief-card-top">
               <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
               <span class="agent-id">
@@ -528,18 +599,22 @@
                 <span class="agent-role">Governance agent</span>
               </span>
               <span class="agent-card-spacer"></span>
-              <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
+              <span class="agent-state needs-you" id="sloan-state"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
             </div>
-            <p class="brief-headline">POS sync failed at Bondi Beach — Winter Menu mappings not applied</p>
-            <p class="brief-why">Outlet onboarded 3 days ago. The POS is connected and revenue is flowing, but my initial mapping push returned an auth error, so 28 menu items are unmapped. I can't retry without a refreshed POS token — that needs you.</p>
-            <div class="brief-actions">
-              <button class="nb-btn primary" onclick="window.location.href='pos-mapping.html'"><i class="ti ti-arrow-right" aria-hidden="true"></i>Fix mapping</button>
+            <p class="brief-headline" id="sloan-headline">POS sync failed at Bondi Beach — Winter Menu mappings not applied</p>
+            <p class="brief-why" id="sloan-why">Outlet onboarded 3 days ago. The POS is connected and revenue is flowing, but my initial mapping push returned an auth error, so 28 menu items are unmapped. I can't retry without a refreshed POS token — that needs you.</p>
+            <div class="brief-actions" id="sloan-actions">
+              <button class="nb-btn primary" id="sloan-cta" onclick="window.location.href='pos-mapping.html'"><i class="ti ti-arrow-right" aria-hidden="true"></i><span id="sloan-cta-label">Fix mapping</span></button>
               <button class="nb-btn" onclick="toast('Opening error log…')">View error</button>
+            </div>
+            <div class="brief-resolved-line agent-byline">
+              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Done by you ·
+              <a class="undo-link" onclick="undoCard('sloan')">Undo</a>
             </div>
           </article>
 
-          <!-- Mara · Margin · Proposed -->
-          <article class="agent-surface brief-card" id="card-mara" data-agent-fn="margin" aria-label="Margin agent proposal">
+          <!-- Mara · Margin -->
+          <article class="agent-surface brief-card" id="card-mara" data-agent-fn="margin" aria-label="Margin agent">
             <div class="brief-card-top">
               <span class="agent-avatar" data-agent="mara" aria-hidden="true">Ma</span>
               <span class="agent-id">
@@ -547,23 +622,23 @@
                 <span class="agent-role">Margin agent</span>
               </span>
               <span class="agent-card-spacer"></span>
-              <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+              <span class="agent-state proposed" id="mara-state"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
             </div>
-            <p class="brief-headline">Avocado is up 14% — 3 recipes have dropped below their target margin</p>
-            <p class="brief-why">Yesterday's invoice from Fresh Produce Co lifted avocado to <span class="spark">$2.40/ea</span>. Smashed Avo, Avo Toast and the Poke Bowl now sit <span class="spark">2–4 points</span> under target. Quickest fix: reprice the three items <span class="spark">+$0.40</span> to restore margin — POS prices sync automatically.</p>
-            <div class="brief-actions">
-              <button class="nb-btn primary" onclick="approveCard('mara','Reprice approved — 3 recipes updated, POS prices syncing')"><i class="ti ti-check" aria-hidden="true"></i>Reprice +$0.40</button>
-              <button class="nb-btn" onclick="window.location.href='recipes.html'">See 3 recipes</button>
+            <p class="brief-headline" id="mara-headline">Avocado is up 14% — 3 recipes have dropped below their target margin</p>
+            <p class="brief-why" id="mara-why">Yesterday's invoice from Fresh Produce Co lifted avocado to <span class="spark">$2.40/ea</span>. Smashed Avo, Avo Toast and the Poke Bowl now sit <span class="spark">2–4 points</span> under target. Quickest fix: reprice the three items <span class="spark">+$0.40</span> to restore margin — POS prices sync automatically.</p>
+            <div class="brief-actions" id="mara-actions">
+              <button class="nb-btn primary" id="mara-cta" onclick="approveCard('mara','Reprice approved — recipes updated, POS prices syncing')"><i class="ti ti-check" aria-hidden="true"></i><span id="mara-cta-label">Reprice +$0.40</span></button>
+              <button class="nb-btn" onclick="window.location.href='recipes.html'">See recipes</button>
               <button class="nb-btn ghost" onclick="toast('Showing rebuild &amp; re-source options…')">Other options</button>
             </div>
             <div class="brief-resolved-line agent-byline">
-              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Repriced by you · 3 recipes · POS syncing ·
+              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Approved by you · POS syncing ·
               <a class="undo-link" onclick="undoCard('mara')">Undo</a>
             </div>
           </article>
 
-          <!-- Cyrus · Invoice · Needs-you -->
-          <article class="agent-surface brief-card" id="card-cyrus" data-agent-fn="invoice" aria-label="Invoice agent — needs you">
+          <!-- Cyrus · Invoice -->
+          <article class="agent-surface brief-card" id="card-cyrus" data-agent-fn="invoice" aria-label="Invoice agent">
             <div class="brief-card-top">
               <span class="agent-avatar" data-agent="cyrus" aria-hidden="true">Cy</span>
               <span class="agent-id">
@@ -571,22 +646,50 @@
                 <span class="agent-role">Invoice &amp; spend agent</span>
               </span>
               <span class="agent-card-spacer"></span>
-              <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
+              <span class="agent-state needs-you" id="cyrus-state"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
             </div>
-            <p class="brief-headline">2 invoices failed 3-way match — overbilled by $312 in total</p>
-            <p class="brief-why">I auto-posted <span class="spark">38 of 40</span> invoices overnight. Two from Harbour Meats don't match their GRNs — billed quantities exceed what was received at Surry Hills and Newtown. I've held both for your call.</p>
-            <div class="brief-actions">
-              <button class="nb-btn primary" onclick="toast('Opening exception queue…')"><i class="ti ti-arrow-right" aria-hidden="true"></i>Review exceptions</button>
-              <button class="nb-btn" onclick="toast('Contacting Harbour Meats…')">Query supplier</button>
+            <p class="brief-headline" id="cyrus-headline">2 invoices failed 3-way match — overbilled by $312 in total</p>
+            <p class="brief-why" id="cyrus-why">I auto-posted <span class="spark">38 of 40</span> invoices overnight. Two from Harbour Meats don't match their GRNs — billed quantities exceed what was received at Surry Hills and Newtown. I've held both for your call.</p>
+            <div class="brief-actions" id="cyrus-actions">
+              <button class="nb-btn primary" id="cyrus-cta" onclick="toast('Opening exception queue…')"><i class="ti ti-arrow-right" aria-hidden="true"></i><span id="cyrus-cta-label">Review exceptions</span></button>
+              <button class="nb-btn" onclick="toast('Contacting supplier…')">Query supplier</button>
+            </div>
+            <div class="brief-resolved-line agent-byline">
+              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Reviewed by you ·
+              <a class="undo-link" onclick="undoCard('cyrus')">Undo</a>
+            </div>
+          </article>
+
+          <!-- Vera · Variance -->
+          <article class="agent-surface brief-card" id="card-vera" data-agent-fn="variance" aria-label="Variance agent">
+            <div class="brief-card-top">
+              <span class="agent-avatar" data-agent="vera" aria-hidden="true">Ve</span>
+              <span class="agent-id">
+                <span class="agent-name">Vera</span>
+                <span class="agent-role">Variance agent</span>
+              </span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state proposed" id="vera-state"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+            </div>
+            <p class="brief-headline" id="vera-headline">Weekly variance digest — 4 outliers flagged across the network</p>
+            <p class="brief-why" id="vera-why">Network average sits at <span class="spark">3.2%</span>, down 0.8pts from last week — good progress. Four outlets are pulling the average up: two VIC Metro sites show <span class="spark">&gt;8% protein variance</span> and two QLD Coastal sites haven't submitted a stock count in 9 days. I'd recommend triggering a manual count at those four.</p>
+            <div class="brief-actions" id="vera-actions">
+              <button class="nb-btn primary" id="vera-cta" onclick="toast('Stock count request sent to 4 outlets')"><i class="ti ti-clipboard-check" aria-hidden="true"></i><span id="vera-cta-label">Request counts</span></button>
+              <button class="nb-btn" onclick="toast('Opening variance report…')">Full report</button>
+              <button class="nb-btn ghost" onclick="dismissCard('vera')">Dismiss</button>
+            </div>
+            <div class="brief-resolved-line agent-byline">
+              <i class="ti ti-circle-check spark" aria-hidden="true"></i> Count requested · 4 outlets notified ·
+              <a class="undo-link" onclick="undoCard('vera')">Undo</a>
             </div>
           </article>
 
         </div>
       </section>
 
-      <!-- 3 · Triage strip — five cross-domain signals, each linking to the right page -->
+      <!-- 4 · Triage KPI strip -->
       <section aria-label="Business pulse">
-        <div class="kpi-strip" style="grid-template-columns:repeat(5,1fr);">
+        <div class="kpi-strip kpi-five">
 
           <a class="kpi-tile" href="reporting.html" aria-label="Revenue yesterday, up 9 percent">
             <span class="kpi-label">Revenue · Yesterday</span>
@@ -598,7 +701,7 @@
             <span class="kpi-context" style="margin-top:auto;padding-top:var(--space-sm);border-top:1px solid var(--border);font-size:11px;color:var(--text-link);">Full report →</span>
           </a>
 
-          <a class="kpi-tile" href="reporting.html" aria-label="Food cost percent, up 1.4 points, needs attention">
+          <a class="kpi-tile" href="reporting.html" aria-label="Food cost percent, up 1.4 points">
             <span class="kpi-label">Food cost %</span>
             <span class="kpi-value">28.4<sup>%</sup></span>
             <span class="kpi-context">
@@ -645,10 +748,15 @@
       <section class="role-hq-only" aria-label="Pending actions">
         <div class="pending-strip">
           <span class="pending-label" aria-hidden="true">Needs action</span>
-          <a class="pending-chip" href="market-list.html" aria-label="2 market lists pending review">
+          <a class="pending-chip" href="market-list.html?filter=draft" aria-label="1 draft market list to complete">
             <i class="ti ti-receipt" aria-hidden="true"></i>
-            Market lists
-            <span class="chip-count" aria-label="2 pending">2</span>
+            Draft lists
+            <span class="chip-count" aria-label="1 draft">1</span>
+          </a>
+          <a class="pending-chip" href="market-list.html?filter=unassigned" aria-label="2 market lists not yet assigned to outlets">
+            <i class="ti ti-receipt" aria-hidden="true"></i>
+            Unassigned lists
+            <span class="chip-count" aria-label="2 unassigned">2</span>
           </a>
           <a class="pending-chip" href="recipes.html" aria-label="5 recipes awaiting push">
             <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>
@@ -683,6 +791,19 @@
             <a class="panel-action" href="#">View full log</a>
           </div>
           <ol class="activity-list" aria-label="Activity timeline">
+
+            <li class="activity-item">
+              <div class="activity-icon-wrap agent-icon" aria-hidden="true">
+                <i class="ti ti-sparkles"></i>
+              </div>
+              <div class="activity-body">
+                <p class="activity-desc">Vera flagged <strong>4 variance outliers</strong> across VIC Metro and QLD Coastal — count requests queued</p>
+                <div class="activity-meta">
+                  <span class="activity-time">7:01 am</span>
+                  <span class="activity-actor agent-actor"><i class="ti ti-sparkles" aria-hidden="true"></i>by Vera</span>
+                </div>
+              </div>
+            </li>
 
             <li class="activity-item">
               <div class="activity-icon-wrap agent-icon" aria-hidden="true">
@@ -737,19 +858,6 @@
               </div>
             </li>
 
-            <li class="activity-item">
-              <div class="activity-icon-wrap" aria-hidden="true">
-                <i class="ti ti-building-store"></i>
-              </div>
-              <div class="activity-body">
-                <p class="activity-desc">New outlet <strong>"Bondi Beach"</strong> onboarded to the network</p>
-                <div class="activity-meta">
-                  <span class="activity-time">2 days ago</span>
-                  <span class="activity-actor"><i class="ti ti-user" aria-hidden="true"></i>Keith Tan</span>
-                </div>
-              </div>
-            </li>
-
           </ol>
         </div>
 
@@ -763,29 +871,38 @@
               <a class="panel-action" href="outlets.html">Manage</a>
             </div>
             <div class="group-health-list">
-              <a class="group-health-item" href="outlets.html" aria-label="NSW Metro — 38 outlets, all synced">
+              <a class="group-health-item" href="outlets.html" aria-label="NSW Metro — 38 outlets, all synced, 8 of 8 supplier lists active">
                 <span class="group-dot ok" aria-hidden="true"><i class="ti ti-check"></i></span>
                 <div class="group-info">
                   <p class="group-name">NSW Metro</p>
                   <p class="group-count">38 outlets</p>
                 </div>
-                <span class="group-issue ok">All synced</span>
+                <div class="group-signals">
+                  <span class="group-issue ok">All synced</span>
+                  <span class="group-issue-sub">8/8 lists active</span>
+                </div>
               </a>
-              <a class="group-health-item" href="outlets.html" aria-label="VIC Metro — 29 outlets, 2 pending market list">
+              <a class="group-health-item" href="market-list.html?filter=unassigned" aria-label="VIC Metro — 29 outlets, 2 unassigned market lists">
                 <span class="group-dot warn" aria-hidden="true"><i class="ti ti-clock"></i></span>
                 <div class="group-info">
                   <p class="group-name">VIC Metro</p>
                   <p class="group-count">29 outlets</p>
                 </div>
-                <span class="group-issue warn">2 pending list</span>
+                <div class="group-signals">
+                  <span class="group-issue warn">2 lists unassigned</span>
+                  <span class="group-issue-sub warn">Procurement incomplete</span>
+                </div>
               </a>
-              <a class="group-health-item" href="outlets.html" aria-label="QLD Coastal — 32 outlets, all synced">
-                <span class="group-dot ok" aria-hidden="true"><i class="ti ti-check"></i></span>
+              <a class="group-health-item" href="outlets.html" aria-label="QLD Coastal — 32 outlets, all synced, 1 draft list">
+                <span class="group-dot warn" aria-hidden="true"><i class="ti ti-clock"></i></span>
                 <div class="group-info">
                   <p class="group-name">QLD Coastal</p>
                   <p class="group-count">32 outlets</p>
                 </div>
-                <span class="group-issue ok">All synced</span>
+                <div class="group-signals">
+                  <span class="group-issue ok">POS synced</span>
+                  <span class="group-issue-sub warn">1 list in draft</span>
+                </div>
               </a>
               <a class="group-health-item" href="outlets.html" aria-label="SA and WA — 25 outlets, 1 POS failure">
                 <span class="group-dot risk" aria-hidden="true"><i class="ti ti-alert-triangle"></i></span>
@@ -793,7 +910,10 @@
                   <p class="group-name">SA &amp; WA</p>
                   <p class="group-count">25 outlets</p>
                 </div>
-                <span class="group-issue risk">1 POS failure</span>
+                <div class="group-signals">
+                  <span class="group-issue risk">1 POS failure</span>
+                  <span class="group-issue-sub">5/5 lists active</span>
+                </div>
               </a>
             </div>
           </div>
@@ -809,7 +929,7 @@
                 <span class="mover-rank">1</span>
                 <div class="mover-info">
                   <p class="mover-name">Chicken Breast 500g <i class="ti ti-alert-triangle mover-alert" aria-label="Stock alert"></i></p>
-                  <p class="mover-category">Protein · 124 outlets</p>
+                  <p class="mover-sub">Protein · 124 outlets · <a class="mover-list-link" href="market-list-detail.html">View market list →</a></p>
                 </div>
                 <div class="mover-velocity">
                   <span class="mover-volume">4,820 units</span>
@@ -820,7 +940,7 @@
                 <span class="mover-rank">2</span>
                 <div class="mover-info">
                   <p class="mover-name">Avocado (each) <i class="ti ti-alert-triangle mover-alert" aria-label="Stock alert"></i></p>
-                  <p class="mover-category">Produce · 98 outlets</p>
+                  <p class="mover-sub">Produce · 98 outlets · <a class="mover-list-link" href="market-list-detail.html">View market list →</a></p>
                 </div>
                 <div class="mover-velocity">
                   <span class="mover-volume">3,240 units</span>
@@ -831,7 +951,7 @@
                 <span class="mover-rank">3</span>
                 <div class="mover-info">
                   <p class="mover-name">Oat Milk 1L</p>
-                  <p class="mover-category">Dairy alt · 112 outlets</p>
+                  <p class="mover-sub">Dairy alt · 112 outlets</p>
                 </div>
                 <div class="mover-velocity">
                   <span class="mover-volume">2,890 units</span>
@@ -842,7 +962,7 @@
                 <span class="mover-rank">4</span>
                 <div class="mover-info">
                   <p class="mover-name">Sourdough Loaf</p>
-                  <p class="mover-category">Bakery · 87 outlets</p>
+                  <p class="mover-sub">Bakery · 87 outlets</p>
                 </div>
                 <div class="mover-velocity">
                   <span class="mover-volume">1,960 units</span>
@@ -861,21 +981,165 @@
   <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
 
   <script>
-    // Personalise greeting based on time of day
+    // ── Daily rotating agent brief content ──
+    // Indexed by getDay(): 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+    const DAILY_BRIEF = {
+      otto: [
+        // Sun
+        { state: 'proposed', headline: 'Staged week-ahead pre-stock for 8 outlets ahead of Monday rush', why: 'Mondays consistently run <span class="spark">28% above daily average</span> across NSW Metro. Par levels at 8 high-volume sites will hit red before Tuesday\'s delivery window. I\'ve staged 8 draft POs totalling <span class="spark">$5,400</span> — approve now and stock lands before opening.', ctaLabel: 'Approve all 8', ctaMsg: 'Approved — 8 pre-stock POs sent to outlets', updateTime: '6:14 am' },
+        // Mon
+        { state: 'proposed', headline: 'Drafted replenishment POs for 12 outlets running short on Chicken Breast 500g', why: 'Sell-through ran <span class="spark">22% above forecast</span> this week. At current par levels these 12 NSW &amp; VIC outlets hit zero before Friday\'s delivery. I\'ve staged 12 draft orders totalling <span class="spark">$8,240</span> to the preferred supplier — outlets approve with one tap.', ctaLabel: 'Approve all 12', ctaMsg: 'Approved — 12 draft POs sent to outlets for confirmation', updateTime: '6:42 am' },
+        // Tue
+        { state: 'proposed', headline: 'Avocado running critically low at 9 QLD Coastal outlets — delivery window closes noon', why: '9 QLD Coastal outlets have less than <span class="spark">1-day cover</span> on avocado. Tuesday\'s supplier window from Fresh Produce Co closes at noon. I\'ve drafted 9 top-up orders totalling <span class="spark">$3,180</span> — approve before 11 am to make the cut.', ctaLabel: 'Approve 9 orders', ctaMsg: 'Approved — 9 avocado orders confirmed before noon cutoff', updateTime: '7:03 am' },
+        // Wed
+        { state: 'proposed', headline: 'Coffee beans depleting faster than expected — 15 outlets below par', why: 'A new brew menu rolled out last week pushed consumption <span class="spark">31% above baseline</span>. Par levels haven\'t been updated to reflect it. 15 outlets across VIC and NSW are below threshold; I\'ve staged replenishment orders totalling <span class="spark">$4,920</span>.', ctaLabel: 'Approve all 15', ctaMsg: 'Approved — 15 coffee bean orders staged for delivery', updateTime: '6:55 am' },
+        // Thu
+        { state: 'proposed', headline: 'Pre-weekend surge prep — 18 outlets need topping up before Friday', why: 'Weekend throughput averages <span class="spark">40% higher</span> than weekdays. Based on current stock and Friday\'s forecast, 18 outlets won\'t have enough protein and produce to trade through Sunday without a mid-weekend delivery. I\'ve staged orders totalling <span class="spark">$11,600</span>.', ctaLabel: 'Approve all 18', ctaMsg: 'Approved — 18 pre-weekend orders confirmed', updateTime: '6:30 am' },
+        // Fri
+        { state: 'proposed', headline: 'End-of-week replenishment for 7 sites — catch-up on fast-movers', why: 'Seven outlets burned through Oat Milk and Sourdough faster than the model predicted this week. With the weekend ahead I\'ve drafted top-up orders totalling <span class="spark">$6,100</span>. These can still make a same-day delivery if approved before 10 am.', ctaLabel: 'Approve 7 orders', ctaMsg: 'Approved — 7 end-of-week orders locked in', updateTime: '6:48 am' },
+        // Sat
+        { state: 'proposed', headline: '5 outlets at risk of a Sunday stockout — weekend delivery window is closing', why: 'Five high-volume brunch sites are burning through eggs and smoked salmon faster than Saturday\'s delivery covered. The only remaining weekend supplier window closes at <span class="spark">9 am</span>. I\'ve staged 5 urgent orders totalling <span class="spark">$2,850</span>.', ctaLabel: 'Approve now', ctaMsg: 'Approved — 5 urgent weekend orders placed', updateTime: '7:22 am' },
+      ],
+      sloan: [
+        // Sun
+        { state: 'proposed', headline: '3 market lists are ready to push — 47 outlets are waiting on this week\'s supplier pricing', why: 'Italian Food Co, Harbour Meats, and Pacific Seafood have all confirmed this week\'s pricing. I\'ve staged the push to <span class="spark">47 outlets</span> across NSW and VIC — confirming now means outlets can start ordering at the new prices from tomorrow morning.', ctaLabel: 'Push all 3 lists', ctaMsg: 'Pushed — 47 outlets receiving updated market lists', updateTime: '6:14 am' },
+        // Mon
+        { state: 'needs-you', headline: 'POS sync failed at Bondi Beach — Winter Menu mappings not applied', why: 'Outlet onboarded 3 days ago. The POS is connected and revenue is flowing, but my initial mapping push returned an auth error, so <span class="spark">28 menu items</span> are unmapped. I can\'t retry without a refreshed POS token — that needs you.', ctaLabel: 'Fix mapping', ctaMsg: 'Navigating to POS mapping…', updateTime: '6:42 am' },
+        // Tue
+        { state: 'needs-you', headline: 'New outlet "Parramatta Central" is live but has no market list assigned', why: 'Parramatta Central was onboarded yesterday. POS is connected, staff are trained, but <span class="spark">no market lists have been assigned</span> to the outlet — they can\'t place orders until at least one supplier list is assigned. Takes about 2 minutes.', ctaLabel: 'Assign lists', ctaMsg: 'Opening market list assignment…', updateTime: '7:03 am' },
+        // Wed
+        { state: 'needs-you', headline: 'Italian Food Co uploaded a new price file — 12 item changes need your review', why: 'Fresh price file came in overnight. 12 items changed: <span class="spark">8 increased</span> (avg +6%) and 4 decreased. I\'ve held the market list update until you\'ve reviewed — changes affect 38 outlets. Reviewing takes about 3 minutes.', ctaLabel: 'Review price changes', ctaMsg: 'Opening price file review…', updateTime: '6:55 am' },
+        // Thu
+        { state: 'needs-you', headline: '2 market lists are unassigned — 19 outlets are procurement-dark for those suppliers', why: 'The Dairy Supplies AU and Aussie Farms lists were created last week but never assigned to outlet groups. <span class="spark">19 outlets</span> that should be ordering from these suppliers currently have no route to do so. Assignment takes under 2 minutes.', ctaLabel: 'Assign now', ctaMsg: 'Opening market list assignment flow…', updateTime: '6:30 am' },
+        // Fri
+        { state: 'proposed', headline: '4 recipes updated this week haven\'t been pushed to SA &amp; WA yet', why: 'NSW and VIC outlets are live on the updated Autumn Menu recipes, but <span class="spark">SA &amp; WA (25 outlets)</span> are still on the previous version. I can push the 4 updated recipes to that group now — it\'ll sync within the hour.', ctaLabel: 'Push to SA & WA', ctaMsg: 'Pushing 4 recipes to SA & WA group…', updateTime: '6:48 am' },
+        // Sat
+        { state: 'proposed', headline: 'Weekend menu changes not yet live at 3 Melbourne outlets', why: 'Saturday\'s brunch specials were pushed to most groups last night, but <span class="spark">3 Melbourne CBD outlets</span> had a connectivity issue at sync time. Their menus are still showing Friday\'s items. I can force-push the update now.', ctaLabel: 'Force push', ctaMsg: 'Weekend menu pushed to 3 Melbourne outlets', updateTime: '7:22 am' },
+      ],
+      mara: [
+        // Sun
+        { state: 'proposed', headline: 'Weekly margin summary — food cost trending up 2pts, 6 recipes need attention', why: 'This week\'s invoices pushed the network food cost average from <span class="spark">26.4% to 28.4%</span>. Avocado and salmon are the main drivers. Six recipes now sit below their target GP — I\'ve modelled reprice options for each. Worst case is a <span class="spark">$0.50 increase</span> across the three smashed avo variants.', ctaLabel: 'Review 6 recipes', ctaMsg: 'Opening margin review…', updateTime: '6:14 am' },
+        // Mon
+        { state: 'proposed', headline: 'Avocado is up 14% — 3 recipes have dropped below their target margin', why: 'Yesterday\'s invoice from Fresh Produce Co lifted avocado to <span class="spark">$2.40/ea</span>. Smashed Avo, Avo Toast and the Poke Bowl now sit <span class="spark">2–4 points</span> under target. Quickest fix: reprice the three items <span class="spark">+$0.40</span> to restore margin — POS prices sync automatically.', ctaLabel: 'Reprice +$0.40', ctaMsg: 'Reprice approved — 3 recipes updated, POS prices syncing', updateTime: '6:42 am' },
+        // Tue
+        { state: 'proposed', headline: 'Salmon up 19% from Pacific Seafood — Poke Bowl and Gravlax Toast are underwater', why: 'Pacific Seafood\'s Tuesday invoice shows Atlantic Salmon at <span class="spark">$38.40/kg</span>, up from $32.20. The Poke Bowl (salmon variant) and Gravlax Toast have dropped to <span class="spark">58% GP</span> against a 64% target. A <span class="spark">$1.50 reprice</span> on both restores the margin.', ctaLabel: 'Reprice +$1.50', ctaMsg: 'Reprice approved — 2 salmon dishes updated', updateTime: '7:03 am' },
+        // Wed
+        { state: 'proposed', headline: 'Coffee beans +18% — flat white and long black margins are under pressure', why: 'Espresso Union raised prices on Wednesday\'s delivery. Arabica Blend is now at <span class="spark">$42/kg</span> from $35.50. Flat white and long black GP has dropped <span class="spark">3 points</span>. I\'ve modelled two options: reprice coffee <span class="spark">+$0.30</span>, or re-source from the secondary supplier at the old price.', ctaLabel: 'Reprice +$0.30', ctaMsg: 'Coffee repriced — POS updating across network', updateTime: '6:55 am' },
+        // Thu
+        { state: 'proposed', headline: 'Butter and cream costs up — 5 pastry items are losing 3–5 pts of GP', why: 'Dairy Australia\'s Thursday invoice lifted butter by <span class="spark">11%</span> and cream by <span class="spark">8%</span>. Five bakery items — croissants, danish, and the crème brûlée — are below target GP. A <span class="spark">$0.50 adjustment</span> across the range restores margins and is within acceptable price elasticity.', ctaLabel: 'Adjust pastry prices', ctaMsg: '5 pastry items repriced — POS syncing', updateTime: '6:30 am' },
+        // Fri
+        { state: 'proposed', headline: '6 outlets are below 60% GP — end-of-week margin close needs a decision', why: 'Six outlets — 4 in VIC Metro, 2 in SA — have drifted below the <span class="spark">60% GP floor</span> this week. The gap is driven by high food cost, not low revenue. I can either trigger outlet-level price adjustments or flag for your weekly review meeting.', ctaLabel: 'Trigger adjustments', ctaMsg: 'Margin adjustments triggered — 6 outlets updating', updateTime: '6:48 am' },
+        // Sat
+        { state: 'proposed', headline: 'Weekend insight: brunch items are outperforming, dinner specials are lagging', why: 'Saturday brunch items are running at <span class="spark">71% GP</span> on average — excellent. The dinner specials (rotating board) are at <span class="spark">54%</span> due to high protein costs. Removing the two worst performers from the rotating board this weekend would lift overall GP by <span class="spark">~2 points</span>.', ctaLabel: 'Update rotating board', ctaMsg: 'Dinner specials updated — 2 items removed', updateTime: '7:22 am' },
+      ],
+      cyrus: [
+        // Sun
+        { state: 'proposed', headline: '41 invoices auto-posted this week — clean match rate of 97.6%', why: 'All <span class="spark">41 invoices</span> processed this week matched their GRNs within tolerance and have been posted. No exceptions held. This is the cleanest week in the past month — the GRN discrepancy at Harbour Meats from last week has been resolved and credited.', ctaLabel: 'View weekly summary', ctaMsg: 'Opening AP summary report…', updateTime: '6:14 am' },
+        // Mon
+        { state: 'needs-you', headline: '2 invoices failed 3-way match — overbilled by $312 in total', why: 'I auto-posted <span class="spark">38 of 40</span> invoices overnight. Two from Harbour Meats don\'t match their GRNs — billed quantities exceed what was received at Surry Hills and Newtown. I\'ve held both for your call.', ctaLabel: 'Review exceptions', ctaMsg: 'Opening exception queue…', updateTime: '6:42 am' },
+        // Tue
+        { state: 'needs-you', headline: 'Duplicate invoice detected from Fresh Produce Co — $840 at risk', why: 'Invoice #FPC-2847 appears to be a re-submission of #FPC-2801 from last week — same line items, same amounts, different invoice number. I\'ve flagged both and held the newer one. If confirmed as a duplicate, <span class="spark">$840</span> would be overbilled. Needs your call before I raise a dispute.', ctaLabel: 'Review duplicate', ctaMsg: 'Opening duplicate invoice review…', updateTime: '7:03 am' },
+        // Wed
+        { state: 'proposed', headline: 'Early payment discount available — $1,200 saving if paid by Friday', why: 'Three suppliers (Italian Food Co, Dairy Australia, Espresso Union) are offering <span class="spark">2% early payment discounts</span> on invoices due next week, if settled by Friday. Combined invoice value is $60,400 — early payment saves <span class="spark">$1,208</span>. Cash flow permits it.', ctaLabel: 'Schedule early payment', ctaMsg: 'Early payments scheduled — $1,208 saving locked in', updateTime: '6:55 am' },
+        // Thu
+        { state: 'needs-you', headline: 'GRN discrepancy at 3 outlets — dairy delivery was 15% short', why: 'Wednesday\'s dairy delivery from Dairy Australia was short by about <span class="spark">15%</span> across 3 outlets (Newtown, Chippendale, Surry Hills). I\'ve raised the GRN discrepancies but need your confirmation before I issue a credit claim to the supplier for the <span class="spark">$430</span> shortfall.', ctaLabel: 'Confirm credit claim', ctaMsg: 'Credit claim issued to Dairy Australia — $430', updateTime: '6:30 am' },
+        // Fri
+        { state: 'proposed', headline: 'Weekly AP close — $142,800 processed, 2 credits pending supplier confirmation', why: 'This week\'s total AP was <span class="spark">$142,800</span> across 11 suppliers — 98% auto-posted with clean matches. Two credit notes totalling <span class="spark">$780</span> are still awaiting supplier confirmation from Harbour Meats. I\'ll chase them on Monday if not received by COB today.', ctaLabel: 'View AP summary', ctaMsg: 'Opening weekly AP close report…', updateTime: '6:48 am' },
+        // Sat
+        { state: 'needs-you', headline: 'Unexpected Saturday delivery invoice — not on any PO, needs your approval', why: 'A $1,240 invoice arrived from Pacific Seafood for a weekend delivery to Bondi Beach. The outlet manager placed the order directly with the supplier — it wasn\'t routed through Nomni. I can\'t auto-post it without a PO reference. You\'ll need to approve it manually or ask the outlet to reorder through the system.', ctaLabel: 'Approve manually', ctaMsg: 'Invoice approved — posting to AP', updateTime: '7:22 am' },
+      ],
+      vera: [
+        // Sun
+        { state: 'proposed', headline: 'Weekly variance digest — 4 outliers flagged across the network', why: 'Network average sits at <span class="spark">3.2%</span>, down 0.8pts from last week — good progress. Four outlets are pulling the average up: two VIC Metro sites show <span class="spark">&gt;8% protein variance</span> and two QLD Coastal sites haven\'t submitted a stock count in 9 days. I\'d recommend triggering a manual count at those four.', ctaLabel: 'Request counts', ctaMsg: 'Stock count request sent to 4 outlets', updateTime: '6:14 am' },
+        // Mon
+        { state: 'proposed', headline: 'High waste detected at 3 VIC Metro outlets — protein variance above 8%', why: 'Weekend stock counts came in and three VIC Metro sites (Fitzroy, Collingwood, Richmond) are showing <span class="spark">8–12% variance</span> on protein items — nearly double the network average of 4.6%. Most likely cause: portion drift. I can flag these outlets for a portion audit this week.', ctaLabel: 'Flag for audit', ctaMsg: 'Portion audit flagged for 3 VIC Metro outlets', updateTime: '6:42 am' },
+        // Tue
+        { state: 'proposed', headline: 'Theoretical vs actual gap widening at QLD Coastal — stock count overdue', why: 'QLD Coastal\'s theoretical consumption model is diverging from actuals by <span class="spark">5.8%</span> this week — up from 3.1% last week. The group hasn\'t done a full stock count in <span class="spark">11 days</span>. A count would either confirm waste or surface a data entry issue in the ordering module.', ctaLabel: 'Schedule count', ctaMsg: 'Stock count scheduled for QLD Coastal group', updateTime: '7:03 am' },
+        // Wed
+        { state: 'needs-you', headline: 'Mid-week stock count due at 12 NSW Metro outlets — 8 haven\'t submitted yet', why: 'Wednesday is the scheduled mid-cycle count day for NSW Metro. <span class="spark">4 of 12</span> outlets have submitted on time. The remaining 8 are overdue — without their data I can\'t produce an accurate mid-week variance report for the group. Can you nudge the outlet managers?', ctaLabel: 'Send reminders', ctaMsg: 'Reminder sent to 8 outlet managers', updateTime: '6:55 am' },
+        // Thu
+        { state: 'proposed', headline: 'Waste anomaly at Surry Hills — avocado variance 24% above network average', why: 'Surry Hills is the biggest avocado user in the network and their variance this week is <span class="spark">24%</span> against a network average of 4.2%. That\'s approximately <span class="spark">$320 in unexplained loss</span>. Most likely causes: over-ordering, prep waste, or portion drift. Worth a focused spot check.', ctaLabel: 'Log spot check', ctaMsg: 'Spot check logged for Surry Hills avocado', updateTime: '6:30 am' },
+        // Fri
+        { state: 'needs-you', headline: 'Week-end variance roll-up — $18,400 unresolved across 9 outlets', why: 'End-of-week variance total is <span class="spark">$18,400</span> across 9 outlets — higher than the $12,000 target. Three outlets account for 60% of the gap. I\'ve drafted a variance exception report but need your sign-off before it\'s shared with outlet managers. It includes recommended corrective actions.', ctaLabel: 'Review and approve', ctaMsg: 'Variance report approved and sent to outlet managers', updateTime: '6:48 am' },
+        // Sat
+        { state: 'proposed', headline: 'Weekend count complete — network variance improved 1.8pts vs last Saturday', why: 'Saturday counts are in from 89% of outlets (109 of 124). Network variance is <span class="spark">3.9%</span> versus last Saturday\'s <span class="spark">5.7%</span> — a solid improvement. The 15 outlets that haven\'t submitted are all small-format sites; I\'ll chase them Sunday morning.', ctaLabel: 'View full report', ctaMsg: 'Opening Saturday variance report…', updateTime: '7:22 am' },
+      ]
+    };
+
+    // ── Boot: personalise date, greeting, and inject daily content ──
     (function () {
-      const h = new Date().getHours();
+      const now = new Date();
+      const h = now.getHours();
+      const d = now.getDay(); // 0=Sun … 6=Sat
+
+      // Greeting
       const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
       const el = document.getElementById('greeting-text');
       if (el) el.textContent = greet + ', Keith.';
 
-      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      // Date eyebrow
+      const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
       const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-      const now = new Date();
       const dateEl = document.getElementById('greeting-date');
-      if (dateEl) dateEl.textContent = days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+      if (dateEl) dateEl.textContent = days[d] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+      // Inject daily agent content
+      function injectAgent(id, data) {
+        const hl   = document.getElementById(id + '-headline');
+        const why  = document.getElementById(id + '-why');
+        const stEl = document.getElementById(id + '-state');
+        const ctaL = document.getElementById(id + '-cta-label');
+        const cta  = document.getElementById(id + '-cta');
+        if (hl)   hl.textContent = data.headline;
+        if (why)  why.innerHTML  = data.why;
+        if (ctaL) ctaL.textContent = data.ctaLabel;
+
+        // wire up cta click (only for approve/non-navigation actions)
+        if (cta && data.ctaMsg) {
+          if (data.state === 'proposed') {
+            cta.onclick = () => approveCard(id, data.ctaMsg);
+          } else {
+            cta.onclick = () => toast(data.ctaMsg);
+          }
+        }
+
+        // state pill
+        if (stEl) {
+          if (data.state === 'proposed') {
+            stEl.className = 'agent-state proposed';
+            stEl.innerHTML = '<i class="ti ti-bulb" aria-hidden="true"></i>Proposed';
+          } else {
+            stEl.className = 'agent-state needs-you';
+            stEl.innerHTML = '<i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you';
+          }
+        }
+      }
+
+      injectAgent('otto',  DAILY_BRIEF.otto[d]);
+      injectAgent('sloan', DAILY_BRIEF.sloan[d]);
+      injectAgent('mara',  DAILY_BRIEF.mara[d]);
+      injectAgent('cyrus', DAILY_BRIEF.cyrus[d]);
+      injectAgent('vera',  DAILY_BRIEF.vera[d]);
+
+      // Brief meta
+      const meta = document.getElementById('brief-meta');
+      if (meta) meta.textContent = '5 agents reporting · updated ' + DAILY_BRIEF.otto[d].updateTime;
+
+      // Greeting sub — vary by day
+      const subs = [
+        'Your agents ran their weekly digest overnight. Here\'s the network summary.',
+        'Your agents worked through the weekend. Here\'s what needs you this week.',
+        'Good start to the week across the network. A few items need your attention.',
+        'Mid-week check-in. Your agents have flagged a handful of things to keep moving.',
+        'Over the hump. Your agents have been busy — here\'s where to focus today.',
+        'Heading into the weekend. A few things to clear before the Friday rush.',
+        'Weekend mode. Your agents are watching the network — here\'s the overnight summary.',
+      ];
+      const sub = document.getElementById('greeting-sub');
+      if (sub) sub.textContent = subs[d];
     })();
 
-    // Toast helper
+    // ── Toast helper ──
     function toast(msg) {
       const wrap = document.getElementById('toast-wrap');
       const t = document.createElement('div');
@@ -885,7 +1149,7 @@
       setTimeout(() => t.remove(), 3200);
     }
 
-    // Agent card lifecycle
+    // ── Agent card lifecycle ──
     function approveCard(id, msg) {
       const card = document.getElementById('card-' + id);
       if (!card) return;
@@ -897,8 +1161,18 @@
     function undoCard(id) {
       const card = document.getElementById('card-' + id);
       if (!card) return;
+      const d = new Date().getDay();
+      const data = DAILY_BRIEF[id] && DAILY_BRIEF[id][d];
       const state = card.querySelector('.agent-state');
-      if (state) { state.className = 'agent-state proposed'; state.innerHTML = '<i class="ti ti-bulb" aria-hidden="true"></i>Proposed'; }
+      if (state && data) {
+        if (data.state === 'proposed') {
+          state.className = 'agent-state proposed';
+          state.innerHTML = '<i class="ti ti-bulb" aria-hidden="true"></i>Proposed';
+        } else {
+          state.className = 'agent-state needs-you';
+          state.innerHTML = '<i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you';
+        }
+      }
       card.classList.remove('resolved');
       toast('Reverted — back to you');
     }
@@ -910,11 +1184,11 @@
       card.classList.add('resolved');
       const line = card.querySelector('.brief-resolved-line');
       if (line) line.innerHTML = '<i class="ti ti-player-pause" aria-hidden="true"></i> Dismissed — I\'ll keep watching · <a class="undo-link" onclick="undoCard(\'' + id + '\')">Restore</a>';
-      toast('Dismissed — Otto will keep watching');
+      toast('Dismissed — agent will keep watching');
     }
 
-    // Ask bar
-    function askSubmit(e) { e.preventDefault(); const v = document.getElementById('ask-input').value.trim(); if (v) toast('Sloan is looking into: “' + v + '”'); }
+    // ── Ask bar ──
+    function askSubmit(e) { e.preventDefault(); const v = document.getElementById('ask-input').value.trim(); if (v) toast('Sloan is looking into: "' + v + '"'); }
     function askFill(btn) { const i = document.getElementById('ask-input'); i.value = btn.textContent; i.focus(); }
   </script>
 
