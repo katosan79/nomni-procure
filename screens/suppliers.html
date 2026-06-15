@@ -520,7 +520,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="supplier-detail.html">View</a>
+                  <a class="link-action" href="supplier-detail.html?id=sydney-butchers">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Sydney Butchers Co." onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -561,7 +561,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="supplier-detail.html">View</a>
+                  <a class="link-action" href="supplier-detail.html?id=green-farmers">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Green Farmers Market" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -602,7 +602,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="supplier-detail.html">View</a>
+                  <a class="link-action" href="supplier-detail.html?id=artisan-bakehouse">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Artisan Bakehouse" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -643,7 +643,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="supplier-detail.html">View</a>
+                  <a class="link-action" href="supplier-detail.html?id=pacific-drinks">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Pacific Drinks Wholesale" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -684,7 +684,7 @@
               <td><span class="status-pill pending">Pending</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="supplier-detail.html">Review</a>
+                  <a class="link-action" href="supplier-detail.html?id=nsw-seafood">Review</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for NSW Seafood Direct" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -724,7 +724,7 @@
               <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="supplier-detail.html">View</a>
+                  <a class="link-action" href="supplier-detail.html?id=clean-pack">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for Clean Pack Solutions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
@@ -1347,7 +1347,8 @@
       tr.style.cursor = 'pointer';
       tr.addEventListener('click', e => {
         if (e.target.closest('.overflow-wrap, .row-actions a, .row-actions button')) return;
-        window.location.href = 'supplier-detail.html';
+        const link = tr.querySelector('.link-action');
+        window.location.href = link ? link.href : 'supplier-detail.html';
       });
     });
   });

@@ -473,23 +473,23 @@
     <!-- Page header -->
     <div class="page-header">
       <div class="page-header-left">
-        <div class="supplier-logo">SB</div>
+        <div class="supplier-logo" id="sup-logo">SB</div>
         <div class="page-header-text">
           <span class="page-eyebrow">Supplier</span>
           <h1 class="page-title">
-            Sydney Butchers Co.
+            <span id="sup-name">Sydney Butchers Co.</span>
             <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:18px;"></i>
           </h1>
           <div class="page-title-meta">
             <span class="status-pill active">Active</span>
-            <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-map-pin" style="font-size:12px;"></i>Sydney, NSW</span>
-            <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-tag" style="font-size:12px;"></i>Meat &amp; Seafood</span>
-            <span class="ns-supply-pill"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span>
+            <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-map-pin" style="font-size:12px;"></i><span id="sup-location">Sydney, NSW</span></span>
+            <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-tag" style="font-size:12px;"></i><span id="sup-category">Meat &amp; Seafood</span></span>
+            <span id="sup-ns-pill" class="ns-supply-pill"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span>
           </div>
         </div>
       </div>
       <div class="page-actions">
-        <button class="btn btn-outline" onclick="showToast('Opening RFQ for Sydney Butchers Co…')"><i class="ti ti-file-dollar"></i>New RFQ</button>
+        <button class="btn btn-outline" id="sup-rfq-btn" onclick="showToast('Opening RFQ…')"><i class="ti ti-file-dollar"></i>New RFQ</button>
         <button class="btn btn-primary" onclick="showToast('Changes saved.')"><i class="ti ti-device-floppy"></i>Save changes</button>
       </div>
     </div>
@@ -769,7 +769,7 @@
             <!-- Nomni Supply sync notice (NS-connected suppliers only) -->
             <div id="cat-ns-banner" class="cat-sync-banner">
               <i class="ti ti-plug-connected"></i>
-              <span>This supplier's catalogue is kept up to date by <strong>Sydney Butchers Co.</strong> on Nomni Supply. You can also add your own SKUs below — they'll only be visible to your account.</span>
+              <span>This supplier's catalogue is kept up to date by <strong id="cat-ns-supplier-name">Sydney Butchers Co.</strong> on Nomni Supply. You can also add your own SKUs below — they'll only be visible to your account.</span>
             </div>
             <!-- Non-NS notice (shown for suppliers not on Nomni Supply) -->
             <div id="cat-non-ns-banner" class="info-banner" style="margin:var(--space-sm) var(--space-lg);display:none;">
@@ -883,7 +883,7 @@
       <aside class="aside-stack">
 
         <!-- Nomni Supply connection card -->
-        <div class="ns-connection-card">
+        <div id="sup-ns-card" class="ns-connection-card">
           <div class="ns-connection-head">
             <i class="ti ti-plug-connected"></i>
             <span class="ns-connection-title">Nomni Supply</span>
@@ -1019,13 +1019,56 @@
 
 <script src="../shared/shell.js?v=5" data-active="suppliers"></script>
 <script>
-  NomniShell.init('Sydney Butchers Co.');
+  NomniShell.init(SUPPLIER.name);
 
-  // ─── Supplier config ──────────────────────────────────────────────────────────
-  const SUPPLIER = {
-    name: 'Sydney Butchers Co.',
-    nsConnected: true,        // flip to false for a non-NS supplier
+  // ─── Supplier data map ────────────────────────────────────────────────────────
+  const SUPPLIERS = {
+    'sydney-butchers': {
+      name: 'Sydney Butchers Co.',
+      initials: 'SB',
+      location: 'Sydney, NSW',
+      category: 'Meat &amp; Seafood',
+      nsConnected: true,
+    },
+    'artisan-bakehouse': {
+      name: 'Artisan Bakehouse',
+      initials: 'AB',
+      location: 'Melbourne, VIC',
+      category: 'Bakery · Dry Goods',
+      nsConnected: false,
+    },
+    'green-farmers': {
+      name: 'Green Farmers Market',
+      initials: 'GF',
+      location: 'Sydney, NSW',
+      category: 'Produce · Fresh',
+      nsConnected: true,
+    },
+    'pacific-drinks': {
+      name: 'Pacific Drinks Wholesale',
+      initials: 'PD',
+      location: 'Sydney, NSW',
+      category: 'Beverages',
+      nsConnected: true,
+    },
+    'nsw-seafood': {
+      name: 'NSW Seafood Direct',
+      initials: 'NS',
+      location: 'Sydney, NSW',
+      category: 'Seafood',
+      nsConnected: false,
+    },
+    'clean-pack': {
+      name: 'Clean Pack Solutions',
+      initials: 'CP',
+      location: 'Brisbane, QLD',
+      category: 'Packaging',
+      nsConnected: false,
+    },
   };
+
+  const _urlId = new URLSearchParams(window.location.search).get('id') || 'sydney-butchers';
+  const SUPPLIER = SUPPLIERS[_urlId] || SUPPLIERS['sydney-butchers'];
 
   // ─── Tab switching ────────────────────────────────────────────────────────────
   function switchTab(tabId) {
@@ -1333,13 +1376,29 @@
 
   // ─── Init ─────────────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
+    // ── Apply supplier data from URL param ────────────────────────────────────
+    document.title = SUPPLIER.name + ' — Nomni HQ';
+    document.getElementById('sup-logo').textContent    = SUPPLIER.initials;
+    document.getElementById('sup-name').textContent    = SUPPLIER.name;
+    document.getElementById('sup-location').textContent = SUPPLIER.location;
+    document.getElementById('sup-category').innerHTML  = SUPPLIER.category;
+    document.getElementById('sup-rfq-btn').onclick = () =>
+      showToast('Opening RFQ for ' + SUPPLIER.name + '…');
+
+    const nsHeaderPill = document.getElementById('sup-ns-pill');
+    const nsCard       = document.getElementById('sup-ns-card');
+    if (!SUPPLIER.nsConnected) {
+      if (nsHeaderPill) nsHeaderPill.style.display = 'none';
+      if (nsCard)       nsCard.style.display       = 'none';
+    }
+
     renderAccessTree();
 
     // Clickable order history rows
     document.querySelectorAll('#tab-orders .data-table tbody tr').forEach(tr => {
       tr.style.cursor = 'pointer';
       tr.addEventListener('click', () => {
-        window.location.href = 'orders.html?supplier=sydney-butchers';
+        window.location.href = 'orders.html?supplier=' + _urlId;
       });
     });
 
@@ -1347,6 +1406,8 @@
     const syncBanner  = document.getElementById('cat-ns-banner');
     const syncPill    = document.getElementById('cat-ns-pill');
     const nonNsBanner = document.getElementById('cat-non-ns-banner');
+    const nsNameEl    = document.getElementById('cat-ns-supplier-name');
+    if (nsNameEl) nsNameEl.textContent = SUPPLIER.name;
 
     if (SUPPLIER.nsConnected) {
       if (syncBanner)  syncBanner.style.display  = '';
