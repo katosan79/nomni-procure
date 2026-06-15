@@ -560,13 +560,13 @@
     function rowActions(inv) {
       if (inv.status==='unlinked') {
         if (inv.suggestion) {
-          return `<button class="link-btn" style="color:var(--text-accent);" onclick="openDrawer('${inv.id}')"><i class="ti ti-sparkles" style="font-size:11px;"></i> ${inv.suggestion.po}</button><span class="action-sep">·</span><button class="link-btn" onclick="openDrawer('${inv.id}')" style="color:var(--text-soft);">Review</button>`;
+          return `<button class="link-btn" style="color:var(--text-accent);" onclick="location.href='invoice-detail.html?id=${inv.id}'"><i class="ti ti-sparkles" style="font-size:11px;"></i> ${inv.suggestion.po}</button><span class="action-sep">·</span><button class="link-btn" onclick="location.href='invoice-detail.html?id=${inv.id}'" style="color:var(--text-soft);">Review</button>`;
         }
-        return `<button class="link-btn" onclick="openDrawer('${inv.id}')">Link PO</button>`;
+        return `<button class="link-btn" onclick="location.href='invoice-detail.html?id=${inv.id}'">Link PO</button>`;
       }
-      const parts = [`<button class="link-btn" onclick="openDrawer('${inv.id}')">View match</button>`];
+      const parts = [`<button class="link-btn" onclick="location.href='invoice-detail.html?id=${inv.id}'">View match</button>`];
       if (inv.status==='matched')  parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="approveInv('${inv.id}',this)">Approve</button>`);
-      if (inv.status==='failed')   parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="openDrawer('${inv.id}')" style="color:var(--status-risk-fg);">Raise credit note</button>`);
+      if (inv.status==='failed')   parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="location.href='invoice-detail.html?id=${inv.id}'" style="color:var(--status-risk-fg);">Raise credit note</button>`);
       if (inv.status==='approved') parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="exportInv('${inv.id}',this)" style="color:var(--text-accent);">Export to Xero</button>`);
       return parts.join('');
     }

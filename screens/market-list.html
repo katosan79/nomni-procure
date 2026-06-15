@@ -486,12 +486,17 @@
     tbody td:first-child { padding-left: var(--space-xl); }
     tbody td:last-child  { padding-right: var(--space-xl); }
 
-    .col-name    { min-width: 160px; }
-    .col-brand   { min-width: 120px; }
+    .col-name     { min-width: 160px; }
+    .col-brand    { min-width: 120px; }
+    .col-supplier { min-width: 160px; }
+    .col-supplier .supplier-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; padding:2px var(--space-sm); border-radius:var(--radius-pill); background:color-mix(in srgb,var(--fern) 8%,transparent); color:var(--fern); border:1px solid color-mix(in srgb,var(--fern) 20%,transparent); }
+    .col-supplier .supplier-chip i { font-size:10px; }
     .col-groups  { min-width: 160px; font-feature-settings: 'tnum' 1; }
     .col-updated { min-width: 100px; color: var(--text-soft); font-size: 13px; font-feature-settings: 'tnum' 1; }
     .col-status  { min-width: 100px; }
     .col-actions { min-width: 120px; text-align: right; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover td { background: color-mix(in srgb,var(--surface-soft) 60%,transparent); }
 
     .row-name {
       font-weight: 600;
@@ -755,6 +760,7 @@
       box-shadow: var(--shadow-lg);
       background: var(--surface);
       outline: none;
+      margin: auto;
     }
 
     dialog::backdrop {
@@ -1324,6 +1330,7 @@
                 <tr>
                   <th class="col-name"   scope="col">Name</th>
                   <th class="col-brand"  scope="col">Brand</th>
+                  <th class="col-supplier" scope="col">Supplier</th>
                   <th class="col-groups" scope="col">Assigned groups</th>
                   <th class="col-updated"scope="col">Last updated</th>
                   <th class="col-status" scope="col">Status</th>
@@ -1333,12 +1340,15 @@
               <tbody>
 
                 <!-- Row 1: Spring Menu AU — Active -->
-                <tr>
+                <tr onclick="if(!event.target.closest('.col-actions'))location.href='market-list-detail.html'">
                   <td class="col-name">
                     <span class="row-name">Spring Menu AU</span>
                   </td>
                   <td class="col-brand">
                     <span class="row-brand">The Burger Co</span>
+                  </td>
+                  <td class="col-supplier">
+                    <span class="supplier-chip"><i class="ti ti-plug-connected"></i>Sydney Butchers Co.</span>
                   </td>
                   <td class="col-groups">
                     <span class="row-groups-main tabular">3 groups</span>
@@ -1392,12 +1402,15 @@
                 </tr>
 
                 <!-- Row 2: Winter Specials — Pending -->
-                <tr>
+                <tr onclick="if(!event.target.closest('.col-actions'))location.href='market-list-detail.html'">
                   <td class="col-name">
                     <span class="row-name">Winter Specials</span>
                   </td>
                   <td class="col-brand">
                     <span class="row-brand">The Burger Co</span>
+                  </td>
+                  <td class="col-supplier">
+                    <span class="supplier-chip"><i class="ti ti-plug-connected"></i>Melbourne Fresh</span>
                   </td>
                   <td class="col-groups">
                     <span class="row-groups-main tabular">2 groups</span>
@@ -1445,12 +1458,15 @@
                 </tr>
 
                 <!-- Row 3: Pasta Classics — Active -->
-                <tr>
+                <tr onclick="if(!event.target.closest('.col-actions'))location.href='market-list-detail.html'">
                   <td class="col-name">
                     <span class="row-name">Pasta Classics</span>
                   </td>
                   <td class="col-brand">
                     <span class="row-brand">Pasta Palace</span>
+                  </td>
+                  <td class="col-supplier">
+                    <span class="supplier-chip"><i class="ti ti-plug-connected"></i>Italian Food Co.</span>
                   </td>
                   <td class="col-groups">
                     <span class="row-groups-main tabular">4 groups</span>
@@ -2077,10 +2093,75 @@
       }
     });
 
-    /* ── New market list placeholder ── */
+    /* ── New market list modal ── */
     function openNewListModal() {
-      showToast('ti-plus', 'New market list — coming soon');
+      document.getElementById('new-list-modal').showModal();
     }
+    function closeNewListModal() {
+      document.getElementById('new-list-modal').close();
+    }
+    function newListSelectSupplier(el) {
+      document.querySelectorAll('.nl-supplier-row').forEach(r => r.classList.remove('selected'));
+      el.classList.add('selected');
+      el.querySelector('input[type=radio]').checked = true;
+      document.getElementById('nl-create-btn').disabled = false;
+    }
+    function createNewList() {
+      const selected = document.querySelector('.nl-supplier-row.selected');
+      if (!selected) return;
+      closeNewListModal();
+      location.href = 'market-list-detail.html';
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('new-list-modal').addEventListener('click', function(e) {
+        if (e.target === e.currentTarget) closeNewListModal();
+      });
+    });
   </script>
+
+  <!-- New market list modal -->
+  <dialog id="new-list-modal" aria-labelledby="new-list-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="new-list-title">New market list</h2>
+      <button class="modal-close" onclick="closeNewListModal()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <div>
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--space-sm);">Select supplier</label>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:var(--space-md);">The market list will be named after the supplier.</div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+          <div class="nl-supplier-row radio-item" onclick="newListSelectSupplier(this)">
+            <input type="radio" name="nl-supplier" style="accent-color:var(--fern);flex-shrink:0;"/>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;color:var(--text);">Sydney Butchers Co.</div>
+              <div style="font-size:12px;color:var(--text-soft);">Nomni Supply · 412 SKUs</div>
+            </div>
+            <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:var(--radius-pill);background:color-mix(in srgb,var(--fern) 8%,transparent);color:var(--fern);border:1px solid color-mix(in srgb,var(--fern) 20%,transparent);"><i class="ti ti-plug-connected" style="font-size:9px;"></i>NS</span>
+          </div>
+          <div class="nl-supplier-row radio-item" onclick="newListSelectSupplier(this)">
+            <input type="radio" name="nl-supplier" style="accent-color:var(--fern);flex-shrink:0;"/>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;color:var(--text);">Melbourne Fresh</div>
+              <div style="font-size:12px;color:var(--text-soft);">Nomni Supply · 289 SKUs</div>
+            </div>
+            <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:var(--radius-pill);background:color-mix(in srgb,var(--fern) 8%,transparent);color:var(--fern);border:1px solid color-mix(in srgb,var(--fern) 20%,transparent);"><i class="ti ti-plug-connected" style="font-size:9px;"></i>NS</span>
+          </div>
+          <div class="nl-supplier-row radio-item" onclick="newListSelectSupplier(this)">
+            <input type="radio" name="nl-supplier" style="accent-color:var(--fern);flex-shrink:0;"/>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;color:var(--text);">Italian Food Co.</div>
+              <div style="font-size:12px;color:var(--text-soft);">Manual · 54 SKUs</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeNewListModal()">Cancel</button>
+      <button class="btn btn-primary" id="nl-create-btn" disabled onclick="createNewList()"><i class="ti ti-arrow-right"></i>Create &amp; add items</button>
+    </div>
+  </dialog>
+
 </body>
 </html>
