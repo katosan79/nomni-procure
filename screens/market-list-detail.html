@@ -10,12 +10,25 @@
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
   <style>
     body { background: var(--surface-soft); }
-    .page-body { display:flex; flex-direction:column; padding-block: var(--space-2xl); }
-    .page-body .napp-canvas { display:flex; flex-direction:column; gap: var(--space-xl); }
+    .page-body { display:flex; flex-direction:column; }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap: var(--space-xl); padding-block: var(--space-2xl); }
 
-    /* Back nav */
-    .back-nav { font-size:13px; font-weight:600; color:var(--text-accent); text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
-    .back-nav:hover { color:var(--spinach); text-decoration:underline; }
+    /* Page header bar — consistent with market-list-new.html */
+    .page-header-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:var(--space-lg) var(--space-2xl); display:flex; align-items:center; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; flex-shrink:0; }
+    .page-header-left { display:flex; flex-direction:column; gap:5px; }
+    .page-header-eyebrow { display:flex; align-items:center; gap:var(--space-xs); font-size:12px; color:var(--text-soft); }
+    .page-header-eyebrow a { color:var(--text-accent); font-weight:600; text-decoration:none; }
+    .page-header-eyebrow a:hover { text-decoration:underline; }
+    .page-header-eyebrow i { font-size:11px; color:var(--text-soft); }
+    .page-title-row { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; }
+    .page-title-main { font-size:22px; font-weight:700; color:var(--text); letter-spacing:-0.02em; }
+    .meta-strip { display:flex; align-items:center; gap:var(--space-lg); flex-wrap:wrap; margin-top:2px; }
+    .meta-item { display:flex; align-items:center; gap:5px; font-size:13px; color:var(--text-soft); }
+    .meta-item i { font-size:14px; }
+    .meta-item strong { color:var(--text); font-weight:600; }
+    .supplier-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; padding:2px var(--space-sm); border-radius:var(--radius-pill); background:color-mix(in srgb,var(--fern) 8%,transparent); color:var(--fern); border:1px solid color-mix(in srgb,var(--fern) 20%,transparent); }
+    .supplier-chip i { font-size:10px; }
+    .page-header-actions { display:flex; align-items:center; gap:var(--space-sm); }
 
     /* Buttons */
     .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; text-decoration:none; transition:background 0.12s,color 0.12s,border-color 0.12s; }
@@ -25,16 +38,8 @@
     .btn-outline:hover { border-color:var(--spinach); color:var(--text-accent); }
     .btn-ghost { background:none; border-color:transparent; color:var(--text-soft); }
     .btn-ghost:hover { background:var(--surface-soft); color:var(--text); }
-    .btn-sm { height:30px; padding-inline:var(--space-md); font-size:13px; }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
     .btn i { font-size:15px; }
-
-    /* Page header */
-    .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; }
-    .page-header-left { display:flex; flex-direction:column; gap:var(--space-xs); }
-    .page-eyebrow { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); }
-    .page-title { font-size:28px; font-weight:700; color:var(--text); letter-spacing:-0.02em; line-height:1.1; display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; }
-    .page-meta { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; margin-top:var(--space-xs); }
-    .page-actions { display:flex; align-items:center; gap:var(--space-sm); }
 
     /* Status pill */
     .status-pill { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px var(--space-md); border-radius:var(--radius-pill); }
@@ -43,15 +48,6 @@
     .status-pill.ok .dot { background:var(--status-ok-fg); }
     .status-pill.warn { background:var(--status-warn-bg); color:var(--status-warn-fg); }
     .status-pill.warn .dot { background:var(--status-warn-fg); }
-
-    /* Supplier badge */
-    .supplier-badge { display:inline-flex; align-items:center; gap:var(--space-xs); padding:3px var(--space-md); border-radius:var(--radius-pill); font-size:12px; font-weight:700; background:color-mix(in srgb, var(--fern) 8%, transparent); color:var(--fern); border:1px solid color-mix(in srgb, var(--fern) 20%, transparent); }
-    .supplier-badge i { font-size:11px; }
-
-    /* Meta kv row */
-    .meta-row { display:flex; align-items:center; gap:var(--space-xs); font-size:13px; color:var(--text-soft); }
-    .meta-row i { font-size:14px; }
-    .meta-row strong { color:var(--text); font-weight:600; }
 
     /* Agent price-change banner */
     .agent-surface { border-radius:var(--radius-lg); border:1.5px solid var(--agent-border,color-mix(in srgb,var(--spring) 35%,transparent)); box-shadow:0 0 0 3px var(--agent-glow,color-mix(in srgb,var(--spring) 8%,transparent)); background:var(--surface); overflow:hidden; }
@@ -92,7 +88,7 @@
     .row-count { font-size:12px; color:var(--text-soft); white-space:nowrap; }
 
     /* Line items table */
-    .data-table { width:100%; border-collapse:collapse; font-size:14px; min-width:800px; }
+    .data-table { width:100%; border-collapse:collapse; font-size:13px; min-width:800px; }
     .data-table thead tr { border-bottom:1px solid var(--border); background:var(--surface-soft); }
     .data-table th { padding:var(--space-sm) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); white-space:nowrap; }
     .data-table th.num, .data-table td.num { text-align:right; }
@@ -105,9 +101,9 @@
     .table-wrap { overflow-x:auto; }
 
     /* Item name cell */
-    .item-name { font-size:13px; font-weight:700; color:var(--text); }
+    .item-name { font-size:13px; font-weight:500; color:var(--text-soft); }
     .item-name-unlinked { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; color:var(--status-warn-fg); }
-    .sku-ref { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-soft); margin-top:2px; }
+    .sku-ref { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:var(--text); }
     .sku-desc { font-size:11px; color:var(--text-soft); margin-top:1px; }
 
     /* Price cell */
@@ -246,30 +242,33 @@
 </head>
 <body>
 <div class="page-body">
-  <div class="napp-canvas" data-measure="content">
 
-    <a class="back-nav" href="market-list.html"><i class="ti ti-arrow-left"></i>Back to Market lists</a>
-
-    <!-- Page header -->
-    <div class="page-header">
-      <div class="page-header-left">
-        <span class="page-eyebrow">Market List</span>
-        <div class="page-title">
-          Sydney Butchers Co.
-          <span class="status-pill ok"><span class="dot"></span>Active</span>
-        </div>
-        <div class="page-meta">
-          <span class="supplier-badge"><i class="ti ti-plug-connected"></i>Sydney Butchers Co. · Nomni Supply</span>
-          <span class="meta-row"><i class="ti ti-building-store"></i><strong>The Burger Co · NSW</strong></span>
-          <span class="meta-row"><i class="ti ti-map-pin"></i>42 outlets</span>
-          <span class="meta-row"><i class="ti ti-clock"></i>Updated 2h ago</span>
-        </div>
+  <!-- Page header bar -->
+  <div class="page-header-bar">
+    <div class="page-header-left">
+      <div class="page-header-eyebrow">
+        <a href="market-list.html">Market lists</a>
+        <i class="ti ti-chevron-right"></i>
+        <span>Sydney Butchers Co.</span>
       </div>
-      <div class="page-actions">
-        <button class="btn btn-outline" onclick="showToast('Exporting…')"><i class="ti ti-download"></i>Export</button>
-        <button class="btn btn-primary" onclick="openPushModal()"><i class="ti ti-send"></i>Push to outlets</button>
+      <div class="page-title-row">
+        <span class="page-title-main">Sydney Butchers Co.</span>
+        <span class="status-pill ok"><span class="dot"></span>Active</span>
+      </div>
+      <div class="meta-strip">
+        <span class="supplier-chip"><i class="ti ti-plug-connected"></i>Sydney Butchers Co. · Nomni Supply</span>
+        <span class="meta-item"><i class="ti ti-building-store"></i><strong>The Burger Co · NSW</strong></span>
+        <span class="meta-item"><i class="ti ti-map-pin"></i>42 outlets</span>
+        <span class="meta-item"><i class="ti ti-clock"></i>Updated 2h ago</span>
       </div>
     </div>
+    <div class="page-header-actions">
+      <button class="btn btn-outline btn-sm" onclick="showToast('Exporting…')"><i class="ti ti-download"></i>Export</button>
+      <button class="btn btn-primary btn-sm" onclick="openPushModal()"><i class="ti ti-send"></i>Push to outlets</button>
+    </div>
+  </div>
+
+  <div class="napp-canvas" data-measure="content">
 
     <!-- Agent: Sloan price-change banner -->
     <article class="agent-surface" id="price-change-banner" aria-label="Sloan price change alert">
@@ -357,7 +356,7 @@
               </td>
               <td>
                 <div class="item-name">Chicken Breast 500g</div>
-                <div class="sku-desc">Boneless, skin-off · internal item</div>
+                <div class="sku-desc">Boneless, skin-off</div>
               </td>
               <td>5 kg / Carton</td>
               <td class="num">
@@ -388,7 +387,7 @@
               </td>
               <td>
                 <div class="item-name">Chicken Thigh (bone-in)</div>
-                <div class="sku-desc">Fresh, free range · internal item</div>
+                <div class="sku-desc">Fresh, free range</div>
               </td>
               <td>4 kg / Carton</td>
               <td class="num">
@@ -409,7 +408,7 @@
               </td>
               <td>
                 <div class="item-name">Beef Mince 80/20</div>
-                <div class="sku-desc">Fresh, grass-fed · internal item</div>
+                <div class="sku-desc">Fresh, grass-fed</div>
               </td>
               <td>2 kg / Pack</td>
               <td class="num">
@@ -431,7 +430,7 @@
               </td>
               <td>
                 <div class="item-name">Scotch Fillet 200g</div>
-                <div class="sku-desc">Grain fed, portion cut · internal item</div>
+                <div class="sku-desc">Grain fed, portion cut</div>
               </td>
               <td>200 g / Portion</td>
               <td class="num">
@@ -452,7 +451,7 @@
               </td>
               <td>
                 <div class="item-name">Pork Sausage Traditional</div>
-                <div class="sku-desc">Thick, 8 per kg · internal item</div>
+                <div class="sku-desc">Thick, 8 per kg</div>
               </td>
               <td>3 kg / Pack</td>
               <td class="num">
@@ -473,7 +472,7 @@
               </td>
               <td>
                 <div class="item-name">Lamb Rack (French trimmed)</div>
-                <div class="sku-desc">~1.2 kg, 8 bone · internal item</div>
+                <div class="sku-desc">~1.2 kg, 8 bone</div>
               </td>
               <td>~1.2 kg / Rack</td>
               <td class="num">

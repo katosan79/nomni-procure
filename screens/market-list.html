@@ -9,168 +9,12 @@
   <style>
     /* ── Page body layout ── */
     .page-body {
-      display: flex;
-      gap: 0;
       min-height: calc(100vh - var(--topbar-h));
     }
 
-    /* ── Left panel: Outlet group tree ── */
-    .tree-panel {
-      width: 280px;
-      flex-shrink: 0;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .tree-panel-header {
-      padding: var(--space-xl) var(--space-lg) var(--space-md);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-sm);
-    }
-
-    .tree-panel-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .tree-search {
-      position: relative;
-    }
-
-    .tree-search input {
-      width: 100%;
-      height: 32px;
-      padding: 0 var(--space-sm) 0 var(--space-2xl);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--surface-soft);
-      font-family: inherit;
-      font-size: 13px;
-      color: var(--text);
-      outline: none;
-    }
-
-    .tree-search input::placeholder { color: var(--text-soft); }
-
-    .tree-search input:focus {
-      border-color: var(--border-focus);
-      background: var(--surface);
-    }
-
-    .tree-search i {
-      position: absolute;
-      left: var(--space-sm);
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 14px;
-      color: var(--text-soft);
-      pointer-events: none;
-    }
-
-    .tree-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: var(--space-sm) 0;
-    }
-
-    /* Tree items */
-    .tree-item {
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
-      padding: var(--space-xs) var(--space-lg);
-      cursor: pointer;
-      user-select: none;
-      font-size: 13px;
-      color: var(--text);
-      border-radius: 0;
-      transition: background 0.1s;
-      position: relative;
-    }
-
-    .tree-item:hover { background: var(--surface-soft); }
-
-    .tree-item.selected {
-      background: var(--mint);
-      color: var(--spinach);
-    }
-
-    .tree-item.selected::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: var(--fern);
-      border-radius: 0 2px 2px 0;
-    }
-
-    .tree-item .tree-toggle {
-      font-size: 12px;
-      width: 16px;
-      flex-shrink: 0;
-      color: var(--text-soft);
-      transition: transform 0.15s;
-    }
-
-    .tree-item.collapsed .tree-toggle {
-      transform: rotate(-90deg);
-    }
-
-    .tree-item .tree-label {
-      flex: 1;
-      font-weight: 500;
-      line-height: 1.3;
-    }
-
-    .tree-item .tree-count {
-      font-size: 11px;
-      color: var(--text-soft);
-      font-feature-settings: 'tnum' 1;
-    }
-
-    .tree-item .tree-check {
-      font-size: 13px;
-      color: var(--fern);
-      flex-shrink: 0;
-    }
-
-    /* Indentation levels */
-    .tree-l1 { padding-left: var(--space-lg); }
-    .tree-l2 { padding-left: calc(var(--space-lg) + 16px); }
-    .tree-l3 { padding-left: calc(var(--space-lg) + 32px); }
-    .tree-l4 { padding-left: calc(var(--space-lg) + 48px); }
-
-    .tree-group { font-weight: 600; }
-
-    .tree-children {
-      overflow: hidden;
-      transition: height 0.15s ease;
-    }
-
-    .tree-children.collapsed { display: none; }
-
-    /* ── Right panel: main content ── */
-    .main-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .main-scroll {
-      flex: 1;
-      overflow-y: auto;
-    }
+    /* ── Main content ── */
+    .main-panel { width: 100%; }
+    .main-scroll { width: 100%; }
 
     .napp-canvas {
       padding-top: var(--space-2xl);
@@ -210,12 +54,12 @@
       gap: var(--space-xs);
       height: var(--control-h);
       padding: 0 var(--space-lg);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       font-family: inherit;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      border: 1px solid transparent;
+      border: 1.5px solid transparent;
       text-decoration: none;
       transition: background 0.12s, border-color 0.12s, color 0.12s;
       white-space: nowrap;
@@ -227,15 +71,15 @@
       border-color: var(--btn-primary-bg);
     }
 
-    .btn-primary:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
 
     .btn-outline {
-      background: transparent;
+      background: var(--surface);
       color: var(--text);
       border-color: var(--border);
     }
 
-    .btn-outline:hover { background: var(--surface-soft); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
 
     .btn-ghost {
       background: transparent;
@@ -245,6 +89,8 @@
     }
 
     .btn-ghost:hover { background: var(--surface-soft); color: var(--text); }
+
+    .btn-sm { height: 32px; padding-inline: var(--space-md); font-size: 13px; }
 
     .btn[disabled] {
       opacity: 0.4;
@@ -256,7 +102,7 @@
     .split-btn {
       display: inline-flex;
       align-items: stretch;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       overflow: visible;
       position: relative;
     }
@@ -269,18 +115,18 @@
       padding: 0 var(--space-md);
       background: var(--btn-primary-bg);
       color: var(--btn-primary-fg);
-      border: 1px solid var(--btn-primary-bg);
+      border: 1.5px solid var(--btn-primary-bg);
       border-right: none;
-      border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+      border-radius: var(--radius-md) 0 0 var(--radius-md);
       font-family: inherit;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: background 0.12s;
       white-space: nowrap;
     }
 
-    .split-btn-main:hover { background: var(--btn-primary-hover); }
+    .split-btn-main:hover { background: var(--spinach); }
 
     .split-btn-arrow {
       display: inline-flex;
@@ -289,15 +135,15 @@
       width: 28px;
       background: var(--btn-primary-bg);
       color: var(--btn-primary-fg);
-      border: 1px solid var(--btn-primary-bg);
+      border: 1.5px solid var(--btn-primary-bg);
       border-left: 1px solid rgba(255,255,255,0.25);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
       font-size: 12px;
       cursor: pointer;
       transition: background 0.12s;
     }
 
-    .split-btn-arrow:hover { background: var(--btn-primary-hover); }
+    .split-btn-arrow:hover { background: var(--spinach); }
 
     .split-btn[data-disabled="true"] .split-btn-main,
     .split-btn[data-disabled="true"] .split-btn-arrow {
@@ -488,9 +334,14 @@
 
     .col-name     { min-width: 160px; }
     .col-brand    { min-width: 120px; }
-    .col-supplier { min-width: 160px; }
-    .col-supplier .supplier-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; padding:2px var(--space-sm); border-radius:var(--radius-pill); background:color-mix(in srgb,var(--fern) 8%,transparent); color:var(--fern); border:1px solid color-mix(in srgb,var(--fern) 20%,transparent); }
-    .col-supplier .supplier-chip i { font-size:10px; }
+    .col-items { min-width: 80px; }
+    .col-name .row-name-sub { display:block; margin-top:2px; }
+    .supplier-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; padding:2px var(--space-sm); border-radius:var(--radius-pill); background:color-mix(in srgb,var(--fern) 8%,transparent); color:var(--fern); border:1px solid color-mix(in srgb,var(--fern) 20%,transparent); }
+    .supplier-chip i { font-size:10px; }
+    .chip-manual { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; padding:2px var(--space-sm); border-radius:var(--radius-pill); background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); }
+    .chip-manual i { font-size:10px; }
+    .row-items { font-weight:600; color:var(--text); font-feature-settings:'tnum' 1; }
+    .row-items-sub { font-size:12px; color:var(--text-soft); }
     .col-groups  { min-width: 160px; font-feature-settings: 'tnum' 1; }
     .col-updated { min-width: 100px; color: var(--text-soft); font-size: 13px; font-feature-settings: 'tnum' 1; }
     .col-status  { min-width: 100px; }
@@ -1028,34 +879,8 @@
 
     /* ── Responsive breakpoints ── */
 
-    /* Tablet ≤1024px: stack two-panel layout */
-    @media (max-width: 1024px) {
-      .page-body {
-        flex-direction: column;
-      }
-      .tree-panel {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        flex-shrink: unset;
-      }
-      .main-panel {
-        overflow: visible;
-      }
-      .main-scroll {
-        overflow: visible;
-      }
-    }
-
     /* Mobile ≤768px: reduce typography, stack filters, table scroll */
     @media (max-width: 768px) {
-      .tree-panel {
-        max-height: 240px;
-        overflow-y: auto;
-      }
-      .tree-scroll {
-        overflow-y: auto;
-      }
       .page-h1 {
         font-size: 24px;
       }
@@ -1104,9 +929,6 @@
         width: 100%;
         justify-content: center;
       }
-      .tree-panel-header {
-        padding: var(--space-md) var(--space-md) var(--space-sm);
-      }
       .activity-body {
         padding: var(--space-md) var(--space-md);
       }
@@ -1118,106 +940,7 @@
 
   <div class="page-body">
 
-    <!-- ══ LEFT: Outlet group tree ══ -->
-    <aside class="tree-panel" aria-label="Outlet groups">
-      <div class="tree-panel-header">
-        <span class="tree-panel-title">Outlet groups</span>
-        <div class="tree-search">
-          <i class="ti ti-search" aria-hidden="true"></i>
-          <input type="search" placeholder="Search outlets…" aria-label="Search outlet groups"/>
-        </div>
-      </div>
-
-      <div class="tree-scroll" role="tree" aria-label="Brand outlet hierarchy">
-
-        <!-- Brand: The Burger Co -->
-        <div class="tree-item tree-l1 tree-group" role="treeitem" aria-expanded="true" data-tree="burger-co" onclick="toggleTree(this)">
-          <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
-          <span class="tree-label">The Burger Co</span>
-          <span class="tree-count tabular">24</span>
-        </div>
-        <div class="tree-children" id="tree-burger-co" role="group">
-
-          <!-- NSW -->
-          <div class="tree-item tree-l2 tree-group" role="treeitem" aria-expanded="true" data-tree="burger-nsw" onclick="toggleTree(this)">
-            <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
-            <span class="tree-label">New South Wales</span>
-          </div>
-          <div class="tree-children" id="tree-burger-nsw" role="group">
-
-            <div class="tree-item tree-l3 tree-group" role="treeitem" aria-expanded="true" data-tree="burger-sydney" onclick="toggleTree(this)">
-              <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
-              <span class="tree-label">Sydney Metro</span>
-            </div>
-            <div class="tree-children" id="tree-burger-sydney" role="group">
-              <div class="tree-item tree-l4 selected" role="treeitem" aria-selected="true" onclick="selectOutlet(this)">
-                <span class="tree-label">Circular Quay</span>
-                <i class="ti ti-check tree-check" aria-label="Selected" aria-hidden="false"></i>
-              </div>
-              <div class="tree-item tree-l4 selected" role="treeitem" aria-selected="true" onclick="selectOutlet(this)">
-                <span class="tree-label">Surry Hills</span>
-                <i class="ti ti-check tree-check" aria-label="Selected" aria-hidden="false"></i>
-              </div>
-              <div class="tree-item tree-l4" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
-                <span class="tree-label">Newtown</span>
-              </div>
-            </div>
-
-            <div class="tree-item tree-l3" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
-              <span class="tree-label">Hunter Valley</span>
-            </div>
-          </div>
-
-          <!-- VIC -->
-          <div class="tree-item tree-l2 tree-group" role="treeitem" aria-expanded="true" data-tree="burger-vic" onclick="toggleTree(this)">
-            <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
-            <span class="tree-label">Victoria</span>
-          </div>
-          <div class="tree-children" id="tree-burger-vic" role="group">
-            <div class="tree-item tree-l3 selected" role="treeitem" aria-selected="true" onclick="selectOutlet(this)">
-              <span class="tree-label">Melbourne CBD</span>
-              <i class="ti ti-check tree-check" aria-label="Selected" aria-hidden="false"></i>
-            </div>
-            <div class="tree-item tree-l3" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
-              <span class="tree-label">St Kilda</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Brand: Pasta Palace -->
-        <div class="tree-item tree-l1 tree-group" role="treeitem" aria-expanded="true" data-tree="pasta" onclick="toggleTree(this)">
-          <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
-          <span class="tree-label">Pasta Palace</span>
-          <span class="tree-count tabular">18</span>
-        </div>
-        <div class="tree-children" id="tree-pasta" role="group">
-          <div class="tree-item tree-l2" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
-            <span class="tree-label">New South Wales</span>
-          </div>
-          <div class="tree-item tree-l2" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
-            <span class="tree-label">Queensland</span>
-          </div>
-        </div>
-
-        <!-- Brand: Taco Time (collapsed) -->
-        <div class="tree-item tree-l1 tree-group collapsed" role="treeitem" aria-expanded="false" data-tree="taco" onclick="toggleTree(this)">
-          <i class="ti ti-chevron-down tree-toggle" aria-hidden="true"></i>
-          <span class="tree-label">Taco Time</span>
-          <span class="tree-count tabular">12</span>
-        </div>
-        <div class="tree-children collapsed" id="tree-taco" role="group">
-          <div class="tree-item tree-l2" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
-            <span class="tree-label">New South Wales</span>
-          </div>
-          <div class="tree-item tree-l2" role="treeitem" aria-selected="false" onclick="selectOutlet(this)">
-            <span class="tree-label">Victoria</span>
-          </div>
-        </div>
-
-      </div>
-    </aside>
-
-    <!-- ══ RIGHT: Main content ══ -->
+    <!-- ══ Main content ══ -->
     <main class="main-panel" id="main-panel">
       <div class="main-scroll">
         <div class="napp-canvas" data-measure="content">
@@ -1225,7 +948,7 @@
           <!-- Page header -->
           <header class="page-header">
             <div class="page-header-left">
-              <span class="page-eyebrow">Market List Assignment</span>
+              <span class="page-eyebrow">Procurement</span>
               <h1 class="page-h1">Market lists</h1>
             </div>
             <button class="btn btn-primary role-hqadmin-only" onclick="openNewListModal()">
@@ -1273,7 +996,7 @@
               </div>
               <div class="gov-change">
                 <span class="gov-change-icon new" aria-hidden="true"><i class="ti ti-plus"></i></span>
-                <span class="gov-change-item">Buffalo Mozzarella 250g <span class="gov-change-sub">· new item · suggested for Pasta Classics</span></span>
+                <span class="gov-change-item">Buffalo Mozzarella 250g <span class="gov-change-sub">· new item · suggested for Italian Food Co.</span></span>
                 <span class="gov-change-delta">$4.20</span>
               </div>
               <div class="gov-change">
@@ -1318,7 +1041,8 @@
             <div class="filter-pills" role="group" aria-label="Status filter">
               <button class="filter-pill active" onclick="setStatusFilter(this, 'all')">All</button>
               <button class="filter-pill" onclick="setStatusFilter(this, 'active')">Active</button>
-              <button class="filter-pill" onclick="setStatusFilter(this, 'pending')">Pending</button>
+              <button class="filter-pill" onclick="setStatusFilter(this, 'unassigned')">Unassigned</button>
+              <button class="filter-pill" onclick="setStatusFilter(this, 'draft')">Draft</button>
               <button class="filter-pill" onclick="setStatusFilter(this, 'archived')">Archived</button>
             </div>
           </div>
@@ -1330,7 +1054,7 @@
                 <tr>
                   <th class="col-name"   scope="col">Name</th>
                   <th class="col-brand"  scope="col">Brand</th>
-                  <th class="col-supplier" scope="col">Supplier</th>
+                  <th class="col-items" scope="col">Items</th>
                   <th class="col-groups" scope="col">Assigned groups</th>
                   <th class="col-updated"scope="col">Last updated</th>
                   <th class="col-status" scope="col">Status</th>
@@ -1339,59 +1063,42 @@
               </thead>
               <tbody>
 
-                <!-- Row 1: Spring Menu AU — Active -->
+                <!-- Row 1: Sydney Butchers Co. — Active -->
                 <tr onclick="if(!event.target.closest('.col-actions'))location.href='market-list-detail.html'">
                   <td class="col-name">
-                    <span class="row-name">Spring Menu AU</span>
+                    <span class="row-name">Sydney Butchers Co.</span>
+                    <span class="row-name-sub"><span class="supplier-chip"><i class="ti ti-plug-connected"></i>Nomni Supply</span></span>
                   </td>
-                  <td class="col-brand">
-                    <span class="row-brand">The Burger Co</span>
-                  </td>
-                  <td class="col-supplier">
-                    <span class="supplier-chip"><i class="ti ti-plug-connected"></i>Sydney Butchers Co.</span>
+                  <td class="col-brand"><span class="row-brand">The Burger Co</span></td>
+                  <td class="col-items">
+                    <span class="row-items">24</span>
+                    <span class="row-items-sub"> items</span>
                   </td>
                   <td class="col-groups">
-                    <span class="row-groups-main tabular">3 groups</span>
-                    <br>
+                    <span class="row-groups-main tabular">3 groups</span><br>
                     <span class="row-groups-sub tabular">42 outlets</span>
                   </td>
                   <td class="col-updated tabular">2h ago</td>
                   <td class="col-status">
-                    <span class="status-pill ok" role="status" aria-label="Status: Active">
-                      <span class="dot" aria-hidden="true"></span>
-                      Active
-                    </span>
+                    <span class="status-pill ok" role="status" aria-label="Status: Active"><span class="dot" aria-hidden="true"></span>Active</span>
                   </td>
                   <td class="col-actions">
                     <div class="actions-cell">
-                      <div class="split-btn" role="group" aria-label="Push Spring Menu AU">
-                        <button class="split-btn-main" onclick="openPushModal('Spring Menu AU', 42)" aria-label="Push Spring Menu AU">
-                          <i class="ti ti-send" aria-hidden="true"></i>
-                          Push
-                        </button>
-                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-1')" aria-haspopup="menu" aria-expanded="false" aria-label="More push options">
-                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
-                        </button>
+                      <div class="split-btn" role="group" aria-label="Push Sydney Butchers Co.">
+                        <button class="split-btn-main" onclick="openPushModal('Sydney Butchers Co.', 42)"><i class="ti ti-send" aria-hidden="true"></i>Push</button>
+                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-1')" aria-haspopup="menu" aria-expanded="false"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
                         <div class="split-dropdown" id="split-1" role="menu">
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Spring Menu AU', 42); closeSplitMenus()">
-                            <i class="ti ti-layers" aria-hidden="true"></i>Push to group
-                          </div>
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Spring Menu AU', 3); closeSplitMenus()">
-                            <i class="ti ti-list-check" aria-hidden="true"></i>Push to selection
-                          </div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Sydney Butchers Co.', 42); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Sydney Butchers Co.', 3); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
                           <div class="split-dropdown-divider" role="separator"></div>
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Spring Menu AU', 42); closeSplitMenus()">
-                            <i class="ti ti-broadcast" aria-hidden="true"></i>Push to all outlets
-                          </div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Sydney Butchers Co.', 42); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
                         </div>
                       </div>
                       <div class="row-menu-wrap">
-                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-1')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Spring Menu AU">
-                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
-                        </button>
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-1')" aria-haspopup="menu" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
                         <div class="row-menu" id="menu-1" role="menu">
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <button class="row-menu-item" role="menuitem" onclick="location.href='market-list-new.html';closeMenus()"><i class="ti ti-pencil"></i>Edit items</button>
+                          <button class="row-menu-item" role="menuitem" onclick="location.href='market-list-assign.html';closeMenus()"><i class="ti ti-map-pin"></i>Edit assignment</button>
                           <div class="row-menu-divider" role="separator"></div>
                           <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
                           <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
@@ -1401,55 +1108,30 @@
                   </td>
                 </tr>
 
-                <!-- Row 2: Winter Specials — Pending -->
+                <!-- Row 2: Melbourne Fresh — Unassigned (created, assign later) -->
                 <tr onclick="if(!event.target.closest('.col-actions'))location.href='market-list-detail.html'">
                   <td class="col-name">
-                    <span class="row-name">Winter Specials</span>
+                    <span class="row-name">Melbourne Fresh</span>
+                    <span class="row-name-sub"><span class="supplier-chip"><i class="ti ti-plug-connected"></i>Nomni Supply</span></span>
                   </td>
-                  <td class="col-brand">
-                    <span class="row-brand">The Burger Co</span>
+                  <td class="col-brand"><span class="row-brand">The Burger Co</span></td>
+                  <td class="col-items">
+                    <span class="row-items">18</span>
+                    <span class="row-items-sub"> items</span>
                   </td>
-                  <td class="col-supplier">
-                    <span class="supplier-chip"><i class="ti ti-plug-connected"></i>Melbourne Fresh</span>
-                  </td>
-                  <td class="col-groups">
-                    <span class="row-groups-main tabular">2 groups</span>
-                    <br>
-                    <span class="row-groups-sub tabular">28 outlets</span>
-                  </td>
+                  <td class="col-groups"><span class="row-empty">—</span></td>
                   <td class="col-updated tabular">1 day ago</td>
                   <td class="col-status">
-                    <span class="status-pill warn" role="status" aria-label="Status: Pending">
-                      <span class="dot" aria-hidden="true"></span>
-                      Pending
-                    </span>
+                    <span class="status-pill warn" role="status" aria-label="Status: Unassigned"><span class="dot" aria-hidden="true"></span>Unassigned</span>
                   </td>
                   <td class="col-actions">
                     <div class="actions-cell">
-                      <div class="split-btn" role="group" aria-label="Push Winter Specials">
-                        <button class="split-btn-main" onclick="openPushModal('Winter Specials', 28)" aria-label="Push Winter Specials">
-                          <i class="ti ti-send" aria-hidden="true"></i>
-                          Push
-                        </button>
-                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-2')" aria-haspopup="menu" aria-expanded="false" aria-label="More push options">
-                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
-                        </button>
-                        <div class="split-dropdown" id="split-2" role="menu">
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Winter Specials', 28); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Winter Specials', 3); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
-                          <div class="split-dropdown-divider" role="separator"></div>
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Winter Specials', 28); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
-                        </div>
-                      </div>
+                      <button class="btn btn-outline btn-sm" onclick="location.href='market-list-assign.html';event.stopPropagation()"><i class="ti ti-map-pin"></i>Assign outlets</button>
                       <div class="row-menu-wrap">
-                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-2')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Winter Specials">
-                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
-                        </button>
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-2')" aria-haspopup="menu" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
                         <div class="row-menu" id="menu-2" role="menu">
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <button class="row-menu-item" role="menuitem" onclick="location.href='market-list-new.html';closeMenus()"><i class="ti ti-pencil"></i>Edit items</button>
                           <div class="row-menu-divider" role="separator"></div>
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
                           <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
                         </div>
                       </div>
@@ -1457,53 +1139,42 @@
                   </td>
                 </tr>
 
-                <!-- Row 3: Pasta Classics — Active -->
+                <!-- Row 3: Italian Food Co. — Active -->
                 <tr onclick="if(!event.target.closest('.col-actions'))location.href='market-list-detail.html'">
                   <td class="col-name">
-                    <span class="row-name">Pasta Classics</span>
+                    <span class="row-name">Italian Food Co.</span>
+                    <span class="row-name-sub"><span class="chip-manual"><i class="ti ti-pencil"></i>Manual</span></span>
                   </td>
-                  <td class="col-brand">
-                    <span class="row-brand">Pasta Palace</span>
-                  </td>
-                  <td class="col-supplier">
-                    <span class="supplier-chip"><i class="ti ti-plug-connected"></i>Italian Food Co.</span>
+                  <td class="col-brand"><span class="row-brand">Pasta Palace</span></td>
+                  <td class="col-items">
+                    <span class="row-items">31</span>
+                    <span class="row-items-sub"> items</span>
                   </td>
                   <td class="col-groups">
-                    <span class="row-groups-main tabular">4 groups</span>
-                    <br>
+                    <span class="row-groups-main tabular">4 groups</span><br>
                     <span class="row-groups-sub tabular">18 outlets</span>
                   </td>
                   <td class="col-updated tabular">3 days ago</td>
                   <td class="col-status">
-                    <span class="status-pill ok" role="status" aria-label="Status: Active">
-                      <span class="dot" aria-hidden="true"></span>
-                      Active
-                    </span>
+                    <span class="status-pill ok" role="status" aria-label="Status: Active"><span class="dot" aria-hidden="true"></span>Active</span>
                   </td>
                   <td class="col-actions">
                     <div class="actions-cell">
-                      <div class="split-btn" role="group" aria-label="Push Pasta Classics">
-                        <button class="split-btn-main" onclick="openPushModal('Pasta Classics', 18)" aria-label="Push Pasta Classics">
-                          <i class="ti ti-send" aria-hidden="true"></i>
-                          Push
-                        </button>
-                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-3')" aria-haspopup="menu" aria-expanded="false" aria-label="More push options">
-                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
-                        </button>
+                      <div class="split-btn" role="group" aria-label="Push Italian Food Co.">
+                        <button class="split-btn-main" onclick="openPushModal('Italian Food Co.', 18)"><i class="ti ti-send" aria-hidden="true"></i>Push</button>
+                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-3')" aria-haspopup="menu" aria-expanded="false"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
                         <div class="split-dropdown" id="split-3" role="menu">
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Pasta Classics', 18); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Pasta Classics', 4); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Italian Food Co.', 18); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Italian Food Co.', 4); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
                           <div class="split-dropdown-divider" role="separator"></div>
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Pasta Classics', 18); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Italian Food Co.', 18); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
                         </div>
                       </div>
                       <div class="row-menu-wrap">
-                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-3')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Pasta Classics">
-                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
-                        </button>
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-3')" aria-haspopup="menu" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
                         <div class="row-menu" id="menu-3" role="menu">
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <button class="row-menu-item" role="menuitem" onclick="location.href='market-list-new.html';closeMenus()"><i class="ti ti-pencil"></i>Edit items</button>
+                          <button class="row-menu-item" role="menuitem" onclick="location.href='market-list-assign.html';closeMenus()"><i class="ti ti-map-pin"></i>Edit assignment</button>
                           <div class="row-menu-divider" role="separator"></div>
                           <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
                           <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
@@ -1513,50 +1184,42 @@
                   </td>
                 </tr>
 
-                <!-- Row 4: Taco Tuesday — Active -->
-                <tr>
+                <!-- Row 4: Harbour Meats — Active -->
+                <tr onclick="if(!event.target.closest('.col-actions'))location.href='market-list-detail.html'">
                   <td class="col-name">
-                    <span class="row-name">Taco Tuesday</span>
+                    <span class="row-name">Harbour Meats</span>
+                    <span class="row-name-sub"><span class="supplier-chip"><i class="ti ti-plug-connected"></i>Nomni Supply</span></span>
                   </td>
-                  <td class="col-brand">
-                    <span class="row-brand">Taco Time</span>
+                  <td class="col-brand"><span class="row-brand">Taco Time</span></td>
+                  <td class="col-items">
+                    <span class="row-items">12</span>
+                    <span class="row-items-sub"> items</span>
                   </td>
                   <td class="col-groups">
-                    <span class="row-groups-main tabular">1 group</span>
-                    <br>
+                    <span class="row-groups-main tabular">1 group</span><br>
                     <span class="row-groups-sub tabular">12 outlets</span>
                   </td>
                   <td class="col-updated tabular">1 week ago</td>
                   <td class="col-status">
-                    <span class="status-pill ok" role="status" aria-label="Status: Active">
-                      <span class="dot" aria-hidden="true"></span>
-                      Active
-                    </span>
+                    <span class="status-pill ok" role="status" aria-label="Status: Active"><span class="dot" aria-hidden="true"></span>Active</span>
                   </td>
                   <td class="col-actions">
                     <div class="actions-cell">
-                      <div class="split-btn" role="group" aria-label="Push Taco Tuesday">
-                        <button class="split-btn-main" onclick="openPushModal('Taco Tuesday', 12)" aria-label="Push Taco Tuesday">
-                          <i class="ti ti-send" aria-hidden="true"></i>
-                          Push
-                        </button>
-                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-4')" aria-haspopup="menu" aria-expanded="false" aria-label="More push options">
-                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
-                        </button>
+                      <div class="split-btn" role="group" aria-label="Push Harbour Meats">
+                        <button class="split-btn-main" onclick="openPushModal('Harbour Meats', 12)"><i class="ti ti-send" aria-hidden="true"></i>Push</button>
+                        <button class="split-btn-arrow" onclick="toggleSplitMenu(event, 'split-4')" aria-haspopup="menu" aria-expanded="false"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
                         <div class="split-dropdown" id="split-4" role="menu">
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Taco Tuesday', 12); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Taco Tuesday', 1); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Harbour Meats', 12); closeSplitMenus()"><i class="ti ti-layers"></i>Push to group</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Harbour Meats', 1); closeSplitMenus()"><i class="ti ti-list-check"></i>Push to selection</div>
                           <div class="split-dropdown-divider" role="separator"></div>
-                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Taco Tuesday', 12); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
+                          <div class="split-dropdown-item" role="menuitem" onclick="openPushModal('Harbour Meats', 12); closeSplitMenus()"><i class="ti ti-broadcast"></i>Push to all outlets</div>
                         </div>
                       </div>
                       <div class="row-menu-wrap">
-                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-4')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Taco Tuesday">
-                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
-                        </button>
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-4')" aria-haspopup="menu" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
                         <div class="row-menu" id="menu-4" role="menu">
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <button class="row-menu-item" role="menuitem" onclick="location.href='market-list-new.html';closeMenus()"><i class="ti ti-pencil"></i>Edit items</button>
+                          <button class="row-menu-item" role="menuitem" onclick="location.href='market-list-assign.html';closeMenus()"><i class="ti ti-map-pin"></i>Edit assignment</button>
                           <div class="row-menu-divider" role="separator"></div>
                           <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
                           <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
@@ -1566,44 +1229,30 @@
                   </td>
                 </tr>
 
-                <!-- Row 5: Summer Refresh — Draft (disabled push) -->
-                <tr>
+                <!-- Row 5: Aussie Farms — Draft (creation in progress) -->
+                <tr onclick="if(!event.target.closest('.col-actions'))location.href='market-list-new.html'">
                   <td class="col-name">
-                    <span class="row-name">Summer Refresh</span>
+                    <span class="row-name">Aussie Farms</span>
+                    <span class="row-name-sub"><span class="supplier-chip"><i class="ti ti-plug-connected"></i>Nomni Supply</span></span>
                   </td>
-                  <td class="col-brand">
-                    <span class="row-brand">The Burger Co</span>
+                  <td class="col-brand"><span class="row-brand">The Burger Co</span></td>
+                  <td class="col-items">
+                    <span class="row-items">8</span>
+                    <span class="row-items-sub"> items</span>
                   </td>
-                  <td class="col-groups">
-                    <span class="row-empty">—</span>
-                  </td>
+                  <td class="col-groups"><span class="row-empty">—</span></td>
                   <td class="col-updated tabular">2 weeks ago</td>
                   <td class="col-status">
-                    <span class="status-pill info" role="status" aria-label="Status: Draft">
-                      <span class="dot" aria-hidden="true"></span>
-                      Draft
-                    </span>
+                    <span class="status-pill info" role="status" aria-label="Status: Draft"><span class="dot" aria-hidden="true"></span>Draft</span>
                   </td>
                   <td class="col-actions">
                     <div class="actions-cell">
-                      <div class="split-btn" data-disabled="true" role="group" aria-label="Push Summer Refresh (unavailable for draft)" aria-disabled="true">
-                        <button class="split-btn-main" disabled aria-disabled="true" aria-label="Push unavailable — assign outlets first">
-                          <i class="ti ti-send" aria-hidden="true"></i>
-                          Push
-                        </button>
-                        <button class="split-btn-arrow" disabled aria-disabled="true" aria-label="More push options unavailable">
-                          <i class="ti ti-chevron-down" aria-hidden="true"></i>
-                        </button>
-                      </div>
+                      <button class="btn btn-outline btn-sm" onclick="location.href='market-list-new.html';event.stopPropagation()"><i class="ti ti-pencil"></i>Continue setup</button>
                       <div class="row-menu-wrap">
-                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-5')" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for Summer Refresh">
-                          <i class="ti ti-dots-vertical" aria-hidden="true"></i>
-                        </button>
+                        <button class="row-menu-btn" onclick="toggleRowMenu(event, 'menu-5')" aria-haspopup="menu" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
                         <div class="row-menu" id="menu-5" role="menu">
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-pencil"></i>Edit</button>
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-copy"></i>Duplicate</button>
+                          <button class="row-menu-item" role="menuitem" onclick="location.href='market-list-new.html';closeMenus()"><i class="ti ti-pencil"></i>Edit items</button>
                           <div class="row-menu-divider" role="separator"></div>
-                          <button class="row-menu-item" role="menuitem" onclick="closeMenus()"><i class="ti ti-archive"></i>Archive</button>
                           <button class="row-menu-item destructive" role="menuitem" onclick="closeMenus()"><i class="ti ti-trash"></i>Delete</button>
                         </div>
                       </div>
@@ -1774,38 +1423,6 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => NomniShell.init('Market lists'));
 
-    /* ── Tree toggle ── */
-    function toggleTree(el) {
-      const id = el.getAttribute('data-tree');
-      const children = document.getElementById('tree-' + id);
-      if (!children) return;
-
-      const isCollapsed = children.classList.contains('collapsed');
-      children.classList.toggle('collapsed', !isCollapsed);
-      el.classList.toggle('collapsed', !isCollapsed);
-      el.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
-    }
-
-    /* ── Outlet select toggle ── */
-    function selectOutlet(el) {
-      el.classList.toggle('selected');
-      const isSelected = el.classList.contains('selected');
-      el.setAttribute('aria-selected', isSelected);
-
-      // Add or remove checkmark icon
-      let check = el.querySelector('.tree-check');
-      if (isSelected) {
-        if (!check) {
-          check = document.createElement('i');
-          check.className = 'ti ti-check tree-check';
-          check.setAttribute('aria-label', 'Selected');
-          el.appendChild(check);
-        }
-      } else {
-        if (check) check.remove();
-      }
-    }
-
     /* ── Filtering ── */
     let activeStatus = 'all';
     function setStatusFilter(btn, filter) {
@@ -1817,6 +1434,7 @@
     function filterTable() {
       const q = (document.getElementById('ml-search').value || '').toLowerCase().trim();
       const brand = document.getElementById('ml-brand').value;
+      const region = document.getElementById('ml-region').value;
       const rows = document.querySelectorAll('tbody tr');
       let shown = 0;
       rows.forEach(tr => {
@@ -1827,10 +1445,8 @@
         let ok = true;
         if (q && !name.includes(q)) ok = false;
         if (brand !== 'All brands' && rowBrand !== brand) ok = false;
-        if (activeStatus !== 'all') {
-          if (activeStatus === 'archived' && status !== 'draft') ok = false;
-          else if (activeStatus !== 'archived' && status !== activeStatus) ok = false;
-        }
+        if (region !== 'All regions' && !tr.textContent.toLowerCase().includes(region.toLowerCase())) ok = false;
+        if (activeStatus !== 'all' && status !== activeStatus) ok = false;
         tr.style.display = ok ? '' : 'none';
         if (ok) shown++;
       });

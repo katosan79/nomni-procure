@@ -122,12 +122,21 @@
     .add-sku-btn.added:hover { background: var(--mint); border-color: color-mix(in srgb,var(--fern) 25%,transparent); color: var(--status-ok-fg); }
 
     /* ── Save bar ── */
-    .save-bar { background: var(--surface-deep); border-top: 1px solid rgba(255,255,255,0.08); padding: var(--space-md) var(--space-2xl); display: flex; align-items: center; gap: var(--space-xl); flex-shrink: 0; }
+    .save-bar { position: sticky; bottom: 0; z-index: 10; background: var(--surface-deep); border-top: 1px solid rgba(255,255,255,0.08); padding: var(--space-md) var(--space-2xl); display: flex; align-items: center; gap: var(--space-xl); flex-shrink: 0; }
     .save-bar-status { flex: 1; display: flex; align-items: center; gap: var(--space-md); }
     .save-bar-count { font-size: 14px; font-weight: 600; color: var(--cream); }
     .save-bar-warn { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--status-warn-fg); background: var(--status-warn-bg); padding: 2px var(--space-sm); border-radius: var(--radius-pill); }
     .save-bar-warn i { font-size: 12px; }
     .save-bar-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* ── Step bar ── */
+    .step-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:var(--space-md) var(--space-2xl); display:flex; align-items:center; gap:var(--space-sm); flex-shrink:0; }
+    .step { display:flex; align-items:center; gap:var(--space-xs); font-size:13px; font-weight:600; color:var(--text-soft); }
+    .step.done { color:var(--status-ok-fg); }
+    .step.active { color:var(--text); }
+    .step-num { width:22px; height:22px; border-radius:50%; border:2px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+    .step.done .step-num { background:var(--status-ok-fg); border-color:var(--status-ok-fg); color:#fff; }
+    .step-sep { flex:1; max-width:48px; height:1px; background:var(--border); }
 
     /* ── Toast ── */
     #toast-wrap { position:fixed; bottom:72px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:var(--space-sm); align-items:center; pointer-events:none; }
@@ -155,8 +164,25 @@
       </div>
     </div>
     <div class="page-header-actions">
-      <a href="market-list.html" class="btn btn-ghost btn-sm">Discard</a>
       <button class="btn btn-outline btn-sm" onclick="saveDraft()"><i class="ti ti-device-floppy"></i>Save draft</button>
+    </div>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="step-bar">
+    <div class="step done">
+      <div class="step-num"><i class="ti ti-check" style="font-size:10px;"></i></div>
+      <span>Select supplier</span>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step active">
+      <div class="step-num">2</div>
+      <span>Add items &amp; set prices</span>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <span>Assign to outlets</span>
     </div>
   </div>
 
@@ -380,7 +406,7 @@
     </div>
     <div class="save-bar-actions">
       <a href="market-list.html" class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,0.5);">Discard</a>
-      <button class="btn btn-outline btn-sm" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:var(--cream);" onclick="saveDraft()">Save draft</button>
+      <button class="btn btn-ghost btn-sm" id="assign-later-btn" onclick="assignLater()" style="color:rgba(255,255,255,0.6);text-decoration:underline;text-underline-offset:2px;">Create, assign later</button>
       <button class="btn btn-primary btn-sm" id="publish-btn" onclick="publish()"><i class="ti ti-send"></i>Save &amp; assign to outlets</button>
     </div>
   </div>
@@ -507,8 +533,12 @@
     showToast('Draft saved.');
   }
 
+  function assignLater() {
+    location.href = 'market-list-detail.html?draft=1';
+  }
+
   function publish() {
-    location.href = 'market-list-detail.html';
+    location.href = 'market-list-assign.html';
   }
 
   // ── Toast ─────────────────────────────────────────────────────────────────
