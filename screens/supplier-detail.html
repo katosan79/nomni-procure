@@ -938,7 +938,8 @@
                     <th>SKU code</th>
                     <th>Product name</th>
                     <th>Category</th>
-                    <th>Pack / UOM</th>
+                    <th>Pack size</th>
+                    <th>UOM</th>
                     <th class="num">Lead time</th>
                     <th class="num">MOQ</th>
                     <th>Source</th>
@@ -950,7 +951,8 @@
                     <td><span class="sku-code">SBC-CHK-500</span></td>
                     <td><div class="cat-prod-name">Premium Chicken Breast</div><div class="cat-prod-sub">Skin-off, individually frozen</div></td>
                     <td>Poultry</td>
-                    <td>5 kg carton</td>
+                    <td>5 kg</td>
+                    <td>Carton</td>
                     <td class="num">1 day</td>
                     <td class="num">1 carton</td>
                     <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
@@ -960,7 +962,8 @@
                     <td><span class="sku-code">SBC-CHK-810</span></td>
                     <td><div class="cat-prod-name">Free Range Chicken Thigh</div><div class="cat-prod-sub">Bone-in, fresh</div></td>
                     <td>Poultry</td>
-                    <td>4 kg carton</td>
+                    <td>4 kg</td>
+                    <td>Carton</td>
                     <td class="num">1 day</td>
                     <td class="num">1 carton</td>
                     <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
@@ -970,7 +973,8 @@
                     <td><span class="sku-code">SBC-BEF-220</span></td>
                     <td><div class="cat-prod-name">Premium Beef Mince 80/20</div><div class="cat-prod-sub">Fresh, grass-fed</div></td>
                     <td>Beef</td>
-                    <td>2 kg pack</td>
+                    <td>2 kg</td>
+                    <td>Pack</td>
                     <td class="num">1 day</td>
                     <td class="num">2 packs</td>
                     <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
@@ -980,7 +984,8 @@
                     <td><span class="sku-code">SBC-BEF-700</span></td>
                     <td><div class="cat-prod-name">Grain Fed Scotch Fillet</div><div class="cat-prod-sub">200 g portions, vac-packed</div></td>
                     <td>Beef</td>
-                    <td>200 g portion</td>
+                    <td>200 g</td>
+                    <td>Portion</td>
                     <td class="num">1 day</td>
                     <td class="num">10 portions</td>
                     <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
@@ -990,7 +995,8 @@
                     <td><span class="sku-code">SBC-PRK-300</span></td>
                     <td><div class="cat-prod-name">Pork Sausage Traditional</div><div class="cat-prod-sub">Thick, 8 per kg</div></td>
                     <td>Pork</td>
-                    <td>3 kg pack</td>
+                    <td>3 kg</td>
+                    <td>Pack</td>
                     <td class="num">2 days</td>
                     <td class="num">1 pack</td>
                     <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
@@ -1000,7 +1006,8 @@
                     <td><span class="sku-code">SBC-LMB-410</span></td>
                     <td><div class="cat-prod-name">French Trimmed Lamb Rack</div><div class="cat-prod-sub">~1.2 kg, 8 bone</div></td>
                     <td>Lamb</td>
-                    <td>1 rack</td>
+                    <td>~1.2 kg</td>
+                    <td>Rack</td>
                     <td class="num">2 days</td>
                     <td class="num">2 racks</td>
                     <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
@@ -1380,7 +1387,17 @@
           <option>Produce</option><option>Dry goods</option>
         </select>
       </td>
-      <td><input id="cat-new-pack" placeholder="e.g. 5 kg carton"/></td>
+      <td><input id="cat-new-packsize" placeholder="e.g. 5 kg"/></td>
+      <td>
+        <select id="cat-new-uom">
+          <option value="">UOM</option>
+          <option>Carton</option><option>Pack</option>
+          <option>Each</option><option>Portion</option>
+          <option>Rack</option><option>Bag</option>
+          <option>Box</option><option>kg</option>
+          <option>L</option>
+        </select>
+      </td>
       <td><input id="cat-new-lead" placeholder="1 day" style="width:70px;"/></td>
       <td><input id="cat-new-moq" placeholder="1 unit" style="width:70px;"/></td>
       <td></td>
@@ -1393,12 +1410,13 @@
   }
 
   function catConfirmAdd() {
-    const sku   = document.getElementById('cat-new-sku').value.trim();
-    const name  = document.getElementById('cat-new-name').value.trim();
-    const cat   = document.getElementById('cat-new-cat').value;
-    const pack  = document.getElementById('cat-new-pack').value.trim();
-    const lead  = document.getElementById('cat-new-lead').value.trim();
-    const moq   = document.getElementById('cat-new-moq').value.trim();
+    const sku      = document.getElementById('cat-new-sku').value.trim();
+    const name     = document.getElementById('cat-new-name').value.trim();
+    const cat      = document.getElementById('cat-new-cat').value;
+    const packsize = document.getElementById('cat-new-packsize').value.trim();
+    const uom      = document.getElementById('cat-new-uom').value;
+    const lead     = document.getElementById('cat-new-lead').value.trim();
+    const moq      = document.getElementById('cat-new-moq').value.trim();
     if (!sku || !name) { showToast('SKU code and product name are required.'); return; }
 
     document.querySelector('.cat-add-row').remove();
@@ -1410,7 +1428,8 @@
       <td><span class="sku-code">${sku}</span></td>
       <td><div class="cat-prod-name">${name}</div></td>
       <td>${cat || '—'}</td>
-      <td>${pack || '—'}</td>
+      <td>${packsize || '—'}</td>
+      <td>${uom || '—'}</td>
       <td class="num">${lead || '—'}</td>
       <td class="num">${moq || '—'}</td>
       <td><span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span></td>
@@ -1429,23 +1448,27 @@
   function catEditRow(btn) {
     const tr = btn.closest('tr');
     const cells = tr.querySelectorAll('td');
-    const skuVal  = cells[0].querySelector('.sku-code').textContent;
-    const nameVal = cells[1].querySelector('.cat-prod-name').textContent;
-    const catVal  = cells[2].textContent.trim();
-    const packVal = cells[3].textContent.trim();
-    const leadVal = cells[4].textContent.trim();
-    const moqVal  = cells[5].textContent.trim();
+    const skuVal      = cells[0].querySelector('.sku-code').textContent;
+    const nameVal     = cells[1].querySelector('.cat-prod-name').textContent;
+    const catVal      = cells[2].textContent.trim();
+    const packsizeVal = cells[3].textContent.trim();
+    const uomVal      = cells[4].textContent.trim();
+    const leadVal     = cells[5].textContent.trim();
+    const moqVal      = cells[6].textContent.trim();
 
     tr.dataset.origHtml = tr.innerHTML;
     tr.className = 'cat-add-row';
     const catOptions = ['Poultry','Beef','Pork','Lamb','Seafood','Dairy','Produce','Dry goods']
       .map(c => `<option${c===catVal?' selected':''}>${c}</option>`).join('');
+    const uomOptions = ['Carton','Pack','Each','Portion','Rack','Bag','Box','kg','L']
+      .map(u => `<option${u===uomVal?' selected':''}>${u}</option>`).join('');
 
     tr.innerHTML = `
       <td><input class="cat-edit-sku" value="${skuVal}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;"/></td>
       <td><input class="cat-edit-name" value="${nameVal}"/></td>
       <td><select class="cat-edit-cat"><option value="">Category</option>${catOptions}</select></td>
-      <td><input class="cat-edit-pack" value="${packVal}"/></td>
+      <td><input class="cat-edit-packsize" value="${packsizeVal}"/></td>
+      <td><select class="cat-edit-uom"><option value="">UOM</option>${uomOptions}</select></td>
       <td><input class="cat-edit-lead" value="${leadVal}" style="width:70px;"/></td>
       <td><input class="cat-edit-moq" value="${moqVal}" style="width:70px;"/></td>
       <td></td>
@@ -1457,18 +1480,18 @@
 
   function catSaveEdit(btn) {
     const tr = btn.closest('tr');
-    const sku  = tr.querySelector('.cat-edit-sku').value.trim();
-    const name = tr.querySelector('.cat-edit-name').value.trim();
-    const cat  = tr.querySelector('.cat-edit-cat').value;
-    const pack = tr.querySelector('.cat-edit-pack').value.trim();
-    const lead = tr.querySelector('.cat-edit-lead').value.trim();
-    const moq  = tr.querySelector('.cat-edit-moq').value.trim();
+    const sku      = tr.querySelector('.cat-edit-sku').value.trim();
+    const name     = tr.querySelector('.cat-edit-name').value.trim();
+    const cat      = tr.querySelector('.cat-edit-cat').value;
+    const packsize = tr.querySelector('.cat-edit-packsize').value.trim();
+    const uom      = tr.querySelector('.cat-edit-uom').value;
+    const lead     = tr.querySelector('.cat-edit-lead').value.trim();
+    const moq      = tr.querySelector('.cat-edit-moq').value.trim();
     if (!sku || !name) { showToast('SKU code and product name are required.'); return; }
 
     tr.className = '';
     tr.dataset.sku = sku;
     tr.dataset.cat = cat;
-    // preserve the source badge from orig
     const origSource = (tr.dataset.origHtml || '').includes('cat-source-ns')
       ? `<span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span>`
       : `<span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span>`;
@@ -1476,7 +1499,8 @@
       <td><span class="sku-code">${sku}</span></td>
       <td><div class="cat-prod-name">${name}</div></td>
       <td>${cat || '—'}</td>
-      <td>${pack || '—'}</td>
+      <td>${packsize || '—'}</td>
+      <td>${uom || '—'}</td>
       <td class="num">${lead || '—'}</td>
       <td class="num">${moq || '—'}</td>
       <td>${origSource}</td>
