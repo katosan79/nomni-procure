@@ -250,6 +250,9 @@
     /* Nb pill (reuse) */
     .nb-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: var(--radius-pill); }
     .nb-pill.neutral { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .period-btn { display:inline-flex;align-items:center;height:26px;padding-inline:var(--space-md);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-soft);font-family:inherit;transition:background 0.1s,color 0.1s; }
+    .period-btn:hover { background:var(--surface-soft);color:var(--text); }
+    .period-btn.active { background:var(--mint);color:var(--spinach);border-color:color-mix(in srgb,var(--fern) 20%,transparent); }
   </style>
 </head>
 <body>
@@ -679,6 +682,33 @@
             </div>
           </div>
 
+          <!-- ── Cost movement chart ── -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-chart-line"></i>Cost movement</span>
+              <div style="display:flex;gap:4px;">
+                <button class="period-btn active" data-period="6" onclick="setCostPeriod(this)">6M</button>
+                <button class="period-btn" data-period="12" onclick="setCostPeriod(this)">12M</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding-top:var(--space-md);padding-bottom:var(--space-lg);">
+              <div style="position:relative;" id="chart-wrap">
+                <svg id="cost-chart" width="100%" height="200" viewBox="0 0 600 200" style="display:block;overflow:visible;"></svg>
+                <div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--surface-deep);color:var(--chrome-fg);font-size:12px;font-weight:500;padding:6px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,0.15);line-height:1.6;"></div>
+              </div>
+              <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:20px;height:2px;background:var(--fern);border-radius:2px;vertical-align:middle;"></span>
+                  Ingredient cost/serve
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F5C219;vertical-align:middle;"></span>
+                  Price change event
+                </div>
+                <div id="chart-delta" style="font-size:12px;color:var(--text-soft);margin-left:auto;"></div>
+              </div>
+            </div>
+          </div>
         </div><!-- /tab-costing -->
 
         <!-- ── Outlets tab ── -->
@@ -1169,9 +1199,98 @@
   }
 
   // ─── Init ─────────────────────────────────────────────────────────────────────
+  // ── Cost movement chart ──
+  const COST_HISTORY = [
+    { l:"Jul '25", s:'Jul', v:3.85 },
+    { l:"Aug '25", s:'Aug', v:3.85 },
+    { l:"Sep '25", s:'Sep', v:3.92 },
+    { l:"Oct '25", s:'Oct', v:4.10, ev:'Avocado +12%' },
+    { l:"Nov '25", s:'Nov', v:4.10 },
+    { l:"Dec '25", s:'Dec', v:4.10 },
+    { l:"Jan '26", s:'Jan', v:4.10 },
+    { l:"Feb '26", s:'Feb', v:4.18, ev:'Sourdough supply change' },
+    { l:"Mar '26", s:'Mar', v:4.18 },
+    { l:"Apr '26", s:'Apr', v:4.20 },
+    { l:"May '26", s:'May', v:4.20 },
+    { l:"Jun '26", s:'Jun', v:4.20 },
+  ];
+  const CHART_LINE_COLOR = '#129B41';
+  const CHART_UNIT = '/serve';
+  let _cPeriod = 6;
+
+  function setCostPeriod(btn) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _cPeriod = parseInt(btn.dataset.period);
+    renderCostChart();
+  }
+
+  function renderCostChart() {
+    const data = COST_HISTORY.slice(-_cPeriod);
+    const svg = document.getElementById('cost-chart');
+    if (!svg) return;
+    const W = 600, H = 200, P = { t:16, r:16, b:36, l:50 };
+    const cW = W - P.l - P.r, cH = H - P.t - P.b;
+    const vals = data.map(d => d.v);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const span = hi - lo || 0.2;
+    const yLo = lo - span * 0.25, yHi = hi + span * 0.35;
+    const xS = i => P.l + (data.length < 2 ? cW / 2 : (i / (data.length - 1)) * cW);
+    const yS = v => P.t + cH - ((v - yLo) / (yHi - yLo)) * cH;
+    function makePath(pts) {
+      let d = `M${pts[0][0]},${pts[0][1]}`;
+      for (let i = 1; i < pts.length; i++) {
+        const cpx = (pts[i-1][0] + pts[i][0]) / 2;
+        d += ` C${cpx},${pts[i-1][1]} ${cpx},${pts[i][1]} ${pts[i][0]},${pts[i][1]}`;
+      }
+      return d;
+    }
+    const pts = data.map((d, i) => [xS(i), yS(d.v)]);
+    const line = makePath(pts);
+    const lp = pts[pts.length - 1];
+    const area = `${line} L${lp[0]},${P.t + cH} L${pts[0][0]},${P.t + cH}Z`;
+    let grid = '';
+    for (let i = 0; i <= 4; i++) {
+      const v = yLo + (yHi - yLo) * i / 4;
+      const y = yS(v);
+      grid += `<line x1="${P.l}" y1="${y.toFixed(1)}" x2="${W-P.r}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`;
+      grid += `<text x="${P.l-6}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--text-soft)" font-family="Hanken Grotesk,sans-serif" font-feature-settings="'tnum' 1">$${v.toFixed(2)}</text>`;
+    }
+    let xlabels = '';
+    data.forEach((d, i) => {
+      if (data.length > 6 && i % 2 !== 0 && i !== data.length - 1) return;
+      xlabels += `<text x="${xS(i).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="10" fill="var(--text-soft)" font-family="Hanken Grotesk,sans-serif">${d.s}</text>`;
+    });
+    let events = '';
+    data.forEach((d, i) => {
+      if (!d.ev) return;
+      const x = xS(i), y = yS(d.v);
+      events += `<line x1="${x.toFixed(1)}" y1="${P.t}" x2="${x.toFixed(1)}" y2="${(P.t+cH).toFixed(1)}" stroke="#F5C219" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>`;
+      events += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#F5C219"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="#F5C219" opacity="0.15"/>`;
+    });
+    let hits = '';
+    data.forEach((d, i) => { hits += `<circle cx="${xS(i).toFixed(1)}" cy="${yS(d.v).toFixed(1)}" r="14" fill="transparent" class="chart-hit" data-i="${i}"/>`; });
+    svg.innerHTML = `<defs><linearGradient id="cg${_cPeriod}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${CHART_LINE_COLOR}" stop-opacity="0.18"/><stop offset="100%" stop-color="${CHART_LINE_COLOR}" stop-opacity="0.01"/></linearGradient></defs>${grid}<path d="${area}" fill="url(#cg${_cPeriod})"/><path d="${line}" fill="none" stroke="${CHART_LINE_COLOR}" stroke-width="2" stroke-linecap="round"/>${events}<circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="4" fill="${CHART_LINE_COLOR}"/><circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="9" fill="${CHART_LINE_COLOR}" opacity="0.18"/>${xlabels}${hits}`;
+    const tt = document.getElementById('chart-tooltip');
+    const wrap = document.getElementById('chart-wrap');
+    svg.querySelectorAll('.chart-hit').forEach(el => {
+      const d = data[parseInt(el.dataset.i)];
+      el.addEventListener('mouseenter', () => { tt.innerHTML = `<strong style="font-feature-settings:'tnum' 1">$${d.v.toFixed(2)}${CHART_UNIT}</strong> &nbsp;${d.l}${d.ev ? `<br><span style="color:#F5C219;font-size:11px;">⬆ ${d.ev}</span>` : ''}`; tt.style.display = 'block'; });
+      el.addEventListener('mousemove', e => { const r = wrap.getBoundingClientRect(); let lx = e.clientX-r.left+14, ly = e.clientY-r.top-52; if (lx+180>r.width) lx=e.clientX-r.left-180; tt.style.left=lx+'px'; tt.style.top=Math.max(0,ly)+'px'; });
+      el.addEventListener('mouseleave', () => tt.style.display = 'none');
+    });
+    const delta = document.getElementById('chart-delta');
+    if (delta) {
+      const chg = data[data.length-1].v - data[0].v, pct = chg/data[0].v*100;
+      const col = chg > 0 ? 'var(--status-risk-fg)' : 'var(--status-ok-fg)';
+      delta.innerHTML = `<span style="color:${col};font-weight:600;font-feature-settings:'tnum' 1">${chg>=0?'+':''}$${chg.toFixed(2)} (${pct>=0?'+':''}${pct.toFixed(1)}%)</span> over ${_cPeriod}M`;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     renderOutletTree();
     calcLabour();
+    renderCostChart();
   });
 </script>
 </body>
