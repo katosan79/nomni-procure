@@ -357,6 +357,32 @@
       color: var(--pos);
     }
     .role-badge.finance { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+
+    /* ── Integrations ── */
+    .integ-provider-row { display:flex; align-items:center; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .integ-provider-logo { width:44px; height:44px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--surface-soft); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .integ-provider-info { flex:1; min-width:0; }
+    .integ-provider-name { font-size:14px; font-weight:700; color:var(--text); }
+    .integ-provider-meta { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .integ-badge-connected { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:var(--radius-pill); background:var(--status-ok-bg); color:var(--status-ok-fg); white-space:nowrap; }
+
+    .mapping-section { padding:var(--space-lg) var(--space-xl); border-top:1px solid var(--border); display:flex; flex-direction:column; gap:var(--space-md); }
+    .mapping-section-head { display:flex; align-items:center; justify-content:space-between; }
+    .mapping-section-title { font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-xs); }
+    .mapping-section-title i { font-size:14px; color:var(--text-soft); }
+    .mapping-section-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .mapping-table { width:100%; border-collapse:collapse; }
+    .mapping-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); padding:var(--space-sm) var(--space-md); border-bottom:1px solid var(--border); text-align:left; background:var(--surface-soft); }
+    .mapping-table td { padding:var(--space-sm) var(--space-md); border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+    .mapping-table tr:last-child td { border-bottom:none; }
+    .mapping-table tr:hover td { background:var(--surface-soft); }
+    .map-arrow { color:var(--text-soft); font-size:13px; text-align:center; width:28px; }
+    .map-select { height:34px; padding-inline:var(--space-sm); font-size:13px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); outline:none; font-family:inherit; cursor:pointer; width:100%; transition:border-color 0.12s; }
+    .map-select:focus { border-color:var(--fern); box-shadow:0 0 0 3px var(--mint); }
+    .map-input { height:34px; padding-inline:var(--space-sm); font-size:13px; font-family:'IBM Plex Mono',monospace; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); outline:none; width:100%; transition:border-color 0.12s; }
+    .map-input:focus { border-color:var(--fern); box-shadow:0 0 0 3px var(--mint); }
+    .map-unmapped { color:var(--text-soft); font-style:italic; font-size:12px; }
+    .btn-xs { height:28px; padding-inline:var(--space-sm); font-size:12px; }
   </style>
 </head>
 <body>
@@ -634,6 +660,162 @@
             </div>
 
           </div><!-- /card propagation -->
+
+          <!-- Card 4: Integrations -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <i class="ti ti-plug-connected" style="font-size:16px;color:var(--text-soft);"></i>
+                Integrations
+              </div>
+            </div>
+
+            <!-- Accounting connection -->
+            <div style="padding:var(--space-md) var(--space-xl) var(--space-xs);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);">Accounting system</div>
+
+            <div class="integ-provider-row">
+              <div class="integ-provider-logo" style="background:#13B5EA1A;">
+                <span style="font-size:20px;">🧾</span>
+              </div>
+              <div class="integ-provider-info">
+                <div class="integ-provider-name">Xero — The Burger Co</div>
+                <div class="integ-provider-meta">Connected · approved invoices push automatically · org ID: <span style="font-family:'IBM Plex Mono',monospace;">8a2f-bc91</span></div>
+              </div>
+              <span class="integ-badge-connected"><i class="ti ti-circle-check"></i> Connected</span>
+              <button class="btn btn-outline" style="height:32px;font-size:13px;margin-left:var(--space-sm);" onclick="showToast('Opening Xero connection settings…')">
+                <i class="ti ti-settings"></i>
+              </button>
+            </div>
+
+            <!-- Payee mapping -->
+            <div class="mapping-section">
+              <div class="mapping-section-head">
+                <div>
+                  <div class="mapping-section-title"><i class="ti ti-building-warehouse"></i> Payee mapping</div>
+                  <div class="mapping-section-sub">Map Procure suppliers to their corresponding Xero contacts so invoices push to the correct payee.</div>
+                </div>
+                <button class="btn btn-outline btn-xs" onclick="showToast('Adding payee mapping row…')"><i class="ti ti-plus"></i> Add</button>
+              </div>
+              <div style="border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+                <table class="mapping-table">
+                  <thead>
+                    <tr>
+                      <th style="width:40%;">Procure supplier</th>
+                      <th class="map-arrow"></th>
+                      <th style="width:40%;">Xero contact</th>
+                      <th style="width:60px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:600;">Saveur Brothers</td>
+                      <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                      <td>
+                        <select class="map-select">
+                          <option selected>Saveur Brothers Pty Ltd</option>
+                          <option>Sydney Butchers Co</option>
+                          <option>Metro Proteins</option>
+                        </select>
+                      </td>
+                      <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Metro Dairy</td>
+                      <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                      <td>
+                        <select class="map-select">
+                          <option selected>Metro Fresh Pty Ltd</option>
+                          <option>Metro Dairy Suppliers</option>
+                          <option>Fresh Dairy Co</option>
+                        </select>
+                      </td>
+                      <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Sydney Fresh Co</td>
+                      <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                      <td>
+                        <select class="map-select">
+                          <option selected>Sydney Fresh Produce</option>
+                          <option>Fresh Co Pty Ltd</option>
+                          <option>SFC Trading</option>
+                        </select>
+                      </td>
+                      <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Pacific Seafood</td>
+                      <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                      <td><span class="map-unmapped">— not mapped</span></td>
+                      <td style="text-align:center;"><button class="btn btn-outline btn-xs" onclick="showToast('Adding Xero contact mapping…')"><i class="ti ti-plus"></i></button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- CoA mapping -->
+            <div class="mapping-section">
+              <div class="mapping-section-head">
+                <div>
+                  <div class="mapping-section-title"><i class="ti ti-list-numbers"></i> Chart of Accounts mapping</div>
+                  <div class="mapping-section-sub">Map Procure spend categories to Xero GL account codes so invoice line items post to the correct accounts.</div>
+                </div>
+                <button class="btn btn-outline btn-xs" onclick="showToast('Adding CoA mapping row…')"><i class="ti ti-plus"></i> Add</button>
+              </div>
+              <div style="border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+                <table class="mapping-table">
+                  <thead>
+                    <tr>
+                      <th style="width:40%;">Spend category</th>
+                      <th class="map-arrow"></th>
+                      <th style="width:30%;">GL account code</th>
+                      <th>Account name</th>
+                      <th style="width:60px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:600;">Food &amp; Beverage</td>
+                      <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                      <td><input class="map-input" type="text" value="6-1100"/></td>
+                      <td style="color:var(--text-soft);">Food Cost</td>
+                      <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Dry Goods</td>
+                      <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                      <td><input class="map-input" type="text" value="6-1200"/></td>
+                      <td style="color:var(--text-soft);">Dry Goods &amp; Pantry</td>
+                      <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Beverages</td>
+                      <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                      <td><input class="map-input" type="text" value="6-1300"/></td>
+                      <td style="color:var(--text-soft);">Beverage Cost</td>
+                      <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Packaging</td>
+                      <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                      <td><span class="map-unmapped">— not mapped</span></td>
+                      <td></td>
+                      <td style="text-align:center;"><button class="btn btn-outline btn-xs" onclick="showToast('Adding GL code…')"><i class="ti ti-plus"></i></button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:12px;color:var(--text-soft);">Outlets with their own accounting connection are not affected by these mappings.</div>
+              <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="showToast('Accounting mappings saved')">
+                <i class="ti ti-device-floppy"></i> Save mappings
+              </button>
+            </div>
+
+          </div><!-- /card integrations -->
 
         </div><!-- /main-col -->
 

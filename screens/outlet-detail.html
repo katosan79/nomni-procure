@@ -290,6 +290,27 @@
     /* Operating mode sections */
     .op-section { margin-bottom: var(--space-3xl); }
     .op-section:last-child { margin-bottom: 0; }
+
+    /* ── Integrations ── */
+    .integ-section { display:flex; flex-direction:column; gap:var(--space-xl); }
+    .integ-provider-row { display:flex; align-items:center; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .integ-provider-logo { width:44px; height:44px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--surface-soft); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .integ-provider-info { flex:1; min-width:0; }
+    .integ-provider-name { font-size:14px; font-weight:700; color:var(--text); }
+    .integ-provider-meta { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .integ-badge-connected { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:var(--radius-pill); background:var(--status-ok-bg); color:var(--status-ok-fg); white-space:nowrap; }
+    .integ-badge-inherited { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:var(--radius-pill); background:color-mix(in srgb,var(--ordering) 12%,transparent); color:var(--ordering); white-space:nowrap; }
+    .integ-inherited-banner { display:flex; align-items:flex-start; gap:var(--space-sm); padding:var(--space-md) var(--space-lg); background:color-mix(in srgb,var(--fern) 6%,transparent); border:1px solid color-mix(in srgb,var(--fern) 20%,transparent); border-radius:var(--radius-md); font-size:13px; color:var(--text); line-height:1.5; }
+    .integ-inherited-banner i { color:var(--fern); font-size:15px; flex-shrink:0; margin-top:2px; }
+    .integ-feed-row { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); gap:var(--space-xl); }
+    .integ-feed-row:last-of-type { border-bottom:none; }
+    .integ-feed-label strong { font-size:14px; font-weight:600; color:var(--text); display:block; }
+    .integ-feed-label span { font-size:12px; color:var(--text-soft); }
+    .integ-feeds-heading { padding:var(--space-md) var(--space-xl) var(--space-xs); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .integ-override-row { display:flex; align-items:center; justify-content:space-between; gap:var(--space-xl); padding-top:var(--space-md); border-top:1px solid var(--border); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn-danger-outline { background:transparent; border-color:var(--status-risk-fg); color:var(--status-risk-fg); }
+    .btn-danger-outline:hover { background:var(--status-risk-bg); }
   </style>
 </head>
 <body>
@@ -334,6 +355,9 @@
         </button>
         <button class="tab-nav-btn" data-tab="users" onclick="switchTab('users')">
           <i class="ti ti-users"></i> Users
+        </button>
+        <button class="tab-nav-btn" data-tab="integrations" onclick="switchTab('integrations')">
+          <i class="ti ti-plug-connected"></i> Integrations
         </button>
       </div>
 
@@ -659,6 +683,154 @@
 
       </div>
 
+      <!-- ==============================
+           TAB 5: Integrations
+      =============================== -->
+      <div id="tab-integrations" class="tab-panel">
+        <div class="integ-section">
+
+          <!-- ── POS System ── -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title"><i class="ti ti-device-tablet"></i> POS system</div>
+              <span class="integ-badge-connected"><i class="ti ti-circle-check"></i> Connected</span>
+            </div>
+
+            <div class="integ-provider-row">
+              <div class="integ-provider-logo" style="background:color-mix(in srgb,var(--pos) 10%,transparent);">
+                <i class="ti ti-device-tablet" style="color:var(--pos);font-size:22px;"></i>
+              </div>
+              <div class="integ-provider-info">
+                <div class="integ-provider-name">Square POS</div>
+                <div class="integ-provider-meta">
+                  Last synced 4 min ago &nbsp;·&nbsp; Venue ID: <span style="font-family:'IBM Plex Mono',monospace;">VN-48291</span>
+                </div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Opening Square POS connection settings…')">
+                <i class="ti ti-settings"></i> Configure
+              </button>
+            </div>
+
+            <div class="integ-feeds-heading">Data feeds</div>
+
+            <div class="integ-feed-row">
+              <div class="integ-feed-label">
+                <strong>Menu sync</strong>
+                <span>Pulls live menu items, variants, and prices from POS</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked/>
+                <span class="toggle-track"></span><span class="toggle-thumb"></span>
+              </label>
+            </div>
+
+            <div class="integ-feed-row">
+              <div class="integ-feed-label">
+                <strong>Sales data</strong>
+                <span>Ingests daily sales by item for variance and reporting</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked/>
+                <span class="toggle-track"></span><span class="toggle-thumb"></span>
+              </label>
+            </div>
+
+            <div class="integ-feed-row">
+              <div class="integ-feed-label">
+                <strong>Wastage tracking</strong>
+                <span>Records voids and comps to include in variance analysis</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked/>
+                <span class="toggle-track"></span><span class="toggle-thumb"></span>
+              </label>
+            </div>
+
+            <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+              <button class="btn btn-outline btn-sm btn-danger-outline" onclick="showToast('Disconnect POS — stops all data feeds to this outlet')">
+                <i class="ti ti-unlink"></i> Disconnect POS
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Accounting System ── -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title"><i class="ti ti-file-invoice"></i> Accounting system</div>
+              <span class="integ-badge-inherited" id="acct-status-badge">
+                <i class="ti ti-git-branch" style="font-size:11px;"></i> Inherited from group
+              </span>
+            </div>
+
+            <!-- Inherited state -->
+            <div id="acct-inherited" class="card-body" style="display:flex;flex-direction:column;gap:var(--space-lg);">
+              <div class="integ-inherited-banner">
+                <i class="ti ti-info-circle"></i>
+                <span>
+                  Invoices approved at this outlet are pushed to <strong>The Burger Co (Xero)</strong> — configured at the
+                  <a href="outlet-group-detail.html" style="color:var(--text-accent);font-weight:600;">CBD Cluster group level</a>.
+                  Payee and Chart of Accounts mappings are managed there.
+                </span>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:var(--space-lg);padding:var(--space-md) var(--space-xl);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-soft);">
+                <div style="width:40px;height:40px;border-radius:var(--radius-md);background:#13B5EA1A;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">🧾</div>
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:var(--text);">Xero — The Burger Co</div>
+                  <div style="font-size:12px;color:var(--text-soft);margin-top:2px;">Connected at group level · approved invoices push automatically</div>
+                </div>
+                <span class="integ-badge-connected" style="margin-left:auto;"><i class="ti ti-circle-check"></i> Active</span>
+              </div>
+
+              <div class="integ-override-row">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text);">This outlet has its own legal entity?</div>
+                  <div style="font-size:12px;color:var(--text-soft);margin-top:2px;">Override to connect a separate accounting account with its own payee and CoA mappings.</div>
+                </div>
+                <button class="btn btn-outline btn-sm" style="flex-shrink:0;" onclick="showAcctOverride()">
+                  <i class="ti ti-plug-connected"></i> Set up own connection
+                </button>
+              </div>
+            </div>
+
+            <!-- Own connection state (hidden by default) -->
+            <div id="acct-own" class="card-body" style="display:none;flex-direction:column;gap:var(--space-lg);">
+              <div style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--status-warn-bg);border:1px solid color-mix(in srgb,var(--status-warn-fg) 40%,transparent);border-radius:var(--radius-md);font-size:12px;color:var(--status-warn-fg);">
+                <i class="ti ti-alert-triangle"></i>
+                This outlet has its own accounting connection — group-level mappings do not apply here.
+              </div>
+
+              <div class="form-grid">
+                <div class="field-group">
+                  <label class="field-label">Accounting system</label>
+                  <select class="field-input" id="own-acct-provider">
+                    <option value="">Select provider…</option>
+                    <option value="xero">Xero</option>
+                    <option value="myob">MYOB</option>
+                    <option value="qbo">QuickBooks Online</option>
+                    <option value="sage">Sage</option>
+                  </select>
+                </div>
+                <div class="field-group" style="display:flex;align-items:flex-end;">
+                  <button class="btn btn-primary" style="width:100%;" onclick="showToast('Redirecting to Xero OAuth…')">
+                    <i class="ti ti-plug-connected"></i> Connect &amp; authorise
+                  </button>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;padding-top:var(--space-md);border-top:1px solid var(--border);">
+                <div style="font-size:12px;color:var(--text-soft);">Once connected, configure payee and CoA mappings at the group level for this connection.</div>
+                <button class="btn btn-outline btn-sm" style="flex-shrink:0;margin-left:var(--space-lg);" onclick="revertAcctInherit()">
+                  <i class="ti ti-arrow-back-up"></i> Revert to inherited
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -687,6 +859,22 @@
   // ---- Actions ----
   function discardChanges() { window.location.href = 'outlets.html'; }
   function saveOutlet() { showToast('Outlet settings saved'); }
+
+  // ---- Accounting override ----
+  function showAcctOverride() {
+    document.getElementById('acct-inherited').style.display = 'none';
+    document.getElementById('acct-own').style.display = 'flex';
+    const badge = document.getElementById('acct-status-badge');
+    badge.className = 'integ-badge-connected';
+    badge.innerHTML = '<i class="ti ti-plug-connected" style="font-size:11px;"></i> Own connection';
+  }
+  function revertAcctInherit() {
+    document.getElementById('acct-own').style.display = 'none';
+    document.getElementById('acct-inherited').style.display = 'flex';
+    const badge = document.getElementById('acct-status-badge');
+    badge.className = 'integ-badge-inherited';
+    badge.innerHTML = '<i class="ti ti-git-branch" style="font-size:11px;"></i> Inherited from group';
+  }
 
   function showToast(msg) {
     const t = document.createElement('div');
