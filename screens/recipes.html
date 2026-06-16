@@ -1140,7 +1140,23 @@
   </div><!-- /.page-body -->
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Recipes'));
+    document.addEventListener('DOMContentLoaded', () => {
+      NomniShell.init('Recipes');
+
+      // Must run AFTER shell wraps the DOM, otherwise listeners are destroyed
+      const DETAIL_URLS = {
+        finished:   'recipe-detail-finished.html',
+        prep:       'recipe-detail-prep.html',
+        production: 'recipe-detail-production.html',
+      };
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        tr.addEventListener('click', e => {
+          if (e.target.closest('.kebab-btn, .dropdown-menu, .split-btn-sm, .link-action')) return;
+          const href = tr.dataset.href || DETAIL_URLS[tr.dataset.type] || 'recipe-detail.html';
+          window.location.href = href;
+        });
+      });
+    });
 
     function setStatusFilter(btn, status) {
       document.querySelectorAll('.status-pill-btn').forEach(b => b.classList.remove('active'));
@@ -1169,19 +1185,6 @@
       document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
     });
 
-    // Clickable rows — navigate to the correct detail page by recipe type
-    const DETAIL_URLS = {
-      finished:   'recipe-detail-finished.html',
-      prep:       'recipe-detail-prep.html',
-      production: 'recipe-detail-production.html',
-    };
-    document.querySelectorAll('.data-table tbody tr').forEach(tr => {
-      tr.addEventListener('click', e => {
-        if (e.target.closest('.kebab-btn, .dropdown-menu, .split-btn-sm, .link-action')) return;
-        const href = tr.dataset.href || DETAIL_URLS[tr.dataset.type] || 'recipe-detail.html';
-        window.location.href = href;
-      });
-    });
   </script>
 </body>
 </html>
