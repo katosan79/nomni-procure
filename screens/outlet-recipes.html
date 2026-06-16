@@ -569,7 +569,19 @@
   </div><!-- /page-body -->
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Recipes'));
+    document.addEventListener('DOMContentLoaded', () => {
+      NomniShell.init('Recipes');
+
+      // Must run after shell rewraps the DOM, otherwise listeners are destroyed
+      document.querySelectorAll('tr.data-row').forEach(row => {
+        row.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            row.click();
+          }
+        });
+      });
+    });
 
     function toggleDetail(panelId, chevronId) {
       const panel = document.getElementById(panelId);
@@ -599,15 +611,6 @@
       dataRow.setAttribute('aria-expanded', String(isOpen));
     }
 
-    // Keyboard accessibility — open on Enter/Space
-    document.querySelectorAll('tr.data-row').forEach(row => {
-      row.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          row.click();
-        }
-      });
-    });
   </script>
 </body>
 </html>
