@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>New recipe — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { padding-block: var(--space-2xl) 100px; }
+
+    /* Breadcrumb */
+    .breadcrumb { display:flex; align-items:center; gap:var(--space-xs); font-size:13px; color:var(--text-soft); }
+    .breadcrumb a { color:var(--text-link); text-decoration:none; }
+    .breadcrumb a:hover { text-decoration:underline; }
+
+    /* Page header */
+    .page-eyebrow { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); margin-bottom:var(--space-xs); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+
+    /* Stepper */
+    .stepper { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; }
+    .step { display:flex; align-items:center; gap:var(--space-sm); cursor:default; }
+    .step-dot { width:28px; height:28px; border-radius:var(--radius-pill); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-feature-settings:'tnum' 1; background:var(--surface); border:1.5px solid var(--border); color:var(--text-soft); flex-shrink:0; transition:background 0.15s, border-color 0.15s, color 0.15s; }
+    .step.active .step-dot { background:var(--btn-primary-bg); border-color:var(--btn-primary-bg); color:#fff; }
+    .step.done .step-dot { background:var(--status-ok-bg); border-color:var(--status-ok-fg); color:var(--status-ok-fg); }
+    .step.done .step-dot::after { content:none; }
+    .step-label { font-size:13px; font-weight:600; color:var(--text-soft); }
+    .step.active .step-label { color:var(--text); }
+    .step.done .step-label { color:var(--text-soft); }
+    .step-line { width:32px; height:1.5px; background:var(--border); flex-shrink:0; }
+
+    /* Panels */
+    .step-panel { display:none; flex-direction:column; gap:var(--space-xl); }
+    .step-panel.active { display:flex; }
+
+    /* Narrow wrapper for form panels */
+    .narrow-wrap { max-width:680px; display:flex; flex-direction:column; gap:var(--space-xl); }
+
+    /* Section intro */
+    .section-intro { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .section-title { font-size:20px; font-weight:700; color:var(--text); }
+    .section-sub { font-size:14px; color:var(--text-soft); line-height:1.5; }
+
+    /* Cards */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); min-height:52px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-body { padding:var(--space-xl); }
+    .card-body.gap { display:flex; flex-direction:column; gap:var(--space-lg); }
+
+    /* Type selector */
+    .type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); }
+    .type-card { border:1.5px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-xl); cursor:pointer; display:flex; flex-direction:column; gap:var(--space-sm); background:var(--surface); transition:border-color 0.12s, background 0.12s, box-shadow 0.12s; user-select:none; }
+    .type-card:hover { border-color:var(--text-accent); background:color-mix(in srgb,var(--mint) 40%,var(--surface)); }
+    .type-card.selected { border-color:var(--fern); background:var(--mint); box-shadow:0 0 0 3px color-mix(in srgb,var(--spring) 14%,transparent); }
+    .tc-icon { width:44px; height:44px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:2px; }
+    .tc-icon.fin  { background:color-mix(in srgb,var(--fern) 12%,transparent); color:var(--fern); }
+    .tc-icon.prep { background:color-mix(in srgb,var(--ordering) 12%,transparent); color:var(--ordering); }
+    .tc-icon.prod { background:color-mix(in srgb,var(--procurement) 12%,transparent); color:var(--procurement); }
+    .tc-name { font-size:16px; font-weight:700; color:var(--text); }
+    .tc-desc { font-size:13px; color:var(--text-soft); line-height:1.5; flex:1; }
+    .tc-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:3px 8px; border-radius:var(--radius-pill); margin-top:var(--space-xs); width:fit-content; }
+    .tc-badge.fin  { background:color-mix(in srgb,var(--fern) 12%,transparent); color:var(--spinach); }
+    .tc-badge.prep { background:color-mix(in srgb,var(--ordering) 12%,transparent); color:var(--ordering); }
+    .tc-badge.prod { background:color-mix(in srgb,var(--procurement) 12%,transparent); color:var(--procurement); }
+
+    /* Form fields */
+    .field-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .field-label { font-size:13px; font-weight:600; color:var(--text); }
+    .field-label .opt { font-weight:400; color:var(--text-soft); }
+    .field-input { width:100%; height:var(--control-h); padding-inline:var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:14px; color:var(--text); background:var(--surface); transition:border-color 0.12s, box-shadow 0.12s; box-sizing:border-box; }
+    .field-input:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 12%,transparent); }
+    .field-select { width:100%; height:var(--control-h); padding-inline:var(--space-md) var(--space-2xl); border:1px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:14px; color:var(--text); background:var(--surface); cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; box-sizing:border-box; }
+    .field-textarea { width:100%; padding:var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:14px; color:var(--text); background:var(--surface); resize:vertical; min-height:80px; line-height:1.5; box-sizing:border-box; }
+    .field-textarea:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 12%,transparent); }
+    .form-row   { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); }
+    .form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-md); }
+    .helper-text { font-size:12px; color:var(--text-soft); margin-top:2px; }
+
+    /* Type-conditional fields */
+    .type-fields { display:none; }
+    .type-fields.show { display:contents; }
+
+    /* ── Ingredients layout ── */
+    .ing-grid { display:grid; grid-template-columns:1fr 290px; gap:var(--space-lg); align-items:start; }
+
+    /* Ingredient table */
+    .ing-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .ing-table th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); padding:8px var(--space-md); text-align:left; background:var(--surface-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .ing-table th.num { text-align:right; }
+    .ing-table td { padding:var(--space-xs) var(--space-sm); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .ing-table td.num { text-align:right; }
+    .ing-table tr:last-child td { border-bottom:none; }
+    .ing-input { padding:4px 6px; border:1px solid transparent; border-radius:var(--radius-sm); font-family:inherit; font-size:13px; color:var(--text); background:transparent; transition:border-color 0.1s, background 0.1s; box-sizing:border-box; height:30px; }
+    .ing-input:focus { outline:none; border-color:var(--fern); background:var(--surface); }
+    .ing-input.num { text-align:right; font-feature-settings:'tnum' 1; }
+    .ing-remove { background:none; border:none; color:var(--text-soft); cursor:pointer; padding:4px; border-radius:var(--radius-sm); font-size:16px; line-height:1; display:flex; align-items:center; justify-content:center; width:28px; height:28px; }
+    .ing-remove:hover { color:var(--status-risk-fg); background:var(--status-risk-bg); }
+    .ing-subtotal { font-weight:600; font-feature-settings:'tnum' 1; color:var(--text); white-space:nowrap; }
+    .ing-footer { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-lg); border-top:1.5px solid var(--border); background:var(--surface-soft); }
+    .ing-total-label { font-size:13px; font-weight:600; color:var(--text-soft); }
+    .ing-total-val { font-size:16px; font-weight:700; font-feature-settings:'tnum' 1; color:var(--text); }
+
+    /* Cyrus agent sidebar */
+    .cyrus-card { border-radius:var(--radius-lg); border:1.5px solid color-mix(in srgb,var(--spring) 35%,transparent); box-shadow:0 0 0 3px color-mix(in srgb,var(--spring) 8%,transparent); background:var(--surface); overflow:hidden; position:sticky; top:var(--space-lg); }
+    .cyrus-head { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); }
+    .cyrus-avatar { width:32px; height:32px; border-radius:50%; background:var(--fern); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+    .cyrus-id { display:flex; flex-direction:column; gap:1px; }
+    .cyrus-name { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-accent); }
+    .cyrus-sub { font-size:11px; color:var(--text-soft); }
+    .cyrus-body { padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md); }
+    .cy-sell-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .cy-sell-label { font-size:12px; font-weight:600; color:var(--text-soft); }
+    .cy-sell-input { width:100%; height:36px; padding-inline:var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:14px; font-feature-settings:'tnum' 1; color:var(--text); background:var(--surface); box-sizing:border-box; transition:border-color 0.12s, box-shadow 0.12s; }
+    .cy-sell-input:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 2px color-mix(in srgb,var(--fern) 12%,transparent); }
+    .cy-metric { display:flex; align-items:center; justify-content:space-between; font-size:13px; }
+    .cy-metric-label { color:var(--text-soft); }
+    .cy-metric-val { font-weight:700; font-feature-settings:'tnum' 1; }
+    .cy-fc-row { display:flex; align-items:flex-end; justify-content:space-between; padding:var(--space-sm) 0; border-top:1px solid var(--border); }
+    .cy-fc-label { font-size:12px; color:var(--text-soft); }
+    .cy-fc-val { font-size:26px; font-weight:700; font-feature-settings:'tnum' 1; letter-spacing:-0.02em; line-height:1; }
+    .cy-fc-val.ok   { color:var(--status-ok-fg); }
+    .cy-fc-val.warn { color:var(--status-warn-fg); }
+    .cy-fc-val.risk { color:var(--status-risk-fg); }
+    .cy-fc-val.muted { color:var(--text-soft); }
+    .cy-comment { padding:var(--space-sm) var(--space-md); border-radius:var(--radius-md); font-size:12px; line-height:1.55; }
+    .cy-comment.ok      { background:var(--status-ok-bg);   color:var(--spinach); }
+    .cy-comment.warn    { background:var(--status-warn-bg);  color:color-mix(in srgb,var(--status-warn-fg) 90%,#000); }
+    .cy-comment.risk    { background:var(--status-risk-bg);  color:var(--status-risk-fg); }
+    .cy-comment.neutral { background:var(--surface-soft);    color:var(--text-soft); }
+    .cy-target-row { display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); padding-top:var(--space-md); font-size:12px; color:var(--text-soft); }
+    .cy-target-input { width:60px; height:28px; padding:0 20px 0 8px; border:1px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; text-align:right; font-feature-settings:'tnum' 1; background:var(--surface); color:var(--text); }
+
+    /* ── Costing ── */
+    .cost-row { display:flex; align-items:center; justify-content:space-between; padding:var(--space-sm) 0; border-bottom:1px solid var(--border); font-size:14px; }
+    .cost-row:last-child { border-bottom:none; }
+    .cost-row-val { font-weight:700; font-feature-settings:'tnum' 1; }
+    .cost-total-row { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-lg); background:color-mix(in srgb,var(--spinach) 6%,transparent); border:1px solid color-mix(in srgb,var(--fern) 20%,transparent); border-radius:var(--radius-md); margin-top:var(--space-md); }
+    .cost-total-label { font-size:14px; font-weight:700; color:var(--spinach); }
+    .cost-total-val   { font-size:18px; font-weight:700; font-feature-settings:'tnum' 1; color:var(--spinach); }
+    .margin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-md); }
+    .margin-tile { background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md) var(--space-lg); }
+    .margin-tile-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .margin-tile-val { font-size:20px; font-weight:700; font-feature-settings:'tnum' 1; margin-top:4px; color:var(--text); }
+    .labor-row { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) 0; border-bottom:1px solid var(--border); }
+    .labor-row:last-of-type { border-bottom:none; }
+    .labor-name { flex:1; font-size:13px; font-weight:600; color:var(--text); }
+    .labor-sep { font-size:12px; color:var(--text-soft); flex-shrink:0; }
+    .labor-cost-val { font-size:13px; font-weight:700; font-feature-settings:'tnum' 1; white-space:nowrap; min-width:44px; text-align:right; }
+
+    /* ── Outlet assignment ── */
+    .outlet-group { border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .outlet-group-head { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); background:var(--surface-soft); cursor:pointer; user-select:none; }
+    .outlet-group-head:hover { background:var(--surface); }
+    .outlet-group-name { font-size:14px; font-weight:700; color:var(--text); flex:1; }
+    .outlet-group-count { font-size:12px; color:var(--text-soft); }
+    .outlet-items { padding:var(--space-sm) var(--space-lg) var(--space-md); display:flex; flex-direction:column; gap:2px; }
+    .outlet-item { display:flex; align-items:center; gap:var(--space-md); padding:5px 0; }
+    .outlet-item-name { font-size:13px; color:var(--text); flex:1; }
+    .outlet-item-meta { font-size:11px; color:var(--status-ok-fg); font-weight:600; }
+    input[type="checkbox"] { width:15px; height:15px; accent-color:var(--fern); cursor:pointer; flex-shrink:0; }
+
+    /* ── Review ── */
+    .review-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg) var(--space-2xl); }
+    .review-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:3px; }
+    .review-val { font-size:14px; color:var(--text); font-weight:500; }
+    .agent-token { display:inline-flex; align-items:center; gap:var(--space-sm); padding:var(--space-xs) var(--space-md); border-radius:var(--radius-pill); background:color-mix(in srgb,var(--spring) 10%,transparent); border:1px solid color-mix(in srgb,var(--spring) 30%,transparent); font-size:12px; font-weight:600; color:var(--spinach); }
+    .agent-token i { color:var(--fern); font-size:14px; }
+
+    /* Done */
+    .done-wrap { text-align:center; padding:var(--space-3xl) var(--space-xl); display:flex; flex-direction:column; align-items:center; gap:var(--space-md); }
+    .done-icon { width:64px; height:64px; border-radius:var(--radius-pill); background:var(--status-ok-bg); color:var(--status-ok-fg); display:flex; align-items:center; justify-content:center; font-size:28px; }
+    .done-title { font-size:22px; font-weight:700; color:var(--text); letter-spacing:-0.02em; }
+    .done-sub { font-size:14px; color:var(--text-soft); line-height:1.6; max-width:420px; }
+    .done-actions { display:flex; gap:var(--space-md); flex-wrap:wrap; justify-content:center; }
+
+    /* Info note */
+    .info-note { display:flex; align-items:flex-start; gap:var(--space-sm); padding:var(--space-md); border-radius:var(--radius-md); background:var(--status-info-bg); color:var(--status-info-fg); font-size:13px; line-height:1.5; }
+    .info-note i { flex-shrink:0; font-size:16px; margin-top:1px; }
+    .info-note.warn { background:var(--status-warn-bg); color:color-mix(in srgb,var(--status-warn-fg) 85%,#000); }
+
+    /* Buttons */
+    .nb-btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; border:1px solid transparent; text-decoration:none; transition:background 0.12s, border-color 0.12s; white-space:nowrap; }
+    .nb-btn i { font-size:16px; }
+    .nb-btn.primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .nb-btn.primary:hover { background:var(--btn-primary-hover); border-color:var(--btn-primary-hover); }
+    .nb-btn.outline { background:transparent; color:var(--text); border-color:var(--border); }
+    .nb-btn.outline:hover { background:var(--surface-soft); }
+    .nb-btn.ghost { background:transparent; color:var(--text-soft); border-color:transparent; }
+    .nb-btn.ghost:hover { background:var(--surface-soft); color:var(--text); }
+    .nb-btn.sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .nb-btn:disabled { opacity:0.4; pointer-events:none; }
+
+    /* Sticky footer nav */
+    .wizard-foot { position:fixed; bottom:0; left:var(--nav-width,220px); right:0; background:var(--surface); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-2xl); z-index:40; }
+    .foot-context { font-size:13px; color:var(--text-soft); }
+    @media (max-width:900px) { .ing-grid { grid-template-columns:1fr; } .type-grid { grid-template-columns:1fr; } }
+    @media (max-width:768px) { .wizard-foot { left:0; } .form-row { grid-template-columns:1fr; } .form-row-3 { grid-template-columns:1fr 1fr; } .margin-grid { grid-template-columns:1fr 1fr; } .review-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=5" data-active="recipes"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="recipes.html">Recipes</a>
+        <i class="ti ti-chevron-right" aria-hidden="true"></i>
+        <span aria-current="page">New recipe</span>
+      </nav>
+
+      <div>
+        <p class="page-eyebrow">Recipe management</p>
+        <h1 class="page-title">New recipe</h1>
+      </div>
+
+      <!-- Stepper -->
+      <div class="stepper" id="stepper" role="list" aria-label="Steps">
+        <div class="step active" data-step="1" role="listitem"><span class="step-dot">1</span><span class="step-label">Type</span></div>
+        <div class="step-line" aria-hidden="true"></div>
+        <div class="step" data-step="2" role="listitem"><span class="step-dot">2</span><span class="step-label">Basics</span></div>
+        <div class="step-line" aria-hidden="true"></div>
+        <div class="step" data-step="3" role="listitem"><span class="step-dot">3</span><span class="step-label">Ingredients</span></div>
+        <div class="step-line" aria-hidden="true"></div>
+        <div class="step" data-step="4" role="listitem"><span class="step-dot">4</span><span class="step-label">Costing</span></div>
+        <div class="step-line" aria-hidden="true"></div>
+        <div class="step" data-step="5" role="listitem"><span class="step-dot">5</span><span class="step-label">Assign</span></div>
+        <div class="step-line" aria-hidden="true"></div>
+        <div class="step" data-step="6" role="listitem"><span class="step-dot">6</span><span class="step-label">Publish</span></div>
+      </div>
+
+      <!-- ── Step 1: Type ── -->
+      <div class="step-panel active" id="panel-1">
+        <div class="section-intro">
+          <h2 class="section-title">What type of recipe is this?</h2>
+          <p class="section-sub">The type determines how costing, outlet use, and central kitchen production are handled.</p>
+        </div>
+        <div class="type-grid">
+          <div class="type-card" onclick="selectType('finished', this)" role="radio" aria-checked="false" tabindex="0">
+            <div class="tc-icon fin"><i class="ti ti-salad" aria-hidden="true"></i></div>
+            <div class="tc-name">Finished recipe</div>
+            <p class="tc-desc">A complete menu item sold directly to customers. Linked to a POS item and has a selling price. FC% and margin are tracked per serve.</p>
+            <span class="tc-badge fin"><i class="ti ti-point-filled" style="font-size:10px;" aria-hidden="true"></i>POS-linked · Per serve</span>
+          </div>
+          <div class="type-card" onclick="selectType('prep', this)" role="radio" aria-checked="false" tabindex="0">
+            <div class="tc-icon prep"><i class="ti ti-git-fork" aria-hidden="true"></i></div>
+            <div class="tc-name">Preparation recipe</div>
+            <p class="tc-desc">A sub-recipe or base (sauce, dough, stock) used as an ingredient in finished dishes. Costed per batch; its cost rolls up automatically.</p>
+            <span class="tc-badge prep"><i class="ti ti-point-filled" style="font-size:10px;" aria-hidden="true"></i>Sub-recipe · Per batch</span>
+          </div>
+          <div class="type-card" onclick="selectType('production', this)" role="radio" aria-checked="false" tabindex="0">
+            <div class="tc-icon prod"><i class="ti ti-building-factory-2" aria-hidden="true"></i></div>
+            <div class="tc-name">Production batch</div>
+            <p class="tc-desc">Bulk-produced at the central kitchen and distributed to outlets as a stocked item. Reduces outlet inventory when transferred.</p>
+            <span class="tc-badge prod"><i class="ti ti-point-filled" style="font-size:10px;" aria-hidden="true"></i>Central kitchen · Bulk</span>
+          </div>
+        </div>
+        <div class="info-note" id="type-hint" style="display:none;" role="status">
+          <i class="ti ti-info-circle" aria-hidden="true"></i>
+          <span id="type-hint-text"></span>
+        </div>
+      </div>
+
+      <!-- ── Step 2: Basics ── -->
+      <div class="step-panel" id="panel-2">
+        <div class="narrow-wrap">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-forms" aria-hidden="true"></i>Recipe details</span>
+            </div>
+            <div class="card-body gap">
+              <div class="field-group">
+                <label class="field-label" for="recipe-name">Recipe name <span style="color:var(--status-risk-fg);" aria-hidden="true">*</span></label>
+                <input class="field-input" type="text" id="recipe-name" placeholder="e.g. Flat White, Hollandaise Sauce, Sourdough Loaf…" autocomplete="off"/>
+                <p class="helper-text">Use the name as it appears on the menu or in the kitchen.</p>
+              </div>
+              <div class="form-row">
+                <div class="field-group">
+                  <label class="field-label" for="recipe-category">Category</label>
+                  <select class="field-select" id="recipe-category">
+                    <option value="">Select category…</option>
+                    <option>Breakfast</option>
+                    <option>Mains</option>
+                    <option>Desserts</option>
+                    <option>Beverages</option>
+                    <option>Sides</option>
+                    <option>Sauces &amp; Bases</option>
+                    <option>Stocks &amp; Bases</option>
+                    <option>Bakery</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="recipe-brand">Brand</label>
+                  <select class="field-select" id="recipe-brand">
+                    <option value="">All brands</option>
+                    <option>The Burger Co</option>
+                    <option>Pasta Palace</option>
+                    <option>Taco Time</option>
+                    <option>Harbour Kitchen</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="recipe-desc">Description <span class="opt">(optional)</span></label>
+                <textarea class="field-textarea" id="recipe-desc" placeholder="Briefly describe this recipe — method, key flavours, or how it's used…" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-ruler-measure" aria-hidden="true"></i>Yield &amp; production</span>
+            </div>
+            <div class="card-body gap">
+              <!-- Finished -->
+              <div class="type-fields" id="fields-finished">
+                <div class="form-row-3">
+                  <div class="field-group">
+                    <label class="field-label" for="fin-serves">Serves</label>
+                    <input class="field-input" type="number" id="fin-serves" value="1" min="1" style="font-feature-settings:'tnum' 1;"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="fin-unit">Yield unit</label>
+                    <select class="field-select" id="fin-unit">
+                      <option>serve</option>
+                      <option>portion</option>
+                      <option>piece</option>
+                      <option>cup</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="fin-prep">Prep time <span class="opt">(mins)</span></label>
+                    <input class="field-input" type="number" id="fin-prep" value="5" min="0" style="font-feature-settings:'tnum' 1;"/>
+                  </div>
+                </div>
+              </div>
+              <!-- Preparation -->
+              <div class="type-fields" id="fields-prep">
+                <div class="form-row-3">
+                  <div class="field-group">
+                    <label class="field-label" for="prep-batch">Batch size</label>
+                    <input class="field-input" type="number" id="prep-batch" value="1000" min="1" style="font-feature-settings:'tnum' 1;"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="prep-unit">Unit</label>
+                    <select class="field-select" id="prep-unit">
+                      <option>mL</option>
+                      <option>L</option>
+                      <option>g</option>
+                      <option>kg</option>
+                      <option>portions</option>
+                      <option>each</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="prep-shelf">Shelf life <span class="opt">(days)</span></label>
+                    <input class="field-input" type="number" id="prep-shelf" value="3" min="1" style="font-feature-settings:'tnum' 1;"/>
+                  </div>
+                </div>
+                <p class="helper-text">Cost per batch will be calculated in Step 4.</p>
+              </div>
+              <!-- Production -->
+              <div class="type-fields" id="fields-production">
+                <div class="form-row-3">
+                  <div class="field-group">
+                    <label class="field-label" for="prod-batch">Batch size</label>
+                    <input class="field-input" type="number" id="prod-batch" value="20" min="1" style="font-feature-settings:'tnum' 1;"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="prod-unit">Unit</label>
+                    <select class="field-select" id="prod-unit">
+                      <option>loaves</option>
+                      <option>kg</option>
+                      <option>each</option>
+                      <option>portions</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="prod-location">Produced at</label>
+                    <select class="field-select" id="prod-location">
+                      <option>Central Kitchen</option>
+                    </select>
+                  </div>
+                </div>
+                <p class="helper-text">Transfer cost from CK to outlets is calculated at distribution.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 3: Ingredients ── -->
+      <div class="step-panel" id="panel-3">
+        <div class="ing-grid">
+
+          <!-- Ingredient table card -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-list-details" aria-hidden="true"></i>Ingredient list</span>
+              <button class="nb-btn outline sm" onclick="addIngredientRow()"><i class="ti ti-plus" aria-hidden="true"></i>Add ingredient</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="ing-table" aria-label="Ingredients">
+                <thead>
+                  <tr>
+                    <th style="min-width:160px;">Ingredient</th>
+                    <th class="num" style="width:65px;">Qty</th>
+                    <th style="width:72px;">Unit</th>
+                    <th class="num" style="width:88px;">Unit cost</th>
+                    <th class="num" style="width:66px;">Waste %</th>
+                    <th class="num" style="width:80px;">Subtotal</th>
+                    <th style="width:32px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="ing-tbody"></tbody>
+              </table>
+            </div>
+            <div class="ing-footer">
+              <span class="ing-total-label">Total ingredient cost</span>
+              <span class="ing-total-val" id="ing-total">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Cyrus sidebar -->
+          <div class="cyrus-card" id="cyrus-card" aria-label="Cyrus margin agent live feedback">
+            <div class="cyrus-head">
+              <div class="cyrus-avatar" aria-hidden="true">Cy</div>
+              <div class="cyrus-id">
+                <div class="cyrus-name">Cyrus · Margin agent</div>
+                <div class="cyrus-sub">Live costing feedback</div>
+              </div>
+            </div>
+            <div class="cyrus-body">
+              <div class="cy-sell-group" id="cy-sell-group">
+                <label class="cy-sell-label" for="cy-sell">Estimated sell price</label>
+                <div style="position:relative;">
+                  <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);" aria-hidden="true">$</span>
+                  <input class="cy-sell-input" type="number" id="cy-sell" placeholder="0.00" min="0" step="0.10" oninput="updateCyrus()" style="padding-left:24px;"/>
+                </div>
+              </div>
+              <div class="cy-metric">
+                <span class="cy-metric-label">Ingredient cost</span>
+                <span class="cy-metric-val" id="cy-ing-cost" aria-live="polite">—</span>
+              </div>
+              <div class="cy-fc-row">
+                <span class="cy-fc-label">Food cost %</span>
+                <span class="cy-fc-val muted" id="cy-fc-val" aria-live="polite">—</span>
+              </div>
+              <div class="cy-comment neutral" id="cy-comment" aria-live="polite">Add ingredients and an estimated sell price to see live margin feedback.</div>
+              <div class="cy-target-row">
+                <span>Target FC%</span>
+                <div style="position:relative;">
+                  <input class="cy-target-input" type="number" id="cy-target" value="25" min="1" max="100" step="1" oninput="updateCyrus()" aria-label="Target food cost percentage"/>
+                  <span style="position:absolute;right:5px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text-soft);" aria-hidden="true">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Step 4: Costing ── -->
+      <div class="step-panel" id="panel-4">
+        <div class="narrow-wrap">
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-clock" aria-hidden="true"></i>Labour cost</span>
+              <span style="font-size:12px;color:var(--text-soft);">Active preparation time only</span>
+            </div>
+            <div class="card-body gap">
+              <div class="labor-row">
+                <div class="labor-name">Prep / mise en place</div>
+                <span class="labor-sep">×</span>
+                <input class="field-input" type="number" id="l-prep-min" value="5" min="0" oninput="calcCosting()" style="width:72px;height:32px;flex-shrink:0;font-size:13px;text-align:right;font-feature-settings:'tnum' 1;" aria-label="Prep minutes"/>
+                <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">min @ $<span class="l-rate-disp">24</span>/hr</span>
+                <span class="labor-cost-val" id="l-prep-cost">$2.00</span>
+              </div>
+              <div class="labor-row">
+                <div class="labor-name">Cook / assemble</div>
+                <span class="labor-sep">×</span>
+                <input class="field-input" type="number" id="l-cook-min" value="3" min="0" oninput="calcCosting()" style="width:72px;height:32px;flex-shrink:0;font-size:13px;text-align:right;font-feature-settings:'tnum' 1;" aria-label="Cook minutes"/>
+                <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">min @ $<span class="l-rate-disp">24</span>/hr</span>
+                <span class="labor-cost-val" id="l-cook-cost">$1.20</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;padding-top:var(--space-md);border-top:1px solid var(--border);">
+                <div class="field-group" style="max-width:180px;">
+                  <label class="field-label" for="l-hourly">Hourly wage rate</label>
+                  <div style="position:relative;">
+                    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);" aria-hidden="true">$</span>
+                    <input class="field-input" type="number" id="l-hourly" value="24" min="0" step="0.5" oninput="calcCosting()" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:12px;color:var(--text-soft);">Total labour</div>
+                  <div style="font-size:20px;font-weight:700;font-feature-settings:'tnum' 1;color:var(--text);" id="l-total" aria-live="polite">$3.20</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-calculator" aria-hidden="true"></i>Prime cost &amp; margin</span>
+            </div>
+            <div class="card-body gap">
+              <div>
+                <div class="cost-row"><span>Ingredient cost</span><span class="cost-row-val" id="s4-ing">$0.00</span></div>
+                <div class="cost-row"><span>Labour cost</span><span class="cost-row-val" id="s4-labour">$3.20</span></div>
+                <div class="cost-total-row">
+                  <span class="cost-total-label">Prime cost</span>
+                  <span class="cost-total-val" id="s4-prime" aria-live="polite">$3.20</span>
+                </div>
+              </div>
+
+              <!-- Finished only -->
+              <div class="type-fields" id="costing-fin">
+                <div class="field-group">
+                  <label class="field-label" for="s4-sell">Selling price <span class="opt">(base POS price)</span></label>
+                  <div style="position:relative;max-width:200px;">
+                    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);" aria-hidden="true">$</span>
+                    <input class="field-input" type="number" id="s4-sell" value="6.50" min="0" step="0.50" oninput="calcCosting()" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+                  </div>
+                  <p class="helper-text">This syncs to your POS selling price after publishing.</p>
+                </div>
+                <div class="margin-grid">
+                  <div class="margin-tile">
+                    <div class="margin-tile-label">Food cost %</div>
+                    <div class="margin-tile-val" id="s4-fc-pct" aria-live="polite">—</div>
+                  </div>
+                  <div class="margin-tile">
+                    <div class="margin-tile-label">Prime cost %</div>
+                    <div class="margin-tile-val" id="s4-prime-pct" aria-live="polite">—</div>
+                  </div>
+                  <div class="margin-tile">
+                    <div class="margin-tile-label">Gross margin</div>
+                    <div class="margin-tile-val" id="s4-margin" aria-live="polite">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Prep/Production only -->
+              <div class="type-fields" id="costing-batch">
+                <div class="info-note">
+                  <i class="ti ti-info-circle" aria-hidden="true"></i>
+                  <span>This recipe's prime cost is tracked per batch. When used as an ingredient in a finished dish, its per-unit cost rolls up automatically into the finished recipe's FC%.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 5: Assign ── -->
+      <div class="step-panel" id="panel-5">
+        <div class="narrow-wrap">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-building-store" aria-hidden="true"></i>Outlet assignment</span>
+              <button class="nb-btn ghost sm" onclick="selectAllOutlets()">Select all</button>
+            </div>
+            <div class="card-body gap">
+              <p style="font-size:13px;color:var(--text-soft);line-height:1.5;">Choose which outlets this recipe is published to. Outlets will receive it as a locked HQ recipe — they can view and cost against it, but cannot edit ingredients.</p>
+
+              <div class="outlet-group">
+                <div class="outlet-group-head" onclick="toggleGroupHead(this)">
+                  <input type="checkbox" id="og1" class="outlet-group-cb" onclick="event.stopPropagation();groupCheck('og1')"/>
+                  <span class="outlet-group-name">The Burger Co</span>
+                  <span class="outlet-group-count">3 outlets</span>
+                  <i class="ti ti-chevron-down" style="font-size:14px;color:var(--text-soft);transition:transform 0.15s;" aria-hidden="true"></i>
+                </div>
+                <div class="outlet-items">
+                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og1" onchange="syncGroupCb('og1')"/><span class="outlet-item-name">CBD Flagship</span><span class="outlet-item-meta">Active</span></div>
+                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og1" onchange="syncGroupCb('og1')"/><span class="outlet-item-name">Surry Hills</span><span class="outlet-item-meta">Active</span></div>
+                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og1" onchange="syncGroupCb('og1')"/><span class="outlet-item-name">Newtown</span><span class="outlet-item-meta">Active</span></div>
+                </div>
+              </div>
+
+              <div class="outlet-group">
+                <div class="outlet-group-head" onclick="toggleGroupHead(this)">
+                  <input type="checkbox" id="og2" class="outlet-group-cb" onclick="event.stopPropagation();groupCheck('og2')"/>
+                  <span class="outlet-group-name">Pasta Palace</span>
+                  <span class="outlet-group-count">2 outlets</span>
+                  <i class="ti ti-chevron-down" style="font-size:14px;color:var(--text-soft);transition:transform 0.15s;" aria-hidden="true"></i>
+                </div>
+                <div class="outlet-items">
+                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og2" onchange="syncGroupCb('og2')"/><span class="outlet-item-name">Darlinghurst</span><span class="outlet-item-meta">Active</span></div>
+                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og2" onchange="syncGroupCb('og2')"/><span class="outlet-item-name">Glebe</span><span class="outlet-item-meta">Active</span></div>
+                </div>
+              </div>
+
+              <div class="outlet-group">
+                <div class="outlet-group-head" onclick="toggleGroupHead(this)">
+                  <input type="checkbox" id="og3" class="outlet-group-cb" onclick="event.stopPropagation();groupCheck('og3')"/>
+                  <span class="outlet-group-name">Taco Time</span>
+                  <span class="outlet-group-count">2 outlets</span>
+                  <i class="ti ti-chevron-down" style="font-size:14px;color:var(--text-soft);transition:transform 0.15s;" aria-hidden="true"></i>
+                </div>
+                <div class="outlet-items">
+                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og3" onchange="syncGroupCb('og3')"/><span class="outlet-item-name">Bondi Junction</span><span class="outlet-item-meta">Active</span></div>
+                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og3" onchange="syncGroupCb('og3')"/><span class="outlet-item-name">Manly</span><span class="outlet-item-meta">Active</span></div>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;padding-top:var(--space-sm);border-top:1px solid var(--border);">
+                <span style="font-size:13px;color:var(--text-soft);">Outlets selected: <strong id="outlet-count">0</strong> of 7</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 6: Review & Publish ── -->
+      <div class="step-panel" id="panel-6">
+        <div class="narrow-wrap">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Review &amp; publish</span>
+            </div>
+            <div class="card-body gap">
+              <div class="review-grid" id="review-grid">
+                <div><div class="review-label">Recipe name</div><div class="review-val" id="r-name">—</div></div>
+                <div><div class="review-label">Type</div><div class="review-val" id="r-type">—</div></div>
+                <div><div class="review-label">Category</div><div class="review-val" id="r-cat">—</div></div>
+                <div><div class="review-label">Brand</div><div class="review-val" id="r-brand">—</div></div>
+                <div><div class="review-label">Ingredient cost</div><div class="review-val" id="r-ing-cost">—</div></div>
+                <div><div class="review-label">Prime cost</div><div class="review-val" id="r-prime">—</div></div>
+                <div id="r-sell-row"><div class="review-label">Selling price</div><div class="review-val" id="r-sell">—</div></div>
+                <div id="r-fc-row"><div class="review-label">Food cost %</div><div class="review-val" id="r-fc">—</div></div>
+                <div><div class="review-label">Outlets assigned</div><div class="review-val" id="r-outlets">—</div></div>
+              </div>
+
+              <div style="border-top:1px solid var(--border);padding-top:var(--space-md);">
+                <span class="agent-token"><i class="ti ti-robot" aria-hidden="true"></i><span id="cyrus-token">Cyrus reviewed · awaiting cost data</span></span>
+              </div>
+
+              <div class="info-note warn" id="publish-warn" style="display:none;">
+                <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+                <span id="publish-warn-text"></span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;">
+            <button class="nb-btn outline" onclick="saveDraft()"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save as draft</button>
+            <button class="nb-btn primary" onclick="publishRecipe()"><i class="ti ti-rocket" aria-hidden="true"></i>Publish recipe</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Done ── -->
+      <div class="step-panel" id="panel-done">
+        <div class="card">
+          <div class="done-wrap">
+            <div class="done-icon" aria-hidden="true"><i class="ti ti-check"></i></div>
+            <h2 class="done-title" id="done-title">Recipe published</h2>
+            <p class="done-sub" id="done-sub">Your recipe has been saved and pushed to all assigned outlets.</p>
+            <div class="done-actions">
+              <a href="recipes.html" class="nb-btn outline"><i class="ti ti-arrow-left" aria-hidden="true"></i>Back to recipes</a>
+              <button class="nb-btn primary" onclick="viewRecipe()"><i class="ti ti-eye" aria-hidden="true"></i>View recipe</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.napp-canvas -->
+  </div><!-- /.page-body -->
+
+  <!-- Sticky footer nav -->
+  <div class="wizard-foot" id="wizard-foot">
+    <button class="nb-btn ghost" id="back-btn" onclick="prevStep()" style="visibility:hidden;"><i class="ti ti-arrow-left" aria-hidden="true"></i>Back</button>
+    <span class="foot-context" id="foot-ctx" aria-live="polite">Step 1 of 6 — Choose a recipe type</span>
+    <button class="nb-btn primary" id="next-btn" onclick="nextStep()" disabled>Continue<i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+  </div>
+
+  <script>
+    let step = 1;
+    let selectedType = null;
+    let rowId = 0;
+
+    const TYPE_LABELS = { finished:'Finished recipe', prep:'Preparation recipe', production:'Production batch' };
+    const TYPE_HINTS  = {
+      finished:   'FC% and gross margin are calculated per serve. The selling price syncs to your POS after publishing.',
+      prep:       'Cost rolls up per batch. Any finished recipe using this as an ingredient will automatically include its per-unit cost.',
+      production: 'Produced at the central kitchen and distributed to outlets. Transfer cost is applied at distribution.'
+    };
+
+    // ── Navigation ────────────────────────────────────────
+    function goStep(n) {
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.step').forEach(s => {
+        const sn = +s.dataset.step;
+        s.classList.toggle('active', sn === n);
+        s.classList.toggle('done',   sn < n);
+      });
+      if (n > 6) {
+        document.getElementById('panel-done').classList.add('active');
+        document.getElementById('wizard-foot').style.display = 'none';
+        return;
+      }
+      document.getElementById('panel-' + n).classList.add('active');
+      step = n;
+      updateFooter();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextStep() {
+      if (step === 5) { renderReview(); }
+      if (step < 6) goStep(step + 1);
+    }
+
+    function prevStep() { if (step > 1) goStep(step - 1); }
+
+    function updateFooter() {
+      const back = document.getElementById('back-btn');
+      const next = document.getElementById('next-btn');
+      const ctx  = document.getElementById('foot-ctx');
+
+      back.style.visibility = step > 1 ? 'visible' : 'hidden';
+
+      const CTX = ['','Choose a recipe type','Fill in recipe basics','Add ingredients','Review costing','Assign to outlets','Review & publish'];
+      ctx.textContent = `Step ${step} of 6 — ${CTX[step]}`;
+
+      if (step === 1) {
+        next.disabled = !selectedType;
+        next.innerHTML = 'Continue<i class="ti ti-arrow-right" aria-hidden="true"></i>';
+      } else if (step === 6) {
+        next.style.display = 'none';
+      } else {
+        next.style.display = '';
+        next.disabled = false;
+        next.innerHTML = step === 5 ? 'Review &amp; publish<i class="ti ti-arrow-right" aria-hidden="true"></i>' : 'Continue<i class="ti ti-arrow-right" aria-hidden="true"></i>';
+      }
+    }
+
+    // ── Type selection ────────────────────────────────────
+    function selectType(type, el) {
+      selectedType = type;
+      document.querySelectorAll('.type-card').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-checked','false'); });
+      el.classList.add('selected');
+      el.setAttribute('aria-checked', 'true');
+
+      document.getElementById('type-hint-text').textContent = TYPE_HINTS[type];
+      document.getElementById('type-hint').style.display = 'flex';
+
+      // Show correct yield fields in step 2
+      document.querySelectorAll('.type-fields').forEach(f => f.classList.remove('show'));
+      const yf = document.getElementById('fields-' + type);
+      if (yf) yf.classList.add('show');
+
+      // Show correct costing fields in step 4
+      document.getElementById('costing-fin').classList.toggle('show', type === 'finished');
+      document.getElementById('costing-batch').classList.toggle('show', type !== 'finished');
+
+      // Hide sell price in Cyrus for non-finished
+      document.getElementById('cy-sell-group').style.display = type === 'finished' ? '' : 'none';
+
+      // Seed 2 ingredient rows on first type selection
+      if (document.getElementById('ing-tbody').children.length === 0) {
+        addIngredientRow(); addIngredientRow();
+      }
+
+      updateFooter();
+    }
+
+    // ── Ingredient table ──────────────────────────────────
+    const UNITS = ['g','kg','mL','L','each','slice','tbsp','tsp','bunch','pkg','loaf'];
+
+    function addIngredientRow(name='', qty='', unit='g', cost='', waste='0') {
+      rowId++;
+      const rid = 'row' + rowId;
+      const opts = UNITS.map(u => `<option${u===unit?' selected':''}>${u}</option>`).join('');
+      const tr = document.createElement('tr');
+      tr.id = rid;
+      tr.innerHTML = `
+        <td><input class="ing-input" style="width:100%;" type="text" placeholder="Ingredient…" value="${name}" oninput="recalcRow(this)"/></td>
+        <td><input class="ing-input num" type="number" placeholder="0" value="${qty}" min="0" step="0.1" oninput="recalcRow(this)" style="width:54px;"/></td>
+        <td><select class="ing-input" onchange="recalcRow(this)" style="font-size:12px;padding:2px 4px;width:68px;">${opts}</select></td>
+        <td><div style="position:relative;display:flex;align-items:center;"><span style="position:absolute;left:3px;font-size:11px;color:var(--text-soft);">$</span><input class="ing-input num" type="number" placeholder="0.000" value="${cost}" min="0" step="0.001" oninput="recalcRow(this)" style="width:76px;padding-left:12px;"/></div></td>
+        <td><div style="position:relative;display:flex;align-items:center;"><input class="ing-input num" type="number" placeholder="0" value="${waste}" min="0" max="100" step="1" oninput="recalcRow(this)" style="width:50px;padding-right:14px;"/><span style="position:absolute;right:3px;font-size:11px;color:var(--text-soft);">%</span></div></td>
+        <td class="num"><span class="ing-subtotal" id="${rid}-sub">—</span></td>
+        <td><button class="ing-remove" onclick="removeRow('${rid}')" title="Remove ingredient" aria-label="Remove ingredient"><i class="ti ti-x" aria-hidden="true" style="font-size:14px;"></i></button></td>`;
+      document.getElementById('ing-tbody').appendChild(tr);
+      recalcRow(tr.querySelector('input[type="number"]'));
+    }
+
+    function removeRow(id) {
+      document.getElementById(id)?.remove();
+      recalcAll();
+    }
+
+    function recalcRow(input) {
+      const row = input.closest('tr');
+      if (!row) return;
+      const nums = row.querySelectorAll('input[type="number"]');
+      const qty   = parseFloat(nums[0]?.value) || 0;
+      const cost  = parseFloat(nums[1]?.value) || 0;
+      const waste = parseFloat(nums[2]?.value) || 0;
+      const sub   = qty * cost * (1 + waste / 100);
+      const subEl = row.querySelector('.ing-subtotal');
+      if (subEl) subEl.textContent = sub > 0 ? '$' + sub.toFixed(3) : '—';
+      recalcAll();
+    }
+
+    function recalcAll() {
+      let total = 0;
+      document.querySelectorAll('#ing-tbody tr').forEach(tr => {
+        const nums = tr.querySelectorAll('input[type="number"]');
+        const qty   = parseFloat(nums[0]?.value) || 0;
+        const cost  = parseFloat(nums[1]?.value) || 0;
+        const waste = parseFloat(nums[2]?.value) || 0;
+        total += qty * cost * (1 + waste / 100);
+      });
+      document.getElementById('ing-total').textContent   = '$' + total.toFixed(2);
+      document.getElementById('cy-ing-cost').textContent = '$' + total.toFixed(2);
+      document.getElementById('s4-ing').textContent      = '$' + total.toFixed(2);
+      updateCyrus(total);
+      calcCosting();
+    }
+
+    // ── Cyrus panel ───────────────────────────────────────
+    function updateCyrus(ingTotal) {
+      const ing  = ingTotal !== undefined ? ingTotal
+                 : (parseFloat(document.getElementById('ing-total').textContent.replace('$','')) || 0);
+      const sell   = parseFloat(document.getElementById('cy-sell')?.value) || 0;
+      const target = parseFloat(document.getElementById('cy-target')?.value) || 25;
+
+      const fcEl  = document.getElementById('cy-fc-val');
+      const cmtEl = document.getElementById('cy-comment');
+
+      if (ing === 0) {
+        fcEl.textContent = '—'; fcEl.className = 'cy-fc-val muted';
+        cmtEl.textContent = 'Add ingredients and an estimated sell price to see live margin feedback.';
+        cmtEl.className = 'cy-comment neutral'; return;
+      }
+
+      if (selectedType !== 'finished' || sell === 0) {
+        fcEl.textContent = '—'; fcEl.className = 'cy-fc-val muted';
+        const msg = selectedType === 'finished'
+          ? `Ingredient cost <strong>$${ing.toFixed(2)}</strong>. Enter a sell price to calculate FC%.`
+          : `Ingredient cost <strong>$${ing.toFixed(2)}</strong>. FC% doesn't apply to ${TYPE_LABELS[selectedType]?.toLowerCase() || 'this type'}.`;
+        cmtEl.innerHTML = msg; cmtEl.className = 'cy-comment neutral'; return;
+      }
+
+      const fc = (ing / sell) * 100;
+      fcEl.textContent = fc.toFixed(1) + '%';
+
+      if (fc <= target) {
+        fcEl.className = 'cy-fc-val ok';
+        cmtEl.innerHTML = `FC% is <strong>${fc.toFixed(1)}%</strong> — within your <strong>${target}%</strong> target. Gross margin ~${(((sell - ing) / sell) * 100).toFixed(1)}%. Looking good.`;
+        cmtEl.className = 'cy-comment ok';
+      } else if (fc <= target + 3) {
+        fcEl.className = 'cy-fc-val warn';
+        cmtEl.innerHTML = `FC% is <strong>${fc.toFixed(1)}%</strong>, <strong>${(fc - target).toFixed(1)}%</strong> above target. To hit ${target}%, price at <strong>$${(ing / (target / 100)).toFixed(2)}</strong> or reduce ingredient cost.`;
+        cmtEl.className = 'cy-comment warn';
+      } else {
+        fcEl.className = 'cy-fc-val risk';
+        cmtEl.innerHTML = `FC% is <strong>${fc.toFixed(1)}%</strong> — exceeds target by <strong>${(fc - target).toFixed(1)}%</strong>. Suggest price of <strong>$${(ing / (target / 100)).toFixed(2)}</strong>, or substitute high-cost ingredients.`;
+        cmtEl.className = 'cy-comment risk';
+      }
+    }
+
+    // ── Costing ───────────────────────────────────────────
+    function calcCosting() {
+      const hourly   = parseFloat(document.getElementById('l-hourly').value) || 24;
+      const prepMin  = parseFloat(document.getElementById('l-prep-min').value) || 0;
+      const cookMin  = parseFloat(document.getElementById('l-cook-min').value) || 0;
+      const prepCost = (prepMin / 60) * hourly;
+      const cookCost = (cookMin / 60) * hourly;
+      const labour   = prepCost + cookCost;
+
+      document.querySelectorAll('.l-rate-disp').forEach(el => el.textContent = hourly.toFixed(0));
+      document.getElementById('l-prep-cost').textContent = '$' + prepCost.toFixed(2);
+      document.getElementById('l-cook-cost').textContent = '$' + cookCost.toFixed(2);
+      document.getElementById('l-total').textContent     = '$' + labour.toFixed(2);
+      document.getElementById('s4-labour').textContent   = '$' + labour.toFixed(2);
+
+      const ing   = parseFloat(document.getElementById('s4-ing').textContent.replace('$','')) || 0;
+      const prime = ing + labour;
+      document.getElementById('s4-prime').textContent = '$' + prime.toFixed(2);
+
+      if (selectedType === 'finished') {
+        const sell = parseFloat(document.getElementById('s4-sell').value) || 0;
+        if (sell > 0) {
+          const fc     = (ing   / sell) * 100;
+          const pcPct  = (prime / sell) * 100;
+          const margin = ((sell - prime) / sell) * 100;
+          const fcEl   = document.getElementById('s4-fc-pct');
+          fcEl.textContent = fc.toFixed(1) + '%';
+          fcEl.style.color = fc > 30 ? 'var(--status-risk-fg)' : fc > 25 ? 'var(--status-warn-fg)' : 'var(--status-ok-fg)';
+          document.getElementById('s4-prime-pct').textContent = pcPct.toFixed(1) + '%';
+          document.getElementById('s4-margin').textContent    = margin.toFixed(1) + '%';
+        }
+      }
+    }
+
+    // ── Outlet assignment ─────────────────────────────────
+    function groupCheck(gid) {
+      const cb    = document.getElementById(gid);
+      const items = document.querySelectorAll(`.outlet-child[data-grp="${gid}"]`);
+      items.forEach(i => i.checked = cb.checked);
+      updateOutletCount();
+    }
+
+    function syncGroupCb(gid) {
+      const items = document.querySelectorAll(`.outlet-child[data-grp="${gid}"]`);
+      const all   = Array.from(items).every(i => i.checked);
+      const cb    = document.getElementById(gid);
+      if (cb) cb.checked = all;
+      updateOutletCount();
+    }
+
+    function toggleGroupHead(head) {
+      const icon  = head.querySelector('i');
+      const items = head.closest('.outlet-group').querySelector('.outlet-items');
+      const open  = items.style.display !== 'none';
+      items.style.display = open ? 'none' : '';
+      if (icon) icon.style.transform = open ? 'rotate(-90deg)' : '';
+    }
+
+    function selectAllOutlets() {
+      document.querySelectorAll('.outlet-child, .outlet-group-cb').forEach(cb => cb.checked = true);
+      updateOutletCount();
+    }
+
+    function updateOutletCount() {
+      const n = document.querySelectorAll('.outlet-child:checked').length;
+      const el = document.getElementById('outlet-count');
+      if (el) el.textContent = n;
+    }
+
+    // ── Review ────────────────────────────────────────────
+    function renderReview() {
+      document.getElementById('r-name').textContent = document.getElementById('recipe-name').value || '(Untitled)';
+      document.getElementById('r-type').textContent = TYPE_LABELS[selectedType] || '—';
+      document.getElementById('r-cat').textContent  = document.getElementById('recipe-category').value || '—';
+      document.getElementById('r-brand').textContent= document.getElementById('recipe-brand').value || 'All brands';
+      document.getElementById('r-ing-cost').textContent = document.getElementById('s4-ing').textContent;
+      document.getElementById('r-prime').textContent    = document.getElementById('s4-prime').textContent;
+
+      const outletCount = document.querySelectorAll('.outlet-child:checked').length;
+      document.getElementById('r-outlets').textContent = outletCount + (outletCount === 1 ? ' outlet' : ' outlets');
+
+      const sellRow = document.getElementById('r-sell-row');
+      const fcRow   = document.getElementById('r-fc-row');
+      if (selectedType === 'finished') {
+        const sell = parseFloat(document.getElementById('s4-sell').value || 0).toFixed(2);
+        document.getElementById('r-sell').textContent = '$' + sell;
+        document.getElementById('r-fc').textContent   = document.getElementById('s4-fc-pct').textContent || '—';
+        sellRow.style.display = ''; fcRow.style.display = '';
+      } else {
+        sellRow.style.display = 'none'; fcRow.style.display = 'none';
+      }
+
+      // Cyrus token
+      const ing = document.getElementById('s4-ing').textContent;
+      const fc  = selectedType === 'finished' ? (document.getElementById('s4-fc-pct').textContent || '—') : 'N/A';
+      document.getElementById('cyrus-token').textContent = `Cyrus reviewed · Cost ${ing} · FC% ${fc}`;
+
+      // Publish warning
+      const warnEl = document.getElementById('publish-warn');
+      if (selectedType === 'finished') {
+        const fcNum = parseFloat(document.getElementById('s4-fc-pct').textContent) || 0;
+        if (fcNum > 30) {
+          warnEl.style.display = 'flex';
+          document.getElementById('publish-warn-text').textContent = `FC% is ${fcNum.toFixed(1)}% — above the 30% caution threshold. Consider adjusting the selling price before publishing.`;
+        } else { warnEl.style.display = 'none'; }
+      } else { warnEl.style.display = 'none'; }
+    }
+
+    // ── Publish / draft ───────────────────────────────────
+    function publishRecipe() {
+      const name = document.getElementById('recipe-name').value || 'New recipe';
+      const outs = document.querySelectorAll('.outlet-child:checked').length;
+      document.getElementById('done-title').textContent = `"${name}" published`;
+      document.getElementById('done-sub').textContent = `Your ${TYPE_LABELS[selectedType]?.toLowerCase() || 'recipe'} has been saved and pushed to ${outs} outlet${outs !== 1 ? 's' : ''}.`;
+      goStep(99);
+    }
+
+    function saveDraft() {
+      const name = document.getElementById('recipe-name').value || 'New recipe';
+      document.getElementById('done-title').textContent = `"${name}" saved as draft`;
+      document.getElementById('done-sub').textContent = 'Your recipe has been saved as a draft. You can continue editing it from the recipe library at any time.';
+      goStep(99);
+    }
+
+    function viewRecipe() {
+      const map = { finished: 'recipe-detail-finished.html', prep: 'recipe-detail-prep.html', production: 'recipe-detail-production.html' };
+      window.location.href = map[selectedType] || 'recipes.html';
+    }
+
+    // ── Init ──────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      NomniShell.init('Recipes');
+      updateFooter();
+      calcCosting();
+    });
+  </script>
+</body>
+</html>
