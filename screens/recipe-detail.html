@@ -511,6 +511,34 @@
         <!-- ── Costing tab ── -->
         <div id="tab-costing" class="tab-panel">
 
+          <!-- ── Cost movement chart ── -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-chart-line"></i>Cost movement</span>
+              <div style="display:flex;gap:4px;">
+                <button class="period-btn active" data-period="6" onclick="setCostPeriod(this)">6M</button>
+                <button class="period-btn" data-period="12" onclick="setCostPeriod(this)">12M</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding-top:var(--space-md);padding-bottom:var(--space-lg);">
+              <div style="position:relative;" id="chart-wrap">
+                <svg id="cost-chart" width="100%" height="200" viewBox="0 0 600 200" style="display:block;overflow:visible;"></svg>
+                <div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--surface-deep);color:var(--chrome-fg);font-size:12px;font-weight:500;padding:6px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,0.15);line-height:1.6;"></div>
+              </div>
+              <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:20px;height:2px;background:var(--fern);border-radius:2px;vertical-align:middle;"></span>
+                  Ingredient cost/serve
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F5C219;vertical-align:middle;"></span>
+                  Price change event
+                </div>
+                <div id="chart-delta" style="font-size:12px;color:var(--text-soft);margin-left:auto;"></div>
+              </div>
+            </div>
+          </div>
+
           <!-- Ingredient cost summary -->
           <div class="card">
             <div class="card-head">
@@ -682,33 +710,6 @@
             </div>
           </div>
 
-          <!-- ── Cost movement chart ── -->
-          <div class="card">
-            <div class="card-head">
-              <span class="card-title"><i class="ti ti-chart-line"></i>Cost movement</span>
-              <div style="display:flex;gap:4px;">
-                <button class="period-btn active" data-period="6" onclick="setCostPeriod(this)">6M</button>
-                <button class="period-btn" data-period="12" onclick="setCostPeriod(this)">12M</button>
-              </div>
-            </div>
-            <div class="card-body" style="padding-top:var(--space-md);padding-bottom:var(--space-lg);">
-              <div style="position:relative;" id="chart-wrap">
-                <svg id="cost-chart" width="100%" height="200" viewBox="0 0 600 200" style="display:block;overflow:visible;"></svg>
-                <div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--surface-deep);color:var(--chrome-fg);font-size:12px;font-weight:500;padding:6px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,0.15);line-height:1.6;"></div>
-              </div>
-              <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;">
-                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
-                  <span style="display:inline-block;width:20px;height:2px;background:var(--fern);border-radius:2px;vertical-align:middle;"></span>
-                  Ingredient cost/serve
-                </div>
-                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
-                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F5C219;vertical-align:middle;"></span>
-                  Price change event
-                </div>
-                <div id="chart-delta" style="font-size:12px;color:var(--text-soft);margin-left:auto;"></div>
-              </div>
-            </div>
-          </div>
         </div><!-- /tab-costing -->
 
         <!-- ── Outlets tab ── -->

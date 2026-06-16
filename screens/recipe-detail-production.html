@@ -251,6 +251,34 @@
 
         <!-- ── Ingredients tab ── -->
         <div id="tab-ingredients" class="tab-panel active">
+          <!-- ── Cost movement chart ── -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-chart-line"></i>Cost movement</span>
+              <div style="display:flex;gap:4px;">
+                <button class="period-btn active" data-period="6" onclick="setCostPeriod(this)">6M</button>
+                <button class="period-btn" data-period="12" onclick="setCostPeriod(this)">12M</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding-top:var(--space-md);padding-bottom:var(--space-lg);">
+              <div style="position:relative;" id="chart-wrap">
+                <svg id="cost-chart" width="100%" height="200" viewBox="0 0 600 200" style="display:block;overflow:visible;"></svg>
+                <div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--surface-deep);color:var(--chrome-fg);font-size:12px;font-weight:500;padding:6px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,0.15);line-height:1.6;"></div>
+              </div>
+              <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:20px;height:2px;background:#17B3A3;border-radius:2px;vertical-align:middle;"></span>
+                  Cost per unit (1 loaf)
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F5C219;vertical-align:middle;"></span>
+                  Price change event
+                </div>
+                <div id="chart-delta" style="font-size:12px;color:var(--text-soft);margin-left:auto;"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Batch details</span></div>
             <div class="card-body">
@@ -352,33 +380,6 @@
               <div style="margin-top:var(--space-lg);padding:var(--space-md) var(--space-lg);background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);font-size:12px;color:var(--text-soft);line-height:1.6;">
                 <i class="ti ti-info-circle" style="font-size:13px;vertical-align:-2px;margin-right:4px;color:var(--text-soft);"></i>
                 Cost per unit is transferred to each outlet's COGS on dispatch. No selling price or margin is set — this is an internal CK transfer cost.
-              </div>
-            </div>
-          </div>
-          <!-- ── Cost movement chart ── -->
-          <div class="card">
-            <div class="card-head">
-              <span class="card-title"><i class="ti ti-chart-line"></i>Cost movement</span>
-              <div style="display:flex;gap:4px;">
-                <button class="period-btn active" data-period="6" onclick="setCostPeriod(this)">6M</button>
-                <button class="period-btn" data-period="12" onclick="setCostPeriod(this)">12M</button>
-              </div>
-            </div>
-            <div class="card-body" style="padding-top:var(--space-md);padding-bottom:var(--space-lg);">
-              <div style="position:relative;" id="chart-wrap">
-                <svg id="cost-chart" width="100%" height="200" viewBox="0 0 600 200" style="display:block;overflow:visible;"></svg>
-                <div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--surface-deep);color:var(--chrome-fg);font-size:12px;font-weight:500;padding:6px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,0.15);line-height:1.6;"></div>
-              </div>
-              <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;">
-                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
-                  <span style="display:inline-block;width:20px;height:2px;background:#17B3A3;border-radius:2px;vertical-align:middle;"></span>
-                  Cost per unit (1 loaf)
-                </div>
-                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
-                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F5C219;vertical-align:middle;"></span>
-                  Price change event
-                </div>
-                <div id="chart-delta" style="font-size:12px;color:var(--text-soft);margin-left:auto;"></div>
               </div>
             </div>
           </div>
