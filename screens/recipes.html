@@ -313,13 +313,10 @@
     .pill-info { background: var(--status-info-bg); color: var(--status-info-fg); }
     .pill-info .pill-dot { background: var(--status-info-fg); }
 
-    .lock-cell {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .lock-icon-locked { color: var(--fern); font-size: 16px; cursor: help; }
-    .lock-icon-open   { color: var(--stone); font-size: 16px; cursor: help; }
+    .lock-cell { vertical-align: middle; text-align: center; }
+    .lock-cell .tooltip-wrap { display: inline-flex; align-items: center; justify-content: center; }
+    .lock-icon-locked { color: var(--fern); font-size: 16px; cursor: help; line-height: 1; }
+    .lock-icon-open   { color: var(--stone); font-size: 16px; cursor: help; line-height: 1; }
 
     .row-actions {
       display: flex;
