@@ -594,7 +594,7 @@
             <!-- ── FINISHED recipes ── -->
 
             <!-- Row 1: Avocado Toast -->
-            <tr data-type="finished">
+            <tr data-type="finished" data-href="recipe-detail.html">
               <td>
                 <p class="recipe-name">Avocado Toast v3</p>
                 <p class="recipe-name-sub"><span class="type-badge finished">Finished</span></p>
@@ -660,7 +660,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-finished.html" class="link-action">View</a>
                   <div class="split-btn-sm">
                     <button class="btn-split-main">Push</button>
                     <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
@@ -703,7 +703,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-finished.html" class="link-action">View</a>
                   <div class="split-btn-sm">
                     <button class="btn-split-main">Push</button>
                     <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
@@ -746,7 +746,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-finished.html" class="link-action">View</a>
                   <div class="split-btn-sm">
                     <button class="btn-split-main">Push</button>
                     <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
@@ -789,7 +789,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-finished.html" class="link-action">View</a>
                   <div class="split-btn-sm">
                     <button class="btn-split-main">Push</button>
                     <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
@@ -832,7 +832,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-finished.html" class="link-action">View</a>
                   <div class="split-btn-sm">
                     <button class="btn-split-main">Push</button>
                     <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
@@ -875,7 +875,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-finished.html" class="link-action">View</a>
                   <div class="split-btn-sm">
                     <button class="btn-split-main">Push</button>
                     <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
@@ -918,7 +918,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-finished.html" class="link-action">View</a>
                   <div class="split-btn-sm">
                     <button class="btn-split-main">Push</button>
                     <button class="btn-split-caret" aria-label="Push options"><i class="ti ti-chevron-down"></i></button>
@@ -960,7 +960,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-prep.html" class="link-action">View</a>
                   <div style="position:relative;">
                     <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-9')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
                     <div class="dropdown-menu" id="menu-9">
@@ -994,7 +994,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-prep.html" class="link-action">View</a>
                   <div style="position:relative;">
                     <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-10')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
                     <div class="dropdown-menu" id="menu-10">
@@ -1028,7 +1028,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-prep.html" class="link-action">View</a>
                   <div style="position:relative;">
                     <button class="kebab-btn" aria-label="More actions" onclick="toggleMenu(event,'menu-11')"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
                     <div class="dropdown-menu" id="menu-11">
@@ -1064,7 +1064,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-production.html" class="link-action">View</a>
                   <a href="inventory.html#production" class="link-action action-prod">
                     <i class="ti ti-arrow-right" style="font-size:12px;"></i>Record production
                   </a>
@@ -1101,7 +1101,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="recipe-detail.html" class="link-action">View</a>
+                  <a href="recipe-detail-production.html" class="link-action">View</a>
                   <a href="inventory.html#production" class="link-action action-prod">
                     <i class="ti ti-arrow-right" style="font-size:12px;"></i>Record production
                   </a>
@@ -1169,11 +1169,17 @@
       document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
     });
 
-    // Clickable rows — navigate to recipe detail
+    // Clickable rows — navigate to the correct detail page by recipe type
+    const DETAIL_URLS = {
+      finished:   'recipe-detail-finished.html',
+      prep:       'recipe-detail-prep.html',
+      production: 'recipe-detail-production.html',
+    };
     document.querySelectorAll('.data-table tbody tr').forEach(tr => {
       tr.addEventListener('click', e => {
         if (e.target.closest('.kebab-btn, .dropdown-menu, .split-btn-sm, .link-action')) return;
-        window.location.href = 'recipe-detail.html';
+        const href = tr.dataset.href || DETAIL_URLS[tr.dataset.type] || 'recipe-detail.html';
+        window.location.href = href;
       });
     });
   </script>
