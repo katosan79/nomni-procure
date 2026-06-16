@@ -17,6 +17,7 @@
     { id: 'outlets',      icon: 'ti-building-store',     label: 'Outlets',       href: 'outlets.html' },
     { id: 'suppliers',   icon: 'ti-truck',              label: 'Suppliers',    href: 'suppliers.html' },
     { id: 'users',       icon: 'ti-users',              label: 'Users',        href: 'users.html' },
+    { id: 'brands',      icon: 'ti-tag',                label: 'Brands',       href: 'brands.html' },
   ];
 
   /* ── Roles (the View-as switcher) ── */

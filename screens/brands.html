@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Brands — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex; flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex; flex-direction: column;
+      gap: var(--space-3xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.025em; line-height: 1.1;
+    }
+    .page-desc { font-size: 14px; color: var(--text-soft); margin-top: var(--space-xs); }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none; white-space: nowrap; border: 1.5px solid transparent;
+      font-family: inherit;
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn i { font-size: 15px; }
+
+    /* Card */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-soft);
+      padding: var(--space-md) var(--space-lg); text-align: left;
+      border-bottom: 1px solid var(--border); background: var(--surface-soft);
+    }
+    .data-table td {
+      padding: 0 var(--space-lg);
+      height: 56px; border-bottom: 1px solid var(--border);
+      vertical-align: middle; font-size: 14px; color: var(--text);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tbody tr { cursor: pointer; transition: background 0.1s; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+
+    /* Brand logo cell */
+    .brand-cell { display: flex; align-items: center; gap: var(--space-md); }
+    .brand-logo {
+      width: 36px; height: 36px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
+      letter-spacing: -0.02em;
+    }
+    .brand-name { font-weight: 600; color: var(--text); }
+    .brand-slug {
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+      color: var(--text-soft); margin-top: 2px;
+    }
+
+    /* Accent swatch */
+    .accent-swatch {
+      display: inline-flex; align-items: center; gap: var(--space-sm);
+      font-size: 13px; color: var(--text-soft);
+    }
+    .swatch-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 1.5px solid rgba(0,0,0,0.08); flex-shrink: 0;
+    }
+
+    /* Count chips */
+    .count-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 13px; color: var(--text); font-feature-settings: 'tnum' 1;
+    }
+    .count-chip i { font-size: 13px; color: var(--text-soft); }
+
+    /* Row action */
+    .row-action {
+      font-size: 13px; font-weight: 600; color: var(--text-accent);
+      background: none; border: none; cursor: pointer; font-family: inherit;
+      text-decoration: none; padding: 0;
+    }
+    .row-action:hover { text-decoration: underline; }
+
+    /* Empty state */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      gap: var(--space-md); padding: var(--space-5xl) var(--space-2xl);
+      text-align: center;
+    }
+    .empty-icon { font-size: 40px; opacity: 0.25; }
+    .empty-title { font-size: 18px; font-weight: 700; color: var(--text); }
+    .empty-sub { font-size: 14px; color: var(--text-soft); max-width: 340px; }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-eyebrow">Settings</span>
+          <h1 class="page-title">Brands</h1>
+          <p class="page-desc">Manage brand identities. Brands are used as tags on outlets, recipes, and market lists.</p>
+        </div>
+        <div class="page-actions">
+          <a href="brand-detail.html?new=1" class="btn btn-primary">
+            <i class="ti ti-plus"></i>New brand
+          </a>
+        </div>
+      </div>
+
+      <!-- Brands table -->
+      <div class="card">
+        <table class="data-table" aria-label="Brands">
+          <thead>
+            <tr>
+              <th style="width:35%;">Brand</th>
+              <th>Accent colour</th>
+              <th>Outlets</th>
+              <th>Recipes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr onclick="location.href='brand-detail.html?id=tbc'">
+              <td>
+                <div class="brand-cell">
+                  <div class="brand-logo" style="background:#E85D26;">TBC</div>
+                  <div>
+                    <div class="brand-name">The Burger Co</div>
+                    <div class="brand-slug">tbc</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="accent-swatch">
+                  <span class="swatch-dot" style="background:#E85D26;"></span>
+                  #E85D26
+                </span>
+              </td>
+              <td><span class="count-chip"><i class="ti ti-building-store"></i>12</span></td>
+              <td><span class="count-chip"><i class="ti ti-tools-kitchen-2"></i>34</span></td>
+              <td><a href="brand-detail.html?id=tbc" class="row-action" onclick="event.stopPropagation()">Edit</a></td>
+            </tr>
+
+            <tr onclick="location.href='brand-detail.html?id=pp'">
+              <td>
+                <div class="brand-cell">
+                  <div class="brand-logo" style="background:#3F8AFB;">PP</div>
+                  <div>
+                    <div class="brand-name">Pasta Palace</div>
+                    <div class="brand-slug">pp</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="accent-swatch">
+                  <span class="swatch-dot" style="background:#3F8AFB;"></span>
+                  #3F8AFB
+                </span>
+              </td>
+              <td><span class="count-chip"><i class="ti ti-building-store"></i>6</span></td>
+              <td><span class="count-chip"><i class="ti ti-tools-kitchen-2"></i>18</span></td>
+              <td><a href="brand-detail.html?id=pp" class="row-action" onclick="event.stopPropagation()">Edit</a></td>
+            </tr>
+
+            <tr onclick="location.href='brand-detail.html?id=tt'">
+              <td>
+                <div class="brand-cell">
+                  <div class="brand-logo" style="background:#17B3A3;">TT</div>
+                  <div>
+                    <div class="brand-name">Taco Time</div>
+                    <div class="brand-slug">tt</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="accent-swatch">
+                  <span class="swatch-dot" style="background:#17B3A3;"></span>
+                  #17B3A3
+                </span>
+              </td>
+              <td><span class="count-chip"><i class="ti ti-building-store"></i>5</span></td>
+              <td><span class="count-chip"><i class="ti ti-tools-kitchen-2"></i>11</span></td>
+              <td><a href="brand-detail.html?id=tt" class="row-action" onclick="event.stopPropagation()">Edit</a></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="../shared/shell.js?v=5" data-active="brands"></script>
+</body>
+</html>

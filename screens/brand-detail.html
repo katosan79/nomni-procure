@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>The Burger Co — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex; flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex; flex-direction: column;
+      gap: var(--space-2xl);
+    }
+
+    /* Back nav */
+    .back-nav {
+      font-size: 13px; font-weight: 600; color: var(--text-accent);
+      text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-nav:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap;
+    }
+    .page-header-left { display: flex; align-items: center; gap: var(--space-lg); }
+    .brand-logo-large {
+      width: 56px; height: 56px; border-radius: var(--radius-lg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0;
+      letter-spacing: -0.02em;
+    }
+    .page-header-text { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.025em; line-height: 1.1;
+    }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none; white-space: nowrap; border: 1.5px solid transparent;
+      font-family: inherit;
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn-danger-outline { background: var(--surface); border-color: var(--status-risk-fg); color: var(--status-risk-fg); }
+    .btn-danger-outline:hover { background: var(--status-risk-bg); }
+    .btn i { font-size: 15px; }
+
+    /* Card */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: var(--space-2xl);
+    }
+    .card-title {
+      font-size: 16px; font-weight: 700; color: var(--text);
+      margin-bottom: var(--space-xl);
+    }
+
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); }
+    .form-grid.single { grid-template-columns: 1fr; }
+    .field { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .field-label {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-soft);
+    }
+    .field-input {
+      height: var(--control-h); padding-inline: var(--space-md);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; color: var(--text);
+      background: var(--surface); outline: none;
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .field-input:focus {
+      border-color: var(--fern);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--fern) 15%, transparent);
+    }
+    .field-input.mono { font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+    .field-helper { font-size: 12px; color: var(--text-soft); }
+    textarea.field-input {
+      height: auto; min-height: 80px; padding-block: var(--space-sm);
+      resize: vertical; line-height: 1.5;
+    }
+
+    /* Colour picker row */
+    .colour-row { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; }
+    .colour-option {
+      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      border: 3px solid transparent; transition: border-color 0.12s, transform 0.12s;
+      position: relative;
+    }
+    .colour-option:hover { transform: scale(1.12); }
+    .colour-option.selected { border-color: var(--text) !important; }
+    .colour-option.selected::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      box-shadow: 0 0 0 2px var(--surface);
+    }
+    .colour-custom-wrap { display: flex; align-items: center; gap: var(--space-sm); }
+    .colour-custom-input {
+      width: 40px; height: 32px; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); cursor: pointer; padding: 2px;
+      background: none;
+    }
+    .colour-custom-hex {
+      width: 88px; height: 32px; padding-inline: var(--space-sm);
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+      color: var(--text); background: var(--surface); outline: none;
+      font-weight: 600;
+    }
+    .colour-custom-hex:focus { border-color: var(--fern); }
+
+    /* Logo upload */
+    .logo-upload-row { display: flex; align-items: center; gap: var(--space-xl); }
+    .logo-preview {
+      width: 64px; height: 64px; border-radius: var(--radius-lg);
+      border: 1.5px solid var(--border); display: flex; align-items: center;
+      justify-content: center; font-size: 22px; font-weight: 700; color: #fff;
+      flex-shrink: 0; overflow: hidden; letter-spacing: -0.02em;
+      transition: background 0.2s;
+    }
+    .logo-upload-controls { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .logo-upload-btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: 32px; padding-inline: var(--space-md);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 13px; font-weight: 600; color: var(--text);
+      background: var(--surface); cursor: pointer; font-family: inherit;
+    }
+    .logo-upload-btn:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .logo-upload-hint { font-size: 12px; color: var(--text-soft); }
+
+    /* Usage summary */
+    .usage-row { display: flex; gap: var(--space-xl); }
+    .usage-item { display: flex; align-items: center; gap: var(--space-sm); font-size: 14px; color: var(--text); }
+    .usage-item i { font-size: 16px; color: var(--text-soft); }
+    .usage-count { font-weight: 700; font-feature-settings: 'tnum' 1; }
+
+    /* Divider */
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* Danger zone */
+    .danger-card {
+      background: var(--surface); border: 1px solid var(--status-risk-fg);
+      border-radius: var(--radius-lg); padding: var(--space-xl) var(--space-2xl);
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-xl);
+    }
+    .danger-text { display: flex; flex-direction: column; gap: 3px; }
+    .danger-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .danger-sub { font-size: 13px; color: var(--text-soft); }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: var(--space-xl); left: 50%; transform: translateX(-50%); z-index: 9999; }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="narrow">
+
+      <!-- Back nav -->
+      <a href="brands.html" class="back-nav"><i class="ti ti-arrow-left"></i>Brands</a>
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="brand-logo-large" id="header-logo" style="background:#E85D26;">TBC</div>
+          <div class="page-header-text">
+            <span class="page-eyebrow">Brand settings</span>
+            <h1 class="page-title" id="header-title">The Burger Co</h1>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline" onclick="discardChanges()">Discard</button>
+          <button class="btn btn-primary" onclick="saveChanges()"><i class="ti ti-check"></i>Save changes</button>
+        </div>
+      </div>
+
+      <!-- Identity card -->
+      <div class="card">
+        <div class="card-title">Identity</div>
+
+        <div style="display:flex; flex-direction:column; gap:var(--space-xl);">
+
+          <!-- Logo -->
+          <div class="field">
+            <label class="field-label">Logo</label>
+            <div class="logo-upload-row">
+              <div class="logo-preview" id="logo-preview" style="background:#E85D26;">TBC</div>
+              <div class="logo-upload-controls">
+                <button class="logo-upload-btn"><i class="ti ti-upload"></i>Upload logo</button>
+                <span class="logo-upload-hint">PNG or SVG · max 512 KB · displayed at 36×36px</span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="section-divider"/>
+
+          <!-- Name + Slug -->
+          <div class="form-grid">
+            <div class="field">
+              <label class="field-label" for="brand-name">Brand name</label>
+              <input class="field-input" id="brand-name" type="text" value="The Burger Co"
+                oninput="syncHeader()"/>
+            </div>
+            <div class="field">
+              <label class="field-label" for="brand-slug">Short code</label>
+              <input class="field-input mono" id="brand-slug" type="text" value="tbc"
+                maxlength="8" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')"/>
+              <span class="field-helper">Lowercase letters and hyphens only · used in reports and exports</span>
+            </div>
+          </div>
+
+          <hr class="section-divider"/>
+
+          <!-- Accent colour -->
+          <div class="field">
+            <label class="field-label">Accent colour</label>
+            <div class="colour-row">
+              <div class="colour-option selected" style="background:#E85D26;" data-hex="#E85D26" onclick="selectColour(this)" title="Ember"></div>
+              <div class="colour-option" style="background:#3F8AFB;" data-hex="#3F8AFB" onclick="selectColour(this)" title="Sky blue"></div>
+              <div class="colour-option" style="background:#17B3A3;" data-hex="#17B3A3" onclick="selectColour(this)" title="Teal"></div>
+              <div class="colour-option" style="background:#B05EC0;" data-hex="#B05EC0" onclick="selectColour(this)" title="Violet"></div>
+              <div class="colour-option" style="background:#EE4B87;" data-hex="#EE4B87" onclick="selectColour(this)" title="Rose"></div>
+              <div class="colour-option" style="background:#F5C219;" data-hex="#F5C219" onclick="selectColour(this)" title="Sun"></div>
+              <div class="colour-option" style="background:#129B41;" data-hex="#129B41" onclick="selectColour(this)" title="Fern"></div>
+              <div class="colour-custom-wrap">
+                <input class="colour-custom-input" type="color" id="custom-colour-picker"
+                  value="#E85D26" oninput="onCustomColour(this.value)" title="Custom colour"/>
+                <input class="colour-custom-hex" id="custom-colour-hex" type="text"
+                  value="#E85D26" maxlength="7" oninput="onHexInput(this.value)" placeholder="#000000"/>
+              </div>
+            </div>
+            <span class="field-helper" style="margin-top:var(--space-xs);">Used to distinguish this brand in tables, charts, and assignment pickers.</span>
+          </div>
+
+          <hr class="section-divider"/>
+
+          <!-- Description -->
+          <div class="field">
+            <label class="field-label" for="brand-desc">Description</label>
+            <textarea class="field-input" id="brand-desc" rows="3"
+              placeholder="Optional — a short note about this brand for your team.">Premium fast-casual burger brand operating across NSW, VIC, and QLD.</textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Usage summary -->
+      <div class="card">
+        <div class="card-title">Usage</div>
+        <div class="usage-row">
+          <div class="usage-item">
+            <i class="ti ti-building-store"></i>
+            <span><span class="usage-count">12</span> outlets tagged</span>
+          </div>
+          <div class="usage-item">
+            <i class="ti ti-tools-kitchen-2"></i>
+            <span><span class="usage-count">34</span> recipes</span>
+          </div>
+          <div class="usage-item">
+            <i class="ti ti-receipt"></i>
+            <span><span class="usage-count">8</span> market lists</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="danger-card">
+        <div class="danger-text">
+          <div class="danger-title">Delete brand</div>
+          <div class="danger-sub">Removes the brand tag. Outlets and recipes will become unbranded — no data is deleted.</div>
+        </div>
+        <button class="btn btn-danger-outline" onclick="confirmDelete()">
+          <i class="ti ti-trash"></i>Delete brand
+        </button>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="../shared/shell.js?v=5" data-active="brands"></script>
+<script>
+  let currentHex = '#E85D26';
+
+  function syncHeader() {
+    const name = document.getElementById('brand-name').value || 'New brand';
+    document.getElementById('header-title').textContent = name;
+    // Update logo initials from first letters of each word
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 3);
+    document.getElementById('logo-preview').textContent = initials;
+    document.getElementById('header-logo').textContent = initials;
+  }
+
+  function selectColour(el) {
+    document.querySelectorAll('.colour-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    const hex = el.dataset.hex;
+    applyColour(hex);
+  }
+
+  function onCustomColour(hex) {
+    document.querySelectorAll('.colour-option').forEach(o => o.classList.remove('selected'));
+    document.getElementById('custom-colour-hex').value = hex;
+    applyColour(hex);
+  }
+
+  function onHexInput(val) {
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      document.getElementById('custom-colour-picker').value = val;
+      document.querySelectorAll('.colour-option').forEach(o => o.classList.remove('selected'));
+      applyColour(val);
+    }
+  }
+
+  function applyColour(hex) {
+    currentHex = hex;
+    document.getElementById('logo-preview').style.background = hex;
+    document.getElementById('header-logo').style.background = hex;
+  }
+
+  function saveChanges() {
+    showToast('Brand saved');
+  }
+
+  function discardChanges() {
+    location.href = 'brands.html';
+  }
+
+  function confirmDelete() {
+    if (confirm('Remove the "The Burger Co" brand tag? All tagged items will become unbranded.')) {
+      showToast('Brand removed');
+      setTimeout(() => location.href = 'brands.html', 1200);
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:var(--shadow-lg);';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+</script>
+</body>
+</html>
