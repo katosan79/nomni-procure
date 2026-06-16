@@ -231,11 +231,18 @@
       </div>
       <nav class="login-nav">
         <div class="login-nav-item"><i class="ti ti-layout-dashboard"></i>Overview</div>
+        <div class="login-nav-item"><i class="ti ti-shopping-cart"></i>Orders</div>
+        <div class="login-nav-item"><i class="ti ti-file-invoice"></i>Invoices</div>
+        <div class="login-nav-item"><i class="ti ti-stack"></i>Items</div>
+        <div class="login-nav-item"><i class="ti ti-package"></i>Inventory</div>
         <div class="login-nav-item"><i class="ti ti-receipt"></i>Market lists</div>
         <div class="login-nav-item"><i class="ti ti-tools-kitchen-2"></i>Recipes</div>
-        <div class="login-nav-item"><i class="ti ti-package"></i>Inventory</div>
         <div class="login-nav-item"><i class="ti ti-device-desktop"></i>POS mapping</div>
         <div class="login-nav-item"><i class="ti ti-chart-bar"></i>Reporting</div>
+        <div class="login-nav-item"><i class="ti ti-building-store"></i>Outlets</div>
+        <div class="login-nav-item"><i class="ti ti-truck"></i>Suppliers</div>
+        <div class="login-nav-item"><i class="ti ti-users"></i>Users</div>
+        <div class="login-nav-item"><i class="ti ti-tag"></i>Brands</div>
       </nav>
     </aside>
 
@@ -252,12 +259,6 @@
           <h1 class="card-title" id="step-title">Sign in to your account</h1>
           <p class="card-sub" id="step-sub">Central management for your outlet network.</p>
         </header>
-
-        <!-- Error banner -->
-        <div class="error-banner" id="error-banner" role="alert" hidden>
-          <i class="ti ti-alert-circle" aria-hidden="true"></i>
-          <span id="error-text">Incorrect email or password. Please try again.</span>
-        </div>
 
         <!-- Step 1: credentials -->
         <form class="form" id="step-credentials" novalidate onsubmit="handleLogin(event)">
@@ -328,12 +329,8 @@
   </div>
 
   <script>
-    function showError(msg) {
-      const b = document.getElementById('error-banner');
-      document.getElementById('error-text').textContent = msg;
-      b.hidden = false;
-    }
-    function hideError() { document.getElementById('error-banner').hidden = true; }
+    function showError(msg) {}
+    function hideError() {}
 
     function handleLogin(e) {
       e.preventDefault();
