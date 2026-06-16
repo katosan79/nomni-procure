@@ -76,7 +76,7 @@
     .split-caret i { font-size: 14px; }
 
     /* ── Agent surface ── */
-    .agent-surface { border-radius:var(--radius-lg); border:1.5px solid color-mix(in srgb,var(--spring) 35%,transparent); box-shadow:0 0 0 3px color-mix(in srgb,var(--spring) 8%,transparent); background:var(--surface); overflow:hidden; margin-bottom:var(--space-xl); }
+    .agent-surface { border-radius:var(--radius-lg); border:1.5px solid var(--agent-border); box-shadow:var(--shadow-sm), 0 0 0 4px var(--agent-glow); background:var(--surface); overflow:hidden; margin-bottom:var(--space-xl); }
     .agent-banner { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-lg) var(--space-xl); }
     .agent-avatar { width:32px; height:32px; border-radius:50%; background:var(--fern); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
     .agent-text { flex:1; min-width:0; }
@@ -506,6 +506,11 @@
       .pagination-bar { padding: var(--space-md); }
       .kpi-strip { grid-template-columns: 1fr; }
     }
+    .recipe-empty { display:none; flex-direction:column; align-items:center; gap:var(--space-sm); padding:var(--space-5xl) var(--space-xl); text-align:center; }
+    .recipe-empty.show { display:flex; }
+    .recipe-empty i { font-size:32px; color:var(--text-soft); }
+    .recipe-empty-title { font-size:15px; font-weight:600; color:var(--text); }
+    .recipe-empty-sub { font-size:13px; color:var(--text-soft); }
   </style>
 </head>
 <body>
@@ -520,6 +525,10 @@
           <h1 class="page-h1">Recipe library</h1>
         </div>
         <div class="page-header-actions">
+          <button class="btn btn-outline" onclick="showToast('Preparing XLSX export…')">
+            <i class="ti ti-table-export" aria-hidden="true"></i>
+            Export XLSX
+          </button>
           <a href="import-recipes.html" class="btn btn-outline">
             <i class="ti ti-upload" aria-hidden="true"></i>
             Import recipes
@@ -670,7 +679,7 @@
               <td>The Burger Co</td>
               <td class="num tabular">
                 $4.20
-                <div class="fc-good">23.3% FC</div>
+                <div class="fc-good"><i class="ti ti-check" aria-hidden="true"></i> 23.3% FC</div>
               </td>
               <td class="num tabular">$18.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
@@ -715,7 +724,7 @@
               <td>The Burger Co</td>
               <td class="num tabular">
                 $6.80
-                <div class="fc-warn">30.9% FC</div>
+                <div class="fc-warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i> 30.9% FC</div>
               </td>
               <td class="num tabular">$22.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
@@ -758,7 +767,7 @@
               <td>Pasta Palace</td>
               <td class="num tabular">
                 $3.50
-                <div class="fc-warn">25.0% FC</div>
+                <div class="fc-warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i> 25.0% FC</div>
               </td>
               <td class="num tabular">$14.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
@@ -801,7 +810,7 @@
               <td>The Burger Co</td>
               <td class="num tabular">
                 $1.20
-                <div class="fc-good">20.0% FC</div>
+                <div class="fc-good"><i class="ti ti-check" aria-hidden="true"></i> 20.0% FC</div>
               </td>
               <td class="num tabular">$6.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
@@ -844,7 +853,7 @@
               <td>Pasta Palace</td>
               <td class="num tabular">
                 $5.10
-                <div class="fc-warn">26.8% FC</div>
+                <div class="fc-warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i> 26.8% FC</div>
               </td>
               <td class="num tabular">$19.00</td>
               <td><span class="pill pill-warn"><span class="pill-dot"></span>Pending review</span></td>
@@ -887,7 +896,7 @@
               <td>Taco Time</td>
               <td class="num tabular">
                 $4.80
-                <div class="fc-warn">30.0% FC</div>
+                <div class="fc-warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i> 30.0% FC</div>
               </td>
               <td class="num tabular">$16.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
@@ -930,7 +939,7 @@
               <td>Taco Time</td>
               <td class="num tabular">
                 $5.50
-                <div class="fc-warn">26.2% FC</div>
+                <div class="fc-warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i> 26.2% FC</div>
               </td>
               <td class="num tabular">$21.00</td>
               <td><span class="pill pill-info"><span class="pill-dot"></span>Draft</span></td>
@@ -973,7 +982,7 @@
               <td>Pasta Palace</td>
               <td class="num tabular">
                 $1.80
-                <div class="fc-good">22.5% FC</div>
+                <div class="fc-good"><i class="ti ti-check" aria-hidden="true"></i> 22.5% FC</div>
               </td>
               <td class="num tabular">$8.00</td>
               <td><span class="pill pill-ok"><span class="pill-dot"></span>Active</span></td>
@@ -1189,6 +1198,13 @@
           </tbody>
         </table>
 
+        <!-- Empty state (shown when search/filter returns 0 results) -->
+        <div class="recipe-empty" id="recipe-empty-state">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <p class="recipe-empty-title">No recipes match your search</p>
+          <p class="recipe-empty-sub">Try a different keyword, type, or <button class="btn btn-outline btn-sm" onclick="resetRecipeFilters()" style="display:inline-flex;height:28px;padding-inline:var(--space-md);font-size:13px;">clear filters</button></p>
+        </div>
+
         <!-- Pagination -->
         <div class="pagination-bar">
           <p class="pagination-info">Showing <strong>1–13</strong> of <strong>346</strong> recipes</p>
@@ -1225,6 +1241,22 @@
       });
     });
 
+    function syncEmptyState() {
+      const visible = [...document.querySelectorAll('.data-table tbody tr')].filter(tr => tr.style.display !== 'none').length;
+      const es = document.getElementById('recipe-empty-state');
+      if (es) es.classList.toggle('show', visible === 0);
+      const pag = document.querySelector('.pagination-bar');
+      if (pag) pag.style.display = visible === 0 ? 'none' : '';
+    }
+
+    function resetRecipeFilters() {
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => tr.style.display = '');
+      document.querySelectorAll('.status-pill-btn').forEach(b => b.classList.remove('active'));
+      const si = document.querySelector('.search-input');
+      if (si) si.value = '';
+      syncEmptyState();
+    }
+
     function setStatusFilter(btn, status) {
       document.querySelectorAll('.status-pill-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -1238,17 +1270,24 @@
       });
       document.getElementById('fc-alert-panel').style.display = 'none';
       showToast('Showing 3 recipes with FC% breaches.');
+      syncEmptyState();
     }
 
     function applyTypeFilter(type) {
       document.querySelectorAll('.data-table tbody tr').forEach(tr => {
-        if (!type || tr.dataset.type === type) {
-          tr.style.display = '';
-        } else {
-          tr.style.display = 'none';
-        }
+        tr.style.display = (!type || tr.dataset.type === type) ? '' : 'none';
       });
+      syncEmptyState();
     }
+
+    document.querySelector('.search-input')?.addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        const name = tr.querySelector('td')?.textContent.trim().toLowerCase() ?? '';
+        tr.style.display = (!q || name.includes(q)) ? '' : 'none';
+      });
+      syncEmptyState();
+    });
 
     function toggleMenu(event, id) {
       event.stopPropagation();

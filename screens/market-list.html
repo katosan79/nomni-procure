@@ -951,10 +951,13 @@
               <span class="page-eyebrow">Procurement</span>
               <h1 class="page-h1">Market lists</h1>
             </div>
-            <button class="btn btn-primary role-hqadmin-only" onclick="openNewListModal()">
-              <i class="ti ti-plus" aria-hidden="true"></i>
-              New market list
-            </button>
+            <div style="display:flex;align-items:center;gap:var(--space-sm);">
+              <button class="btn btn-outline" onclick="showToast('Preparing XLSX export…')"><i class="ti ti-table-export" aria-hidden="true"></i>Export XLSX</button>
+              <button class="btn btn-primary role-hqadmin-only" onclick="openNewListModal()">
+                <i class="ti ti-plus" aria-hidden="true"></i>
+                New market list
+              </button>
+            </div>
           </header>
 
           <!-- Read-only note for non-HQ roles -->

@@ -160,6 +160,7 @@
 
     /* Cell styles */
     .cell-name { font-weight: 600; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--text-soft); font-weight: 400; margin-top: 2px; }
     .cell-cat {
       font-size: 12px; font-weight: 500;
       color: var(--text-soft);
@@ -404,17 +405,32 @@
       gap: var(--space-xl);
     }
     .dialog-header { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .dialog-warn-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-md);
+      background: var(--status-warn-bg); color: var(--status-warn-fg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: var(--space-xs); flex-shrink: 0;
+    }
     .dialog-title {
       font-size: 20px; font-weight: 700;
       color: var(--text);
       letter-spacing: -0.01em;
     }
+    .dialog-subtitle { font-size: 13px; color: var(--text-soft); }
     .dialog-body {
       font-size: 14px;
       color: var(--text-soft);
       line-height: 1.6;
     }
     .dialog-body strong { color: var(--text); }
+    .dialog-impact {
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-lg);
+      display: flex; flex-direction: column; gap: var(--space-md);
+    }
+    .impact-row { display: flex; align-items: center; gap: var(--space-md); font-size: 13px; }
+    .impact-count { font-size: 20px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; min-width: 32px; }
+    .impact-label { color: var(--text-soft); line-height: 1.3; }
     .dialog-footer {
       display: flex;
       justify-content: flex-end;
@@ -961,6 +977,8 @@
       border-top: 1px solid var(--border);
       flex-shrink: 0;
     }
+    html[data-role="outlet-user"] td.overflow-cell,
+    html[data-role="outlet-user"] .data-table th:last-child { display: none; }
   </style>
 </head>
 <body>
@@ -978,6 +996,12 @@
           <a class="btn btn-primary" href="spot-count.html"><i class="ti ti-clipboard-plus"></i>Start count</a>
         </div>
       </header>
+
+      <!-- Read-only note for outlet users -->
+      <div class="role-readonly-note" style="align-items:center;gap:var(--space-sm);padding:var(--space-md) var(--space-lg);background:var(--status-info-bg);color:var(--status-info-fg);border-radius:var(--radius-md);font-size:13px;font-weight:500;margin-bottom:var(--space-xl);">
+        <i class="ti ti-lock" aria-hidden="true"></i>
+        Inventory items are managed by HQ. You can view them, but adding, editing, and removing items is restricted to HQ.
+      </div>
 
       <!-- Agent strip: Vera (Needs you) first, Otto (Proposed) second -->
       <div class="agent-strip">
@@ -1065,7 +1089,7 @@
           <tbody>
             <!-- Row 1 -->
             <tr>
-              <td class="cell-name">Chicken Breast 500g</td>
+              <td class="cell-name">Chicken Breast 500g<div class="cell-sub">Used in 8 recipes</div></td>
               <td><span class="cell-cat">Protein</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">10</td>
@@ -1090,7 +1114,7 @@
             </tr>
             <!-- Row 2 -->
             <tr>
-              <td class="cell-name">Avocado</td>
+              <td class="cell-name">Avocado<div class="cell-sub">Used in 4 recipes</div></td>
               <td><span class="cell-cat">Produce</span></td>
               <td class="tabular">each</td>
               <td class="tabular" style="text-align:right">50</td>
@@ -1115,7 +1139,7 @@
             </tr>
             <!-- Row 3 -->
             <tr>
-              <td class="cell-name">Feta Cheese</td>
+              <td class="cell-name">Feta Cheese<div class="cell-sub">Used in 6 recipes</div></td>
               <td><span class="cell-cat">Dairy</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">5</td>
@@ -1140,7 +1164,7 @@
             </tr>
             <!-- Row 4 -->
             <tr>
-              <td class="cell-name">Sourdough Bread</td>
+              <td class="cell-name">Sourdough Bread<div class="cell-sub">Used in 5 recipes</div></td>
               <td><span class="cell-cat">Dry goods</span></td>
               <td class="tabular">loaf</td>
               <td class="tabular" style="text-align:right">20</td>
@@ -1165,7 +1189,7 @@
             </tr>
             <!-- Row 5 -->
             <tr>
-              <td class="cell-name">Olive Oil 1L</td>
+              <td class="cell-name">Olive Oil 1L<div class="cell-sub">Used in 7 recipes</div></td>
               <td><span class="cell-cat">Dry goods</span></td>
               <td class="tabular">bottle</td>
               <td class="tabular" style="text-align:right">8</td>
@@ -1190,7 +1214,7 @@
             </tr>
             <!-- Row 6 -->
             <tr>
-              <td class="cell-name">Whole Milk 2L</td>
+              <td class="cell-name">Whole Milk 2L<div class="cell-sub">Used in 3 recipes</div></td>
               <td><span class="cell-cat">Dairy</span></td>
               <td class="tabular">carton</td>
               <td class="tabular" style="text-align:right">15</td>
@@ -1215,7 +1239,7 @@
             </tr>
             <!-- Row 7 -->
             <tr>
-              <td class="cell-name">Roma Tomatoes</td>
+              <td class="cell-name">Roma Tomatoes<div class="cell-sub">Used in 4 recipes</div></td>
               <td><span class="cell-cat">Produce</span></td>
               <td class="tabular">kg</td>
               <td class="tabular" style="text-align:right">12</td>
@@ -1636,11 +1660,11 @@
   <dialog id="remove-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
     <div class="dialog-inner">
       <div class="dialog-header">
+        <div class="dialog-warn-icon"><i class="ti ti-alert-triangle"></i></div>
         <h2 class="dialog-title" id="dialog-title">Remove item?</h2>
+        <p class="dialog-subtitle" id="dialog-desc">This will remove the item from all outlet inventories. This action cannot be undone.</p>
       </div>
-      <p class="dialog-body" id="dialog-desc">
-        This will remove this item from outlet inventories and affect recipes and POS mappings. This action cannot be undone.
-      </p>
+      <div class="dialog-impact" id="dialog-impact"></div>
       <div class="dialog-footer">
         <button class="btn btn-outline" onclick="closeRemoveDialog()">Cancel</button>
         <button class="btn btn-danger" id="confirm-remove-btn"><i class="ti ti-trash"></i>Remove item</button>
@@ -1668,9 +1692,10 @@
     function openRemoveDialog(name, outlets, recipes, pos) {
       removeName = name;
       document.getElementById('dialog-title').textContent = `Remove ${name}?`;
-      document.getElementById('dialog-desc').innerHTML =
-        `This will remove the item from <strong>${outlets} outlet inventories</strong> and affect ` +
-        `<strong>${recipes} recipes</strong> and <strong>${pos} POS mappings</strong>. This action cannot be undone.`;
+      document.getElementById('dialog-impact').innerHTML =
+        `<div class="impact-row"><span class="impact-count">${outlets}</span><span class="impact-label">outlet inventories will lose this item</span></div>` +
+        `<div class="impact-row"><span class="impact-count">${recipes}</span><span class="impact-label">recipes reference this item and will be affected</span></div>` +
+        `<div class="impact-row"><span class="impact-count">${pos}</span><span class="impact-label">POS mappings will be removed</span></div>`;
       document.getElementById('remove-dialog').showModal();
       document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
     }

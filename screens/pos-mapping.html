@@ -554,6 +554,31 @@
       .cov-summary       { grid-template-columns: 1fr; }
       .mod-item          { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
     }
+
+    /* Push confirm dialog */
+    dialog {
+      border: none; border-radius: var(--radius-lg); padding: 0;
+      box-shadow: var(--shadow-lg); max-width: 440px; width: 90%;
+    }
+    dialog::backdrop { background: rgba(14,55,39,0.35); }
+    .dialog-inner { padding: var(--space-2xl); display: flex; flex-direction: column; gap: var(--space-xl); }
+    .dialog-warn-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-md);
+      background: var(--status-warn-bg); color: var(--status-warn-fg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: var(--space-xs);
+    }
+    .dialog-title { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+    .dialog-subtitle { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+    .dialog-impact {
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-lg);
+      display: flex; flex-direction: column; gap: var(--space-md);
+    }
+    .impact-row { display: flex; align-items: center; gap: var(--space-md); font-size: 13px; }
+    .impact-count { font-size: 20px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; min-width: 32px; }
+    .impact-label { color: var(--text-soft); }
+    .dialog-footer { display: flex; justify-content: flex-end; gap: var(--space-sm); }
   </style>
 </head>
 <body>
@@ -930,8 +955,8 @@
           </select>
         </div>
         <div style="display:flex;gap:var(--space-sm)">
-          <button class="btn btn-secondary">Push to selected outlets</button>
-          <button class="btn btn-primary">Push master mapping to all ▾</button>
+          <button class="btn btn-secondary" onclick="openPushConfirm('selected')">Push to selected outlets</button>
+          <button class="btn btn-primary" onclick="openPushConfirm('all')">Push master mapping to 12 outlets ▾</button>
         </div>
       </div>
 
@@ -1114,7 +1139,7 @@
               </div>
             </div>
             <div style="display:flex;gap:var(--space-md)">
-              <button class="btn btn-primary">Save Override</button>
+              <button class="btn btn-primary">Save override</button>
               <button class="btn btn-secondary" onclick="toggleOverrideForm()">Cancel</button>
             </div>
           </div>
@@ -1226,7 +1251,7 @@
               <label class="form-label">Date &amp; Time</label>
               <input type="datetime-local" class="form-input" value="2026-06-15T14:00">
             </div>
-            <button class="btn btn-primary" style="width:100%">Log Wastage</button>
+            <button class="btn btn-primary" style="width:100%">Log wastage</button>
           </div>
 
           <!-- POS void events -->
@@ -1791,11 +1816,53 @@
   /* ─── Keyboard: Escape closes drawer ─── */
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
+  /* ─── Push confirm dialog ─── */
+  function openPushConfirm(scope) {
+    const total = scope === 'all' ? 12 : document.querySelectorAll('#mapping-tbody input[type=checkbox]:checked').length;
+    const mapped = scope === 'all' ? 9 : Math.min(total, 7);
+    document.getElementById('push-dialog-scope').textContent = scope === 'all' ? 'all outlets' : `${total} selected outlet${total!==1?'s':''}`;
+    document.getElementById('push-impact').innerHTML =
+      `<div class="impact-row"><span class="impact-count">${total}</span><span class="impact-label">outlets will receive the master mapping</span></div>` +
+      `<div class="impact-row"><span class="impact-count">${mapped}</span><span class="impact-label">have existing mappings that will be overwritten</span></div>`;
+    document.getElementById('push-confirm-dialog').showModal();
+  }
+  function closePushConfirm() {
+    document.getElementById('push-confirm-dialog').close();
+  }
+  document.getElementById('push-confirm-dialog')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) closePushConfirm();
+  });
+  document.getElementById('push-confirm-btn')?.addEventListener('click', () => {
+    closePushConfirm();
+    // show toast
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--seaweed);color:#fff;padding:10px 18px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;';
+    t.textContent = 'Master mapping pushed to all outlets';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  });
+
   /* ─── Init ─── */
   document.addEventListener('DOMContentLoaded', () => {
     NomniShell.init('POS Mapping');
     document.getElementById('create-override-panel').style.display = 'none';
   });
 </script>
+
+<!-- Push confirm dialog -->
+<dialog id="push-confirm-dialog" aria-labelledby="push-dialog-title">
+  <div class="dialog-inner">
+    <div>
+      <div class="dialog-warn-icon"><i class="ti ti-alert-triangle"></i></div>
+      <h2 class="dialog-title" id="push-dialog-title">Push mapping to <span id="push-dialog-scope">all outlets</span>?</h2>
+      <p class="dialog-subtitle" style="margin-top:var(--space-xs);">Existing mappings at the outlets below will be overwritten. Changes take effect immediately.</p>
+    </div>
+    <div class="dialog-impact" id="push-impact"></div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" onclick="closePushConfirm()">Cancel</button>
+      <button class="btn btn-primary" id="push-confirm-btn"><i class="ti ti-send"></i>Push mapping</button>
+    </div>
+  </div>
+</dialog>
 </body>
 </html>
