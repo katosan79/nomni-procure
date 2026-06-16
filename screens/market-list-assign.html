@@ -112,6 +112,13 @@
     .list-summary-desc { font-size:11px; color:var(--text-soft); }
     .list-summary-price { font-size:13px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; }
 
+    /* ── Propagation-off node ── */
+    .node.prop-off { opacity:0.55; pointer-events:none; }
+    .node.prop-off input[type=checkbox] { cursor:not-allowed; }
+    .prop-off-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:600; color:var(--status-warn-fg); background:var(--status-warn-bg); border:1px solid color-mix(in srgb,var(--status-warn-fg) 25%,transparent); padding:1px 7px; border-radius:var(--radius-pill); white-space:nowrap; pointer-events:all; }
+    .prop-off-badge i { font-size:10px; }
+    .prop-off-badge a { color:inherit; text-decoration:underline; cursor:pointer; }
+
     /* ── Save bar ── */
     .save-bar { background:var(--surface-deep); border-top:1px solid rgba(255,255,255,0.08); padding:var(--space-md) var(--space-2xl); display:flex; align-items:center; justify-content:space-between; gap:var(--space-xl); flex-shrink:0; }
     .save-bar-left { font-size:14px; color:rgba(255,255,255,0.55); }
@@ -221,12 +228,12 @@
               <span class="node-label">VIC Metro</span>
               <span class="node-count">9 outlets</span>
             </div>
-            <div class="node group" data-group="VIC Regional" data-outlets="6">
-              <input type="checkbox" id="cb-vic-regional" onchange="onGroupCheck(this,'VIC Regional',6);updateSummary()"/>
+            <div class="node group prop-off" data-group="VIC Regional" data-outlets="6" data-prop-off="true">
+              <input type="checkbox" id="cb-vic-regional" disabled/>
               <span class="node-toggle" style="visibility:hidden;"></span>
               <span class="node-icon" style="font-size:12px;">📍</span>
               <span class="node-label">VIC Regional</span>
-              <span class="node-count">6 outlets</span>
+              <span class="prop-off-badge"><i class="ti ti-broadcast-off"></i> Propagation off · <a href="outlet-group-detail.html">Enable →</a></span>
             </div>
           </div>
 
@@ -416,7 +423,7 @@
   // ── Select all / none within brand ───────────────────────────────────────
   function toggleBrandCheck(brand) {
     const cb = document.getElementById('cb-' + brand);
-    const groupCbs = document.querySelectorAll(`#children-${brand} input[type=checkbox]`);
+    const groupCbs = document.querySelectorAll(`#children-${brand} input[type=checkbox]:not(:disabled)`);
     groupCbs.forEach(c => {
       c.checked = cb.checked;
       const grp = c.closest('.node.group');
@@ -427,7 +434,7 @@
 
   function toggleRegionCheck(region) {
     const cb = document.getElementById('cb-' + region);
-    const groupCbs = document.querySelectorAll(`#children-${region} input[type=checkbox]`);
+    const groupCbs = document.querySelectorAll(`#children-${region} input[type=checkbox]:not(:disabled)`);
     groupCbs.forEach(c => {
       c.checked = cb.checked;
       const grp = c.closest('.node.group');
@@ -439,7 +446,7 @@
   let _allSelected = false;
   function toggleSelectAll() {
     _allSelected = !_allSelected;
-    document.querySelectorAll('.node.group input[type=checkbox]').forEach(c => {
+    document.querySelectorAll('.node.group:not(.prop-off) input[type=checkbox]').forEach(c => {
       c.checked = _allSelected;
       const grp = c.closest('.node.group');
       if (grp) {

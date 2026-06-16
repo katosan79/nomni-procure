@@ -162,6 +162,14 @@
     .outlet-item-name { font-size:13px; color:var(--text); flex:1; }
     .outlet-item-meta { font-size:11px; color:var(--status-ok-fg); font-weight:600; }
     input[type="checkbox"] { width:15px; height:15px; accent-color:var(--fern); cursor:pointer; flex-shrink:0; }
+    /* Propagation-off group */
+    .outlet-group.prop-off { opacity:0.6; }
+    .outlet-group.prop-off .outlet-group-head { cursor:default; }
+    .outlet-group.prop-off .outlet-group-head:hover { background:var(--surface-soft); }
+    .outlet-group.prop-off input[type="checkbox"] { pointer-events:none; cursor:not-allowed; }
+    .prop-off-notice { display:flex; align-items:center; gap:var(--space-sm); font-size:12px; color:var(--status-warn-fg); background:var(--status-warn-bg); border-top:1px solid color-mix(in srgb,var(--status-warn-fg) 20%,transparent); padding:var(--space-sm) var(--space-lg); }
+    .prop-off-notice i { font-size:13px; flex-shrink:0; }
+    .prop-off-notice a { color:inherit; font-weight:600; text-decoration:underline; }
 
     /* ── Review ── */
     .review-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg) var(--space-2xl); }
@@ -593,16 +601,16 @@
                 </div>
               </div>
 
-              <div class="outlet-group">
-                <div class="outlet-group-head" onclick="toggleGroupHead(this)">
-                  <input type="checkbox" id="og3" class="outlet-group-cb" onclick="event.stopPropagation();groupCheck('og3')"/>
+              <div class="outlet-group prop-off">
+                <div class="outlet-group-head">
+                  <input type="checkbox" id="og3" class="outlet-group-cb" disabled onclick="event.stopPropagation()"/>
                   <span class="outlet-group-name">Taco Time</span>
                   <span class="outlet-group-count">2 outlets</span>
-                  <i class="ti ti-chevron-down" style="font-size:14px;color:var(--text-soft);transition:transform 0.15s;" aria-hidden="true"></i>
+                  <i class="ti ti-chevron-down" style="font-size:14px;color:var(--text-soft);" aria-hidden="true"></i>
                 </div>
-                <div class="outlet-items">
-                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og3" onchange="syncGroupCb('og3')"/><span class="outlet-item-name">Bondi Junction</span><span class="outlet-item-meta">Active</span></div>
-                  <div class="outlet-item"><input type="checkbox" class="outlet-child" data-grp="og3" onchange="syncGroupCb('og3')"/><span class="outlet-item-name">Manly</span><span class="outlet-item-meta">Active</span></div>
+                <div class="prop-off-notice">
+                  <i class="ti ti-broadcast-off"></i>
+                  Recipe propagation is disabled for this group. <a href="outlet-group-detail.html">&nbsp;Enable in group settings →</a>
                 </div>
               </div>
 
@@ -923,7 +931,7 @@
     }
 
     function selectAllOutlets() {
-      document.querySelectorAll('.outlet-child, .outlet-group-cb').forEach(cb => cb.checked = true);
+      document.querySelectorAll('.outlet-child:not(:disabled), .outlet-group-cb:not(:disabled)').forEach(cb => cb.checked = true);
       updateOutletCount();
     }
 
