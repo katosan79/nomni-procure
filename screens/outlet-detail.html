@@ -309,8 +309,25 @@
     .integ-feeds-heading { padding:var(--space-md) var(--space-xl) var(--space-xs); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
     .integ-override-row { display:flex; align-items:center; justify-content:space-between; gap:var(--space-xl); padding-top:var(--space-md); border-top:1px solid var(--border); }
     .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn-xs { height:28px; padding-inline:var(--space-sm); font-size:12px; }
     .btn-danger-outline { background:transparent; border-color:var(--status-risk-fg); color:var(--status-risk-fg); }
     .btn-danger-outline:hover { background:var(--status-risk-bg); }
+    .mapping-section { padding:var(--space-lg) 0; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:var(--space-md); }
+    .mapping-section-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-md); }
+    .mapping-section-title { font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-xs); }
+    .mapping-section-title i { font-size:14px; color:var(--text-soft); }
+    .mapping-section-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .mapping-table { width:100%; border-collapse:collapse; }
+    .mapping-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); padding:var(--space-sm) var(--space-md); border-bottom:1px solid var(--border); text-align:left; background:var(--surface-soft); }
+    .mapping-table td { padding:var(--space-sm) var(--space-md); border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+    .mapping-table tr:last-child td { border-bottom:none; }
+    .mapping-table tr:hover td { background:var(--surface-soft); }
+    .map-arrow { color:var(--text-soft); font-size:13px; text-align:center; width:28px; }
+    .map-select { height:34px; padding-inline:var(--space-sm); font-size:13px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); outline:none; font-family:inherit; cursor:pointer; width:100%; transition:border-color 0.12s; }
+    .map-select:focus { border-color:var(--fern); box-shadow:0 0 0 3px var(--mint); }
+    .map-input { height:34px; padding-inline:var(--space-sm); font-size:13px; font-family:'IBM Plex Mono',monospace; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); outline:none; width:100%; transition:border-color 0.12s; }
+    .map-input:focus { border-color:var(--fern); box-shadow:0 0 0 3px var(--mint); }
+    .map-unmapped { color:var(--text-soft); font-style:italic; font-size:12px; }
   </style>
 </head>
 <body>
@@ -794,37 +811,175 @@
             </div>
 
             <!-- Own connection state (hidden by default) -->
-            <div id="acct-own" class="card-body" style="display:none;flex-direction:column;gap:var(--space-lg);">
-              <div style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--status-warn-bg);border:1px solid color-mix(in srgb,var(--status-warn-fg) 40%,transparent);border-radius:var(--radius-md);font-size:12px;color:var(--status-warn-fg);">
+            <div id="acct-own" style="display:none;flex-direction:column;">
+
+              <!-- Warning banner -->
+              <div style="margin:var(--space-lg) var(--space-xl) 0;display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--status-warn-bg);border:1px solid color-mix(in srgb,var(--status-warn-fg) 40%,transparent);border-radius:var(--radius-md);font-size:12px;color:var(--status-warn-fg);">
                 <i class="ti ti-alert-triangle"></i>
                 This outlet has its own accounting connection — group-level mappings do not apply here.
               </div>
 
-              <div class="form-grid">
-                <div class="field-group">
-                  <label class="field-label">Accounting system</label>
-                  <select class="field-input" id="own-acct-provider">
-                    <option value="">Select provider…</option>
-                    <option value="xero">Xero</option>
-                    <option value="myob">MYOB</option>
-                    <option value="qbo">QuickBooks Online</option>
-                    <option value="sage">Sage</option>
-                  </select>
+              <!-- Phase 1: Setup (not yet connected) -->
+              <div id="own-phase-setup" style="padding:var(--space-lg) var(--space-xl);display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div class="form-grid">
+                  <div class="field-group">
+                    <label class="field-label">Accounting system</label>
+                    <select class="field-input" id="own-acct-provider">
+                      <option value="">Select provider…</option>
+                      <option value="xero">Xero</option>
+                      <option value="myob">MYOB</option>
+                      <option value="qbo">QuickBooks Online</option>
+                      <option value="sage">Sage</option>
+                    </select>
+                  </div>
+                  <div class="field-group" style="display:flex;align-items:flex-end;">
+                    <button class="btn btn-primary" style="width:100%;" onclick="connectOwnAcct()">
+                      <i class="ti ti-plug-connected"></i> Connect &amp; authorise
+                    </button>
+                  </div>
                 </div>
-                <div class="field-group" style="display:flex;align-items:flex-end;">
-                  <button class="btn btn-primary" style="width:100%;" onclick="showToast('Redirecting to Xero OAuth…')">
-                    <i class="ti ti-plug-connected"></i> Connect &amp; authorise
+                <div style="display:flex;justify-content:flex-end;">
+                  <button class="btn btn-outline btn-sm" onclick="revertAcctInherit()">
+                    <i class="ti ti-arrow-back-up"></i> Revert to inherited
                   </button>
                 </div>
               </div>
 
-              <div style="display:flex;align-items:center;justify-content:space-between;padding-top:var(--space-md);border-top:1px solid var(--border);">
-                <div style="font-size:12px;color:var(--text-soft);">Once connected, configure payee and CoA mappings at the group level for this connection.</div>
-                <button class="btn btn-outline btn-sm" style="flex-shrink:0;margin-left:var(--space-lg);" onclick="revertAcctInherit()">
-                  <i class="ti ti-arrow-back-up"></i> Revert to inherited
-                </button>
-              </div>
-            </div>
+              <!-- Phase 2: Connected — provider row + mappings (hidden until connected) -->
+              <div id="own-phase-connected" style="display:none;flex-direction:column;">
+
+                <!-- Connected provider row -->
+                <div class="integ-provider-row">
+                  <div class="integ-provider-logo" style="background:#13B5EA1A;">
+                    <span style="font-size:20px;">🧾</span>
+                  </div>
+                  <div class="integ-provider-info">
+                    <div class="integ-provider-name">Xero — Darling Street Bistro Pty Ltd</div>
+                    <div class="integ-provider-meta">Connected · org ID: <span style="font-family:'IBM Plex Mono',monospace;">d7c1-fa03</span></div>
+                  </div>
+                  <span class="integ-badge-connected"><i class="ti ti-circle-check"></i> Connected</span>
+                  <button class="btn btn-outline btn-sm" style="margin-left:var(--space-sm);" onclick="showToast('Opening Xero settings…')">
+                    <i class="ti ti-settings"></i>
+                  </button>
+                </div>
+
+                <div style="padding:0 var(--space-xl);">
+
+                  <!-- Payee mapping -->
+                  <div class="mapping-section">
+                    <div class="mapping-section-head">
+                      <div>
+                        <div class="mapping-section-title"><i class="ti ti-building-warehouse"></i> Payee mapping</div>
+                        <div class="mapping-section-sub">Map Procure suppliers to their corresponding Xero contacts for this outlet's invoices.</div>
+                      </div>
+                      <button class="btn btn-outline btn-xs" onclick="showToast('Adding payee mapping…')"><i class="ti ti-plus"></i> Add</button>
+                    </div>
+                    <div style="border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+                      <table class="mapping-table">
+                        <thead>
+                          <tr>
+                            <th style="width:40%;">Procure supplier</th>
+                            <th class="map-arrow"></th>
+                            <th style="width:40%;">Xero contact</th>
+                            <th style="width:52px;"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td style="font-weight:600;">Saveur Brothers</td>
+                            <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                            <td>
+                              <select class="map-select">
+                                <option selected>Saveur Brothers Pty Ltd</option>
+                                <option>Sydney Butchers Co</option>
+                                <option>Metro Proteins</option>
+                              </select>
+                            </td>
+                            <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                          </tr>
+                          <tr>
+                            <td style="font-weight:600;">Metro Dairy</td>
+                            <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                            <td>
+                              <select class="map-select">
+                                <option selected>Metro Fresh Pty Ltd</option>
+                                <option>Metro Dairy Suppliers</option>
+                              </select>
+                            </td>
+                            <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                          </tr>
+                          <tr>
+                            <td style="font-weight:600;">Pacific Seafood</td>
+                            <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                            <td><span class="map-unmapped">— not mapped</span></td>
+                            <td style="text-align:center;"><button class="btn btn-outline btn-xs" onclick="showToast('Adding Xero contact mapping…')"><i class="ti ti-plus"></i></button></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- CoA mapping -->
+                  <div class="mapping-section">
+                    <div class="mapping-section-head">
+                      <div>
+                        <div class="mapping-section-title"><i class="ti ti-list-numbers"></i> Chart of Accounts mapping</div>
+                        <div class="mapping-section-sub">Map spend categories to Xero GL account codes for this outlet's invoice line items.</div>
+                      </div>
+                      <button class="btn btn-outline btn-xs" onclick="showToast('Adding CoA mapping…')"><i class="ti ti-plus"></i> Add</button>
+                    </div>
+                    <div style="border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+                      <table class="mapping-table">
+                        <thead>
+                          <tr>
+                            <th style="width:38%;">Spend category</th>
+                            <th class="map-arrow"></th>
+                            <th style="width:28%;">GL account code</th>
+                            <th>Account name</th>
+                            <th style="width:52px;"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td style="font-weight:600;">Food &amp; Beverage</td>
+                            <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                            <td><input class="map-input" type="text" value="6-1100"/></td>
+                            <td style="color:var(--text-soft);">Food Cost</td>
+                            <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                          </tr>
+                          <tr>
+                            <td style="font-weight:600;">Beverages</td>
+                            <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                            <td><input class="map-input" type="text" value="6-1300"/></td>
+                            <td style="color:var(--text-soft);">Beverage Cost</td>
+                            <td style="text-align:center;"><button class="btn btn-outline btn-xs" style="color:var(--status-risk-fg);border-color:transparent;" onclick="showToast('Mapping removed')"><i class="ti ti-x"></i></button></td>
+                          </tr>
+                          <tr>
+                            <td style="font-weight:600;">Packaging</td>
+                            <td class="map-arrow"><i class="ti ti-arrow-right"></i></td>
+                            <td><span class="map-unmapped">— not mapped</span></td>
+                            <td></td>
+                            <td style="text-align:center;"><button class="btn btn-outline btn-xs" onclick="showToast('Adding GL code…')"><i class="ti ti-plus"></i></button></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div><!-- /padding wrapper -->
+
+                <!-- Footer -->
+                <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-md);">
+                  <button class="btn btn-outline btn-sm" onclick="revertAcctInherit()">
+                    <i class="ti ti-arrow-back-up"></i> Revert to inherited
+                  </button>
+                  <button class="btn btn-primary btn-sm" onclick="showToast('Accounting mappings saved')">
+                    <i class="ti ti-device-floppy"></i> Save mappings
+                  </button>
+                </div>
+
+              </div><!-- /own-phase-connected -->
+            </div><!-- /acct-own -->
 
           </div>
 
@@ -874,6 +1029,18 @@
     const badge = document.getElementById('acct-status-badge');
     badge.className = 'integ-badge-inherited';
     badge.innerHTML = '<i class="ti ti-git-branch" style="font-size:11px;"></i> Inherited from group';
+  }
+
+  function connectOwnAcct() {
+    const sel = document.getElementById('own-acct-provider');
+    if (!sel || !sel.value) {
+      showToast('Please select an accounting system first');
+      return;
+    }
+    const providerName = sel.options[sel.selectedIndex].text;
+    document.getElementById('own-phase-setup').style.display = 'none';
+    document.getElementById('own-phase-connected').style.display = 'flex';
+    showToast('Connected to ' + providerName);
   }
 
   function showToast(msg) {
