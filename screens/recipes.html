@@ -75,6 +75,27 @@
     .split-caret:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
     .split-caret i { font-size: 14px; }
 
+    /* ── Agent surface ── */
+    .agent-surface { border-radius:var(--radius-lg); border:1.5px solid color-mix(in srgb,var(--spring) 35%,transparent); box-shadow:0 0 0 3px color-mix(in srgb,var(--spring) 8%,transparent); background:var(--surface); overflow:hidden; margin-bottom:var(--space-xl); }
+    .agent-banner { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-lg) var(--space-xl); }
+    .agent-avatar { width:32px; height:32px; border-radius:50%; background:var(--fern); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+    .agent-text { flex:1; min-width:0; }
+    .agent-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-accent); margin-bottom:2px; }
+    .agent-headline { font-size:14px; font-weight:700; color:var(--text); margin-bottom:var(--space-xs); }
+    .agent-why { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .fc-alert-list { padding:0 var(--space-xl) var(--space-md); display:flex; flex-direction:column; gap:2px; }
+    .fc-alert-row { display:grid; grid-template-columns:auto 1fr auto auto auto; align-items:center; gap:var(--space-md); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-sm); background:var(--surface-soft); font-size:13px; }
+    .fc-alert-icon { width:24px; height:24px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .fc-alert-name { font-weight:600; color:var(--text); }
+    .fc-alert-trigger { font-size:12px; color:var(--text-soft); white-space:nowrap; }
+    .fc-alert-delta { font-weight:700; font-feature-settings:'tnum' 1; white-space:nowrap; color:var(--status-risk-fg); }
+    .fc-badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:2px 6px; border-radius:var(--radius-xs); white-space:nowrap; }
+    .fc-badge.breach { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .fc-badge.at-risk { background:var(--status-warn-bg); color:var(--status-warn-fg); }
+    .agent-actions { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-xl); border-top:1px solid var(--border); }
+    .fc-view-link { font-size:12px; font-weight:600; color:var(--text-accent); text-decoration:none; white-space:nowrap; }
+    .fc-view-link:hover { text-decoration:underline; }
+
     /* ── KPI strip ── */
     .kpi-strip {
       display: grid;
@@ -536,6 +557,55 @@
           <p class="kpi-tile-sub">Bulk-made, reduces inventory</p>
         </div>
       </div>
+
+      <!-- Margin Agent: FC% alert panel -->
+      <article class="agent-surface" id="fc-alert-panel" aria-label="Cyrus margin agent alert">
+        <div class="agent-banner">
+          <div class="agent-avatar">Cy</div>
+          <div class="agent-text">
+            <div class="agent-label">Cyrus · Margin agent</div>
+            <div class="agent-headline">3 recipes have breached their food cost target due to recent price movements.</div>
+            <div class="agent-why">Supplier price changes in the last 14 days have pushed ingredient costs above target thresholds. Review and consider repricing or substituting ingredients.</div>
+          </div>
+        </div>
+        <div class="fc-alert-list">
+          <div class="fc-alert-row">
+            <div class="fc-alert-icon"><i class="ti ti-arrow-up"></i></div>
+            <div>
+              <div class="fc-alert-name">Flat White</div>
+              <div class="fc-alert-trigger">Triggered by: Full cream milk +12% · Jun 10</div>
+            </div>
+            <div class="fc-alert-delta">FC% 23.7% → 29.2%</div>
+            <span class="fc-badge breach">Breach</span>
+            <a class="fc-view-link" href="recipe-detail-finished.html">View <i class="ti ti-arrow-right" style="font-size:11px;"></i></a>
+          </div>
+          <div class="fc-alert-row">
+            <div class="fc-alert-icon"><i class="ti ti-arrow-up"></i></div>
+            <div>
+              <div class="fc-alert-name">Eggs Benedict</div>
+              <div class="fc-alert-trigger">Triggered by: Butter (clarified) +9% · Jun 8</div>
+            </div>
+            <div class="fc-alert-delta">FC% 27.1% → 31.4%</div>
+            <span class="fc-badge breach">Breach</span>
+            <a class="fc-view-link" href="recipe-detail-prep.html">View <i class="ti ti-arrow-right" style="font-size:11px;"></i></a>
+          </div>
+          <div class="fc-alert-row">
+            <div class="fc-alert-icon" style="background:var(--status-warn-bg);color:var(--status-warn-fg);"><i class="ti ti-arrow-up"></i></div>
+            <div>
+              <div class="fc-alert-name">Sourdough Loaf</div>
+              <div class="fc-alert-trigger">Triggered by: Bread flour +8% · Jun 5</div>
+            </div>
+            <div class="fc-alert-delta" style="color:var(--status-warn-fg);">FC% 18.2% → 22.9%</div>
+            <span class="fc-badge at-risk">At risk</span>
+            <a class="fc-view-link" href="recipe-detail-production.html">View <i class="ti ti-arrow-right" style="font-size:11px;"></i></a>
+          </div>
+        </div>
+        <div class="agent-actions">
+          <button class="btn btn-primary btn-sm" onclick="filterBreachedRecipes()"><i class="ti ti-filter"></i>Show all affected recipes</button>
+          <button class="btn btn-outline btn-sm" onclick="showToast('Opening Cyrus insights…')"><i class="ti ti-sparkles"></i>Ask Cyrus</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fc-alert-panel').style.display='none'" style="margin-left:auto;">Dismiss</button>
+        </div>
+      </article>
 
       <!-- Filter / search bar -->
       <div class="filter-bar">
@@ -1161,6 +1231,16 @@
     function setStatusFilter(btn, status) {
       document.querySelectorAll('.status-pill-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+    }
+
+    function filterBreachedRecipes() {
+      const breachedNames = ['flat white', 'eggs benedict', 'sourdough loaf'];
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        const name = tr.querySelector('td')?.textContent.trim().toLowerCase() ?? '';
+        tr.style.display = breachedNames.some(n => name.includes(n)) ? '' : 'none';
+      });
+      document.getElementById('fc-alert-panel').style.display = 'none';
+      showToast('Showing 3 recipes with FC% breaches.');
     }
 
     function applyTypeFilter(type) {
