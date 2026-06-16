@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Settings — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex; flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex; flex-direction: column;
+      gap: var(--space-3xl);
+    }
+
+    .page-title {
+      font-size: 35px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.025em; line-height: 1.1;
+    }
+    .page-desc { font-size: 14px; color: var(--text-soft); margin-top: var(--space-xs); }
+
+    /* Section */
+    .settings-section { display: flex; flex-direction: column; gap: var(--space-md); }
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-soft);
+    }
+
+    /* Settings tile grid */
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .settings-tile {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: var(--space-xl);
+      display: flex; align-items: flex-start; gap: var(--space-lg);
+      text-decoration: none; color: inherit;
+      transition: border-color 0.12s, box-shadow 0.12s;
+      cursor: pointer;
+    }
+    .settings-tile:hover {
+      border-color: var(--fern);
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--fern) 12%, transparent);
+    }
+    .settings-tile.disabled {
+      opacity: 0.45; pointer-events: none; cursor: default;
+    }
+
+    .tile-icon {
+      width: 40px; height: 40px; border-radius: var(--radius-md); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .tile-icon.green  { background: color-mix(in srgb, var(--fern) 12%, transparent); color: var(--fern); }
+    .tile-icon.blue   { background: color-mix(in srgb, #3F8AFB 12%, transparent); color: #3F8AFB; }
+    .tile-icon.violet { background: color-mix(in srgb, #B05EC0 12%, transparent); color: #B05EC0; }
+    .tile-icon.amber  { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .tile-icon.teal   { background: color-mix(in srgb, #17B3A3 12%, transparent); color: #17B3A3; }
+
+    .tile-body { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+    .tile-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .tile-desc  { font-size: 13px; color: var(--text-soft); line-height: 1.4; }
+
+    .tile-badge {
+      font-size: 11px; font-weight: 600; color: var(--text-soft);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      padding: 1px 7px; border-radius: var(--radius-pill); align-self: flex-start;
+      margin-top: var(--space-xs);
+    }
+
+    .tile-arrow { font-size: 16px; color: var(--text-soft); flex-shrink: 0; margin-top: 2px; }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <div>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-desc">Manage your organisation, team, and system configuration.</p>
+      </div>
+
+      <!-- Organisation -->
+      <div class="settings-section">
+        <div class="section-label">Organisation</div>
+        <div class="tiles-grid">
+
+          <a href="brands.html" class="settings-tile">
+            <div class="tile-icon green"><i class="ti ti-tag"></i></div>
+            <div class="tile-body">
+              <div class="tile-title">Brands</div>
+              <div class="tile-desc">Manage brand identities — name, logo, and accent colour used across the system.</div>
+            </div>
+            <i class="ti ti-chevron-right tile-arrow"></i>
+          </a>
+
+          <a href="outlets.html" class="settings-tile">
+            <div class="tile-icon teal"><i class="ti ti-building-store"></i></div>
+            <div class="tile-body">
+              <div class="tile-title">Outlets &amp; groups</div>
+              <div class="tile-desc">Manage outlet locations, groups, operating modes, and integrations.</div>
+            </div>
+            <i class="ti ti-chevron-right tile-arrow"></i>
+          </a>
+
+          <a href="suppliers.html" class="settings-tile">
+            <div class="tile-icon amber"><i class="ti ti-truck"></i></div>
+            <div class="tile-body">
+              <div class="tile-title">Suppliers</div>
+              <div class="tile-desc">Manage supplier profiles, contacts, and payment terms.</div>
+            </div>
+            <i class="ti ti-chevron-right tile-arrow"></i>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div class="settings-section">
+        <div class="section-label">Team</div>
+        <div class="tiles-grid">
+
+          <a href="users.html" class="settings-tile">
+            <div class="tile-icon blue"><i class="ti ti-users"></i></div>
+            <div class="tile-body">
+              <div class="tile-title">Users</div>
+              <div class="tile-desc">Manage team members, roles, and access permissions.</div>
+            </div>
+            <i class="ti ti-chevron-right tile-arrow"></i>
+          </a>
+
+          <a href="#" class="settings-tile disabled">
+            <div class="tile-icon violet"><i class="ti ti-shield-check"></i></div>
+            <div class="tile-body">
+              <div class="tile-title">Roles &amp; permissions</div>
+              <div class="tile-desc">Customise what each role can see and do across modules.</div>
+              <span class="tile-badge">Coming soon</span>
+            </div>
+            <i class="ti ti-chevron-right tile-arrow"></i>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="settings-section">
+        <div class="section-label">System</div>
+        <div class="tiles-grid">
+
+          <a href="#" class="settings-tile disabled">
+            <div class="tile-icon green"><i class="ti ti-bell"></i></div>
+            <div class="tile-body">
+              <div class="tile-title">Notifications</div>
+              <div class="tile-desc">Configure email and in-app notifications for orders, invoices, and agent actions.</div>
+              <span class="tile-badge">Coming soon</span>
+            </div>
+            <i class="ti ti-chevron-right tile-arrow"></i>
+          </a>
+
+          <a href="#" class="settings-tile disabled">
+            <div class="tile-icon teal"><i class="ti ti-robot"></i></div>
+            <div class="tile-body">
+              <div class="tile-title">Agent defaults</div>
+              <div class="tile-desc">Set organisation-wide defaults for auto-approve thresholds and agent behaviour.</div>
+              <span class="tile-badge">Coming soon</span>
+            </div>
+            <i class="ti ti-chevron-right tile-arrow"></i>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="../shared/shell.js?v=5" data-active="settings"></script>
+</body>
+</html>

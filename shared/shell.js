@@ -510,7 +510,7 @@
         <nav class="shell-nav" aria-label="Module navigation">
           ${navItems}
           <div class="shell-nav-footer">
-            <a class="shell-nav-item" href="#settings" data-label="Settings" aria-label="Settings">
+            <a class="shell-nav-item${typeof activeId !== 'undefined' && activeId === 'settings' ? ' active' : ''}" href="settings.html" data-label="Settings" aria-label="Settings">
               <i class="ti ti-settings" aria-hidden="true"></i>
               <span class="shell-nav-label">Settings</span>
             </a>
