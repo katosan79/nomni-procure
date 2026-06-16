@@ -163,7 +163,7 @@
           <p class="page-desc">Requisitions routed to HQ, and purchase orders sent to suppliers — with approvals and spend controls.</p>
         </div>
         <div class="page-actions">
-          <button class="btn btn-outline" onclick="ordToast('Preparing XLSX export…')"><i class="ti ti-table-export"></i>Export XLSX</button>
+          <a href="#" class="btn btn-outline" onclick="ordToast('Preparing XLSX export…'); return false;"><i class="ti ti-table-export"></i>Export XLSX</a>
           <button class="btn btn-outline role-hq-only" onclick="ordToast('Consolidating demand across outlets for volume pricing…')"><i class="ti ti-arrows-join"></i>Consolidate</button>
           <button class="btn btn-primary" onclick="window.location.href='new-order.html'"><i class="ti ti-plus"></i>New order</button>
         </div>

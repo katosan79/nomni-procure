@@ -423,7 +423,7 @@
         <p class="page-desc">Manage the suppliers your outlets procure from, their categories, and approval status.</p>
       </div>
       <div class="page-actions">
-        <button class="btn btn-outline" onclick="supToast('Preparing XLSX export…')"><i class="ti ti-table-export"></i>Export XLSX</button>
+        <a href="#" class="btn btn-outline" onclick="supToast('Preparing XLSX export…'); return false;"><i class="ti ti-table-export"></i>Export XLSX</a>
         <button class="btn btn-outline" onclick="supToast('Opening anonymised price benchmarking vs network medians…')"><i class="ti ti-chart-histogram"></i>Benchmark</button>
         <button class="btn btn-outline" onclick="supToast('Starting a new RFQ across network suppliers…')"><i class="ti ti-file-dollar"></i>New RFQ</button>
         <button class="btn btn-primary" onclick="openAddSupplierDialog()"><i class="ti ti-plus"></i>Add supplier</button>

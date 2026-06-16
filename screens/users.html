@@ -274,7 +274,7 @@
         <p class="page-desc">Manage who has access to Nomni, their roles, and which outlets they can operate in.</p>
       </div>
       <div class="page-actions">
-        <button class="btn btn-outline role-hqadmin-only" onclick="usersToast('Preparing XLSX export…')"><i class="ti ti-table-export"></i>Export XLSX</button>
+        <a href="#" class="btn btn-outline role-hqadmin-only" onclick="usersToast('Preparing XLSX export…'); return false;"><i class="ti ti-table-export"></i>Export XLSX</a>
         <button class="btn btn-outline role-hqadmin-only" onclick="document.getElementById('permission-matrix').scrollIntoView({behavior:'smooth',block:'start'})"><i class="ti ti-shield-lock"></i>Roles &amp; permissions</button>
         <button class="btn btn-primary role-hqadmin-only" onclick="openInviteDrawer()"><i class="ti ti-user-plus"></i>Invite user</button>
       </div>
