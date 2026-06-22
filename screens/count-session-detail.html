@@ -158,6 +158,28 @@
     .cogs-variance-label { font-size:13px; font-weight:700; color:var(--status-warn-fg); }
     .cogs-variance-value { font-size:14px; font-weight:700; color:var(--status-warn-fg); font-feature-settings:'tnum' 1; }
 
+    /* 4-tier variance badge */
+    .var-tier-badge {
+      display: inline-flex; align-items: center;
+      padding: 1px 7px; border-radius: var(--radius-pill);
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .var-tier-badge.tier-ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .var-tier-badge.tier-warn { background: var(--status-warn-bg);  color: var(--status-warn-fg); }
+    .var-tier-badge.tier-risk { background: var(--status-risk-bg);  color: var(--status-risk-fg); }
+    .var-tier-badge.tier-urg  { background: var(--status-risk-fg);  color: #fff; }
+
+    /* Override variance row for escalate tier */
+    .cogs-variance-row.tier-urg {
+      background: var(--status-risk-bg);
+    }
+    .cogs-variance-row.tier-urg .cogs-variance-label,
+    .cogs-variance-row.tier-urg .cogs-variance-value {
+      color: var(--status-risk-fg);
+    }
+
     /* Activity */
     .activity-body { padding:var(--space-lg) var(--space-xl); }
     .activity-list { display:flex; flex-direction:column; gap:var(--space-sm); }
@@ -338,15 +360,15 @@
               </div>
             </div>
 
-            <!-- Dairy 4.4% — 37% bar width -->
+            <!-- Dairy 4.4% — 37% bar width — >3% escalate tier -->
             <div class="var-cat-row" ondblclick="toggleVarItems('var-dairy')">
               <div class="var-cat-name">Dairy</div>
               <div class="var-bar-track">
-                <div class="var-bar-fill" style="width:37%;background:var(--status-warn-fg);"></div>
+                <div class="var-bar-fill" style="width:37%;background:var(--status-risk-fg);"></div>
               </div>
               <div class="var-right">
-                <span class="var-amount" style="color:var(--status-warn-fg);">$80</span>
-                <span class="var-pct" style="color:var(--status-warn-fg);">4.4%</span>
+                <span class="var-amount" style="color:var(--status-risk-fg);">$80</span>
+                <span class="var-pct" style="color:var(--status-risk-fg);">4.4%</span>
               </div>
             </div>
             <div class="var-item-list" id="var-dairy">
@@ -357,15 +379,15 @@
               </div>
             </div>
 
-            <!-- Beverages 1.7% — 14% bar width -->
+            <!-- Beverages 1.7% — 14% bar width — 1–2% monitor tier -->
             <div class="var-cat-row" ondblclick="toggleVarItems('var-beverages')">
               <div class="var-cat-name">Beverages</div>
               <div class="var-bar-track">
-                <div class="var-bar-fill" style="width:14%;background:var(--fern);"></div>
+                <div class="var-bar-fill" style="width:14%;background:var(--status-warn-fg);"></div>
               </div>
               <div class="var-right">
-                <span class="var-amount" style="color:var(--fern);">$20</span>
-                <span class="var-pct" style="color:var(--fern);">1.7%</span>
+                <span class="var-amount" style="color:var(--status-warn-fg);">$20</span>
+                <span class="var-pct" style="color:var(--status-warn-fg);">1.7%</span>
               </div>
             </div>
             <div class="var-item-list" id="var-beverages">
@@ -462,11 +484,17 @@
               <span class="cogs-theory-value">$9,200</span>
             </div>
             <hr class="cogs-divider"/>
-            <div class="cogs-variance-row">
-              <span class="cogs-variance-label">Variance</span>
-              <span class="cogs-variance-value">$700 &nbsp;&nbsp;7.6%</span>
+            <div class="cogs-variance-row tier-urg">
+              <div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span class="cogs-variance-label"><i class="ti ti-alert-triangle" style="font-size:13px;"></i> Variance</span>
+                  <span class="var-tier-badge tier-urg">Escalate &gt;3%</span>
+                </div>
+                <div style="font-size:11px;margin-top:3px;color:var(--status-risk-fg);opacity:0.85;">Actual exceeds theoretical by $700</div>
+              </div>
+              <span class="cogs-variance-value">$700 &nbsp;<span style="font-size:16px;">7.6%</span></span>
             </div>
-            <div style="font-size:11px;color:var(--text-soft);margin-top:8px;">Based on 4/4 required sheets</div>
+            <div style="font-size:11px;color:var(--text-soft);margin-top:8px;">Based on 4/4 required sheets · Theoretical from POS × recipes</div>
           </div>
         </div>
 
