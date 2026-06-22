@@ -175,7 +175,7 @@
     }
 
     /* ── Sub-nav groups (expandable sections) ── */
-    .shell-nav-group { display: flex; flex-direction: column; }
+    .shell-nav-group { display: flex; flex-direction: column; position: relative; }
     .shell-nav-group-toggle {
       display: flex; align-items: center;
       gap: var(--space-sm);
@@ -244,6 +244,41 @@
     }
     .shell-chrome.nav-collapsed .group-chevron { display: none; }
     .shell-chrome.nav-collapsed .shell-nav-subitems { display: none !important; }
+
+    /* Compact flyout for collapsed nav groups */
+    .shell-nav-compact-flyout {
+      position: absolute;
+      left: calc(100% + 8px);
+      top: 0;
+      min-width: 168px;
+      background: var(--chrome-bg);
+      border: 1px solid rgba(250,247,233,0.14);
+      border-radius: var(--radius-md);
+      box-shadow: 4px 6px 24px rgba(0,0,0,0.4);
+      z-index: 200;
+      padding: 4px;
+      display: none;
+      pointer-events: none;
+    }
+    .shell-nav-compact-flyout.open { display: block; pointer-events: all; }
+    .shell-nav-compact-flyout-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: rgba(250,247,233,0.4);
+      padding: 6px 10px 3px;
+    }
+    .shell-nav-compact-flyout a {
+      display: block; padding: 7px 12px;
+      border-radius: var(--radius-xs);
+      font-size: 13px; font-weight: 500;
+      color: var(--chrome-fg-soft); text-decoration: none;
+      transition: background 0.12s, color 0.12s; white-space: nowrap;
+    }
+    .shell-nav-compact-flyout a:hover { background: var(--chrome-panel); color: var(--chrome-fg); }
+    .shell-nav-compact-flyout a.flyout-active { background: var(--chrome-active); color: var(--chrome-fg); font-weight: 600; }
+
+    /* ── Role-gated page content ── */
+    html[data-tier="outlet"]   .hq-only,
+    html[data-tier="external"] .hq-only { display: none !important; }
 
     /* ── Collapse toggle button ── */
     .shell-collapse-btn {
@@ -555,6 +590,9 @@
         const childLinks = n.children.map(c =>
           `<a class="shell-nav-subitem${c.id === activeId ? ' active' : ''}" href="${c.href}" data-nav="${c.id}" data-label="${c.label}" aria-current="${c.id === activeId ? 'page' : 'false'}">${c.label}</a>`
         ).join('');
+        const flyoutLinks = n.children.map(c =>
+          `<a href="${c.href}" class="${c.id === activeId ? 'flyout-active' : ''}" data-nav="${c.id}">${c.label}</a>`
+        ).join('');
         return `${prefix}
       <div class="shell-nav-group" data-nav="${n.id}">
         <button class="shell-nav-group-toggle${isGroupActive ? ' active open' : ''}" data-group="${n.id}" data-label="${n.label}" aria-expanded="${isGroupActive}" aria-controls="subnav-${n.id}">
@@ -562,6 +600,10 @@
           <span class="shell-nav-label">${n.label}</span>
           <i class="ti ti-chevron-right group-chevron" aria-hidden="true"></i>
         </button>
+        <div class="shell-nav-compact-flyout" id="flyout-${n.id}">
+          <div class="shell-nav-compact-flyout-title">${n.label}</div>
+          ${flyoutLinks}
+        </div>
         <div class="shell-nav-subitems${isGroupActive ? ' open' : ''}" id="subnav-${n.id}">
           ${childLinks}
         </div>
@@ -818,12 +860,33 @@
         btn.addEventListener('click', () => {
           const groupId = btn.dataset.group;
           const subitems = document.getElementById('subnav-' + groupId);
+          const flyout   = document.getElementById('flyout-' + groupId);
           if (!subitems) return;
+
+          if (chrome.classList.contains('nav-collapsed')) {
+            // Collapsed mode: show compact flyout
+            if (!flyout) return;
+            const isOpen = flyout.classList.contains('open');
+            document.querySelectorAll('.shell-nav-compact-flyout.open').forEach(f => {
+              if (f !== flyout) f.classList.remove('open');
+            });
+            flyout.classList.toggle('open', !isOpen);
+            return;
+          }
+
+          // Normal mode: toggle subitems
           const isOpen = subitems.classList.contains('open');
           subitems.classList.toggle('open', !isOpen);
           btn.classList.toggle('open', !isOpen);
           btn.setAttribute('aria-expanded', String(!isOpen));
         });
+      });
+
+      // Close compact flyouts when clicking outside the nav group
+      document.addEventListener('click', e => {
+        if (!e.target.closest('.shell-nav-compact-flyout') && !e.target.closest('.shell-nav-group-toggle')) {
+          document.querySelectorAll('.shell-nav-compact-flyout.open').forEach(f => f.classList.remove('open'));
+        }
       });
 
       // Close on Escape
