@@ -527,10 +527,11 @@
     }
 
     /* Agent strip */
-    .agent-strip { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .agent-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); }
     .agent-strip .agent-surface.resolved { opacity: 0.62; }
     .agent-strip .agent-surface.resolved .agent-actions { display: none; }
-    @media (max-width: 768px) { .agent-strip { grid-template-columns: 1fr; } }
+    @media (max-width: 1024px) { .agent-strip { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px)  { .agent-strip { grid-template-columns: 1fr; } }
 
     /* Sub-module tabs */
     .inv-tabs { display: flex; gap: var(--space-xs); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
@@ -716,6 +717,52 @@
     .par-group { font-size: 13px; color: var(--text); font-weight: 500; }
     .par-value { font-size: 13px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; }
     .par-value.low { color: var(--status-warn-fg); }
+
+    /* Par governance badges (§3.7.8) */
+    .par-item-v2 {
+      display: flex; flex-direction: column; gap: var(--space-xs);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .par-item-head { display: flex; justify-content: space-between; align-items: center; }
+    .par-hq-tag { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); background: var(--surface); border: 1px solid var(--border); padding: 1px 5px; border-radius: var(--radius-xs); }
+    .par-override-row { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+    .par-override-tag { font-size: 10px; font-weight: 700; color: var(--status-warn-fg); background: var(--status-warn-bg); padding: 1px 5px; border-radius: var(--radius-xs); white-space: nowrap; }
+    .par-below-tag { font-size: 10px; font-weight: 700; color: var(--status-warn-fg); background: var(--status-warn-bg); padding: 1px 5px; border-radius: var(--radius-xs); display: inline-flex; align-items: center; gap: 2px; }
+    .par-override-actions { display: flex; gap: var(--space-xs); }
+    .par-override-actions button { height: 22px; padding: 0 var(--space-sm); font-size: 11px; font-weight: 600; border-radius: var(--radius-xs); border: 1px solid; cursor: pointer; font-family: inherit; }
+    .par-approve-btn { background: var(--mint); color: var(--spinach); border-color: color-mix(in srgb, var(--fern) 30%, transparent); }
+    .par-reject-btn  { background: var(--surface); color: var(--text-soft); border-color: var(--border); }
+
+    /* HQ Count Templates panel (§3.7.8) */
+    .template-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .template-card-header { padding: var(--space-lg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); }
+    .template-card-name  { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .template-card-group { font-size: 12px; color: var(--text-soft); }
+    .template-card-body  { padding: var(--space-sm) var(--space-lg); }
+    .tpl-sheet-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .tpl-sheet-row:last-child { border-bottom: none; }
+    .tpl-sheet-name  { font-weight: 500; color: var(--text); display: flex; align-items: center; gap: var(--space-xs); }
+    .tpl-required-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: var(--mint); color: var(--spinach); padding: 1px 5px; border-radius: var(--radius-xs); }
+    .tpl-cadence-tag  { font-size: 11px; color: var(--text-soft); }
+    .template-card-footer { padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); background: var(--surface-soft); display: flex; align-items: center; justify-content: space-between; }
+
+    /* Par Override Request cards (§3.7.8) */
+    .override-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-md); }
+    .override-card-head { padding: var(--space-md) var(--space-lg); display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); border-bottom: 1px solid var(--border); }
+    .override-item-name  { font-size: 14px; font-weight: 700; color: var(--text); }
+    .override-outlet     { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .override-card-body  { padding: var(--space-md) var(--space-lg); }
+    .override-comparison { display: flex; align-items: center; gap: var(--space-lg); margin-bottom: var(--space-sm); }
+    .override-col        { display: flex; flex-direction: column; gap: 2px; }
+    .override-col-label  { font-size: 11px; color: var(--text-soft); font-weight: 500; }
+    .override-col-val    { font-size: 18px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; }
+    .override-col-val.requested { color: var(--status-warn-fg); }
+    .override-arrow      { font-size: 18px; color: var(--text-soft); }
+    .override-reason     { font-size: 13px; color: var(--text-soft); font-style: italic; margin-bottom: var(--space-xs); }
+    .override-requestor  { font-size: 12px; color: var(--text-soft); }
+    .override-card-footer { padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); background: var(--surface-soft); display: flex; gap: var(--space-sm); justify-content: flex-end; }
 
     /* Supplier chip in table */
     .supplier-chip {
@@ -1144,6 +1191,22 @@
             </div>
           </div>
         </article>
+        <article class="agent-surface" id="sloan-card" data-agent-fn="governance">
+          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+            <div class="agent-card-head">
+              <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
+              <span class="agent-id"><span class="agent-name">Sloan</span><span class="agent-role">Governance agent</span></span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state proposed"><i class="ti ti-shield-check" aria-hidden="true"></i>Monitoring</span>
+            </div>
+            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">2 items have par levels 40%+ below the network average — SA Metro is the outlier</p>
+            <p class="agent-why">Feta Cheese at SA Metro (2 kg par) is 50% below the network average of 4 kg. Roma Tomatoes at QLD Metro also flagged. Unlogged waste or consistent under-ordering likely. Raising par levels reduces stockout risk.</p>
+            <div class="agent-actions">
+              <button class="nb-btn primary" onclick="switchTab('templates')"><i class="ti ti-adjustments" aria-hidden="true"></i>Review par levels</button>
+              <button class="nb-btn" onclick="resolveAgent('sloan-card','Sloan will keep monitoring par levels')">Dismiss</button>
+            </div>
+          </div>
+        </article>
       </div>
 
       <!-- Sub-module tabs (IN-6/7/9/10 entry points) -->
@@ -1153,6 +1216,7 @@
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('transfers')"><i class="ti ti-transfer" aria-hidden="true"></i>Transfers</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('waste')"><i class="ti ti-trash-x" aria-hidden="true"></i>Waste</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('production')"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>Production</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('templates')" style="position:relative;"><i class="ti ti-template" aria-hidden="true"></i>Templates<span style="position:absolute;top:6px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--status-warn-fg);"></span></button>
       </div>
 
       <!-- ══ Panel: Master items — moved to items.html ══ -->
@@ -1711,7 +1775,185 @@
             </tbody>
           </table>
         </div>
-      </div>
+      </div><!-- /panel-production -->
+
+      <!-- ══ Panel: Templates (§3.7.8) ══ -->
+      <div class="inv-panel" id="panel-templates">
+
+        <!-- Sloan governance inline card -->
+        <article class="agent-surface" style="box-shadow:none;">
+          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+            <div class="agent-card-head">
+              <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
+              <span class="agent-id"><span class="agent-name">Sloan</span><span class="agent-role">Governance agent</span></span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state proposed"><i class="ti ti-shield-check" aria-hidden="true"></i>Monitoring</span>
+            </div>
+            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">Feta Cheese par levels at SA Metro and QLD Metro are 40–55% below the network average</p>
+            <p class="agent-why">Network average is 4.5 kg. SA Metro: 2 kg (–55%), QLD Metro: 3 kg (–33%). Low par levels correlate with stockout frequency. Recommend raising to HQ baseline or approving local override requests from those groups.</p>
+            <div class="agent-actions">
+              <button class="nb-btn primary" onclick="openItemDrawer('feta')"><i class="ti ti-adjustments" aria-hidden="true"></i>Edit Feta par levels</button>
+              <button class="nb-btn" onclick="invToast('Sloan will keep monitoring par levels')">Dismiss</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Section: HQ Count Templates -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
+            <div>
+              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px;">HQ Count Templates</div>
+              <div style="font-size:13px;color:var(--text-soft);">Templates define which sheets outlet groups count and at what cadence. Push updates to all outlets in a group.</div>
+            </div>
+            <button class="btn btn-outline" onclick="invToast('Opening template editor…')"><i class="ti ti-plus"></i>New template</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);">
+
+            <!-- Template: NSW Metro -->
+            <div class="template-card">
+              <div class="template-card-header">
+                <div>
+                  <div class="template-card-name">NSW Metro — Weekly Full Count</div>
+                  <div class="template-card-group"><i class="ti ti-building-store" style="font-size:11px;"></i> NSW Metro · 8 outlets · v3</div>
+                </div>
+                <span class="nb-pill ok" style="font-size:11px;white-space:nowrap;"><i class="ti ti-circle-check-filled"></i>Active</span>
+              </div>
+              <div class="template-card-body">
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><i class="ti ti-box" style="font-size:13px;color:var(--text-soft);"></i>Dry Store <span class="tpl-required-tag">Required</span></span>
+                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Weekly</span><span style="font-size:12px;color:var(--text-soft);">24 items</span></span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><i class="ti ti-snowflake" style="font-size:13px;color:var(--text-soft);"></i>Freezer <span class="tpl-required-tag">Required</span></span>
+                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Weekly</span><span style="font-size:12px;color:var(--text-soft);">18 items</span></span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><i class="ti ti-glass" style="font-size:13px;color:var(--text-soft);"></i>Bar <span class="tpl-required-tag">Required</span></span>
+                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Weekly</span><span style="font-size:12px;color:var(--text-soft);">12 items</span></span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><i class="ti ti-armchair" style="font-size:13px;color:var(--text-soft);"></i>FOH</span>
+                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Monthly</span><span style="font-size:12px;color:var(--text-soft);">8 items</span></span>
+                </div>
+              </div>
+              <div class="template-card-footer">
+                <span style="font-size:12px;color:var(--text-soft);">Pushed by Keith Tan · 14 Jun 2026</span>
+                <div style="display:flex;gap:var(--space-sm);">
+                  <button class="btn btn-outline" style="height:32px;font-size:13px;" onclick="invToast('Opening NSW Metro template editor…')"><i class="ti ti-edit"></i>Edit</button>
+                  <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="invToast('Template pushed to 8 NSW Metro outlets · Sloan notified outlets of the update')"><i class="ti ti-send"></i>Push to group</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Template: VIC Metro -->
+            <div class="template-card">
+              <div class="template-card-header">
+                <div>
+                  <div class="template-card-name">VIC Metro — Fortnightly Full Count</div>
+                  <div class="template-card-group"><i class="ti ti-building-store" style="font-size:11px;"></i> VIC Metro · 4 outlets · v2</div>
+                </div>
+                <span class="nb-pill ok" style="font-size:11px;white-space:nowrap;"><i class="ti ti-circle-check-filled"></i>Active</span>
+              </div>
+              <div class="template-card-body">
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><i class="ti ti-box" style="font-size:13px;color:var(--text-soft);"></i>Dry Store <span class="tpl-required-tag">Required</span></span>
+                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Fortnightly</span><span style="font-size:12px;color:var(--text-soft);">22 items</span></span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><i class="ti ti-snowflake" style="font-size:13px;color:var(--text-soft);"></i>Freezer <span class="tpl-required-tag">Required</span></span>
+                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Fortnightly</span><span style="font-size:12px;color:var(--text-soft);">16 items</span></span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><i class="ti ti-glass" style="font-size:13px;color:var(--text-soft);"></i>Bar</span>
+                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Monthly</span><span style="font-size:12px;color:var(--text-soft);">10 items</span></span>
+                </div>
+              </div>
+              <div class="template-card-footer">
+                <span style="font-size:12px;color:var(--text-soft);">Pushed by Keith Tan · 1 Jun 2026</span>
+                <div style="display:flex;gap:var(--space-sm);">
+                  <button class="btn btn-outline" style="height:32px;font-size:13px;" onclick="invToast('Opening VIC Metro template editor…')"><i class="ti ti-edit"></i>Edit</button>
+                  <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="invToast('Template pushed to 4 VIC Metro outlets · Sloan notified outlets of the update')"><i class="ti ti-send"></i>Push to group</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Section: Par Level Override Requests -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
+            <div>
+              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px;">Par Level Override Requests</div>
+              <div style="font-size:13px;color:var(--text-soft);">Outlets can request a local override of HQ-set par levels. Approve to let the outlet run at a different par, or reject to maintain the HQ baseline.</div>
+            </div>
+            <span style="background:var(--status-warn-bg);color:var(--status-warn-fg);font-size:12px;font-weight:700;padding:3px 10px;border-radius:var(--radius-sm);">2 pending</span>
+          </div>
+
+          <!-- Override 1: Chicken Breast at Surry Hills -->
+          <div class="override-card">
+            <div class="override-card-head">
+              <div>
+                <div class="override-item-name">Chicken Breast 500g</div>
+                <div class="override-outlet"><i class="ti ti-building-store" style="font-size:11px;"></i> Surry Hills Social · NSW Metro</div>
+              </div>
+              <span class="nb-pill warn" style="font-size:11px;white-space:nowrap;"><i class="ti ti-clock"></i>Pending</span>
+            </div>
+            <div class="override-card-body">
+              <div class="override-comparison">
+                <div class="override-col">
+                  <span class="override-col-label">HQ par</span>
+                  <span class="override-col-val">10 kg</span>
+                </div>
+                <span class="override-arrow">→</span>
+                <div class="override-col">
+                  <span class="override-col-label">Requested</span>
+                  <span class="override-col-val requested">14 kg</span>
+                </div>
+              </div>
+              <div class="override-reason">"High weekend turnover during brunch service — run out 2× last month"</div>
+              <div class="override-requestor">Requested by <strong>Sarah Kim</strong> · 20 Jun 2026</div>
+            </div>
+            <div class="override-card-footer">
+              <button class="btn btn-outline" style="height:32px;font-size:13px;" onclick="this.closest('.override-card').style.opacity='0.4';invToast('Override rejected — HQ par maintained at 10 kg')"><i class="ti ti-x"></i>Reject</button>
+              <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="this.closest('.override-card').remove();addInvActivity('Par override approved — <strong>Chicken Breast 500g</strong> Surry Hills updated to 14 kg','HQ Administrator');invToast('Override approved · Surry Hills Social updated to 14 kg')"><i class="ti ti-check"></i>Approve override</button>
+            </div>
+          </div>
+
+          <!-- Override 2: Avocado at Bondi Beach -->
+          <div class="override-card">
+            <div class="override-card-head">
+              <div>
+                <div class="override-item-name">Avocado</div>
+                <div class="override-outlet"><i class="ti ti-building-store" style="font-size:11px;"></i> Bondi Beach · NSW Metro</div>
+              </div>
+              <span class="nb-pill warn" style="font-size:11px;white-space:nowrap;"><i class="ti ti-clock"></i>Pending</span>
+            </div>
+            <div class="override-card-body">
+              <div class="override-comparison">
+                <div class="override-col">
+                  <span class="override-col-label">HQ par</span>
+                  <span class="override-col-val">50 each</span>
+                </div>
+                <span class="override-arrow">→</span>
+                <div class="override-col">
+                  <span class="override-col-label">Requested</span>
+                  <span class="override-col-val requested">70 each</span>
+                </div>
+              </div>
+              <div class="override-reason">"Beach crowd — consistent summer season demand spike, current par doesn't cover it"</div>
+              <div class="override-requestor">Requested by <strong>Jake Chen</strong> · 18 Jun 2026</div>
+            </div>
+            <div class="override-card-footer">
+              <button class="btn btn-outline" style="height:32px;font-size:13px;" onclick="this.closest('.override-card').style.opacity='0.4';invToast('Override rejected — HQ par maintained at 50 each')"><i class="ti ti-x"></i>Reject</button>
+              <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="this.closest('.override-card').remove();addInvActivity('Par override approved — <strong>Avocado</strong> Bondi Beach updated to 70 each','HQ Administrator');invToast('Override approved · Bondi Beach updated to 70 each')"><i class="ti ti-check"></i>Approve override</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- /panel-templates -->
 
       <!-- Activity timeline -->
       <div class="timeline-card">
@@ -2265,7 +2507,11 @@
           { id: 's1', supplier: 'Sydney Butchers Co.', sku: 'SB-CHK-500', pack: '500g', price: '$8.40/kg', preferred: true },
           { id: 's2', supplier: 'Fresh Direct', sku: 'FD-0441', pack: '1kg', price: '$9.10/kg', preferred: false }
         ],
-        pars: [{ group: 'NSW Metro', value: '10 kg' }, { group: 'VIC Metro', value: '8 kg' }, { group: 'QLD Metro', value: '6 kg' }]
+        pars: [
+          { group: 'NSW Metro', value: '10 kg', hqPar: '10 kg', override: { status: 'pending', requestedBy: 'Sarah Kim', requestedAt: '20 Jun', requestedValue: '14 kg', reason: 'High weekend turnover — run out 2× last month' } },
+          { group: 'VIC Metro', value: '8 kg',  hqPar: '8 kg' },
+          { group: 'QLD Metro', value: '6 kg',  hqPar: '6 kg' }
+        ]
       },
       'avocado': {
         id: 'INT-0002', name: 'Avocado', category: 'Produce', uom: 'each',
@@ -2275,7 +2521,10 @@
           { id: 's2', supplier: 'Fresh Direct', sku: 'FD-0092', pack: 'each', price: '$1.35/ea', preferred: false },
           { id: 's3', supplier: 'Premium Produce', sku: 'PP-AVO-01', pack: 'each', price: '$1.55/ea', preferred: false }
         ],
-        pars: [{ group: 'NSW Metro', value: '50 each' }, { group: 'VIC Metro', value: '40 each' }]
+        pars: [
+          { group: 'NSW Metro', value: '50 each', hqPar: '50 each', override: { status: 'pending', requestedBy: 'Jake Chen', requestedAt: '18 Jun', requestedValue: '70 each', reason: 'Beach crowd — summer season demand spike' } },
+          { group: 'VIC Metro', value: '40 each', hqPar: '40 each' }
+        ]
       },
       'feta': {
         id: 'INT-0003', name: 'Feta Cheese', category: 'Dairy', uom: 'kg',
@@ -2284,7 +2533,12 @@
           { id: 's1', supplier: 'Dairy Direct', sku: 'DD-FTA-1KG', pack: '1kg block', price: '$18.50/kg', preferred: true },
           { id: 's2', supplier: 'Artisan Dairy', sku: 'AD-FETA', pack: '500g', price: '$22.00/kg', preferred: false }
         ],
-        pars: [{ group: 'NSW Metro', value: '5 kg' }, { group: 'VIC Metro', value: '4 kg' }, { group: 'QLD Metro', value: '3 kg' }, { group: 'SA Metro', value: '2 kg' }]
+        pars: [
+          { group: 'NSW Metro', value: '5 kg',  hqPar: '4.5 kg' },
+          { group: 'VIC Metro', value: '4 kg',  hqPar: '4.5 kg' },
+          { group: 'QLD Metro', value: '3 kg',  hqPar: '4.5 kg', belowAvg: true },
+          { group: 'SA Metro',  value: '2 kg',  hqPar: '4.5 kg', belowAvg: true }
+        ]
       },
       'sourdough': {
         id: 'INT-0004', name: 'Sourdough Bread', category: 'Dry goods', uom: 'loaf',
@@ -2353,9 +2607,45 @@
       document.getElementById('drawer-d-uom').textContent = item.uom;
       document.getElementById('drawer-d-desc').textContent = item.description;
       renderSkuTable(item.skus);
-      document.getElementById('drawer-pars').innerHTML = item.pars.map(p =>
-        `<div class="par-item"><span class="par-group">${p.group}</span><span class="par-value">${p.value}</span></div>`
-      ).join('');
+      document.getElementById('drawer-pars').innerHTML = item.pars.map(p => {
+        const hasOverride = p.override?.status === 'pending';
+        const isBelowAvg  = p.belowAvg;
+        if (!hasOverride && !isBelowAvg) {
+          return `<div class="par-item"><span class="par-group">${p.group}</span><div style="display:flex;align-items:center;gap:var(--space-xs);"><span class="par-value">${p.value}</span><span class="par-hq-tag">HQ</span></div></div>`;
+        }
+        if (isBelowAvg) {
+          return `<div class="par-item-v2">
+            <div class="par-item-head">
+              <span class="par-group">${p.group}</span>
+              <span class="par-value low">${p.value}</span>
+            </div>
+            <div class="par-override-row">
+              <span class="par-below-tag"><i class="ti ti-alert-triangle" style="font-size:9px;"></i>Below HQ avg — network: ${p.hqPar}</span>
+              <button style="height:20px;padding:0 var(--space-sm);font-size:11px;font-weight:600;border-radius:var(--radius-xs);border:1px solid var(--border);background:var(--surface);color:var(--text-soft);cursor:pointer;font-family:inherit;" onclick="invToast('Par level change request sent to HQ')">Request increase</button>
+            </div>
+          </div>`;
+        }
+        // pending override
+        const ov = p.override;
+        return `<div class="par-item-v2" style="border-color:var(--status-warn-bg);">
+          <div class="par-item-head">
+            <span class="par-group">${p.group}</span>
+            <div style="display:flex;align-items:center;gap:var(--space-xs);">
+              <span class="par-value">${p.value}</span>
+              <span class="par-hq-tag">HQ</span>
+            </div>
+          </div>
+          <div class="par-override-row">
+            <span class="par-override-tag">Override pending → ${ov.requestedValue}</span>
+            <span style="font-size:11px;color:var(--text-soft);">${ov.requestedBy} · ${ov.requestedAt}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-soft);font-style:italic;">"${ov.reason}"</div>
+          <div class="par-override-actions">
+            <button class="par-approve-btn" onclick="approveParOverride(event,'${p.group}','${ov.requestedValue}')"><i class="ti ti-check" style="font-size:10px;"></i>Approve</button>
+            <button class="par-reject-btn"  onclick="rejectParOverride(event,'${p.group}')">Reject</button>
+          </div>
+        </div>`;
+      }).join('');
       document.getElementById('item-drawer').classList.add('open');
       document.getElementById('drawer-backdrop').classList.add('open');
       document.body.style.overflow = 'hidden';
@@ -2407,6 +2697,30 @@
         addInvActivity('<strong>' + item.name + '</strong> supplier links updated', 'HQ Administrator');
         invToast(item.name + ' saved');
       }
+    }
+
+    function approveParOverride(evt, group, newValue) {
+      evt.stopPropagation();
+      if (!activeItemKey) return;
+      const item = ITEM_DATA[activeItemKey];
+      const par = item.pars.find(p => p.group === group);
+      if (par) { par.value = newValue; par.override = null; }
+      document.getElementById('drawer-pars').innerHTML = '';
+      openItemDrawer(activeItemKey);
+      addInvActivity('Par override approved — <strong>' + item.name + '</strong> ' + group + ' updated to ' + newValue + ' by HQ', 'HQ Administrator');
+      invToast('Override approved · ' + group + ' par updated to ' + newValue);
+    }
+
+    function rejectParOverride(evt, group) {
+      evt.stopPropagation();
+      if (!activeItemKey) return;
+      const item = ITEM_DATA[activeItemKey];
+      const par = item.pars.find(p => p.group === group);
+      if (par) par.override = null;
+      document.getElementById('drawer-pars').innerHTML = '';
+      openItemDrawer(activeItemKey);
+      addInvActivity('Par override rejected — <strong>' + item.name + '</strong> ' + group + ' remains at HQ par', 'HQ Administrator');
+      invToast('Override rejected — HQ par maintained');
     }
 
     /* ── Count sessions ── */

@@ -671,7 +671,7 @@
       const s = po.status;
       const tabs = [{ id:'details', icon:'ti-list-details', label:'Details' }];
       if (s==='confirmed'||s==='delivered'||s==='delayed') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'Receive goods', badgeOk:'Action needed' });
-      else if (s==='received'||s==='discrepancy') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'GRN' });
+      else if (s==='received'||s==='discrepancy') tabs.push({ id:'grn', icon:'ti-clipboard-check', label:'GRN', agent: po.invoice?.status==='matched' });
       tabs.push({ id:'comms', icon:'ti-messages', label:'Comms', badgeInf: po.comms?.length||0 });
       if (['confirmed','delivered','received','discrepancy'].includes(po.status)) tabs.push({ id:'invoice', icon:'ti-receipt', label:'Invoice', agent:true });
       return tabs;
@@ -804,6 +804,38 @@
       }
       const card = mkCard('<i class="ti ti-clipboard-check"></i> Goods received note', headBadge, inner);
       el.appendChild(card);
+
+      /* §3.7.9 — Cyrus auto-GRN: show inventory update panel when invoice is 3-way matched */
+      if (isSubmitted && po.invoice?.status === 'matched') {
+        const invRows = po.items.map(item => {
+          const recv = item.recv !== undefined ? item.recv : item.qty;
+          return `<tr>
+            <td><div class="item-name">${item.supplierItem||item.name}</div><div class="item-cat">${item.cat}</div></td>
+            <td class="num" style="color:var(--text-soft);">${recv} ${item.uom||''}</td>
+            <td class="num" style="color:var(--spinach);font-weight:700;">+${recv} ${item.uom||''}</td>
+            <td style="font-size:12px;color:var(--text-soft);">On-hand updated</td>
+          </tr>`;
+        }).join('');
+        const cyrusInner = `
+          <div style="margin:var(--space-lg) var(--space-xl) var(--space-md);padding:var(--space-md);background:var(--agent-glow, color-mix(in srgb,var(--fern) 6%,transparent));border:1px solid var(--agent-border,color-mix(in srgb,var(--fern) 25%,transparent));border-radius:var(--radius-md);display:flex;align-items:flex-start;gap:var(--space-md);">
+            <span style="width:32px;height:32px;border-radius:50%;background:var(--mint);color:var(--spinach);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">Cy</span>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:4px;">
+                <span style="font-size:14px;font-weight:700;color:var(--text);">On-hand inventory updated automatically</span>
+                <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;background:var(--mint);color:var(--spinach);padding:1px 6px;border-radius:2px;">cyrus-auto</span>
+              </div>
+              <div style="font-size:13px;color:var(--text-soft);margin-bottom:var(--space-md);">3-way match passed on <strong>${po.invoice.id}</strong> · PO qty, GRN qty, and invoice qty all reconciled. On-hand quantities updated for all ${po.items.length} line items.</div>
+              <div style="overflow-x:auto;"><table class="items-tbl">
+                <thead><tr><th>Item</th><th class="num">Received</th><th class="num">On-hand delta</th><th>Status</th></tr></thead>
+                <tbody>${invRows}</tbody>
+              </table></div>
+              <div style="margin-top:var(--space-md);font-size:12px;color:var(--text-soft);">Cyrus · Inventory Agent · ${po.activity?.find(a=>a.tone==='agent')?.time||'9 Jun, 9:01am'} · <span style="color:var(--spinach);cursor:pointer;" onclick="toast('Auto-GRN update reversed — manual review required')">Undo</span></div>
+            </div>
+          </div>`;
+        el.appendChild(mkCard('<i class="ti ti-sparkles spark"></i> Cyrus — Auto inventory update',
+          `<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;background:var(--mint);color:var(--spinach);padding:2px 6px;border-radius:2px;">cyrus-auto</span>`,
+          cyrusInner));
+      }
     }
 
     function grnCheck(i, ordQty) {
