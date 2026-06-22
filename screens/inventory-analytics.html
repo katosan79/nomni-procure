@@ -82,16 +82,14 @@
     .var-val.high { color: var(--status-risk-fg); }
 
     /* KPI strip */
-    .var-kpi-strip {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: var(--space-md); margin-bottom: var(--space-xl);
-    }
-    .var-kpi { background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-lg); }
-    .var-kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: var(--space-xs); }
-    .var-kpi-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
-    .var-kpi-value.warn { color: var(--status-warn-fg); }
-    .var-kpi-value.risk { color: var(--status-risk-fg); }
-    .var-kpi-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
+    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm); transition: box-shadow 0.12s; }
+    .kpi-tile:hover { box-shadow: var(--shadow-md); }
+    .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; font-feature-settings: 'tnum' 1; }
+    .kpi-value.warn { color: var(--status-warn-fg); }
+    .kpi-value.risk { color: var(--status-risk-fg); }
+    .kpi-context { font-size: 12px; color: var(--text-soft); font-weight: 500; }
 
     /* Section card */
     .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
@@ -104,7 +102,7 @@
     .table-wrap { overflow-x: auto; }
 
     @media (max-width: 768px) {
-      .var-kpi-strip { grid-template-columns: 1fr 1fr; }
+      .kpi-strip { grid-template-columns: 1fr 1fr; }
       .var-row { grid-template-columns: 120px 1fr 60px; }
     }
   </style>
@@ -121,8 +119,8 @@
           <h1 class="page-title">Variance Analytics</h1>
         </div>
         <div class="page-actions">
-          <button class="btn btn-outline" onclick="window.location='inventory.html'"><i class="ti ti-arrow-left"></i>Operations</button>
-          <button class="btn btn-outline" onclick="alert('Export coming soon')"><i class="ti ti-download"></i>Export XLSX</button>
+          <button class="nb-btn" onclick="window.location='inventory.html'"><i class="ti ti-arrow-left"></i>Operations</button>
+          <button class="nb-btn" onclick="alert('Export coming soon')"><i class="ti ti-download"></i>Export XLSX</button>
         </div>
       </header>
 
@@ -147,26 +145,26 @@
       </div>
 
       <!-- KPI strip -->
-      <div class="var-kpi-strip">
-        <div class="var-kpi">
-          <div class="var-kpi-label">Outlets above risk</div>
-          <div class="var-kpi-value risk">3</div>
-          <div class="var-kpi-sub">Bondi Beach, Surry Hills, Newtown</div>
+      <div class="kpi-strip">
+        <div class="kpi-tile">
+          <div class="kpi-label">Outlets above risk</div>
+          <div class="kpi-value risk">3</div>
+          <div class="kpi-context">Bondi Beach, Surry Hills, Newtown</div>
         </div>
-        <div class="var-kpi">
-          <div class="var-kpi-label">Network avg variance</div>
-          <div class="var-kpi-value warn">4.1%</div>
-          <div class="var-kpi-sub">vs 3.2% last week</div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Network avg variance</div>
+          <div class="kpi-value warn">4.1%</div>
+          <div class="kpi-context">vs 3.2% last week</div>
         </div>
-        <div class="var-kpi">
-          <div class="var-kpi-label">Unresolved anomalies</div>
-          <div class="var-kpi-value warn">7</div>
-          <div class="var-kpi-sub">Items with no log explanation</div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Unresolved anomalies</div>
+          <div class="kpi-value warn">7</div>
+          <div class="kpi-context">Items with no log explanation</div>
         </div>
-        <div class="var-kpi">
-          <div class="var-kpi-label">Estimated COGS gap</div>
-          <div class="var-kpi-value">$1,240</div>
-          <div class="var-kpi-sub">This week across all outlets</div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Estimated COGS gap</div>
+          <div class="kpi-value">$1,240</div>
+          <div class="kpi-context">This week across all outlets</div>
         </div>
       </div>
 

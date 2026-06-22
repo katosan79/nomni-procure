@@ -127,8 +127,8 @@
           <h1 class="page-title">Inventory Governance</h1>
         </div>
         <div class="page-actions hq-only">
-          <button class="btn btn-outline" onclick="window.location='inventory.html'"><i class="ti ti-arrow-left"></i>Operations</button>
-          <button class="btn btn-primary" onclick="invToast('New template created')"><i class="ti ti-plus"></i>New template</button>
+          <button class="nb-btn" onclick="window.location='inventory.html'"><i class="ti ti-arrow-left"></i>Operations</button>
+          <button class="nb-btn primary" onclick="invToast('New template created')"><i class="ti ti-plus"></i>New template</button>
         </div>
       </header>
 
@@ -175,7 +175,7 @@
             <div class="section-header-title">HQ Count Templates</div>
             <div class="section-header-sub">Define which count sheets outlets must complete and how often. Templates are pushed to outlet groups.</div>
           </div>
-          <button class="btn btn-outline role-editor-only" onclick="invToast('Edit template — coming soon')"><i class="ti ti-plus"></i>New template</button>
+          <button class="nb-btn hq-only" onclick="invToast('Edit template — coming soon')"><i class="ti ti-plus"></i>New template</button>
         </div>
         <div class="section-body">
           <div class="template-grid">
@@ -209,7 +209,7 @@
               </div>
               <div class="template-card-footer">
                 <span style="font-size:12px;color:var(--text-soft);">Last pushed 3 Jun</span>
-                <button class="btn btn-outline role-editor-only" style="height:28px;font-size:12px;" onclick="invToast('Template pushed to NSW Metro outlets')"><i class="ti ti-send"></i>Push to group</button>
+                <button class="nb-btn hq-only" onclick="invToast('Template pushed to NSW Metro outlets')"><i class="ti ti-send"></i>Push to group</button>
               </div>
             </div>
 
@@ -242,7 +242,7 @@
               </div>
               <div class="template-card-footer">
                 <span style="font-size:12px;color:var(--text-soft);">Last pushed 1 Jun</span>
-                <button class="btn btn-outline role-editor-only" style="height:28px;font-size:12px;" onclick="invToast('Template pushed to VIC Metro outlets')"><i class="ti ti-send"></i>Push to group</button>
+                <button class="nb-btn hq-only" onclick="invToast('Template pushed to VIC Metro outlets')"><i class="ti ti-send"></i>Push to group</button>
               </div>
             </div>
 
@@ -267,7 +267,7 @@
                 <div class="override-item-name">Chicken Breast 500g</div>
                 <div class="override-outlet">NSW Metro · Requested by Sarah Kim · 20 Jun</div>
               </div>
-              <button class="btn btn-outline" style="height:28px;font-size:12px;" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-external-link"></i>View item</button>
+              <button class="nb-btn" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-external-link"></i>View item</button>
             </div>
             <div class="override-card-body">
               <div class="override-comparison">
@@ -285,8 +285,8 @@
               <div class="override-requestor">Requested by Sarah Kim · NSW Metro Outlet Manager</div>
             </div>
             <div class="override-card-footer">
-              <button class="btn btn-outline" onclick="rejectOverrideCard('override-chicken','Chicken Breast NSW Metro override rejected')">Reject</button>
-              <button class="btn btn-primary" onclick="approveOverrideCard('override-chicken','Chicken Breast 500g NSW Metro par updated to 14 kg')"><i class="ti ti-check"></i>Approve 14 kg</button>
+              <button class="nb-btn" onclick="rejectOverrideCard('override-chicken','Chicken Breast NSW Metro override rejected')">Reject</button>
+              <button class="nb-btn primary" onclick="approveOverrideCard('override-chicken','Chicken Breast 500g NSW Metro par updated to 14 kg')"><i class="ti ti-check"></i>Approve 14 kg</button>
             </div>
           </div>
 
@@ -297,7 +297,7 @@
                 <div class="override-item-name">Avocado</div>
                 <div class="override-outlet">NSW Metro · Requested by Jake Chen · 18 Jun</div>
               </div>
-              <button class="btn btn-outline" style="height:28px;font-size:12px;" onclick="openItemDrawer('avocado')"><i class="ti ti-external-link"></i>View item</button>
+              <button class="nb-btn" onclick="openItemDrawer('avocado')"><i class="ti ti-external-link"></i>View item</button>
             </div>
             <div class="override-card-body">
               <div class="override-comparison">
@@ -315,8 +315,8 @@
               <div class="override-requestor">Requested by Jake Chen · NSW Metro Outlet Manager</div>
             </div>
             <div class="override-card-footer">
-              <button class="btn btn-outline" onclick="rejectOverrideCard('override-avocado','Avocado NSW Metro override rejected')">Reject</button>
-              <button class="btn btn-primary" onclick="approveOverrideCard('override-avocado','Avocado NSW Metro par updated to 70 each')"><i class="ti ti-check"></i>Approve 70 each</button>
+              <button class="nb-btn" onclick="rejectOverrideCard('override-avocado','Avocado NSW Metro override rejected')">Reject</button>
+              <button class="nb-btn primary" onclick="approveOverrideCard('override-avocado','Avocado NSW Metro par updated to 70 each')"><i class="ti ti-check"></i>Approve 70 each</button>
             </div>
           </div>
 
@@ -395,8 +395,8 @@
       </div>
     </div>
     <div class="drawer-footer">
-      <button class="btn btn-outline" onclick="closeItemDrawer()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveItemDrawer()"><i class="ti ti-check"></i>Save changes</button>
+      <button class="nb-btn" onclick="closeItemDrawer()">Cancel</button>
+      <button class="nb-btn primary" onclick="saveItemDrawer()"><i class="ti ti-check"></i>Save changes</button>
     </div>
   </aside>
 
