@@ -1,7 +1,7 @@
 # Nomni Procure — Product Requirements Document
 
-**Version:** 1.1  
-**Last updated:** 14 Jun 2026  
+**Version:** 1.2  
+**Last updated:** 22 Jun 2026  
 **Status:** Living document — update after each sprint or prototype revision  
 **Source:** Derived from 23 HTML prototype screens in `/screens/`
 
@@ -566,7 +566,181 @@ Opening stock
 
 ---
 
-### 3.8 Invoices — `invoices.html`, `invoice-detail.html`
+#### 3.7.6 Actual vs Theoretical Variance Report *(Phase 1 — build next)*
+
+**Purpose:** Close the parity gap with MarketMan and Apicbase. Surface the difference between what recipes say should have been consumed (theoretical) and what stock counts show was actually consumed (actual).
+
+**Trigger:** Computed when a Full count session is approved and locked.
+
+**Formula:**
+```
+Theoretical consumption = Σ (recipe portions sold × ingredient qty per recipe)
+Actual consumption      = Opening stock + Purchases − Closing stock
+Variance $              = Actual COGS − Theoretical COGS
+Variance %              = Variance $ / Theoretical COGS × 100
+```
+
+**Data requirements:**
+- Locked HQ recipe (ingredient list + portions) — source of theoretical
+- POS unit sales data per outlet per period — multiplies against recipe portions
+- GRN-confirmed purchase quantities — adds to opening stock
+- Count sheet closing quantities — closes the period
+
+**Variance thresholds (Vera-governed):**
+
+| Range | State | Action |
+|---|---|---|
+| < 1% | ok | No action |
+| 1–2% | warn | Vera flags for outlet review |
+| 2–3% | risk | Vera flags for HQ attention |
+| > 3% | urgent | Vera escalates to HQ, blocks period close until acknowledged |
+
+**HQ cross-outlet view (new panel on `inventory.html`):**
+- Heat map table: Outlet × Category; cell colour = variance tier
+- Sort by worst variance %
+- Click cell → drill into that outlet's count session detail
+- Vera agent strip at top: "N outlets above 2% variance · worst: Bondi Beach at 8.1%"
+
+**Outlet view (`count-session-detail.html`):**
+- Existing COGS summary aside updated to show Actual vs Theoretical side by side
+- Per-category variance bar chart (already in prototype — wire to live calculation)
+- Vera note on session if any category exceeds 2%
+
+**Key competitive advantage:** Because Nomni's recipes are HQ-locked, the theoretical consumption baseline is identical across all outlets using the same recipe version. No competitor can claim this data integrity — outlets in MarketMan can drift their local recipes.
+
+---
+
+#### 3.7.7 Structured Wastage Logging *(Phase 1)*
+
+**Purpose:** Replace the basic waste tab with structured reason codes so Vera can attribute variance root cause.
+
+**Updates to Waste sub-tab (`inventory.html`):**
+
+**Wastage entry fields:**
+```javascript
+{
+  item,           // references Item.buyerName
+  outlet,
+  qty, uom,
+  reason,         // 'Spoilage' | 'Over-portion' | 'Breakage' | 'Theft' | 'End of day' | 'Expired' | 'Other'
+  reasonNote,     // optional free text
+  cost,           // auto-calc: qty × item.lastCost
+  loggedBy,
+  loggedAt
+}
+```
+
+**Updated waste sub-tab columns:** Item, Outlet, Qty, Reason (colour-coded pill), Cost, Logged by, Date
+
+**HQ view:** Aggregated waste by reason code across all outlets — enables chain-wide pattern detection (e.g. if spoilage spikes at 3 outlets in the same week, Vera surfaces this to HQ).
+
+**Reason code colour coding:**
+- Spoilage / Expired / End of day → warn (amber) — operational issue
+- Over-portion → risk (red) — training issue
+- Theft / Breakage → risk (red) — loss issue
+
+**Vera integration:** Wastage reason codes feed Vera's variance root-cause attribution. Vera can distinguish a variance caused by spoilage (supplier quality issue) from over-portioning (staff training issue) from theft (security issue).
+
+---
+
+#### 3.7.8 HQ-Governed Par Levels and Count Templates *(Phase 2)*
+
+**Purpose:** Structural differentiation — no competitor governs par levels and count templates centrally. This feature lets HQ define the inventory operating standard for every outlet.
+
+**HQ par level governance:**
+- Par levels set by HQ on Item master (already exists) now become the *default* for every outlet in the group
+- Outlet Managers can request a local override; HQ approves or rejects via notification
+- Items with outlet-specific overrides shown with amber "Local override" badge in HQ item view
+- Governance Agent (Sloan) monitors for par levels set significantly below network average and flags to HQ
+
+**HQ count templates:**
+- HQ defines which items appear on each sheet (Dry Store / Freezer / Bar / FOH) across all outlets in a group
+- Template specifies: item list, count order (by storage area / alphabetical / by supplier), required vs optional
+- Outlets inherit the template when creating a new count session — cannot add or remove items without HQ approval
+- HQ can push an updated template to all outlets in a group (same push model as market lists)
+
+**Count template data structure:**
+```javascript
+{
+  templateId,
+  outletGroup,   // applies to all outlets in this group
+  sheets: [{
+    name,        // "Dry Store" | "Freezer" | "Bar" | "FOH"
+    cadence,     // 'Weekly' | 'Fortnightly' | 'Monthly'
+    required,
+    items: [{
+      itemId,    // references Item.internalId
+      sortOrder,
+      countUnit  // may differ from purchase UOM (e.g. count in mL not L)
+    }]
+  }],
+  pushedAt, pushedBy, version
+}
+```
+
+---
+
+#### 3.7.9 Invoice Agent → GRN Pipeline *(Phase 2)*
+
+**Purpose:** When Cyrus extracts and matches an invoice, the confirmed line items automatically update on-hand inventory stock levels as a GRN — closing the loop between procurement and inventory without manual entry.
+
+**Flow:**
+1. Invoice arrives → Cyrus extracts line items (already built)
+2. Invoice matched to PO (already built)
+3. On invoice approval: Cyrus emits `invoice.approved` event
+4. Inventory module receives event → creates auto-GRN for each confirmed line item
+5. On-hand quantity updated: `onHand += confirmedQty × convFactor`
+6. GRN record created with `source: 'cyrus-auto'` and invoice reference
+7. Vera re-evaluates variance with updated on-hand figures
+
+**User-facing change:** GRN tab on `order-detail.html` shows `source: 'cyrus-auto'` rows with a Cyrus agent chip — distinguishable from manually entered GRNs.
+
+**Business rule:** Auto-GRN only fires if `3-way match = pass`. Failed or pending invoices require manual GRN confirmation.
+
+---
+
+#### 3.7.10 Central Kitchen → Outlet Transfers *(Phase 3)*
+
+**Purpose:** Multi-unit groups with a central kitchen need to track inventory dispatched from the CK to individual outlets. MarketMan is the only competitor with a verified transfer feature.
+
+**Transfer flow:**
+1. CK staff logs dispatch: item, qty, destination outlet(s), batch/lot
+2. Transfer appears in Transfers sub-tab as `status: Dispatched`
+3. Outlet staff confirms receipt → status becomes `Received`
+4. On receipt: CK on-hand decreases; outlet on-hand increases
+5. Transfer cost (at CK production cost) is attributed to the receiving outlet for COGS
+
+**Transfer data structure:**
+```javascript
+{
+  transferId,
+  fromOutlet,    // Central Kitchen
+  toOutlet,
+  item,          // Item.internalId
+  qty, uom,
+  costPerUnit,   // CK production cost (from Production batch recipe)
+  batchRef,      // optional lot/batch reference
+  dispatchedAt, dispatchedBy,
+  receivedAt, receivedBy,
+  status         // 'Dispatched' | 'Awaiting confirmation' | 'Received' | 'Discrepancy'
+}
+```
+
+---
+
+#### 3.7.11 Dynamic Par Levels via Otto *(Phase 3)*
+
+**Purpose:** Instead of static par levels set by HQ, Otto calculates recommended par levels per outlet per item from rolling 4-week sales cadence — adapting automatically to seasonal demand or outlet volume changes.
+
+**Logic:**
+```
+Recommended par = (avg daily usage × lead time days) + safety stock buffer
+Safety stock    = (max daily usage − avg daily usage) × lead time days
+```
+
+Otto surfaces par level adjustment recommendations on the Items page — HQ reviews and applies (same approval model as other Otto suggestions).
+
+--- — `invoices.html`, `invoice-detail.html`
 
 **Purpose:** Finance accounts payable — receive, match, approve, and export invoices.
 
@@ -1119,17 +1293,29 @@ Agents appear in:
 
 ### 5.2 Vera — Variance Agent
 
-**Domain:** Inventory variance, spend anomaly detection
+**Domain:** Inventory variance, spend anomaly detection, wastage root-cause attribution
 
-**Capabilities:**
+**Capabilities (current prototype):**
 - Flags items with stock variance > 2× the network average
 - Surfaces anomalies on the Inventory variance panel (bar chart highlight)
 - Monitors spend on order list — flags unusual order values
 - Analyses spot count results against theoretical usage: "Analysing spot count against theoretical usage…" (shown on spot-count Done screen)
 
+**Capabilities (Phase 1 additions — §3.7.6, §3.7.7):**
+- Computes Actual vs Theoretical variance per outlet per period on count session lock
+- Applies 4-tier variance thresholds: <1% ok · 1–2% warn · 2–3% risk · >3% urgent
+- Surfaces HQ heat map of variance across all outlets (worst offenders sorted first)
+- Attributes variance root cause from wastage reason codes (spoilage vs over-portion vs theft)
+- Blocks period close for outlets with >3% variance until HQ acknowledges
+- Chain-wide pattern detection: if the same wastage reason spikes across 3+ outlets in the same week, Vera escalates to HQ as a systemic issue
+
+**Capabilities (Phase 2 addition — §3.7.9):**
+- Re-evaluates outlet variance figures after an auto-GRN fires from a Cyrus-approved invoice
+
 **States shown in prototype:**
 - Inventory: agent strip at top of page with active flag count
 - Reporting: anomaly card "Bondi Beach variance 2.5× average"
+- Spot count: "Analysing spot count against theoretical usage…" on Done screen
 
 ---
 
@@ -1268,6 +1454,22 @@ Control height: `--control-h`
 
 ## 7. Out of Scope / Future Work
 
+### Inventory Roadmap (added v1.2 — from competitive analysis Jun 2026)
+
+**Phase 1 — Parity with MarketMan (build next):**
+- §3.7.6 Actual vs Theoretical variance report — wire recipe × POS → theoretical COGS; Vera cross-outlet heat map
+- §3.7.7 Structured wastage logging with reason codes (Spoilage / Over-portion / Breakage / Theft)
+
+**Phase 2 — Differentiation (no competitor does this):**
+- §3.7.8 HQ-governed par levels and count templates — HQ pushes both to outlet groups; outlet override requires approval
+- §3.7.9 Invoice Agent → auto-GRN pipeline (Cyrus approved invoice → on-hand quantity update)
+- Mobile-first count flow — outlet staff count on mobile; results sync to HQ in real time
+
+**Phase 3 — Strategic moat:**
+- §3.7.10 Central Kitchen → outlet inventory transfer module
+- §3.7.11 Dynamic par levels via Otto (demand-forecast par from rolling 4-week sales)
+- Vera variance root-cause attribution — chain-wide pattern detection across wastage reasons
+
 ### Phase 2 (explicitly gated in prototype)
 
 - **Reporting & Analytics module** — full cross-outlet dashboard is preview-only; blocked by Phase 2 gate banner
@@ -1320,3 +1522,19 @@ Control height: `--control-h`
 11. **Reporting Phase 2 scope** — the prototype shows charts, a table view, and an audit log. Are the full interactive charts and the "Ask Nomni" AI query bar both Phase 2, or is only the AI query Phase 2?
 
 12. **Multi-brand market lists** — the market list table shows Brand as a column and the hierarchy tree shows three brands. Can a single market list span multiple brands, or is each list brand-scoped?
+
+13. **POS sales data source for theoretical consumption** — §3.7.6 requires POS unit sales per outlet per period. Which POS systems are in scope for Phase 1? Is a manual sales upload fallback required for outlets without a POS integration?
+
+14. **Variance period alignment** — Full count sessions close a period (weekly / fortnightly / monthly). Does theoretical consumption use the same period, or does it use a rolling daily calculation? What happens when a count period is missed?
+
+15. **HQ par level overrides** — §3.7.8 allows outlets to request local par level overrides. Who approves — HQ Admin only, or HQ Approver too? Is there a time limit on override validity (e.g. overrides expire after 90 days)?
+
+16. **Count template versioning** — if HQ updates a count template and pushes it to 50 outlets, what happens to count sessions already in progress at those outlets? Do they use the old template or pick up the new one?
+
+17. **Auto-GRN conflict resolution** — §3.7.9 fires an auto-GRN when Cyrus approves an invoice. If the outlet has already manually entered a GRN for the same PO, does the auto-GRN merge, replace, or create a duplicate?
+
+18. **CK transfer pricing** — §3.7.10 attributes CK transfer cost at the CK production cost. How is production cost calculated for Production batch recipes (e.g. Sourdough Bread Batch)? Does it use the latest ingredient costs from the most recent invoice?
+
+19. **Variance threshold configurability** — the 4-tier thresholds in §3.7.6 (<1% / 1–2% / 2–3% / >3%) are defaults. Are these configurable per outlet group? Per category? Or platform-wide only?
+
+20. **Wastage logging access** — §3.7.7 requires outlet staff to log wastage. Can Outlet User role (lowest outlet access) log wastage, or is it Outlet Manager only?
