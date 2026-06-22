@@ -735,6 +735,38 @@
     .par-approve-btn { background: var(--mint); color: var(--spinach); border-color: color-mix(in srgb, var(--fern) 30%, transparent); }
     .par-reject-btn  { background: var(--surface); color: var(--text-soft); border-color: var(--border); }
 
+    /* §3.7.10 — CK Transfer panel */
+    .ck-source-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      background: color-mix(in srgb, var(--procurement-magenta, #B05EC0) 12%, transparent);
+      color: #7A3D88;
+      padding: 1px 6px; border-radius: var(--radius-xs);
+    }
+    .trf-kpi-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
+    .trf-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); }
+    .trf-kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: var(--space-xs); }
+    .trf-kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
+    .trf-kpi-sub   { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .confirm-btn {
+      height: 26px; padding: 0 var(--space-md); font-size: 12px; font-weight: 600;
+      border-radius: var(--radius-xs); border: 1px solid color-mix(in srgb, var(--fern) 35%, transparent);
+      background: var(--mint); color: var(--spinach); cursor: pointer; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+    }
+    .confirm-btn:hover { background: color-mix(in srgb, var(--mint) 80%, var(--fern)); }
+    .trf-row-received { background: color-mix(in srgb, var(--mint) 40%, transparent) !important; }
+
+    /* §3.7.11 — Otto dynamic par badge on items table */
+    .otto-par-nudge {
+      display: inline-flex; align-items: center; gap: 3px; margin-left: var(--space-xs);
+      font-size: 10px; font-weight: 700; cursor: pointer;
+      color: var(--text-accent); background: var(--mint);
+      padding: 1px 5px; border-radius: var(--radius-xs);
+      border: 1px solid color-mix(in srgb, var(--fern) 20%, transparent);
+    }
+    .otto-par-nudge i { font-size: 9px; }
+
     /* HQ Count Templates panel (§3.7.8) */
     .template-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
     .template-card-header { padding: var(--space-lg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); }
@@ -1183,11 +1215,11 @@
               <span class="agent-card-spacer"></span>
               <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
             </div>
-            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">8 items have fallen below par — I've drafted replenishment orders</p>
-            <p class="agent-why">Chicken Breast, Avocado and 6 others are below par across 14 outlets. Draft POs are staged to each outlet's preferred supplier for one-tap approval.</p>
+            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">8 items below par — drafts ready. Also: 4 par levels are out of step with 4-week sales cadence</p>
+            <p class="agent-why">Replenishment drafts staged for Chicken Breast, Avocado and 6 others. Separately, rolling 4-week usage data suggests 4 items (Chicken Breast, Avocado, Feta Cheese, Mixed Leaf) have par levels that no longer reflect real demand — see Templates → Dynamic Par for recommendations.</p>
             <div class="agent-actions">
               <button class="nb-btn primary" onclick="resolveAgent('otto-card','Approved — 8 replenishment drafts sent to outlets')"><i class="ti ti-check" aria-hidden="true"></i>Approve drafts</button>
-              <button class="nb-btn" onclick="invToast('Opening draft orders…')">Review</button>
+              <button class="nb-btn" onclick="switchTab('templates')"><i class="ti ti-chart-line" aria-hidden="true"></i>View par suggestions</button>
             </div>
           </div>
         </article>
@@ -1263,7 +1295,7 @@
               <td class="cell-name">Chicken Breast 500g<div class="cell-sub">Used in 8 recipes</div></td>
               <td><span class="cell-cat">Protein</span></td>
               <td class="tabular">kg</td>
-              <td class="tabular" style="text-align:right">10</td>
+              <td class="tabular" style="text-align:right">10 <span class="otto-par-nudge" onclick="switchTab('templates')" title="Otto recommends ↑13 kg based on 4-week sales"><i class="ti ti-sparkles"></i>↑13</span></td>
               <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Sydney Butchers</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
               <td class="cell-timestamp">2h ago</td>
@@ -1288,7 +1320,7 @@
               <td class="cell-name">Avocado<div class="cell-sub">Used in 4 recipes</div></td>
               <td><span class="cell-cat">Produce</span></td>
               <td class="tabular">each</td>
-              <td class="tabular" style="text-align:right">50</td>
+              <td class="tabular" style="text-align:right">50 <span class="otto-par-nudge" onclick="switchTab('templates')" title="Otto recommends ↑65 based on 4-week sales"><i class="ti ti-sparkles"></i>↑65</span></td>
               <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+2</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
               <td class="cell-timestamp">1 day ago</td>
@@ -1313,7 +1345,7 @@
               <td class="cell-name">Feta Cheese<div class="cell-sub">Used in 6 recipes</div></td>
               <td><span class="cell-cat">Dairy</span></td>
               <td class="tabular">kg</td>
-              <td class="tabular" style="text-align:right">5</td>
+              <td class="tabular" style="text-align:right">5 <span class="otto-par-nudge" onclick="switchTab('templates')" title="Otto recommends ↑4.5 kg avg — SA/QLD Metro below network baseline"><i class="ti ti-sparkles"></i>↑4.5</span></td>
               <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Dairy Direct</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
               <td class="cell-timestamp">3 days ago</td>
@@ -1623,21 +1655,59 @@
 
       </div>
 
-      <!-- ══ Panel: Transfers (IN-9) ══ -->
+      <!-- ══ Panel: Transfers / CK (§3.7.10) ══ -->
       <div class="inv-panel" id="panel-transfers">
-        <div class="sub-card">
-          <div class="sub-card-title">Inter-outlet transfers</div>
-          <p class="sub-card-sub">Request → approve → dispatch → receive, with full audit trail. Both stock positions update on receive.</p>
-          <button class="btn btn-primary" style="margin-bottom:var(--space-lg);"><i class="ti ti-plus"></i>New transfer request</button>
-          <table class="data-table">
-            <thead><tr><th>Item</th><th>From → To</th><th style="text-align:right">Qty</th><th>Stage</th></tr></thead>
-            <tbody>
-              <tr><td class="cell-name">Avocado</td><td>Bondi → Surry Hills</td><td class="tabular" style="text-align:right">20 each</td><td><span class="nb-pill info"><i class="ti ti-truck-delivery"></i>Dispatched</span></td></tr>
-              <tr><td class="cell-name">Olive Oil 1L</td><td>Newtown → Surry Hills</td><td class="tabular" style="text-align:right">6 bottle</td><td><span class="nb-pill warn"><i class="ti ti-clock"></i>Awaiting approval</span></td></tr>
-              <tr><td class="cell-name">Feta Cheese</td><td>Melbourne → St Kilda</td><td class="tabular" style="text-align:right">4 kg</td><td><span class="nb-pill ok"><i class="ti ti-check"></i>Received</span></td></tr>
-            </tbody>
-          </table>
+
+        <!-- KPI strip -->
+        <div class="trf-kpi-strip">
+          <div class="trf-kpi">
+            <div class="trf-kpi-label">In transit</div>
+            <div class="trf-kpi-value" id="trf-kpi-transit">2</div>
+            <div class="trf-kpi-sub">Awaiting outlet confirmation</div>
+          </div>
+          <div class="trf-kpi">
+            <div class="trf-kpi-label">Dispatched today</div>
+            <div class="trf-kpi-value">1</div>
+            <div class="trf-kpi-sub">From Sydney Central Kitchen</div>
+          </div>
+          <div class="trf-kpi">
+            <div class="trf-kpi-label">Received this week</div>
+            <div class="trf-kpi-value">4</div>
+            <div class="trf-kpi-sub">$189.51 in transfer value</div>
+          </div>
         </div>
+
+        <!-- Transfer log -->
+        <div class="sub-card" style="padding:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-lg) var(--space-xl);border-bottom:1px solid var(--border);">
+            <div>
+              <div class="sub-card-title" style="margin-bottom:2px;">CK Transfer log</div>
+              <p class="sub-card-sub" style="margin-bottom:0;">Dispatch items from Sydney Central Kitchen to outlet groups. On receipt, CK on-hand decreases and outlet on-hand increases. Transfer cost attributed at CK production cost.</p>
+            </div>
+            <button class="btn btn-primary" onclick="invToast('Opening CK dispatch form…')"><i class="ti ti-plus"></i>Log dispatch</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" id="trf-table">
+              <thead>
+                <tr>
+                  <th>Transfer</th>
+                  <th>Item</th>
+                  <th>Route</th>
+                  <th style="text-align:right">Qty</th>
+                  <th style="text-align:right">CK cost</th>
+                  <th>Batch ref</th>
+                  <th>Dispatched</th>
+                  <th>Status</th>
+                  <th><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="trf-tbody">
+                <!-- rows rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
       <!-- ══ Panel: Waste (IN-10) ══ -->
@@ -1951,6 +2021,36 @@
             </div>
           </div>
 
+        </div>
+
+        <!-- Section: Dynamic Par Recommendations by Otto (§3.7.11) -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
+            <div>
+              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px;">Dynamic Par Recommendations</div>
+              <div style="font-size:13px;color:var(--text-soft);">Otto recalculates suggested par levels weekly from rolling 4-week sales cadence. Formula: <code style="font-size:11px;background:var(--surface-soft);padding:1px 5px;border-radius:var(--radius-xs);">(avg daily usage × lead time) + safety stock buffer</code></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--space-sm);">
+              <span style="font-size:12px;color:var(--text-soft);">Last run: Today 6:00am</span>
+              <span style="background:var(--mint);color:var(--spinach);font-size:12px;font-weight:700;padding:3px 10px;border-radius:var(--radius-sm);" id="otto-par-count">4 suggestions</span>
+            </div>
+          </div>
+
+          <div class="template-card">
+            <div class="template-card-header" style="padding:var(--space-md) var(--space-xl);">
+              <div style="display:flex;align-items:center;gap:var(--space-md);">
+                <span class="agent-avatar" data-agent="otto" style="width:32px;height:32px;font-size:12px;" aria-hidden="true">Ot</span>
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:var(--text);">Otto</div>
+                  <div style="font-size:12px;color:var(--text-soft);">Ordering agent · Dynamic par analysis</div>
+                </div>
+              </div>
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-accent);background:var(--mint);padding:2px 7px;border-radius:var(--radius-xs);">✦ Agent</span>
+            </div>
+            <div id="otto-par-list">
+              <!-- rendered by renderOttoParSection() -->
+            </div>
+          </div>
         </div>
 
       </div><!-- /panel-templates -->
@@ -2699,6 +2799,124 @@
       }
     }
 
+    /* ── §3.7.10 CK Transfer data + rendering ── */
+    const CK_TRANSFERS = [
+      { id:'TRF-0012', item:'Chicken Stock',   from:'Sydney Central Kitchen', to:'Surry Hills Social',   qty:20,  uom:'L',    costPer:1.85, batchRef:'BATCH-CK-0081', dispatchedAt:'Today 8:00am',    dispatchedBy:'James Nguyen', status:'Dispatched' },
+      { id:'TRF-0011', item:'Brioche Buns',    from:'Sydney Central Kitchen', to:'Bondi Beach',          qty:48,  uom:'each', costPer:0.62, batchRef:'BATCH-CK-0080', dispatchedAt:'Yesterday 7:30am', dispatchedBy:'James Nguyen', status:'Dispatched' },
+      { id:'TRF-0010', item:'Chicken Stock',   from:'Sydney Central Kitchen', to:'Newtown',              qty:15,  uom:'L',    costPer:1.85, batchRef:'BATCH-CK-0079', dispatchedAt:'20 Jun 8:15am',   dispatchedBy:'Keith Tan',    receivedAt:'20 Jun 10:30am', receivedBy:'Marcus Lee',   status:'Received' },
+      { id:'TRF-0009', item:'Sourdough Bread', from:'Sydney Central Kitchen', to:'Darling Street Bistro',qty:30,  uom:'loaf', costPer:3.20, batchRef:'BATCH-CK-0078', dispatchedAt:'19 Jun 7:00am',   dispatchedBy:'James Nguyen', receivedAt:'19 Jun 9:15am',  receivedBy:'Tom Wilson',   status:'Received' },
+      { id:'TRF-0008', item:'Brioche Buns',    from:'Sydney Central Kitchen', to:'Surry Hills Social',   qty:36,  uom:'each', costPer:0.62, batchRef:'BATCH-CK-0077', dispatchedAt:'18 Jun 8:00am',   dispatchedBy:'Keith Tan',    receivedAt:'18 Jun 9:40am',  receivedBy:'Sarah Kim',    status:'Received' },
+      { id:'TRF-0007', item:'Chicken Stock',   from:'Sydney Central Kitchen', to:'Darling Street Bistro',qty:10,  uom:'L',    costPer:1.85, batchRef:'BATCH-CK-0076', dispatchedAt:'17 Jun 7:45am',   dispatchedBy:'James Nguyen', receivedAt:'17 Jun 10:00am', receivedBy:'Tom Wilson',   status:'Received' },
+    ];
+
+    const STATUS_TRF = {
+      'Dispatched': '<span class="nb-pill info"><i class="ti ti-truck-delivery"></i>Dispatched</span>',
+      'Received':   '<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span>',
+      'Discrepancy':'<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span>',
+    };
+
+    function renderTransfers() {
+      const tbody = document.getElementById('trf-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = CK_TRANSFERS.map((t, i) => {
+        const cost = (t.qty * t.costPer).toFixed(2);
+        const recvInfo = t.receivedAt ? `<div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${t.receivedAt} · ${t.receivedBy}</div>` : '';
+        const action = t.status === 'Dispatched'
+          ? `<button class="confirm-btn" onclick="confirmReceipt(${i})"><i class="ti ti-package" style="font-size:11px;"></i>Confirm receipt</button>`
+          : '—';
+        return `<tr id="trf-row-${i}" class="${t.status==='Received'?'trf-row-received':''}">
+          <td><div style="font-size:13px;font-weight:600;color:var(--text);">${t.id}</div><span class="ck-source-badge"><i class="ti ti-tools-kitchen-2" style="font-size:9px;"></i>CK</span></td>
+          <td class="cell-name">${t.item}</td>
+          <td style="font-size:13px;"><span style="color:var(--text-soft);">${t.from.replace('Sydney Central Kitchen','CK')}</span> <i class="ti ti-arrow-right" style="font-size:11px;color:var(--text-soft);"></i> <strong>${t.to}</strong></td>
+          <td class="tabular" style="text-align:right;">${t.qty} ${t.uom}</td>
+          <td class="tabular" style="text-align:right;">$${cost}</td>
+          <td style="font-size:12px;color:var(--text-soft);">${t.batchRef}</td>
+          <td><div style="font-size:13px;">${t.dispatchedAt}</div><div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${t.dispatchedBy}</div>${recvInfo}</td>
+          <td>${STATUS_TRF[t.status]||t.status}</td>
+          <td style="white-space:nowrap;">${action}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function confirmReceipt(idx) {
+      const t = CK_TRANSFERS[idx];
+      if (!t || t.status !== 'Dispatched') return;
+      t.status = 'Received';
+      t.receivedAt = 'Just now';
+      t.receivedBy = 'Outlet staff';
+      // update in-transit KPI
+      const inTransit = CK_TRANSFERS.filter(x => x.status === 'Dispatched').length;
+      const kpiEl = document.getElementById('trf-kpi-transit');
+      if (kpiEl) kpiEl.textContent = inTransit;
+      renderTransfers();
+      addInvActivity('CK transfer <strong>' + t.id + '</strong> received at <strong>' + t.to + '</strong> — ' + t.qty + ' ' + t.uom + ' ' + t.item + ' · on-hand updated', 'Outlet staff');
+      invToast(t.id + ' confirmed received · ' + t.to + ' on-hand updated');
+    }
+
+    /* ── §3.7.11 Otto dynamic par suggestions ── */
+    const OTTO_PAR_SUGGESTIONS = [
+      { item:'Chicken Breast 500g', itemKey:'chicken-breast', group:'NSW Metro', currentPar:'10 kg',    suggestedPar:'13 kg',    delta:'+30%', formula:'Avg daily 1.8 kg × 5d lead time + 4 kg safety stock', trend:'up' },
+      { item:'Avocado',             itemKey:'avocado',         group:'NSW Metro', currentPar:'50 each',  suggestedPar:'65 each',  delta:'+30%', formula:'Avg daily 9.2 × 5d lead time + 4 safety buffer',       trend:'up' },
+      { item:'Mixed Leaf 2kg',      itemKey:null,              group:'VIC Metro', currentPar:'8 bag',    suggestedPar:'6 bag',    delta:'–25%', formula:'Avg daily 0.9 × 5d lead time + 1 safety buffer — over-stocked', trend:'down' },
+      { item:'Feta Cheese',         itemKey:'feta',            group:'SA Metro',  currentPar:'2 kg',     suggestedPar:'4 kg',     delta:'+100%',formula:'Avg daily 0.6 kg × 4d lead time + 1.6 kg safety stock', trend:'up' },
+    ];
+
+    function applyOttoPar(idx) {
+      const s = OTTO_PAR_SUGGESTIONS[idx];
+      if (!s) return;
+      s._applied = true;
+      renderOttoParSection();
+      if (s.itemKey) {
+        const item = ITEM_DATA[s.itemKey];
+        const par = item?.pars?.find(p => p.group === s.group);
+        if (par) par.value = s.suggestedPar;
+      }
+      addInvActivity('Dynamic par applied — <strong>' + s.item + '</strong> ' + s.group + ' updated to ' + s.suggestedPar + ' (Otto recommendation)', 'HQ Administrator');
+      invToast('Par updated · ' + s.item + ' ' + s.group + ' → ' + s.suggestedPar);
+    }
+
+    function dismissOttoPar(idx) {
+      const s = OTTO_PAR_SUGGESTIONS[idx];
+      if (!s) return;
+      s._dismissed = true;
+      renderOttoParSection();
+      invToast('Dismissed — Otto will recalculate next week');
+    }
+
+    function renderOttoParSection() {
+      const el = document.getElementById('otto-par-list');
+      if (!el) return;
+      const active = OTTO_PAR_SUGGESTIONS.filter(s => !s._applied && !s._dismissed);
+      if (!active.length) {
+        el.innerHTML = `<div style="padding:var(--space-xl);text-align:center;color:var(--text-soft);font-size:14px;"><i class="ti ti-circle-check" style="font-size:24px;display:block;margin-bottom:var(--space-sm);color:var(--spinach);"></i>All par suggestions reviewed — Otto will recalculate next Monday</div>`;
+        return;
+      }
+      el.innerHTML = active.map((s, i) => {
+        const realIdx = OTTO_PAR_SUGGESTIONS.indexOf(s);
+        const trendIcon = s.trend === 'up' ? 'ti-trending-up' : 'ti-trending-down';
+        const trendColor = s.trend === 'up' ? 'var(--spinach)' : 'var(--status-warn-fg)';
+        return `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-lg);padding:var(--space-md) var(--space-xl);border-bottom:1px solid var(--border);">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:4px;">
+              <span style="font-size:14px;font-weight:700;color:var(--text);">${s.item}</span>
+              <span style="font-size:12px;color:var(--text-soft);">· ${s.group}</span>
+              <span style="font-size:11px;font-weight:700;color:${trendColor};background:color-mix(in srgb,${trendColor} 10%,transparent);padding:1px 5px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:2px;"><i class="ti ${trendIcon}" style="font-size:10px;"></i>${s.delta}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--space-lg);margin-bottom:var(--space-xs);">
+              <span style="font-size:13px;color:var(--text-soft);">Current: <strong style="color:var(--text);">${s.currentPar}</strong></span>
+              <i class="ti ti-arrow-right" style="font-size:12px;color:var(--text-soft);"></i>
+              <span style="font-size:13px;color:var(--text-soft);">Otto: <strong style="color:var(--text-accent);">${s.suggestedPar}</strong></span>
+            </div>
+            <div style="font-size:12px;color:var(--text-soft);font-style:italic;">${s.formula}</div>
+          </div>
+          <div style="display:flex;gap:var(--space-sm);align-items:center;flex-shrink:0;">
+            <button style="height:30px;padding:0 var(--space-md);font-size:12px;font-weight:600;border-radius:var(--radius-xs);border:1px solid var(--border);background:var(--surface);color:var(--text-soft);cursor:pointer;font-family:inherit;" onclick="dismissOttoPar(${realIdx})">Dismiss</button>
+            <button class="confirm-btn" style="height:30px;padding:0 var(--space-md);font-size:12px;" onclick="applyOttoPar(${realIdx})"><i class="ti ti-check" style="font-size:11px;"></i>Apply</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     function approveParOverride(evt, group, newValue) {
       evt.stopPropagation();
       if (!activeItemKey) return;
@@ -3088,10 +3306,12 @@
         if (!m) return;
         tr.style.cursor = 'pointer';
         tr.addEventListener('click', e => {
-          if (e.target.closest('.overflow-wrap, .overflow-btn')) return;
+          if (e.target.closest('.overflow-wrap, .overflow-btn, .otto-par-nudge')) return;
           openItemDrawer(m[1]);
         });
       });
+      renderTransfers();
+      renderOttoParSection();
     });
   </script>
 </body>
