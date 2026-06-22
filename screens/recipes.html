@@ -511,6 +511,51 @@
     .recipe-empty i { font-size:32px; color:var(--text-soft); }
     .recipe-empty-title { font-size:15px; font-weight:600; color:var(--text); }
     .recipe-empty-sub { font-size:13px; color:var(--text-soft); }
+
+    /* ── Category browse grid ── */
+    .cat-section { margin-bottom: var(--space-2xl); }
+    .cat-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-md);
+    }
+    .cat-section-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--space-md);
+    }
+    .cat-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      display: flex; flex-direction: column; gap: var(--space-sm);
+      text-align: left; font-family: inherit;
+    }
+    .cat-card:hover { border-color: var(--fern); box-shadow: var(--shadow-sm); }
+    .cat-card.active { border-color: var(--fern); background: var(--mint); }
+    .cat-icon-wrap {
+      width: 36px; height: 36px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center; font-size: 17px;
+    }
+    .cat-card-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .cat-card-count { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .cat-card.active .cat-card-name { color: var(--spinach); }
+
+    /* ── Recipe thumbnail ── */
+    .th-photo { width: 56px; padding-right: 0 !important; }
+    .td-photo { width: 56px; padding-right: 0 !important; }
+    .recipe-thumb {
+      width: 44px; height: 44px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; overflow: hidden; flex-shrink: 0;
+    }
+    .recipe-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    @media (max-width: 768px) { .cat-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 480px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body>
@@ -563,6 +608,60 @@
           <p class="kpi-tile-sub">Bulk-made, reduces inventory</p>
         </div>
       </div>
+
+      <!-- Category browse grid -->
+      <section class="cat-section" aria-label="Browse by category">
+        <div class="cat-section-header">
+          <span class="cat-section-label">Browse by category</span>
+        </div>
+        <div class="cat-grid" id="cat-grid">
+          <button class="cat-card active" onclick="filterByCategory(this,'')">
+            <div class="cat-icon-wrap" style="background:#F0FDF4;color:#129B41"><i class="ti ti-layout-grid" aria-hidden="true"></i></div>
+            <div class="cat-card-name">All recipes</div>
+            <div class="cat-card-count">346 recipes</div>
+          </button>
+          <button class="cat-card" onclick="filterByCategory(this,'Breakfast')">
+            <div class="cat-icon-wrap" style="background:#FFF7ED;color:#F59E0B"><i class="ti ti-coffee" aria-hidden="true"></i></div>
+            <div class="cat-card-name">Breakfast</div>
+            <div class="cat-card-count">58 recipes</div>
+          </button>
+          <button class="cat-card" onclick="filterByCategory(this,'Mains')">
+            <div class="cat-icon-wrap" style="background:#EFF6FF;color:#3F8AFB"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i></div>
+            <div class="cat-card-name">Mains</div>
+            <div class="cat-card-count">124 recipes</div>
+          </button>
+          <button class="cat-card" onclick="filterByCategory(this,'Desserts')">
+            <div class="cat-icon-wrap" style="background:#FDF2F8;color:#EE4B87"><i class="ti ti-ice-cream-2" aria-hidden="true"></i></div>
+            <div class="cat-card-name">Desserts</div>
+            <div class="cat-card-count">72 recipes</div>
+          </button>
+          <button class="cat-card" onclick="filterByCategory(this,'Beverages')">
+            <div class="cat-icon-wrap" style="background:#F0FDFA;color:#17B3A3"><i class="ti ti-glass-full" aria-hidden="true"></i></div>
+            <div class="cat-card-name">Beverages</div>
+            <div class="cat-card-count">39 recipes</div>
+          </button>
+          <button class="cat-card" onclick="filterByCategory(this,'Sides')">
+            <div class="cat-icon-wrap" style="background:#F7FEE7;color:#65A30D"><i class="ti ti-leaf" aria-hidden="true"></i></div>
+            <div class="cat-card-name">Sides</div>
+            <div class="cat-card-count">21 recipes</div>
+          </button>
+          <button class="cat-card" onclick="filterByCategory(this,'Sauces & Bases')">
+            <div class="cat-icon-wrap" style="background:#FAF5FF;color:#B05EC0"><i class="ti ti-droplet" aria-hidden="true"></i></div>
+            <div class="cat-card-name">Sauces &amp; Bases</div>
+            <div class="cat-card-count">14 recipes</div>
+          </button>
+          <button class="cat-card" onclick="filterByCategory(this,'Stocks & Bases')">
+            <div class="cat-icon-wrap" style="background:#FFF7ED;color:#EA580C"><i class="ti ti-flame" aria-hidden="true"></i></div>
+            <div class="cat-card-name">Stocks &amp; Bases</div>
+            <div class="cat-card-count">10 recipes</div>
+          </button>
+          <button class="cat-card" onclick="filterByCategory(this,'Bakery')">
+            <div class="cat-icon-wrap" style="background:#FEF9EE;color:#D97706"><i class="ti ti-bread" aria-hidden="true"></i></div>
+            <div class="cat-card-name">Bakery</div>
+            <div class="cat-card-count">8 recipes</div>
+          </button>
+        </div>
+      </section>
 
       <!-- Margin Agent: FC% alert panel -->
       <article class="agent-surface" id="fc-alert-panel" aria-label="Cyrus margin agent alert">
@@ -625,7 +724,7 @@
           <option value="prep">Preparation</option>
           <option value="production">Production batch</option>
         </select>
-        <select class="select-input" aria-label="Filter by category">
+        <select class="select-input" aria-label="Filter by category" id="filter-cat" onchange="applyCatFilter(this.value)">
           <option value="">All categories</option>
           <option>Breakfast</option>
           <option>Mains</option>
@@ -1223,10 +1322,39 @@
   </div><!-- /.page-body -->
 
   <script>
+    /* ── Category → thumbnail style map ── */
+    const CAT_STYLE = {
+      'Breakfast':      { bg:'#FFF7ED', color:'#F59E0B', icon:'ti-coffee' },
+      'Mains':          { bg:'#EFF6FF', color:'#3F8AFB', icon:'ti-tools-kitchen-2' },
+      'Desserts':       { bg:'#FDF2F8', color:'#EE4B87', icon:'ti-ice-cream-2' },
+      'Beverages':      { bg:'#F0FDFA', color:'#17B3A3', icon:'ti-glass-full' },
+      'Sides':          { bg:'#F7FEE7', color:'#65A30D', icon:'ti-leaf' },
+      'Sauces & Bases': { bg:'#FAF5FF', color:'#B05EC0', icon:'ti-droplet' },
+      'Bases':          { bg:'#FAF5FF', color:'#B05EC0', icon:'ti-droplet' },
+      'Stocks & Bases': { bg:'#FFF7ED', color:'#EA580C', icon:'ti-flame' },
+      'Bakery':         { bg:'#FEF9EE', color:'#D97706', icon:'ti-bread' },
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
       NomniShell.init('Recipes');
 
-      // Must run AFTER shell wraps the DOM, otherwise listeners are destroyed
+      /* ── Inject thumbnail column ── */
+      const thead = document.querySelector('.data-table thead tr');
+      const thPhoto = document.createElement('th');
+      thPhoto.className = 'th-photo';
+      thead.insertBefore(thPhoto, thead.firstChild);
+
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        /* cells[1] is Category BEFORE we prepend the thumbnail cell */
+        const cat = tr.cells[1]?.textContent.trim() ?? '';
+        const s = CAT_STYLE[cat] || { bg:'var(--surface-soft)', color:'var(--text-soft)', icon:'ti-tools-kitchen-2' };
+        const td = document.createElement('td');
+        td.className = 'td-photo';
+        td.innerHTML = `<div class="recipe-thumb" style="background:${s.bg};color:${s.color}"><i class="ti ${s.icon}" aria-hidden="true"></i></div>`;
+        tr.insertBefore(td, tr.firstChild);
+      });
+
+      /* ── Row click → detail page ── */
       const DETAIL_URLS = {
         finished:   'recipe-detail-finished.html',
         prep:       'recipe-detail-prep.html',
@@ -1241,6 +1369,14 @@
       });
     });
 
+    function getRowName(tr) {
+      return tr.querySelector('.recipe-name')?.textContent.trim().toLowerCase() ?? '';
+    }
+    function getRowCat(tr) {
+      /* after thumbnail injection, category is cells[2] */
+      return tr.cells[2]?.textContent.trim() ?? '';
+    }
+
     function syncEmptyState() {
       const visible = [...document.querySelectorAll('.data-table tbody tr')].filter(tr => tr.style.display !== 'none').length;
       const es = document.getElementById('recipe-empty-state');
@@ -1254,6 +1390,12 @@
       document.querySelectorAll('.status-pill-btn').forEach(b => b.classList.remove('active'));
       const si = document.querySelector('.search-input');
       if (si) si.value = '';
+      const sel = document.getElementById('filter-cat');
+      if (sel) sel.value = '';
+      const typeEl = document.getElementById('filter-type');
+      if (typeEl) typeEl.value = '';
+      /* reset category cards — first card = All */
+      document.querySelectorAll('.cat-card').forEach((c,i) => c.classList.toggle('active', i === 0));
       syncEmptyState();
     }
 
@@ -1265,7 +1407,7 @@
     function filterBreachedRecipes() {
       const breachedNames = ['flat white', 'eggs benedict', 'sourdough loaf'];
       document.querySelectorAll('.data-table tbody tr').forEach(tr => {
-        const name = tr.querySelector('td')?.textContent.trim().toLowerCase() ?? '';
+        const name = getRowName(tr);
         tr.style.display = breachedNames.some(n => name.includes(n)) ? '' : 'none';
       });
       document.getElementById('fc-alert-panel').style.display = 'none';
@@ -1280,10 +1422,34 @@
       syncEmptyState();
     }
 
+    function applyCatFilter(cat) {
+      /* sync category cards */
+      document.querySelectorAll('.cat-card').forEach(c => {
+        const cardCat = c.getAttribute('onclick').match(/'([^']*)'\)/)?.[1] ?? '';
+        c.classList.toggle('active', cardCat === cat);
+      });
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        tr.style.display = (!cat || getRowCat(tr) === cat) ? '' : 'none';
+      });
+      syncEmptyState();
+    }
+
+    function filterByCategory(card, cat) {
+      document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      const sel = document.getElementById('filter-cat');
+      if (sel) sel.value = cat;
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        tr.style.display = (!cat || getRowCat(tr) === cat) ? '' : 'none';
+      });
+      document.querySelector('.card')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      syncEmptyState();
+    }
+
     document.querySelector('.search-input')?.addEventListener('input', function() {
       const q = this.value.trim().toLowerCase();
       document.querySelectorAll('.data-table tbody tr').forEach(tr => {
-        const name = tr.querySelector('td')?.textContent.trim().toLowerCase() ?? '';
+        const name = getRowName(tr);
         tr.style.display = (!q || name.includes(q)) ? '' : 'none';
       });
       syncEmptyState();
