@@ -21,6 +21,13 @@
     .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap; }
     .page-title { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
     .page-title-meta { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-top: 2px; }
+    .recipe-img-wrap { position: relative; width: 96px; height: 96px; border-radius: var(--radius-lg); overflow: hidden; flex-shrink: 0; cursor: pointer; }
+    .recipe-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .recipe-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .recipe-img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+    .recipe-img-wrap:hover .recipe-img-overlay { opacity: 1; }
+    .recipe-img-overlay i { font-size: 18px; color: #fff; }
+    .recipe-img-overlay span { font-size: 11px; font-weight: 600; color: #fff; }
     .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
     .btn { display: inline-flex; align-items: center; gap: var(--space-xs); height: var(--control-h); padding-inline: var(--space-lg); border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; font-family: inherit; white-space: nowrap; text-decoration: none; transition: background 0.12s, color 0.12s, border-color 0.12s; }
     .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
@@ -175,7 +182,12 @@
 
     <!-- Page header — prep item has no "Push to outlets" -->
     <div class="page-header">
-      <div>
+      <div style="display:flex;align-items:flex-start;gap:var(--space-lg);">
+        <div class="recipe-img-wrap" onclick="showToast('Image upload coming soon…')">
+          <div class="recipe-img-placeholder" style="background:#FAF5FF;color:#B05EC0"><i class="ti ti-droplet" aria-hidden="true"></i></div>
+          <div class="recipe-img-overlay"><i class="ti ti-camera" aria-hidden="true"></i><span>Edit photo</span></div>
+        </div>
+        <div>
         <span class="recipe-type-badge prep"><i class="ti ti-git-fork" style="font-size:10px;"></i>Prep item</span>
         <h1 class="page-title" style="margin-top:var(--space-xs);">Hollandaise Sauce</h1>
         <div class="page-title-meta">
@@ -183,7 +195,8 @@
           <span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>Sauces &amp; Condiments</span>
           <span class="nb-pill neutral"><i class="ti ti-layers-intersect" style="font-size:11px;"></i>Used in 4 recipes</span>
         </div>
-      </div>
+        </div><!-- /.inner title col -->
+      </div><!-- /.flex header-left -->
       <div class="page-actions">
         <button class="btn btn-ghost btn-sm" onclick="showToast('Opening version history…')"><i class="ti ti-history"></i>v2</button>
         <button class="btn btn-outline" onclick="showToast('Recipe duplicated.')"><i class="ti ti-copy"></i>Duplicate</button>
