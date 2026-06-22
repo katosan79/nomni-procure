@@ -9,7 +9,11 @@
     { id: 'orders',      icon: 'ti-shopping-cart',      label: 'Orders',       href: 'orders.html' },
     { id: 'invoices',    icon: 'ti-file-invoice',       label: 'Invoices',     href: 'invoices.html' },
     { id: 'items',       icon: 'ti-stack',              label: 'Items',        href: 'items.html' },
-    { id: 'inventory',   icon: 'ti-package',            label: 'Inventory',    href: 'inventory.html' },
+    { id: 'inventory', icon: 'ti-package', label: 'Inventory', children: [
+      { id: 'inventory-operations', label: 'Operations', href: 'inventory.html' },
+      { id: 'inventory-analytics',  label: 'Analytics',  href: 'inventory-analytics.html' },
+      { id: 'inventory-governance', label: 'Governance',  href: 'inventory-governance.html' },
+    ]},
     { id: 'market-list', icon: 'ti-receipt',            label: 'Market lists', href: 'market-list.html' },
     { id: 'recipes',     icon: 'ti-tools-kitchen-2',    label: 'Recipes',      href: 'recipes.html' },
     { id: 'pos-mapping', icon: 'ti-device-desktop',     label: 'POS mapping',  href: 'pos-mapping.html' },
@@ -34,7 +38,10 @@
   const NAV_ROLES = {
     dashboard:     ALL,
     orders:        ['hq-admin','hq-approver','finance','outlet-mgr','outlet-user','supplier'],
-    inventory:     ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
+    inventory:                ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
+    'inventory-operations':   ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
+    'inventory-analytics':    ['hq-admin','hq-approver','outlet-mgr'],
+    'inventory-governance':   ['hq-admin','hq-approver'],
     'market-list': ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
     recipes:       ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
     'pos-mapping': ['hq-admin','hq-approver','outlet-mgr'],
@@ -166,6 +173,77 @@
       z-index: 200;
       pointer-events: none;
     }
+
+    /* ── Sub-nav groups (expandable sections) ── */
+    .shell-nav-group { display: flex; flex-direction: column; }
+    .shell-nav-group-toggle {
+      display: flex; align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 500;
+      color: var(--chrome-fg-soft);
+      background: none; border: none;
+      cursor: pointer; width: 100%;
+      text-align: left; font-family: inherit;
+      transition: background 0.12s, color 0.12s;
+    }
+    .shell-nav-group-toggle:hover { background: var(--chrome-panel); color: var(--chrome-fg); }
+    .shell-nav-group-toggle.active,
+    .shell-nav-group-toggle.open { color: var(--chrome-fg); }
+    .shell-nav-group-toggle i.ti:first-child { font-size: 16px; flex-shrink: 0; }
+    .group-chevron { margin-left: auto; font-size: 11px; flex-shrink: 0; transition: transform 0.18s; }
+    .shell-nav-group-toggle.open .group-chevron { transform: rotate(90deg); }
+    .shell-nav-subitems {
+      display: none; flex-direction: column; gap: 1px;
+      padding-left: 24px;
+      border-left: 1.5px solid rgba(250,247,233,0.12);
+      margin-left: 20px;
+      margin-top: 2px; margin-bottom: 4px;
+    }
+    .shell-nav-subitems.open { display: flex; }
+    .shell-nav-subitem {
+      display: flex; align-items: center;
+      gap: var(--space-sm);
+      padding: 5px var(--space-md);
+      border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 500;
+      color: var(--chrome-fg-soft);
+      text-decoration: none;
+      transition: background 0.12s, color 0.12s;
+      position: relative;
+    }
+    .shell-nav-subitem:hover { background: var(--chrome-panel); color: var(--chrome-fg); }
+    .shell-nav-subitem.active { background: var(--chrome-active); color: var(--chrome-fg); font-weight: 600; }
+    .shell-nav-subitem.active::before {
+      content: '';
+      position: absolute; left: 5px; top: 50%; transform: translateY(-50%);
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--spring);
+    }
+    /* Collapsed nav: groups show icon only */
+    .shell-chrome.nav-collapsed .shell-nav-group-toggle {
+      justify-content: center; padding: var(--space-sm); gap: 0; position: relative;
+    }
+    .shell-chrome.nav-collapsed .shell-nav-group-toggle[data-label]:hover::after {
+      content: attr(data-label);
+      position: absolute; left: calc(100% + 10px); top: 50%;
+      transform: translateY(-50%);
+      background: var(--seaweed); color: var(--porcelain);
+      font-size: 12px; font-weight: 500;
+      padding: 4px 9px; border-radius: var(--radius-sm);
+      white-space: nowrap; z-index: 200; pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    }
+    .shell-chrome.nav-collapsed .shell-nav-group-toggle[data-label]:hover::before {
+      content: '';
+      position: absolute; left: calc(100% + 6px); top: 50%;
+      transform: translateY(-50%);
+      border: 4px solid transparent; border-right-color: var(--seaweed);
+      z-index: 200; pointer-events: none;
+    }
+    .shell-chrome.nav-collapsed .group-chevron { display: none; }
+    .shell-chrome.nav-collapsed .shell-nav-subitems { display: none !important; }
 
     /* ── Collapse toggle button ── */
     .shell-collapse-btn {
@@ -472,6 +550,23 @@
         prefix = '<div class="shell-nav-divider" aria-hidden="true"></div>';
         dividerInserted = true;
       }
+      if (n.children) {
+        const isGroupActive = n.children.some(c => c.id === activeId);
+        const childLinks = n.children.map(c =>
+          `<a class="shell-nav-subitem${c.id === activeId ? ' active' : ''}" href="${c.href}" data-nav="${c.id}" data-label="${c.label}" aria-current="${c.id === activeId ? 'page' : 'false'}">${c.label}</a>`
+        ).join('');
+        return `${prefix}
+      <div class="shell-nav-group" data-nav="${n.id}">
+        <button class="shell-nav-group-toggle${isGroupActive ? ' active open' : ''}" data-group="${n.id}" data-label="${n.label}" aria-expanded="${isGroupActive}" aria-controls="subnav-${n.id}">
+          <i class="ti ${n.icon}" aria-hidden="true"></i>
+          <span class="shell-nav-label">${n.label}</span>
+          <i class="ti ti-chevron-right group-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="shell-nav-subitems${isGroupActive ? ' open' : ''}" id="subnav-${n.id}">
+          ${childLinks}
+        </div>
+      </div>`;
+      }
       return `${prefix}
       <a class="shell-nav-item${n.id === activeId ? ' active' : ''}" href="${n.href}" data-nav="${n.id}" data-label="${n.label}" aria-current="${n.id === activeId ? 'page' : 'false'}">
         <i class="ti ${n.icon}" aria-hidden="true"></i>
@@ -717,6 +812,19 @@
       try { if (localStorage.getItem('nomni_nav_collapsed') === 'true') setNavCollapsed(true); } catch (e) {}
 
       if (collapseBtn) collapseBtn.addEventListener('click', () => setNavCollapsed(!chrome.classList.contains('nav-collapsed')));
+
+      // Sub-nav group toggle
+      document.querySelectorAll('.shell-nav-group-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const groupId = btn.dataset.group;
+          const subitems = document.getElementById('subnav-' + groupId);
+          if (!subitems) return;
+          const isOpen = subitems.classList.contains('open');
+          subitems.classList.toggle('open', !isOpen);
+          btn.classList.toggle('open', !isOpen);
+          btn.setAttribute('aria-expanded', String(!isOpen));
+        });
+      });
 
       // Close on Escape
       document.addEventListener('keydown', e => {

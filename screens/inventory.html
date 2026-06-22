@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Inventory — Nomni HQ</title>
+  <title>Inventory · Operations — Nomni HQ</title>
   <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
   <style>
@@ -527,7 +527,7 @@
     }
 
     /* Agent strip */
-    .agent-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); }
+    .agent-strip { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
     .agent-strip .agent-surface.resolved { opacity: 0.62; }
     .agent-strip .agent-surface.resolved .agent-actions { display: none; }
     @media (max-width: 1024px) { .agent-strip { grid-template-columns: 1fr 1fr; } }
@@ -1168,7 +1168,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=5" data-active="inventory"></script>
+  <script src="../shared/shell.js?v=5" data-active="inventory-operations"></script>
   <div class="page-body">
     <div class="napp-canvas" data-measure="wide">
 
@@ -1202,7 +1202,7 @@
             <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">3 outlets above risk threshold — Dry goods at Bondi Beach is 25× the network average</p>
             <p class="agent-why">Bondi Beach Dry goods (Olive Oil 1L) shows 25.0% A vs T variance — 10 bottles actual vs 6 theoretical. Surry Hills and Newtown also above escalate tier. No waste logs or transfers explain the gap.</p>
             <div class="agent-actions">
-              <button class="nb-btn primary" onclick="switchTab('variance')"><i class="ti ti-chart-dots" aria-hidden="true"></i>View heat map</button>
+              <button class="nb-btn primary" onclick="window.location='inventory-analytics.html'"><i class="ti ti-chart-dots" aria-hidden="true"></i>View heat map</button>
               <button class="nb-btn" onclick="invToast('Dismissed — Vera keeps watching')">Dismiss</button>
             </div>
           </div>
@@ -1219,23 +1219,7 @@
             <p class="agent-why">Replenishment drafts staged for Chicken Breast, Avocado and 6 others. Separately, rolling 4-week usage data suggests 4 items (Chicken Breast, Avocado, Feta Cheese, Mixed Leaf) have par levels that no longer reflect real demand — see Templates → Dynamic Par for recommendations.</p>
             <div class="agent-actions">
               <button class="nb-btn primary" onclick="resolveAgent('otto-card','Approved — 8 replenishment drafts sent to outlets')"><i class="ti ti-check" aria-hidden="true"></i>Approve drafts</button>
-              <button class="nb-btn" onclick="switchTab('templates')"><i class="ti ti-chart-line" aria-hidden="true"></i>View par suggestions</button>
-            </div>
-          </div>
-        </article>
-        <article class="agent-surface" id="sloan-card" data-agent-fn="governance">
-          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
-            <div class="agent-card-head">
-              <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
-              <span class="agent-id"><span class="agent-name">Sloan</span><span class="agent-role">Governance agent</span></span>
-              <span class="agent-card-spacer"></span>
-              <span class="agent-state proposed"><i class="ti ti-shield-check" aria-hidden="true"></i>Monitoring</span>
-            </div>
-            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">2 items have par levels 40%+ below the network average — SA Metro is the outlier</p>
-            <p class="agent-why">Feta Cheese at SA Metro (2 kg par) is 50% below the network average of 4 kg. Roma Tomatoes at QLD Metro also flagged. Unlogged waste or consistent under-ordering likely. Raising par levels reduces stockout risk.</p>
-            <div class="agent-actions">
-              <button class="nb-btn primary" onclick="switchTab('templates')"><i class="ti ti-adjustments" aria-hidden="true"></i>Review par levels</button>
-              <button class="nb-btn" onclick="resolveAgent('sloan-card','Sloan will keep monitoring par levels')">Dismiss</button>
+              <button class="nb-btn" onclick="window.location='inventory-governance.html'"><i class="ti ti-chart-line" aria-hidden="true"></i>View par suggestions</button>
             </div>
           </div>
         </article>
@@ -1244,11 +1228,9 @@
       <!-- Sub-module tabs (IN-6/7/9/10 entry points) -->
       <div class="inv-tabs" role="tablist" aria-label="Inventory modules">
         <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('counts')"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Stock counts</button>
-        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('variance')"><i class="ti ti-chart-dots" aria-hidden="true"></i>Variance</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('transfers')"><i class="ti ti-transfer" aria-hidden="true"></i>Transfers</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('waste')"><i class="ti ti-trash-x" aria-hidden="true"></i>Waste</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('production')"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>Production</button>
-        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('templates')" style="position:relative;"><i class="ti ti-template" aria-hidden="true"></i>Templates<span style="position:absolute;top:6px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--status-warn-fg);"></span></button>
       </div>
 
       <!-- ══ Panel: Master items — moved to items.html ══ -->
@@ -1295,7 +1277,7 @@
               <td class="cell-name">Chicken Breast 500g<div class="cell-sub">Used in 8 recipes</div></td>
               <td><span class="cell-cat">Protein</span></td>
               <td class="tabular">kg</td>
-              <td class="tabular" style="text-align:right">10 <span class="otto-par-nudge" onclick="switchTab('templates')" title="Otto recommends ↑13 kg based on 4-week sales"><i class="ti ti-sparkles"></i>↑13</span></td>
+              <td class="tabular" style="text-align:right">10 <span class="otto-par-nudge" onclick="window.location='inventory-governance.html'" title="Otto recommends ↑13 kg based on 4-week sales"><i class="ti ti-sparkles"></i>↑13</span></td>
               <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Sydney Butchers</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
               <td class="cell-timestamp">2h ago</td>
@@ -1320,7 +1302,7 @@
               <td class="cell-name">Avocado<div class="cell-sub">Used in 4 recipes</div></td>
               <td><span class="cell-cat">Produce</span></td>
               <td class="tabular">each</td>
-              <td class="tabular" style="text-align:right">50 <span class="otto-par-nudge" onclick="switchTab('templates')" title="Otto recommends ↑65 based on 4-week sales"><i class="ti ti-sparkles"></i>↑65</span></td>
+              <td class="tabular" style="text-align:right">50 <span class="otto-par-nudge" onclick="window.location='inventory-governance.html'" title="Otto recommends ↑65 based on 4-week sales"><i class="ti ti-sparkles"></i>↑65</span></td>
               <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+2</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
               <td class="cell-timestamp">1 day ago</td>
@@ -1345,7 +1327,7 @@
               <td class="cell-name">Feta Cheese<div class="cell-sub">Used in 6 recipes</div></td>
               <td><span class="cell-cat">Dairy</span></td>
               <td class="tabular">kg</td>
-              <td class="tabular" style="text-align:right">5 <span class="otto-par-nudge" onclick="switchTab('templates')" title="Otto recommends ↑4.5 kg avg — SA/QLD Metro below network baseline"><i class="ti ti-sparkles"></i>↑4.5</span></td>
+              <td class="tabular" style="text-align:right">5 <span class="otto-par-nudge" onclick="window.location='inventory-governance.html'" title="Otto recommends ↑4.5 kg avg — SA/QLD Metro below network baseline"><i class="ti ti-sparkles"></i>↑4.5</span></td>
               <td><div style="display:flex;flex-wrap:wrap;gap:4px;"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Dairy Direct</span><span class="supplier-chip more">+1</span></div></td>
               <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
               <td class="cell-timestamp">3 days ago</td>
@@ -1562,99 +1544,6 @@
         </div>
 
       </div>
-
-      <!-- ══ Panel: Variance (IN-7) ══ -->
-      <div class="inv-panel" id="panel-variance">
-
-        <!-- Tier legend -->
-        <div class="sub-card" style="padding:var(--space-lg) var(--space-xl);">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md);">
-            <div>
-              <div class="sub-card-title" style="margin-bottom:2px;">Actual vs Theoretical variance</div>
-              <p class="sub-card-sub" style="margin-bottom:0;">Formula: Actual = Opening + Purchases − Closing. Theoretical = Σ(recipe portions sold × ingredient qty). This week.</p>
-            </div>
-            <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;align-items:center;flex-shrink:0;">
-              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-ok-bg);border:1px solid var(--status-ok-fg);"></span>&lt;1% OK</div>
-              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-warn-bg);border:1px solid var(--status-warn-fg);"></span>1–2% Monitor</div>
-              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-risk-bg);border:1px solid var(--status-risk-fg);"></span>2–3% Risk</div>
-              <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--status-risk-fg);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-risk-fg);"></span>&gt;3% Escalate</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Heat map -->
-        <div class="sub-card" style="padding:0;overflow-x:auto;">
-          <div style="padding:var(--space-lg) var(--space-xl);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:14px;font-weight:600;color:var(--text);">Network heat map — week ending 15 Jun 2026</span>
-            <span style="font-size:12px;color:var(--text-soft);">Sorted by overall variance</span>
-          </div>
-          <table class="data-table heat-table" style="min-width:680px;">
-            <thead>
-              <tr>
-                <th style="min-width:130px;">Outlet</th>
-                <th class="num">Proteins</th>
-                <th class="num">Produce</th>
-                <th class="num">Dairy</th>
-                <th class="num">Beverages</th>
-                <th class="num">Dry goods</th>
-                <th class="num" style="border-left:1px solid var(--border);">Overall</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="font-weight:600;">Newtown</td>
-                <td class="num"><span class="var-cell tier-urg">11.8% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-                <td class="num"><span class="var-cell tier-urg">9.1% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-                <td class="num"><span class="var-cell tier-urg">4.4% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-                <td class="num"><span class="var-cell tier-warn">1.7%</span></td>
-                <td class="num"><span class="var-cell tier-ok">0%</span></td>
-                <td class="num" style="border-left:1px solid var(--border);"><span class="var-cell tier-urg">7.6% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-              </tr>
-              <tr>
-                <td style="font-weight:600;">Bondi Beach</td>
-                <td class="num"><span class="var-cell tier-urg">10.3% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-                <td class="num"><span class="var-cell tier-risk">2.4%</span></td>
-                <td class="num"><span class="var-cell tier-ok">0%</span></td>
-                <td class="num"><span class="var-cell tier-urg">4.3% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-                <td class="num"><span class="var-cell tier-urg">25.0% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-                <td class="num" style="border-left:1px solid var(--border);"><span class="var-cell tier-urg">6.2% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-              </tr>
-              <tr>
-                <td style="font-weight:600;">Surry Hills</td>
-                <td class="num"><span class="var-cell tier-risk">2.4%</span></td>
-                <td class="num"><span class="var-cell tier-warn">1.8%</span></td>
-                <td class="num"><span class="var-cell tier-ok">0.7%</span></td>
-                <td class="num"><span class="var-cell tier-ok">0.3%</span></td>
-                <td class="num"><span class="var-cell tier-urg">8.1% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-                <td class="num" style="border-left:1px solid var(--border);"><span class="var-cell tier-urg">6.7% <i class="ti ti-alert-triangle" style="font-size:9px;"></i></span></td>
-              </tr>
-              <tr>
-                <td style="font-weight:600;">Melbourne CBD</td>
-                <td class="num"><span class="var-cell tier-ok">0.9%</span></td>
-                <td class="num"><span class="var-cell tier-ok">0.4%</span></td>
-                <td class="num"><span class="var-cell tier-ok">0.2%</span></td>
-                <td class="num"><span class="var-cell tier-ok">0.1%</span></td>
-                <td class="num"><span class="var-cell tier-ok">0.6%</span></td>
-                <td class="num" style="border-left:1px solid var(--border);"><span class="var-cell tier-ok">0.6%</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Worst offenders -->
-        <div class="sub-card">
-          <div class="sub-card-title">Worst offenders — cost impact this week</div>
-          <p class="sub-card-sub">Items with the highest A vs T gap, sorted by $ cost impact. Double-click a row to drill in.</p>
-          <div class="var-row"><span class="var-label">Olive Oil 1L <span style="font-size:11px;color:var(--text-soft)">· Bondi Beach · Dry goods</span></span><div class="var-track"><div class="var-fill high" style="width:100%"></div></div><span class="var-val high">+25.0%</span></div>
-          <div class="var-row"><span class="var-label">Chicken Breast <span style="font-size:11px;color:var(--text-soft)">· Newtown · Proteins</span></span><div class="var-track"><div class="var-fill high" style="width:47%"></div></div><span class="var-val high">+11.8%</span></div>
-          <div class="var-row"><span class="var-label">Chicken Breast <span style="font-size:11px;color:var(--text-soft)">· Bondi Beach · Proteins</span></span><div class="var-track"><div class="var-fill high" style="width:41%"></div></div><span class="var-val high">+10.3%</span></div>
-          <div class="var-row"><span class="var-label">Avocado <span style="font-size:11px;color:var(--text-soft)">· Newtown · Produce</span></span><div class="var-track"><div class="var-fill high" style="width:36%"></div></div><span class="var-val high">+9.1%</span></div>
-          <div class="var-row"><span class="var-label">Olive Oil 1L <span style="font-size:11px;color:var(--text-soft)">· Surry Hills · Dry goods</span></span><div class="var-track"><div class="var-fill high" style="width:32%"></div></div><span class="var-val high">+8.1%</span></div>
-          <div class="var-row"><span class="var-label">Dairy <span style="font-size:11px;color:var(--text-soft)">· Newtown · Dairy</span></span><div class="var-track"><div class="var-fill" style="width:18%;background:var(--status-warn-fg)"></div></div><span class="var-val" style="color:var(--status-warn-fg)">+4.4%</span></div>
-        </div>
-
-      </div>
-
       <!-- ══ Panel: Transfers / CK (§3.7.10) ══ -->
       <div class="inv-panel" id="panel-transfers">
 
@@ -1846,214 +1735,6 @@
           </table>
         </div>
       </div><!-- /panel-production -->
-
-      <!-- ══ Panel: Templates (§3.7.8) ══ -->
-      <div class="inv-panel" id="panel-templates">
-
-        <!-- Sloan governance inline card -->
-        <article class="agent-surface" style="box-shadow:none;">
-          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
-            <div class="agent-card-head">
-              <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
-              <span class="agent-id"><span class="agent-name">Sloan</span><span class="agent-role">Governance agent</span></span>
-              <span class="agent-card-spacer"></span>
-              <span class="agent-state proposed"><i class="ti ti-shield-check" aria-hidden="true"></i>Monitoring</span>
-            </div>
-            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">Feta Cheese par levels at SA Metro and QLD Metro are 40–55% below the network average</p>
-            <p class="agent-why">Network average is 4.5 kg. SA Metro: 2 kg (–55%), QLD Metro: 3 kg (–33%). Low par levels correlate with stockout frequency. Recommend raising to HQ baseline or approving local override requests from those groups.</p>
-            <div class="agent-actions">
-              <button class="nb-btn primary" onclick="openItemDrawer('feta')"><i class="ti ti-adjustments" aria-hidden="true"></i>Edit Feta par levels</button>
-              <button class="nb-btn" onclick="invToast('Sloan will keep monitoring par levels')">Dismiss</button>
-            </div>
-          </div>
-        </article>
-
-        <!-- Section: HQ Count Templates -->
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
-            <div>
-              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px;">HQ Count Templates</div>
-              <div style="font-size:13px;color:var(--text-soft);">Templates define which sheets outlet groups count and at what cadence. Push updates to all outlets in a group.</div>
-            </div>
-            <button class="btn btn-outline" onclick="invToast('Opening template editor…')"><i class="ti ti-plus"></i>New template</button>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);">
-
-            <!-- Template: NSW Metro -->
-            <div class="template-card">
-              <div class="template-card-header">
-                <div>
-                  <div class="template-card-name">NSW Metro — Weekly Full Count</div>
-                  <div class="template-card-group"><i class="ti ti-building-store" style="font-size:11px;"></i> NSW Metro · 8 outlets · v3</div>
-                </div>
-                <span class="nb-pill ok" style="font-size:11px;white-space:nowrap;"><i class="ti ti-circle-check-filled"></i>Active</span>
-              </div>
-              <div class="template-card-body">
-                <div class="tpl-sheet-row">
-                  <span class="tpl-sheet-name"><i class="ti ti-box" style="font-size:13px;color:var(--text-soft);"></i>Dry Store <span class="tpl-required-tag">Required</span></span>
-                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Weekly</span><span style="font-size:12px;color:var(--text-soft);">24 items</span></span>
-                </div>
-                <div class="tpl-sheet-row">
-                  <span class="tpl-sheet-name"><i class="ti ti-snowflake" style="font-size:13px;color:var(--text-soft);"></i>Freezer <span class="tpl-required-tag">Required</span></span>
-                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Weekly</span><span style="font-size:12px;color:var(--text-soft);">18 items</span></span>
-                </div>
-                <div class="tpl-sheet-row">
-                  <span class="tpl-sheet-name"><i class="ti ti-glass" style="font-size:13px;color:var(--text-soft);"></i>Bar <span class="tpl-required-tag">Required</span></span>
-                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Weekly</span><span style="font-size:12px;color:var(--text-soft);">12 items</span></span>
-                </div>
-                <div class="tpl-sheet-row">
-                  <span class="tpl-sheet-name"><i class="ti ti-armchair" style="font-size:13px;color:var(--text-soft);"></i>FOH</span>
-                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Monthly</span><span style="font-size:12px;color:var(--text-soft);">8 items</span></span>
-                </div>
-              </div>
-              <div class="template-card-footer">
-                <span style="font-size:12px;color:var(--text-soft);">Pushed by Keith Tan · 14 Jun 2026</span>
-                <div style="display:flex;gap:var(--space-sm);">
-                  <button class="btn btn-outline" style="height:32px;font-size:13px;" onclick="invToast('Opening NSW Metro template editor…')"><i class="ti ti-edit"></i>Edit</button>
-                  <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="invToast('Template pushed to 8 NSW Metro outlets · Sloan notified outlets of the update')"><i class="ti ti-send"></i>Push to group</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Template: VIC Metro -->
-            <div class="template-card">
-              <div class="template-card-header">
-                <div>
-                  <div class="template-card-name">VIC Metro — Fortnightly Full Count</div>
-                  <div class="template-card-group"><i class="ti ti-building-store" style="font-size:11px;"></i> VIC Metro · 4 outlets · v2</div>
-                </div>
-                <span class="nb-pill ok" style="font-size:11px;white-space:nowrap;"><i class="ti ti-circle-check-filled"></i>Active</span>
-              </div>
-              <div class="template-card-body">
-                <div class="tpl-sheet-row">
-                  <span class="tpl-sheet-name"><i class="ti ti-box" style="font-size:13px;color:var(--text-soft);"></i>Dry Store <span class="tpl-required-tag">Required</span></span>
-                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Fortnightly</span><span style="font-size:12px;color:var(--text-soft);">22 items</span></span>
-                </div>
-                <div class="tpl-sheet-row">
-                  <span class="tpl-sheet-name"><i class="ti ti-snowflake" style="font-size:13px;color:var(--text-soft);"></i>Freezer <span class="tpl-required-tag">Required</span></span>
-                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Fortnightly</span><span style="font-size:12px;color:var(--text-soft);">16 items</span></span>
-                </div>
-                <div class="tpl-sheet-row">
-                  <span class="tpl-sheet-name"><i class="ti ti-glass" style="font-size:13px;color:var(--text-soft);"></i>Bar</span>
-                  <span style="display:flex;align-items:center;gap:var(--space-sm);"><span class="tpl-cadence-tag">Monthly</span><span style="font-size:12px;color:var(--text-soft);">10 items</span></span>
-                </div>
-              </div>
-              <div class="template-card-footer">
-                <span style="font-size:12px;color:var(--text-soft);">Pushed by Keith Tan · 1 Jun 2026</span>
-                <div style="display:flex;gap:var(--space-sm);">
-                  <button class="btn btn-outline" style="height:32px;font-size:13px;" onclick="invToast('Opening VIC Metro template editor…')"><i class="ti ti-edit"></i>Edit</button>
-                  <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="invToast('Template pushed to 4 VIC Metro outlets · Sloan notified outlets of the update')"><i class="ti ti-send"></i>Push to group</button>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Section: Par Level Override Requests -->
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
-            <div>
-              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px;">Par Level Override Requests</div>
-              <div style="font-size:13px;color:var(--text-soft);">Outlets can request a local override of HQ-set par levels. Approve to let the outlet run at a different par, or reject to maintain the HQ baseline.</div>
-            </div>
-            <span style="background:var(--status-warn-bg);color:var(--status-warn-fg);font-size:12px;font-weight:700;padding:3px 10px;border-radius:var(--radius-sm);">2 pending</span>
-          </div>
-
-          <!-- Override 1: Chicken Breast at Surry Hills -->
-          <div class="override-card">
-            <div class="override-card-head">
-              <div>
-                <div class="override-item-name">Chicken Breast 500g</div>
-                <div class="override-outlet"><i class="ti ti-building-store" style="font-size:11px;"></i> Surry Hills Social · NSW Metro</div>
-              </div>
-              <span class="nb-pill warn" style="font-size:11px;white-space:nowrap;"><i class="ti ti-clock"></i>Pending</span>
-            </div>
-            <div class="override-card-body">
-              <div class="override-comparison">
-                <div class="override-col">
-                  <span class="override-col-label">HQ par</span>
-                  <span class="override-col-val">10 kg</span>
-                </div>
-                <span class="override-arrow">→</span>
-                <div class="override-col">
-                  <span class="override-col-label">Requested</span>
-                  <span class="override-col-val requested">14 kg</span>
-                </div>
-              </div>
-              <div class="override-reason">"High weekend turnover during brunch service — run out 2× last month"</div>
-              <div class="override-requestor">Requested by <strong>Sarah Kim</strong> · 20 Jun 2026</div>
-            </div>
-            <div class="override-card-footer">
-              <button class="btn btn-outline" style="height:32px;font-size:13px;" onclick="this.closest('.override-card').style.opacity='0.4';invToast('Override rejected — HQ par maintained at 10 kg')"><i class="ti ti-x"></i>Reject</button>
-              <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="this.closest('.override-card').remove();addInvActivity('Par override approved — <strong>Chicken Breast 500g</strong> Surry Hills updated to 14 kg','HQ Administrator');invToast('Override approved · Surry Hills Social updated to 14 kg')"><i class="ti ti-check"></i>Approve override</button>
-            </div>
-          </div>
-
-          <!-- Override 2: Avocado at Bondi Beach -->
-          <div class="override-card">
-            <div class="override-card-head">
-              <div>
-                <div class="override-item-name">Avocado</div>
-                <div class="override-outlet"><i class="ti ti-building-store" style="font-size:11px;"></i> Bondi Beach · NSW Metro</div>
-              </div>
-              <span class="nb-pill warn" style="font-size:11px;white-space:nowrap;"><i class="ti ti-clock"></i>Pending</span>
-            </div>
-            <div class="override-card-body">
-              <div class="override-comparison">
-                <div class="override-col">
-                  <span class="override-col-label">HQ par</span>
-                  <span class="override-col-val">50 each</span>
-                </div>
-                <span class="override-arrow">→</span>
-                <div class="override-col">
-                  <span class="override-col-label">Requested</span>
-                  <span class="override-col-val requested">70 each</span>
-                </div>
-              </div>
-              <div class="override-reason">"Beach crowd — consistent summer season demand spike, current par doesn't cover it"</div>
-              <div class="override-requestor">Requested by <strong>Jake Chen</strong> · 18 Jun 2026</div>
-            </div>
-            <div class="override-card-footer">
-              <button class="btn btn-outline" style="height:32px;font-size:13px;" onclick="this.closest('.override-card').style.opacity='0.4';invToast('Override rejected — HQ par maintained at 50 each')"><i class="ti ti-x"></i>Reject</button>
-              <button class="btn btn-primary" style="height:32px;font-size:13px;" onclick="this.closest('.override-card').remove();addInvActivity('Par override approved — <strong>Avocado</strong> Bondi Beach updated to 70 each','HQ Administrator');invToast('Override approved · Bondi Beach updated to 70 each')"><i class="ti ti-check"></i>Approve override</button>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Section: Dynamic Par Recommendations by Otto (§3.7.11) -->
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
-            <div>
-              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px;">Dynamic Par Recommendations</div>
-              <div style="font-size:13px;color:var(--text-soft);">Otto recalculates suggested par levels weekly from rolling 4-week sales cadence. Formula: <code style="font-size:11px;background:var(--surface-soft);padding:1px 5px;border-radius:var(--radius-xs);">(avg daily usage × lead time) + safety stock buffer</code></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:var(--space-sm);">
-              <span style="font-size:12px;color:var(--text-soft);">Last run: Today 6:00am</span>
-              <span style="background:var(--mint);color:var(--spinach);font-size:12px;font-weight:700;padding:3px 10px;border-radius:var(--radius-sm);" id="otto-par-count">4 suggestions</span>
-            </div>
-          </div>
-
-          <div class="template-card">
-            <div class="template-card-header" style="padding:var(--space-md) var(--space-xl);">
-              <div style="display:flex;align-items:center;gap:var(--space-md);">
-                <span class="agent-avatar" data-agent="otto" style="width:32px;height:32px;font-size:12px;" aria-hidden="true">Ot</span>
-                <div>
-                  <div style="font-size:14px;font-weight:700;color:var(--text);">Otto</div>
-                  <div style="font-size:12px;color:var(--text-soft);">Ordering agent · Dynamic par analysis</div>
-                </div>
-              </div>
-              <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-accent);background:var(--mint);padding:2px 7px;border-radius:var(--radius-xs);">✦ Agent</span>
-            </div>
-            <div id="otto-par-list">
-              <!-- rendered by renderOttoParSection() -->
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /panel-templates -->
 
       <!-- Activity timeline -->
       <div class="timeline-card">
@@ -2353,7 +2034,7 @@
   </dialog>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Inventory'));
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Inventory · Operations'));
 
     /* Overflow menus */
     function toggleMenu(btn) {
