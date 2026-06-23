@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>POS Mapping · Monitoring — Nomni Procure</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
+  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    /* ─── Page header ─── */
+    .pm-header { display:flex; align-items:flex-start; justify-content:space-between; padding:var(--space-2xl) 0 var(--space-xl); gap:var(--space-xl); }
+    .pm-eyebrow { font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-accent); margin-bottom:var(--space-xs); }
+    .pm-header h1 { font-size:28px; font-weight:700; color:var(--text); letter-spacing:-0.02em; margin:0 0 var(--space-xs); }
+    .pm-subtitle { font-size:14px; color:var(--text-soft); margin:0; }
+    .pm-header-right { display:flex; align-items:center; gap:var(--space-md); flex-shrink:0; }
+
+    /* ─── Mode toggle ─── */
+    .mode-toggle { display:flex; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:3px; gap:2px; }
+    .mode-btn { padding:6px 18px; border-radius:6px; font-size:13px; font-weight:500; color:var(--text-soft); background:transparent; border:none; cursor:pointer; transition:all 150ms; font-family:inherit; }
+    .mode-btn.active { background:var(--surface-soft); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.09); }
+
+    /* ─── Section nav ─── */
+    .section-nav { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:var(--space-xl); }
+    .section-nav-item { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; font-size:14px; font-weight:600; color:var(--text-soft); text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color 150ms, border-color 150ms; }
+    .section-nav-item:hover { color:var(--text); }
+    .section-nav-item.active { color:var(--text-accent); border-bottom-color:var(--text-accent); }
+
+    /* ─── KPI strip ─── */
+    .kpi-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); margin-bottom:var(--space-lg); }
+    .kpi-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); }
+    .kpi-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
+    .kpi-value { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.02em; font-feature-settings:'tnum' 1; line-height:1.1; }
+    .kpi-sub { font-size:12px; color:var(--text-soft); margin-top:4px; }
+    .kpi-tile.ok   .kpi-value { color:var(--status-ok-fg); }
+    .kpi-tile.warn .kpi-value { color:#D97706; }
+    .kpi-tile.risk .kpi-value { color:#DC2626; }
+    @media (max-width:900px) { .kpi-strip { grid-template-columns:repeat(2,1fr); } }
+
+    /* ─── Trend strip ─── */
+    .trend-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); margin-bottom:var(--space-xl); }
+    .trend-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xs); }
+    .trend-head { display:flex; align-items:center; justify-content:space-between; }
+    .trend-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .trend-badge.ok   { background:var(--status-ok-bg);   color:var(--status-ok-fg); }
+    .trend-badge.warn { background:var(--status-warn-bg); color:#7A5000; }
+    .trend-badge.risk { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .trend-value { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.02em; font-feature-settings:'tnum' 1; }
+    .sparkline { width:100%; height:36px; overflow:visible; display:block; margin-block:var(--space-sm); }
+    .trend-range { font-size:11px; color:var(--text-soft); }
+    @media (max-width:900px) { .trend-strip { grid-template-columns:1fr 1fr; } }
+
+    /* ─── Issues ─── */
+    .section-heading { font-size:14px; font-weight:700; color:var(--text); margin:0 0 var(--space-md); display:flex; align-items:center; gap:var(--space-sm); }
+    .issue-row { display:flex; align-items:flex-start; gap:var(--space-lg); padding:var(--space-md) var(--space-lg); background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:var(--space-sm); }
+    .issue-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; margin-top:2px; }
+    .issue-icon.risk { background:#FEE2E2; color:#DC2626; }
+    .issue-icon.warn { background:#FEF3C7; color:#D97706; }
+    .issue-icon.info { background:#EFF6FF; color:#2563EB; }
+    .issue-icon.ok   { background:var(--status-ok-bg); color:var(--status-ok-fg); }
+    .issue-body  { flex:1; }
+    .issue-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:2px; }
+    .issue-detail { font-size:12px; color:var(--text-soft); }
+    .issue-cta   { flex-shrink:0; align-self:center; }
+
+    /* ─── Pill ─── */
+    .pill { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .pill-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .pill.ok   { background:#D1FAE5; color:#065F46; } .pill.ok   .pill-dot { background:#059669; }
+    .pill.warn { background:#FEF3C7; color:#92400E; } .pill.warn .pill-dot { background:#D97706; }
+    .pill.risk { background:#FEE2E2; color:#991B1B; } .pill.risk .pill-dot { background:#DC2626; }
+    .pill.info { background:#EFF6FF; color:#1D4ED8; } .pill.info .pill-dot { background:#2563EB; }
+    .pill.neutral { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); }
+
+    /* ─── Shared button styles ─── */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:500; font-family:inherit; cursor:pointer; border:none; transition:all 150ms; white-space:nowrap; }
+    .btn-primary   { background:var(--btn-primary-bg); color:var(--btn-primary-fg); }
+    .btn-primary:hover { background:var(--spinach); }
+    .btn-secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
+    .btn-secondary:hover { background:var(--surface-soft); }
+    .btn-ghost { background:transparent; color:var(--text-soft); padding:6px 10px; }
+    .btn-ghost:hover { background:var(--surface-soft); color:var(--text); }
+    .btn-sm { padding:5px 12px; font-size:12px; }
+
+    /* ─── Connection cards ─── */
+    .conn-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); margin-bottom:var(--space-xl); }
+    .conn-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:var(--space-xl); border-left-width:3px; }
+    .conn-card.connected { border-left-color:var(--text-accent); }
+    .conn-card.batch     { border-left-color:#D97706; }
+    .conn-card.dark      { border-left-color:#DC2626; }
+    .conn-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-md); }
+    .conn-title  { font-size:15px; font-weight:600; color:var(--text); }
+    .conn-meta   { font-size:13px; color:var(--text-soft); margin-bottom:4px; }
+    .conn-sync   { font-size:12px; color:var(--text-soft); font-family:'IBM Plex Mono',monospace; }
+    .conn-actions { display:flex; gap:var(--space-sm); margin-top:var(--space-md); }
+
+    /* ─── Outlet coverage table (HQ) ─── */
+    .hq-block { display:none; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .card-header { padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .card-title { font-size:14px; font-weight:600; color:var(--text); }
+    .data-table { width:100%; border-collapse:collapse; }
+    .data-table th { font-size:11px; font-weight:500; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-soft); padding:10px 14px; text-align:left; background:var(--surface-soft); border-bottom:1px solid var(--border); }
+    .data-table td { padding:0 14px; height:48px; border-bottom:1px solid var(--border); vertical-align:middle; font-size:13px; color:var(--text); }
+    .data-table tr:hover td { background:var(--surface-soft); cursor:pointer; }
+    .plu { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-soft); }
+    .prog-wrap { display:flex; align-items:center; gap:var(--space-sm); }
+    .prog-bar  { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; max-width:80px; }
+    .prog-fill { height:100%; border-radius:2px; background:var(--text-accent); }
+    .prog-fill.warn { background:#D97706; }
+    .prog-fill.risk { background:#DC2626; }
+
+    /* ─── Section separator ─── */
+    .section-gap { margin-bottom:var(--space-2xl); }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=5" data-active="pos-mapping"></script>
+
+<main class="main">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- ── Page header ── -->
+    <div class="pm-header">
+      <div>
+        <div class="pm-eyebrow">POS Mapping</div>
+        <h1>Monitoring</h1>
+        <p class="pm-subtitle">Connection health, mapping coverage, and active issues across all venues</p>
+      </div>
+      <div class="pm-header-right">
+        <div class="mode-toggle">
+          <button class="mode-btn active" onclick="switchMode('standalone')">Standalone</button>
+          <button class="mode-btn" onclick="switchMode('hq')">HQ View</button>
+        </div>
+        <button class="btn btn-primary" onclick="alert('Syncing POS now…')">↻ Sync now</button>
+      </div>
+    </div>
+
+    <!-- ── Section nav ── -->
+    <nav class="section-nav">
+      <a href="pos-mapping.html" class="section-nav-item"><i class="ti ti-settings"></i>Configuration</a>
+      <a href="pos-mapping-monitoring.html" class="section-nav-item active"><i class="ti ti-activity"></i>Monitoring</a>
+    </nav>
+
+    <!-- ── Sloan agent card ── -->
+    <article class="agent-surface" id="sloan-card" style="margin-bottom:var(--space-lg)">
+      <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
+        <div class="agent-card-head">
+          <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
+          <span class="agent-id">
+            <span class="agent-name">Sloan</span>
+            <span class="agent-role">Governance agent</span>
+          </span>
+          <span style="flex:1"></span>
+          <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+        </div>
+        <p style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">I found a new POS item — Tiramisu — selling at 18 outlets with no mapping</p>
+        <p class="agent-why">Tiramisu (PLU 3008) appeared in last night's sales data across 18 outlets. I matched it with 96% confidence to "Tiramisu (Dessert)" in your recipe library. Approving will map it at all 18 outlets and begin depleting the correct ingredients from sales.</p>
+        <div class="agent-actions">
+          <button class="nb-btn primary" onclick="resolveSloan()"><i class="ti ti-check"></i>Approve mapping at 18 outlets</button>
+          <button class="nb-btn" onclick="alert('Opening Tiramisu mapping detail…')">See alternatives</button>
+          <button class="nb-btn ghost" onclick="document.getElementById('sloan-card').style.display='none'">Dismiss</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── KPI strip ── -->
+    <div class="kpi-strip">
+      <div class="kpi-tile">
+        <div class="kpi-label">Total POS Items</div>
+        <div class="kpi-value">48</div>
+        <div class="kpi-sub">Across 4 categories</div>
+      </div>
+      <div class="kpi-tile ok">
+        <div class="kpi-label">Mapped</div>
+        <div class="kpi-value">38</div>
+        <div class="kpi-sub">79% coverage</div>
+      </div>
+      <div class="kpi-tile warn">
+        <div class="kpi-label">Unmapped</div>
+        <div class="kpi-value">7</div>
+        <div class="kpi-sub">Sold in last 30 days</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Stale / Partial</div>
+        <div class="kpi-value">4</div>
+        <div class="kpi-sub">1 stale · 3 partial</div>
+      </div>
+    </div>
+
+    <!-- ── Trend tiles ── -->
+    <div class="trend-strip">
+
+      <!-- Mapping coverage -->
+      <div class="trend-tile">
+        <div class="trend-head">
+          <span class="kpi-label">Mapping coverage</span>
+          <span class="trend-badge warn">79% · 7 gaps</span>
+        </div>
+        <span class="trend-value">79%</span>
+        <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+          <rect x="0" y="6" width="120" height="24" fill="var(--mint)" opacity="0.8"/>
+          <line x1="0" y1="6"  x2="120" y2="6"  stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+          <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+          <polyline points="0,28 17,26 34,23 51,21 68,19 85,18 102,17 119,15"
+            fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="119" cy="15" r="3" fill="#D97706"/>
+        </svg>
+        <span class="trend-range">Target 95%+ · 8-week trend</span>
+      </div>
+
+      <!-- Sync success rate -->
+      <div class="trend-tile">
+        <div class="trend-head">
+          <span class="kpi-label">Sync success rate</span>
+          <span class="trend-badge ok">100% · 14 days</span>
+        </div>
+        <span class="trend-value">100%</span>
+        <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+          <rect x="0" y="6" width="120" height="24" fill="var(--mint)" opacity="0.8"/>
+          <line x1="0" y1="6"  x2="120" y2="6"  stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+          <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+          <polyline points="0,10 17,10 34,12 51,10 68,11 85,10 102,10 119,10"
+            fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="119" cy="10" r="3" fill="var(--status-ok-fg)"/>
+        </svg>
+        <span class="trend-range">Abacus API + Batch · 14-day window</span>
+      </div>
+
+      <!-- Stale mappings -->
+      <div class="trend-tile">
+        <div class="trend-head">
+          <span class="kpi-label">Stale mappings</span>
+          <span class="trend-badge warn">1 stale &gt;45 days</span>
+        </div>
+        <span class="trend-value">1</span>
+        <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+          <rect x="0" y="14" width="120" height="16" fill="var(--mint)" opacity="0.8"/>
+          <line x1="0" y1="14" x2="120" y2="14" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+          <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+          <polyline points="0,29 17,28 34,29 51,28 68,27 85,27 102,26 119,22"
+            fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="119" cy="22" r="3" fill="#D97706"/>
+        </svg>
+        <span class="trend-range">Items not seen in sales for 30+ days</span>
+      </div>
+
+    </div>
+
+    <!-- ── Active Issues ── -->
+    <div class="section-gap">
+      <h3 class="section-heading"><i class="ti ti-alert-triangle" style="color:#D97706"></i>Active Issues</h3>
+
+      <div class="issue-row">
+        <div class="issue-icon warn">⚠</div>
+        <div class="issue-body">
+          <div class="issue-title">7 POS items sold but not yet mapped</div>
+          <div class="issue-detail">Inventory is not depleting for these sales · Highest impact: Smashed Avo (52/day), Caesar Salad (15/day), Greek Salad (8/day)</div>
+        </div>
+        <div class="issue-cta">
+          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Map now →</a>
+        </div>
+      </div>
+
+      <div class="issue-row">
+        <div class="issue-icon warn">⚠</div>
+        <div class="issue-body">
+          <div class="issue-title">2 modifier groups on Chicken Burger have no action assigned</div>
+          <div class="issue-detail">Gluten-Free Bun and No Bun modifiers will not affect ingredient depletion until configured</div>
+        </div>
+        <div class="issue-cta">
+          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Review →</a>
+        </div>
+      </div>
+
+      <div class="issue-row" style="opacity:0.6">
+        <div class="issue-icon info">ℹ</div>
+        <div class="issue-body">
+          <div class="issue-title">1 mapping may be stale</div>
+          <div class="issue-detail">Greek Salad (PLU 3002) was mapped 47 days ago but has not appeared in sales for 12 days — may have been removed from menu</div>
+        </div>
+        <div class="issue-cta">
+          <button class="btn btn-ghost btn-sm">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Connection health ── -->
+    <div class="section-gap">
+      <h3 class="section-heading"><i class="ti ti-plug-connected" style="color:var(--text-accent)"></i>Connection Health</h3>
+      <div class="conn-grid">
+        <div class="conn-card connected">
+          <div class="conn-header">
+            <div class="conn-title">Abacus POS — Live API</div>
+            <span class="pill ok"><span class="pill-dot"></span>Connected</span>
+          </div>
+          <div class="conn-meta">Venue: <strong>Bondi Beach</strong> &nbsp;·&nbsp; Terminal ID: <span class="plu">ABX-0042</span></div>
+          <div class="conn-sync">Last sync: 14 Jun 2026 · 11:58 PM &nbsp;·&nbsp; 847 transactions received</div>
+          <div class="conn-actions">
+            <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Settings →</a>
+            <button class="btn btn-secondary btn-sm">View sync log</button>
+          </div>
+        </div>
+        <div class="conn-card batch">
+          <div class="conn-header">
+            <div class="conn-title">Batch Import — Other POS</div>
+            <span class="pill warn"><span class="pill-dot"></span>Configured</span>
+          </div>
+          <div class="conn-meta">Source: <strong>Google Drive</strong> &nbsp;·&nbsp; /pos-exports/bondi &nbsp;·&nbsp; Polls every 24 h</div>
+          <div class="conn-sync">Last import: 14 Jun 2026 · 11:45 PM &nbsp;·&nbsp; 1 file · 312 transactions</div>
+          <div class="conn-actions">
+            <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Configure →</a>
+            <button class="btn btn-secondary btn-sm">Import history</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Outlet Coverage (HQ only) ── -->
+    <div class="hq-block section-gap" id="hq-coverage">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+        <h3 class="section-heading" style="margin:0"><i class="ti ti-building-store" style="color:var(--text-accent)"></i>Outlet Coverage</h3>
+        <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Push mappings →</a>
+      </div>
+
+      <!-- HQ cross-outlet issues -->
+      <div class="issue-row" style="margin-bottom:var(--space-sm)">
+        <div class="issue-icon risk">✕</div>
+        <div class="issue-body">
+          <div class="issue-title">2 outlets have no POS connected — no sales data flowing</div>
+          <div class="issue-detail">Brisbane CBD, Gold Coast &nbsp;·&nbsp; Inventory depletion is not occurring &nbsp;·&nbsp; Variance data will be unreliable</div>
+        </div>
+        <div class="issue-cta">
+          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">View outlets →</a>
+        </div>
+      </div>
+      <div class="issue-row" style="margin-bottom:var(--space-lg)">
+        <div class="issue-icon warn">⚠</div>
+        <div class="issue-body">
+          <div class="issue-title">2 outlets connected but have mapping gaps</div>
+          <div class="issue-detail">Surry Hills (18 unmapped), St Kilda (24 unmapped) &nbsp;·&nbsp; Push master mapping to resolve quickly</div>
+        </div>
+        <div class="issue-cta">
+          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Push mapping →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All outlets</div>
+          <span style="font-size:12px;color:var(--text-soft)">2 full · 2 partial · 2 dark</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Outlet</th>
+              <th>Group</th>
+              <th>Connection</th>
+              <th>Last Sync</th>
+              <th>Coverage</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bondi Beach</strong></td>
+              <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
+              <td class="plu" style="font-size:12px">14 Jun · 11:58 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>Surry Hills</strong></td>
+              <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
+              <td class="plu" style="font-size:12px">14 Jun · 11:55 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill warn" style="width:63%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">30/48</span></div></td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+            </tr>
+            <tr>
+              <td><strong>St Kilda</strong></td>
+              <td style="color:var(--text-soft)">Melbourne</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
+              <td class="plu" style="font-size:12px">14 Jun · 11:50 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill warn" style="width:50%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">24/48</span></div></td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+            </tr>
+            <tr>
+              <td><strong>Fitzroy</strong></td>
+              <td style="color:var(--text-soft)">Melbourne</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Batch</span></td>
+              <td class="plu" style="font-size:12px">14 Jun · 11:45 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>Brisbane CBD</strong></td>
+              <td style="color:var(--text-soft)">Queensland</td>
+              <td><span class="pill risk"><span class="pill-dot"></span>Not configured</span></td>
+              <td class="plu" style="font-size:12px;color:var(--text-soft)">Never</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span></div></td>
+              <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
+            </tr>
+            <tr>
+              <td><strong>Gold Coast</strong></td>
+              <td style="color:var(--text-soft)">Queensland</td>
+              <td><span class="pill risk"><span class="pill-dot"></span>No POS</span></td>
+              <td class="plu" style="font-size:12px;color:var(--text-soft)">Never</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span></div></td>
+              <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /napp-canvas -->
+</main>
+
+<script>
+  let currentMode = 'standalone';
+
+  function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.mode-btn[onclick="switchMode('${mode}')"]`).classList.add('active');
+    const hqCoverage = document.getElementById('hq-coverage');
+    if (mode === 'hq') {
+      document.querySelectorAll('.hq-block').forEach(el => el.style.display = 'block');
+    } else {
+      document.querySelectorAll('.hq-block').forEach(el => el.style.display = 'none');
+    }
+  }
+
+  function resolveSloan() {
+    const card = document.getElementById('sloan-card');
+    card.querySelector('.agent-state').className = 'agent-state done';
+    card.querySelector('.agent-state').innerHTML = '<i class="ti ti-circle-check"></i>Done';
+    card.querySelector('.agent-actions').innerHTML =
+      '<span style="font-size:13px;color:var(--text-soft)">Tiramisu mapped at 18 outlets · <button class="nb-btn ghost" style="font-size:13px;padding:2px 8px;" onclick="document.getElementById(\'sloan-card\').style.display=\'none\'">Undo</button></span>';
+  }
+</script>
+</body>
+</html>

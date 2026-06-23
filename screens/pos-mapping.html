@@ -32,6 +32,12 @@
     .pm-subtitle { font-size: 14px; color: var(--text-soft); margin: 0; }
     .pm-header-right { display: flex; align-items: center; gap: var(--space-md); flex-shrink: 0; }
 
+    /* ─── Section nav ─── */
+    .section-nav { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:var(--space-xl); }
+    .section-nav-item { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; font-size:14px; font-weight:600; color:var(--text-soft); text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color 150ms, border-color 150ms; }
+    .section-nav-item:hover { color:var(--text); }
+    .section-nav-item.active { color:var(--text-accent); border-bottom-color:var(--text-accent); }
+
     /* ─── Mode toggle ─── */
     .mode-toggle {
       display: flex;
@@ -603,10 +609,15 @@
       </div>
     </div>
 
+    <!-- ── Section nav ── -->
+    <nav class="section-nav">
+      <a href="pos-mapping.html" class="section-nav-item active"><i class="ti ti-settings"></i>Configuration</a>
+      <a href="pos-mapping-monitoring.html" class="section-nav-item"><i class="ti ti-activity"></i>Monitoring</a>
+    </nav>
+
     <!-- ── Tab navigation ── -->
     <nav class="tab-nav" role="tablist">
-      <button class="tab-btn active" data-tab="health"   onclick="switchTab('health')">Health Monitor</button>
-      <button class="tab-btn"        data-tab="mapping"  onclick="switchTab('mapping')">
+      <button class="tab-btn active" data-tab="mapping"  onclick="switchTab('mapping')">
         <span class="lbl-standalone">Menu Mapping</span>
         <span class="lbl-hq" style="display:none">Master Mapping</span>
       </button>
@@ -618,185 +629,66 @@
     </nav>
 
 
-    <!-- ══════════════════════════════════════════════
-         TAB · HEALTH MONITOR
-    ══════════════════════════════════════════════ -->
-    <div id="tab-health" class="tab-panel active">
-
-      <!-- Connection cards -->
-      <div class="conn-grid">
-        <div class="conn-card connected">
-          <div class="conn-header">
-            <div class="conn-title">Abacus POS — Live API</div>
-            <span class="pill ok"><span class="pill-dot"></span>Connected</span>
-          </div>
-          <div class="conn-meta">Venue: <strong>Bondi Beach</strong> &nbsp;·&nbsp; Terminal ID: <span class="plu">ABX-0042</span></div>
-          <div class="conn-sync">Last sync: 14 Jun 2026 · 11:58 PM &nbsp;·&nbsp; 847 transactions received</div>
-          <div class="conn-actions">
-            <button class="btn btn-secondary btn-sm">Settings</button>
-            <button class="btn btn-secondary btn-sm">View sync log</button>
-          </div>
+    <!-- ── POS Connections (always visible above tabs) ── -->
+    <div class="conn-grid" style="margin-bottom:var(--space-xl)">
+      <div class="conn-card connected">
+        <div class="conn-header">
+          <div class="conn-title">Abacus POS — Live API</div>
+          <span class="pill ok"><span class="pill-dot"></span>Connected</span>
         </div>
+        <div class="conn-meta">Venue: <strong>Bondi Beach</strong> &nbsp;·&nbsp; Terminal ID: <span class="plu">ABX-0042</span></div>
+        <div class="conn-sync">Last sync: 14 Jun 2026 · 11:58 PM &nbsp;·&nbsp; 847 transactions received</div>
+        <div class="conn-actions">
+          <button class="btn btn-secondary btn-sm">Settings</button>
+          <button class="btn btn-secondary btn-sm">View sync log</button>
+        </div>
+      </div>
+      <div class="conn-card batch">
+        <div class="conn-header">
+          <div class="conn-title">Batch Import — Other POS</div>
+          <span class="pill warn"><span class="pill-dot"></span>Configured</span>
+        </div>
+        <div class="conn-meta">Source: <strong>Google Drive</strong> &nbsp;·&nbsp; /pos-exports/bondi &nbsp;·&nbsp; Polls every 24 h</div>
+        <div class="conn-sync">Last import: 14 Jun 2026 · 11:45 PM &nbsp;·&nbsp; 1 file · 312 transactions</div>
+        <div class="conn-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openBatchSetup()">Configure</button>
+          <button class="btn btn-secondary btn-sm">Import history</button>
+        </div>
+      </div>
+    </div>
 
-        <div class="conn-card batch">
-          <div class="conn-header">
-            <div class="conn-title">Batch Import — Other POS</div>
-            <span class="pill warn"><span class="pill-dot"></span>Configured</span>
+    <!-- Batch setup panel (hidden) -->
+    <div id="batch-setup-panel" style="display:none;margin-bottom:var(--space-xl)">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Batch Import Configuration</div>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('batch-setup-panel').style.display='none'">✕</button>
+        </div>
+        <div style="padding:var(--space-xl)">
+          <p style="font-size:13px;color:var(--text-soft);margin:0 0 var(--space-lg)">
+            For POS systems without a direct API, configure an end-of-day sales report delivered via one of the methods below. Nomni will process the file automatically each night.
+          </p>
+          <div class="batch-methods">
+            <div class="batch-method selected" onclick="selectBatch(this)"><div class="batch-icon">📁</div><div class="batch-name">Google Drive</div><div class="batch-desc">Watch a Drive folder for new CSV/Excel files</div></div>
+            <div class="batch-method" onclick="selectBatch(this)"><div class="batch-icon">📧</div><div class="batch-name">Email</div><div class="batch-desc">Receive files sent to a dedicated Nomni inbox</div></div>
+            <div class="batch-method" onclick="selectBatch(this)"><div class="batch-icon">🗄</div><div class="batch-name">FTP / SFTP</div><div class="batch-desc">Pull files from your POS SFTP endpoint</div></div>
           </div>
-          <div class="conn-meta">Source: <strong>Google Drive</strong> &nbsp;·&nbsp; /pos-exports/bondi &nbsp;·&nbsp; Polls every 24 h</div>
-          <div class="conn-sync">Last import: 14 Jun 2026 · 11:45 PM &nbsp;·&nbsp; 1 file · 312 transactions</div>
-          <div class="conn-actions">
-            <button class="btn btn-secondary btn-sm" onclick="openBatchSetup()">Configure</button>
-            <button class="btn btn-secondary btn-sm">Import history</button>
+          <div style="margin-top:var(--space-xl);display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
+            <div class="form-group"><label class="form-label">POS System Name</label><input type="text" class="form-input" value="Lightspeed Restaurant"></div>
+            <div class="form-group"><label class="form-label">Google Drive Folder Path</label><input type="text" class="form-input" value="/pos-exports/bondi"></div>
+          </div>
+          <div style="display:flex;gap:var(--space-sm)">
+            <button class="btn btn-primary">Save configuration</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('batch-setup-panel').style.display='none'">Cancel</button>
           </div>
         </div>
       </div>
-
-      <!-- Summary strip -->
-      <div class="summary-strip">
-        <div class="summary-card">
-          <div class="s-label">Total POS Items</div>
-          <div class="s-value">48</div>
-          <div class="s-sub">Across 4 categories</div>
-        </div>
-        <div class="summary-card ok">
-          <div class="s-label">Mapped</div>
-          <div class="s-value">38</div>
-          <div class="s-sub">79% coverage</div>
-        </div>
-        <div class="summary-card warn">
-          <div class="s-label">Unmapped</div>
-          <div class="s-value">7</div>
-          <div class="s-sub">Sold in last 30 days</div>
-        </div>
-        <div class="summary-card">
-          <div class="s-label">Ignored</div>
-          <div class="s-value">3</div>
-          <div class="s-sub">Non-inventory items</div>
-        </div>
-      </div>
-
-      <!-- Issues -->
-      <div class="issues-section">
-        <h3>Active Issues</h3>
-
-        <div class="issue-row">
-          <div class="issue-icon warn">⚠</div>
-          <div class="issue-body">
-            <div class="issue-title">7 POS items sold but not yet mapped</div>
-            <div class="issue-detail">Inventory is not depleting for these sales · Highest impact: Smashed Avo (52/day), Caesar Salad (15/day), Greek Salad (8/day)</div>
-          </div>
-          <div class="issue-cta">
-            <button class="btn btn-secondary btn-sm" onclick="switchTab('mapping');setFilter('unmapped')">Map now →</button>
-          </div>
-        </div>
-
-        <div class="issue-row">
-          <div class="issue-icon warn">⚠</div>
-          <div class="issue-body">
-            <div class="issue-title">2 modifier groups on Chicken Burger have no action assigned</div>
-            <div class="issue-detail">Gluten-Free Bun and No Bun modifiers will not affect ingredient depletion until configured</div>
-          </div>
-          <div class="issue-cta">
-            <button class="btn btn-secondary btn-sm" onclick="switchTab('mapping')">Review →</button>
-          </div>
-        </div>
-
-        <div class="issue-row" style="opacity:0.6">
-          <div class="issue-icon info">ℹ</div>
-          <div class="issue-body">
-            <div class="issue-title">1 mapping may be stale</div>
-            <div class="issue-detail">Greek Salad (PLU 3002) was mapped 47 days ago but has not appeared in sales for 12 days — may have been removed from menu</div>
-          </div>
-          <div class="issue-cta">
-            <button class="btn btn-ghost btn-sm">Dismiss</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- HQ-only: cross-outlet severity (hidden by default) -->
-      <div id="hq-severity" style="display:none">
-        <div class="section-sep"></div>
-        <div class="issues-section">
-          <h3>Outlet Connection Issues</h3>
-
-          <div class="issue-row">
-            <div class="issue-icon risk">✕</div>
-            <div class="issue-body">
-              <div class="issue-title">2 outlets have no POS connected — no sales data flowing</div>
-              <div class="issue-detail">Brisbane CBD, Gold Coast &nbsp;·&nbsp; Inventory depletion is not occurring &nbsp;·&nbsp; Variance data will be unreliable</div>
-            </div>
-            <div class="issue-cta">
-              <button class="btn btn-secondary btn-sm" onclick="switchTab('coverage')">View outlets →</button>
-            </div>
-          </div>
-
-          <div class="issue-row">
-            <div class="issue-icon warn">⚠</div>
-            <div class="issue-body">
-              <div class="issue-title">2 outlets connected but have mapping gaps</div>
-              <div class="issue-detail">Surry Hills (18 unmapped), St Kilda (24 unmapped) &nbsp;·&nbsp; Push master mapping to resolve quickly</div>
-            </div>
-            <div class="issue-cta">
-              <button class="btn btn-secondary btn-sm" onclick="switchTab('coverage')">View coverage →</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Batch setup panel (hidden) -->
-      <div id="batch-setup-panel" style="display:none;margin-top:var(--space-xl)">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Batch Import Configuration</div>
-            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('batch-setup-panel').style.display='none'">✕</button>
-          </div>
-          <div style="padding:var(--space-xl)">
-            <p style="font-size:13px;color:var(--text-soft);margin:0 0 var(--space-lg)">
-              For POS systems without a direct API, configure an end-of-day sales report delivered via one of the methods below. Nomni will process the file automatically each night.
-            </p>
-            <div class="batch-methods">
-              <div class="batch-method selected" onclick="selectBatch(this)">
-                <div class="batch-icon">📁</div>
-                <div class="batch-name">Google Drive</div>
-                <div class="batch-desc">Watch a Drive folder for new CSV/Excel files</div>
-              </div>
-              <div class="batch-method" onclick="selectBatch(this)">
-                <div class="batch-icon">📧</div>
-                <div class="batch-name">Email</div>
-                <div class="batch-desc">Receive files sent to a dedicated Nomni inbox</div>
-              </div>
-              <div class="batch-method" onclick="selectBatch(this)">
-                <div class="batch-icon">🗄</div>
-                <div class="batch-name">FTP / SFTP</div>
-                <div class="batch-desc">Pull files from your POS SFTP endpoint</div>
-              </div>
-            </div>
-            <div style="margin-top:var(--space-xl);display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
-              <div class="form-group">
-                <label class="form-label">POS System Name</label>
-                <input type="text" class="form-input" value="Lightspeed Restaurant">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Google Drive Folder Path</label>
-                <input type="text" class="form-input" value="/pos-exports/bondi">
-              </div>
-            </div>
-            <div style="display:flex;gap:var(--space-sm)">
-              <button class="btn btn-primary">Save configuration</button>
-              <button class="btn btn-secondary" onclick="document.getElementById('batch-setup-panel').style.display='none'">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /tab-health -->
-
+    </div>
 
     <!-- ══════════════════════════════════════════════
          TAB · MENU MAPPING / MASTER MAPPING
     ══════════════════════════════════════════════ -->
-    <div id="tab-mapping" class="tab-panel">
+    <div id="tab-mapping" class="tab-panel active">
 
       <div class="mapping-toolbar">
         <div class="filter-tabs">
@@ -1454,7 +1346,7 @@
 <script>
   /* ─── State ─── */
   let currentMode = 'standalone';
-  let currentTab  = 'health';
+  let currentTab  = 'mapping';
 
   /* ─── Mode switch ─── */
   function switchMode(mode) {
@@ -1477,7 +1369,7 @@
       if (hqSeverity) hqSeverity.style.display = 'none';
       lblStand.forEach(l => l.style.display = 'inline');
       lblHq.forEach(l => l.style.display = 'none');
-      if (currentTab === 'coverage' || currentTab === 'overrides') switchTab('health');
+      if (currentTab === 'coverage' || currentTab === 'overrides') switchTab('mapping');
     }
   }
 
