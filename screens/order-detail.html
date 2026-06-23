@@ -10,10 +10,18 @@
     body { background: var(--surface-soft); }
     .page-body { padding-block: var(--space-2xl) var(--space-5xl); }
 
-    /* ── Breadcrumb ── */
-    .breadcrumb { display:flex; align-items:center; gap:var(--space-xs); font-size:13px; color:var(--text-soft); margin-bottom:var(--space-xl); }
+    /* ── Breadcrumb row ── */
+    .breadcrumb-row { display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); margin-bottom:var(--space-xl); }
+    .breadcrumb { display:flex; align-items:center; gap:var(--space-xs); font-size:13px; color:var(--text-soft); }
     .breadcrumb a { color:var(--text-link); text-decoration:none; }
     .breadcrumb a:hover { text-decoration:underline; }
+
+    /* ── Order prev/next nav ── */
+    .order-nav { display:flex; align-items:center; gap:var(--space-xs); }
+    .order-nav-btn { display:flex; align-items:center; gap:4px; padding:5px 10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); font-size:12px; font-weight:600; color:var(--text-soft); text-decoration:none; white-space:nowrap; transition:color .12s, border-color .12s, background .12s; }
+    .order-nav-btn:hover { color:var(--text); border-color:var(--border-strong, var(--text-soft)); background:var(--surface-soft); }
+    .order-nav-btn.disabled { opacity:.35; pointer-events:none; }
+    .order-nav-count { font-size:12px; color:var(--text-soft); padding:0 var(--space-sm); }
 
     /* ── Page header ── */
     .order-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; margin-bottom:var(--space-xl); }
@@ -180,11 +188,14 @@
   <div class="page-body">
     <div class="napp-canvas" data-measure="content">
 
-      <nav class="breadcrumb">
-        <a href="orders.html">Orders</a>
-        <i class="ti ti-chevron-right"></i>
-        <span id="bc-id" aria-current="page">—</span>
-      </nav>
+      <div class="breadcrumb-row">
+        <nav class="breadcrumb">
+          <a href="orders.html">Orders</a>
+          <i class="ti ti-chevron-right"></i>
+          <span id="bc-id" aria-current="page">—</span>
+        </nav>
+        <div class="order-nav" id="order-nav"></div>
+      </div>
 
       <!-- ── Page header ── -->
       <div class="order-head">
@@ -1071,6 +1082,16 @@
       _currentPO = po;
       // Default tab: honour ?tab= param, else GRN for delivered/delayed, else details
       _tab = params.get('tab') || ((po.status==='delivered'||po.status==='delayed') ? 'grn' : 'details');
+
+      // Prev / next navigator
+      const ORDER_LIST = Object.keys(PO_DATA);
+      const idx = ORDER_LIST.indexOf(po.id);
+      const prevId = idx > 0 ? ORDER_LIST[idx - 1] : null;
+      const nextId = idx < ORDER_LIST.length - 1 ? ORDER_LIST[idx + 1] : null;
+      document.getElementById('order-nav').innerHTML =
+        `<a class="order-nav-btn${prevId ? '' : ' disabled'}" href="${prevId ? 'order-detail.html?id=' + prevId : '#'}"><i class="ti ti-chevron-left"></i>${prevId || ''}</a>` +
+        `<span class="order-nav-count">${idx + 1} / ${ORDER_LIST.length}</span>` +
+        `<a class="order-nav-btn${nextId ? '' : ' disabled'}" href="${nextId ? 'order-detail.html?id=' + nextId : '#'}">${nextId || ''}<i class="ti ti-chevron-right"></i></a>`;
 
       document.title = po.id + ' — Nomni Procure';
       document.getElementById('bc-id').textContent = po.id;

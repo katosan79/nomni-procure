@@ -24,6 +24,20 @@
     .kpi-tile.ok    .kpi-value { color:var(--status-ok-fg); }
     .kpi-tile.agent .kpi-value { color:var(--text-accent); }
 
+    /* ── Trend strip ── */
+    .trend-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); margin-bottom:var(--space-lg); }
+    .trend-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xs); }
+    .trend-head { display:flex; align-items:center; justify-content:space-between; }
+    .trend-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .trend-badge.ok   { background:var(--status-ok-bg);   color:var(--status-ok-fg); }
+    .trend-badge.warn { background:var(--status-warn-bg); color:#7A5000; }
+    .trend-badge.risk { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .trend-value { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.02em; font-feature-settings:'tnum' 1; }
+    .sparkline { width:100%; height:36px; overflow:visible; display:block; margin-block:var(--space-sm); }
+    .trend-range { font-size:11px; color:var(--text-soft); }
+    @media (max-width:1024px) { .trend-strip { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:480px)  { .trend-strip { grid-template-columns:1fr; } }
+
     /* ── Filter bar ── */
     .filter-bar { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; margin-bottom:var(--space-sm); }
     /* Active filter chip bar */
@@ -253,6 +267,65 @@
 
         <!-- KPI tiles -->
         <div class="kpi-row" id="kpi-row"></div>
+
+        <!-- Trend strip -->
+        <div class="trend-strip">
+
+          <!-- Invoice spend this month -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">Invoice spend · June</span>
+              <span class="trend-badge warn">↑ 12% vs May</span>
+            </div>
+            <span class="trend-value">$284,400</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="12" width="120" height="18" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="12" x2="120" y2="12" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,27 17,25 34,22 51,20 68,18 85,15 102,13 119,8"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="8" r="3" fill="#D97706"/>
+            </svg>
+            <span class="trend-range">Normal $220K – $260K · 8-week avg</span>
+          </div>
+
+          <!-- Avg days to approve -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">Avg days to approve</span>
+              <span class="trend-badge ok">Within target</span>
+            </div>
+            <span class="trend-value">2.4 days</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="14" width="120" height="16" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="14" x2="120" y2="14" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,19 17,22 34,17 51,20 68,16 85,18 102,21 119,19"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="19" r="3" fill="var(--status-ok-fg)"/>
+            </svg>
+            <span class="trend-range">Target &lt; 3 days · 8-week avg</span>
+          </div>
+
+          <!-- 3-way match rate -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">3-way match rate</span>
+              <span class="trend-badge risk">4 failed this week</span>
+            </div>
+            <span class="trend-value" style="color:var(--status-risk-fg)">84%</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="8" width="120" height="20" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="8" x2="120" y2="8" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="28" x2="120" y2="28" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,11 17,10 34,12 51,10 68,11 85,10 102,14 119,26"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="26" r="3" fill="var(--status-risk-fg)"/>
+            </svg>
+            <span class="trend-range">Target &gt; 92% · 8-week avg</span>
+          </div>
+
+        </div>
 
         <!-- Cyrus agent summary -->
         <div class="agent-surface" id="cyrus-card">
