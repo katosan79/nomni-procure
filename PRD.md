@@ -1,9 +1,11 @@
 # Nomni Procure — Product Requirements Document
 
-**Version:** 1.2  
-**Last updated:** 22 Jun 2026  
-**Status:** Living document — update after each sprint or prototype revision  
-**Source:** Derived from 23 HTML prototype screens in `/screens/`
+**Version:** 3.0  
+**Last updated:** 23 Jun 2026  
+**Status:** Design-validated — ready for backend estimation  
+**Source:** Derived from 44 HTML prototype screens in `/screens/`  
+**Live prototype:** https://katosan79.github.io/nomni-procure/  
+**Audience:** Backend engineers, API architects, data engineers
 
 ---
 
@@ -13,10 +15,11 @@
 2. [Information Architecture](#2-information-architecture)
 3. [Feature Specifications](#3-feature-specifications)
 4. [Data Models](#4-data-models)
-5. [Agent Features](#5-agent-features)
-6. [Design System](#6-design-system)
-7. [Out of Scope / Future Work](#7-out-of-scope--future-work)
-8. [Open Questions](#8-open-questions)
+5. [Agent Layer](#5-agent-layer)
+6. [API Surface Summary](#6-api-surface-summary)
+7. [Design System](#7-design-system)
+8. [Out of Scope / Future Work](#8-out-of-scope--future-work)
+9. [Open Questions](#9-open-questions)
 
 ---
 
@@ -68,45 +71,64 @@ The persistent left-side shell nav renders the following items:
 | Nav item | Screen(s) | Access |
 |---|---|---|
 | Overview | `dashboard.html` | All roles |
-| Market lists | `market-list.html` | HQ roles |
-| Items | `items.html`, `new-item.html` | HQ roles |
-| Recipes | `recipes.html`, `recipe-detail.html`, `outlet-recipes.html` | All roles |
 | Orders | `orders.html`, `order-detail.html`, `new-order.html` | Ordering roles |
-| Inventory | `inventory.html`, `count-session-detail.html`, `count-sheet.html`, `spot-count.html`, `new-count-session.html` | Ordering roles |
 | Invoices | `invoices.html`, `invoice-detail.html` | HQ Admin, Finance |
+| Items | `items.html`, `new-item.html` | HQ roles |
+| Inventory (+ sub-nav) | `inventory.html` (Operations), `inventory-analytics.html`, `inventory-governance.html`, `count-session-detail.html`, `count-sheet.html`, `spot-count.html`, `new-count-session.html` | Ordering roles |
+| Market lists | `market-list.html`, `market-list-detail.html`, `market-list-assign.html`, `market-list-new.html` | HQ roles |
+| Recipes | `recipes.html`, `recipe-detail.html`, `recipe-detail-finished.html`, `recipe-detail-prep.html`, `recipe-detail-production.html`, `new-recipe.html`, `import-recipes.html`, `outlet-recipes.html` | All roles |
 | POS mapping | `pos-mapping.html` | HQ roles |
 | Reporting | `reporting.html` | HQ Admin, HQ Approver, Finance, Outlet Manager (view) |
-| Suppliers | `suppliers.html` | HQ Admin |
-| Outlets | `outlets.html` | HQ Admin |
-| Users | `users.html` | HQ Admin |
+| Outlets | `outlets.html`, `outlet-detail.html`, `outlet-group-detail.html` | HQ Admin |
+| Suppliers | `suppliers.html`, `supplier-detail.html` | HQ Admin |
+| Users | `users.html`, `user-detail.html` | HQ Admin |
+| Brands | `brands.html`, `brand-detail.html` | HQ Admin |
+| Settings | `settings.html` | HQ Admin |
 
 ### URL Structure (prototype filenames)
 
 ```
-/screens/
-  dashboard.html
+/screens/                          (44 screens total)
   login.html
-  market-list.html
-  items.html
-  new-item.html
-  recipes.html
-  recipe-detail.html
-  outlet-recipes.html
+  dashboard.html
   orders.html
   order-detail.html
   new-order.html
-  inventory.html
+  invoices.html
+  invoice-detail.html
+  items.html
+  new-item.html
+  inventory.html                   ← Operations tab
+  inventory-analytics.html         ← Analytics tab (Vera agent, variance heatmap)
+  inventory-governance.html        ← Governance tab (Sloan+Otto, count templates, par overrides)
   count-session-detail.html
   count-sheet.html
   spot-count.html
   new-count-session.html
-  invoices.html
-  invoice-detail.html
+  market-list.html
+  market-list-detail.html
+  market-list-assign.html
+  market-list-new.html
+  recipes.html
+  recipe-detail.html
+  recipe-detail-finished.html
+  recipe-detail-prep.html
+  recipe-detail-production.html
+  new-recipe.html
+  import-recipes.html
+  outlet-recipes.html
   pos-mapping.html
   reporting.html
-  suppliers.html
   outlets.html
+  outlet-detail.html
+  outlet-group-detail.html
+  suppliers.html
+  supplier-detail.html
   users.html
+  user-detail.html
+  brands.html
+  brand-detail.html
+  settings.html
 ```
 
 ### Role Switcher
@@ -740,7 +762,84 @@ Safety stock    = (max daily usage − avg daily usage) × lead time days
 
 Otto surfaces par level adjustment recommendations on the Items page — HQ reviews and applies (same approval model as other Otto suggestions).
 
---- — `invoices.html`, `invoice-detail.html`
+---
+
+#### 3.7.12 Inventory Analytics — `inventory-analytics.html` *(Built)*
+
+**Purpose:** Cross-outlet Actual vs Theoretical variance heatmap with Vera agent surfacing.
+
+**Agent present:** Vera (Variance agent) — State: "Needs you"  
+Example: "3 outlets above risk threshold — Dry goods at Bondi Beach is 25× the network average."  
+CTA: "View heat map". Secondary: "Dismiss".
+
+**KPI strip (4 tiles):**
+- Outlets above risk threshold (risk colour if > 0)
+- Network avg variance % (warn if elevated vs prior week)
+- Unresolved anomalies (items with no log explanation)
+- Estimated COGS gap ($)
+
+**Variance heatmap table:**
+- Rows: Internal items (Olive Oil 1L, Chicken Breast 500g, Avocado, Feta Cheese, Roma Tomatoes…)
+- Columns: Outlets (Bondi Beach, Surry Hills, Newtown, Melbourne CBD, Brisbane CBD…)
+- Each cell = variance %, colour-coded by tier: OK (<1%) | Monitor (1–2%) | Risk (2–3%) | Escalate (>3%)
+- Escalate cells show triangle icon + value in bold
+- Legend in header row
+
+**Filter bar:** Period (This week / Last 2 weeks / Last month), Category, Outlet group
+
+**Backend requirements:**  
+`GET /api/v1/variance/heatmap?from=&to=&groupId=` — matrix: items × outlets, each cell = variance%  
+`GET /api/v1/variance/summary` — network KPIs: outlets above risk, network avg, unresolved anomalies, COGS gap
+
+**Variance thresholds:**  
+`<1%` = OK (green) · `1–2%` = Monitor (amber) · `2–3%` = Risk (pink) · `>3%` = Escalate (dark red)
+
+---
+
+#### 3.7.13 Inventory Governance — `inventory-governance.html` *(Built)*
+
+**Purpose:** HQ tools for count template management, par override approvals, and Otto-driven dynamic par recommendations.
+
+**Agents present:**
+1. **Sloan** (Governance agent) — State: "Done / Monitoring"  
+   Headline: "2 items have par levels 40%+ below the network average — SA Metro is the outlier"  
+   No active CTA (monitoring state).
+2. **Otto** (Ordering agent) — State: "Proposed"  
+   Headline: "4 par levels are out of step with 4-week sales cadence"  
+   Why: Rolling usage × lead time calculation. CTA: "Review suggestions". Secondary: "Dismiss".
+
+**Section 1 — HQ Count Templates:**
+- Card grid (one card per outlet group): NSW Metro, VIC Metro, etc.
+- Card shows: template name, group + outlet count, active status pill
+- Sheet rows per card: sheet name (REQ badge for required), cadence tag (Weekly/Fortnightly/Monthly)
+- Card footer: "Last pushed [date]" + "Push to group" button (hq-only)
+- HQ-only "New template" button in section header
+
+**Section 2 — Par Override Requests:**
+- Cards per pending override request
+- Fields shown: item name, outlet group, current par → requested par, reason (free text)
+- Actions: "View item" (opens item drawer), "Reject", "Approve [new value]"
+- On approval: par level updates, activity logged
+
+**Section 3 — Dynamic Par Recommendations (Otto):**
+- Otto-attributed cards per item recommendation
+- Formula shown: `(avg daily usage × lead time days) + safety stock buffer`
+- Rolling 4-week window
+- Actions: "Apply" (updates par), "Dismiss"
+
+**Item drawer** (shared across sections):
+- Slide-in drawer with item detail, current par levels per group, activity log
+- Edit par level inline
+- "Save changes" button
+
+**Backend requirements:**  
+`GET /api/v1/count-templates?groupId=` · `POST /api/v1/count-templates` · `POST /api/v1/count-templates/:id/push`  
+`GET /api/v1/par-overrides?status=pending` · `POST /api/v1/par-overrides/:id/approve` · `POST /api/v1/par-overrides/:id/reject`  
+`GET /api/v1/par-recommendations?outletId=&itemId=`
+
+---
+
+### 3.8 Invoices — `invoices.html`, `invoice-detail.html`
 
 **Purpose:** Finance accounts payable — receive, match, approve, and export invoices.
 
@@ -1263,9 +1362,76 @@ The system enforces a **single canonical record** per supplier. Two buyers purch
 
 ---
 
-## 5. Agent Features
+## 5. Agent Layer
 
-All five agents share a common state model: `proposed` → `needs-you` → `done` | `stepped-back`.
+### 5.0 Shared design principles
+
+> **Agents execute, humans govern.** Every agent action is: attributable · auditable · reversible.
+
+**Agent state machine:**
+```
+proposed  → [CTA clicked]  → done (resolved; Undo available for N minutes)
+needs-you → [CTA clicked]  → done (resolved; Undo available)
+proposed  → [Dismiss]      → stepped-back
+needs-you → [Dismiss]      → stepped-back
+done      → [Undo]         → proposed | needs-you (original state restored)
+```
+
+**Undo windows:** 15 min (ordering), 120 min (invoices), configurable per agent per group (AG-7).
+
+**Agent card anatomy:**
+- `.agent-avatar[data-agent="otto|sloan|mara|cyrus|vera"]` — 2-letter initials, colour per agent
+- `.agent-state` pill — icon + label (bulb = proposed · triangle = needs-you · check = done · pause = stepped-back)
+- Headline (bold)
+- Why text (body)
+- `.brief-actions` — CTA button (primary), secondary action (ghost), Dismiss (ghost)
+
+**Guardrails (non-negotiable):**
+
+| Code | Rule |
+|---|---|
+| AG-6 | Every action logged: `AgentAuditEntry` with agentId, rationaleeSummary, inputRefs[], outputRefs[], timestamp |
+| AG-7 | Above `autoApplyThreshold` → human approval required. Below → auto-apply with undo window. |
+| AG-8 | Agent for Outlet A cannot read or act on Outlet B's data |
+| AG-9 | Per-group on/off switch + autonomy thresholds (HQ Admin configurable) |
+| AG-10 | Compute cost monitored per group; alert at soft limit; block at hard limit |
+
+**Agent presence by module:**
+
+| Module | Agent | State | Action |
+|---|---|---|---|
+| Dashboard | All 5 | Daily rotation (Proposed / Needs you) | Approve / Dismiss |
+| Orders | Otto | Proposed — "drafted N requisitions" | Approve all N |
+| Orders anomaly | Vera | Needs you — spend anomaly | Investigate |
+| Invoices | Cyrus | Needs you / Ready to export / All clear | Review / Export |
+| Inventory — Analytics | Vera | Needs you — variance outliers | View heatmap |
+| Inventory — Governance | Sloan | Done — monitoring | (none) |
+| Inventory — Governance | Otto | Proposed — par suggestions | Review suggestions |
+| Market List | Sloan | Proposed / Needs you | Push all / Fix mapping |
+| Recipes | Mara | Proposed — margin breach list | Reprice / See recipes |
+| Reporting | Vera / Cyrus | Proposed — anomaly cards | Drill down |
+
+**Cross-agent event bus (agents communicate via events, not direct calls):**
+
+```typescript
+{ type: 'invoice.price_changed'; internalItemId; previousUnitPrice; newUnitPrice; invoiceId }
+{ type: 'market_list.propagated'; draftId; outletId; changesApplied }
+{ type: 'stock_count.submitted'; countId; outletId; quality: 'full'|'partial'|'estimated' }
+{ type: 'order_draft.approved'; draftId; outletId; totalValue }
+```
+
+**Dashboard daily brief rotation:** Each agent has 7 variants (Sun–Sat) generated server-side from real data. Brief shape:
+```typescript
+interface AgentBrief {
+  agentId: string;
+  state: 'proposed' | 'needs-you';
+  headline: string;
+  why: string;
+  ctaLabel: string;
+  ctaAction: string;
+  updateTime: string;
+}
+```
 
 Agents appear in:
 - Dashboard morning brief strip (all five)
@@ -1374,7 +1540,125 @@ Agents appear in:
 
 ---
 
-## 6. Design System
+## 6. API Surface Summary
+
+> Scoping reference for backend engineers. All endpoints are REST/JSON unless noted. Auth: Bearer JWT. All timestamps ISO 8601 UTC.
+
+### 6.1 Core entity endpoints
+
+| Resource | Key endpoints | Notes |
+|---|---|---|
+| Items | `GET /items`, `POST /items`, `GET /items/:id`, `PATCH /items/:id` | Buyer-primary; `internalItemId` is the join key |
+| Supplier SKU links | `GET /items/:id/sku-links`, `POST /items/:id/sku-links`, `PATCH /items/:id/sku-links/:linkId` | One preferred per group |
+| Market lists | `GET /market-lists`, `POST /market-lists`, `GET /market-lists/:id`, `PATCH /market-lists/:id` | 1:1 with supplier; named after supplier |
+| Market list items | `GET /market-lists/:id/items`, `POST /market-lists/:id/items`, `PATCH /market-lists/:id/items/:itemId` | Price, UoM, min qty |
+| Suppliers | `GET /suppliers`, `POST /suppliers`, `GET /suppliers/:id` | Status: active/inactive/onboarding |
+| Recipes | `GET /recipes`, `POST /recipes`, `GET /recipes/:id`, `PATCH /recipes/:id` | Includes ingredient cost snapshot |
+| Recipe versions | `GET /recipes/:id/versions`, `POST /recipes/:id/versions/:versionId/rollback` | Immutable version history |
+| Purchase orders | `GET /orders`, `POST /orders`, `GET /orders/:id`, `PATCH /orders/:id` | Lifecycle: draft→submitted→confirmed→partial→received→closed |
+| Order line items | `GET /orders/:id/lines`, `PATCH /orders/:id/lines/:lineId` | GRN qty updates here |
+| GRNs | `POST /orders/:id/grn`, `PATCH /orders/:id/grn` | Triggers Vera re-eval on count sessions |
+| Invoices | `GET /invoices`, `GET /invoices/:id`, `PATCH /invoices/:id` | State: pending→matched/failed→approved→exported |
+| Invoice lines | `GET /invoices/:id/lines` | 3-way match result per line |
+| Count sessions | `GET /count-sessions`, `POST /count-sessions`, `GET /count-sessions/:id`, `PATCH /count-sessions/:id` | Types: full/rolling/spot |
+| Count sheets | `GET /count-sessions/:id/sheets`, `PATCH /count-sessions/:id/sheets/:sheetId` | Per-area item counts |
+| Inventory items | `GET /inventory`, `GET /inventory/:itemId`, `PATCH /inventory/:itemId` | On-hand, par level, UoM |
+| Par override requests | `GET /par-override-requests`, `POST /par-override-requests`, `PATCH /par-override-requests/:id` | States: pending→approved/rejected |
+| Count templates | `GET /count-templates`, `POST /count-templates`, `PATCH /count-templates/:id` | HQ-governed; pushed to outlet groups |
+| POS mappings | `GET /pos-mappings`, `POST /pos-mappings`, `PATCH /pos-mappings/:id` | Health states: mapped/stale/unmapped |
+| Outlets | `GET /outlets`, `POST /outlets`, `GET /outlets/:id`, `PATCH /outlets/:id` | Groups, mode, CK flag |
+| Users | `GET /users`, `POST /users`, `GET /users/:id`, `PATCH /users/:id`, `DELETE /users/:id` | Role-scoped |
+
+### 6.2 Agent endpoints
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/agents/briefs` | GET | Daily brief for all agents for the calling outlet; returns `AgentBrief[]` |
+| `/agents/briefs/:agentId` | GET | Brief for a specific agent |
+| `/agents/:agentId/actions/:actionId/approve` | POST | Execute agent-proposed action (Otto draft approval, Sloan push, etc.) |
+| `/agents/:agentId/actions/:actionId/dismiss` | POST | Dismiss agent proposal → `stepped-back` |
+| `/agents/:agentId/actions/:actionId/undo` | POST | Undo auto-applied action within undo window |
+| `/agents/audit` | GET | Paginated agent audit log (`AgentAuditEntry[]`); filters: agentId, outletId, dateRange |
+| `/agents/otto/suggestions` | GET | Otto's current item-level ordering suggestions for the outlet |
+| `/agents/vera/variance-heatmap` | GET | HQ-only; cross-outlet variance heatmap data |
+| `/agents/sloan/staged-changes` | GET | Pending HQ price changes awaiting approval |
+| `/agents/sloan/par-recommendations` | GET | Dynamic par recommendations per item per outlet (requires 4+ weeks sales data) |
+| `/agents/mara/margin-alerts` | GET | Recipes currently below target margin |
+| `/agents/cyrus/match-queue` | GET | Invoices pending 3-way match or needing manual review |
+| `/agents/cyrus/export-queue` | GET | Approved invoices ready for Xero export |
+
+### 6.3 Reporting endpoints
+
+| Endpoint | Description |
+|---|---|
+| `GET /reporting/summary` | Outlet-level KPI snapshot: total spend, outstanding invoices, pending approvals |
+| `GET /reporting/spend-by-category` | Spend breakdown by item category for date range |
+| `GET /reporting/top-items` | Top N items by spend, qty ordered, or variance for period |
+| `GET /reporting/variance-summary` | Count session variance results per outlet per period |
+| `GET /reporting/invoice-reconciliation` | Per-outlet invoice match status and outstanding amounts |
+| `GET /reporting/agent-performance` | Count of agent actions by type (auto-applied, approved, dismissed, undone) |
+
+### 6.4 HQ propagation endpoints
+
+| Endpoint | Description |
+|---|---|
+| `POST /hq/market-lists/:id/push` | Push market list to outlet group(s); body: `{ scope: 'all'|'group'|'selection', groupIds?, outletIds? }` |
+| `POST /hq/count-templates/:id/push` | Push count template to outlet group(s) |
+| `POST /hq/pos-mappings/push` | Push POS mapping set to outlet group(s) with overwrite confirmation |
+| `GET /hq/propagation-status/:jobId` | Poll async propagation job status |
+| `POST /hq/recipes/:id/push` | Push locked recipe to outlet group(s) |
+
+### 6.5 Key shared types
+
+```typescript
+// Agent brief (Dashboard + agent module cards)
+interface AgentBrief {
+  agentId: 'otto' | 'vera' | 'sloan' | 'mara' | 'cyrus';
+  state: 'proposed' | 'needs-you' | 'done' | 'stepped-back';
+  headline: string;
+  why: string;
+  ctaLabel: string;
+  ctaActionId: string;
+  updateTime: string;        // ISO 8601
+  undoWindowExpiresAt?: string;
+}
+
+// Audit entry (all agents)
+interface AgentAuditEntry {
+  entryId: string;
+  agentId: string;
+  runId: string;
+  outletId: string | null;
+  groupId: string | null;
+  actionType: string;
+  rationaleeSummary: string;
+  inputDataRefs: string[];
+  outputRefs: string[];
+  autoApplied: boolean;
+  undoWindowExpiresAt: string | null;
+  undoneAt: string | null;
+  undoneBy: string | null;
+  timestamp: string;
+}
+
+// Par override request
+interface ParOverrideRequest {
+  requestId: string;
+  itemId: string;
+  outletId: string;
+  currentPar: number;
+  requestedPar: number;
+  reason: string;
+  requestedBy: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewedBy?: string;
+  reviewedAt?: string;
+}
+```
+
+---
+
+## 7. Design System
 
 ### 6.1 Technology
 
@@ -1452,23 +1736,22 @@ Control height: `--control-h`
 
 ---
 
-## 7. Out of Scope / Future Work
+## 8. Out of Scope / Future Work
 
-### Inventory Roadmap (added v1.2 — from competitive analysis Jun 2026)
+### Inventory Roadmap
 
-**Phase 1 — Parity with MarketMan (build next):**
-- §3.7.6 Actual vs Theoretical variance report — wire recipe × POS → theoretical COGS; Vera cross-outlet heat map
-- §3.7.7 Structured wastage logging with reason codes (Spoilage / Over-portion / Breakage / Theft)
+**Built — v3.0 (44 screens):**
+- §3.7.1–§3.7.11 Core inventory: count sessions, session detail, count sheet, spot count, new session wizard
+- §3.7.12 Inventory Analytics — Vera agent, variance heatmap, COGS trend, top wastage items
+- §3.7.13 Inventory Governance — Sloan monitoring, Otto par suggestions, count templates, par override requests, dynamic par recommendations
 
-**Phase 2 — Differentiation (no competitor does this):**
-- §3.7.8 HQ-governed par levels and count templates — HQ pushes both to outlet groups; outlet override requires approval
-- §3.7.9 Invoice Agent → auto-GRN pipeline (Cyrus approved invoice → on-hand quantity update)
+**Next to build — Backend scoping priority:**
+- §3.7.9 Invoice Agent → auto-GRN pipeline (Cyrus approved invoice → on-hand quantity update, Vera re-eval)
 - Mobile-first count flow — outlet staff count on mobile; results sync to HQ in real time
 
 **Phase 3 — Strategic moat:**
 - §3.7.10 Central Kitchen → outlet inventory transfer module
-- §3.7.11 Dynamic par levels via Otto (demand-forecast par from rolling 4-week sales)
-- Vera variance root-cause attribution — chain-wide pattern detection across wastage reasons
+- §3.7.11 Dynamic par levels via Otto (demand-forecast par from rolling 4-week sales) — prototype shown as "Coming soon" tile
 
 ### Phase 2 (explicitly gated in prototype)
 
@@ -1497,7 +1780,7 @@ Control height: `--control-h`
 
 ---
 
-## 8. Open Questions
+## 9. Open Questions
 
 1. **Approval threshold** — $500 is hardcoded in the prototype (`approval: 'auto'` for ≤$500, `'manager'` for >$500). Is this configurable per outlet group or globally?
 
