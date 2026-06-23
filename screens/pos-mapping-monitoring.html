@@ -4,6 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>POS Mapping · Monitoring — Nomni Procure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
   <link rel="stylesheet" href="../shared/components.css?v=3"/>
   <style>
@@ -21,11 +23,15 @@
     .mode-btn { padding:6px 18px; border-radius:6px; font-size:13px; font-weight:500; color:var(--text-soft); background:transparent; border:none; cursor:pointer; transition:all 150ms; font-family:inherit; }
     .mode-btn.active { background:var(--surface-soft); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.09); }
 
-    /* ─── Section nav ─── */
-    .section-nav { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:var(--space-xl); }
-    .section-nav-item { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; font-size:14px; font-weight:600; color:var(--text-soft); text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color 150ms, border-color 150ms; }
-    .section-nav-item:hover { color:var(--text); }
-    .section-nav-item.active { color:var(--text-accent); border-bottom-color:var(--text-accent); }
+    /* ─── Shared buttons ─── */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:500; font-family:inherit; cursor:pointer; border:none; transition:all 150ms; white-space:nowrap; }
+    .btn-primary   { background:var(--btn-primary-bg); color:var(--btn-primary-fg); }
+    .btn-primary:hover { background:var(--spinach); }
+    .btn-secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
+    .btn-secondary:hover { background:var(--surface-soft); }
+    .btn-ghost { background:transparent; color:var(--text-soft); padding:6px 10px; }
+    .btn-ghost:hover { background:var(--surface-soft); color:var(--text); }
+    .btn-sm { padding:5px 12px; font-size:12px; }
 
     /* ─── KPI strip ─── */
     .kpi-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); margin-bottom:var(--space-lg); }
@@ -51,49 +57,40 @@
     .trend-range { font-size:11px; color:var(--text-soft); }
     @media (max-width:900px) { .trend-strip { grid-template-columns:1fr 1fr; } }
 
-    /* ─── Issues ─── */
+    /* ─── Section headings ─── */
     .section-heading { font-size:14px; font-weight:700; color:var(--text); margin:0 0 var(--space-md); display:flex; align-items:center; gap:var(--space-sm); }
+    .section-gap { margin-bottom:var(--space-2xl); }
+
+    /* ─── Issues ─── */
     .issue-row { display:flex; align-items:flex-start; gap:var(--space-lg); padding:var(--space-md) var(--space-lg); background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:var(--space-sm); }
     .issue-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; margin-top:2px; }
     .issue-icon.risk { background:#FEE2E2; color:#DC2626; }
     .issue-icon.warn { background:#FEF3C7; color:#D97706; }
     .issue-icon.info { background:#EFF6FF; color:#2563EB; }
-    .issue-icon.ok   { background:var(--status-ok-bg); color:var(--status-ok-fg); }
-    .issue-body  { flex:1; }
+    .issue-body { flex:1; }
     .issue-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:2px; }
     .issue-detail { font-size:12px; color:var(--text-soft); }
-    .issue-cta   { flex-shrink:0; align-self:center; }
+    .issue-cta { flex-shrink:0; align-self:center; }
 
-    /* ─── Pill ─── */
+    /* ─── Pills ─── */
     .pill { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:600; white-space:nowrap; }
     .pill-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
     .pill.ok   { background:#D1FAE5; color:#065F46; } .pill.ok   .pill-dot { background:#059669; }
     .pill.warn { background:#FEF3C7; color:#92400E; } .pill.warn .pill-dot { background:#D97706; }
     .pill.risk { background:#FEE2E2; color:#991B1B; } .pill.risk .pill-dot { background:#DC2626; }
     .pill.info { background:#EFF6FF; color:#1D4ED8; } .pill.info .pill-dot { background:#2563EB; }
-    .pill.neutral { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); }
-
-    /* ─── Shared button styles ─── */
-    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:500; font-family:inherit; cursor:pointer; border:none; transition:all 150ms; white-space:nowrap; }
-    .btn-primary   { background:var(--btn-primary-bg); color:var(--btn-primary-fg); }
-    .btn-primary:hover { background:var(--spinach); }
-    .btn-secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
-    .btn-secondary:hover { background:var(--surface-soft); }
-    .btn-ghost { background:transparent; color:var(--text-soft); padding:6px 10px; }
-    .btn-ghost:hover { background:var(--surface-soft); color:var(--text); }
-    .btn-sm { padding:5px 12px; font-size:12px; }
 
     /* ─── Connection cards ─── */
-    .conn-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); margin-bottom:var(--space-xl); }
+    .conn-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); }
     .conn-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:var(--space-xl); border-left-width:3px; }
     .conn-card.connected { border-left-color:var(--text-accent); }
     .conn-card.batch     { border-left-color:#D97706; }
-    .conn-card.dark      { border-left-color:#DC2626; }
     .conn-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-md); }
     .conn-title  { font-size:15px; font-weight:600; color:var(--text); }
     .conn-meta   { font-size:13px; color:var(--text-soft); margin-bottom:4px; }
     .conn-sync   { font-size:12px; color:var(--text-soft); font-family:'IBM Plex Mono',monospace; }
     .conn-actions { display:flex; gap:var(--space-sm); margin-top:var(--space-md); }
+    @media (max-width:900px) { .conn-grid { grid-template-columns:1fr; } }
 
     /* ─── Outlet coverage table (HQ) ─── */
     .hq-block { display:none; }
@@ -110,13 +107,10 @@
     .prog-fill { height:100%; border-radius:2px; background:var(--text-accent); }
     .prog-fill.warn { background:#D97706; }
     .prog-fill.risk { background:#DC2626; }
-
-    /* ─── Section separator ─── */
-    .section-gap { margin-bottom:var(--space-2xl); }
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=5" data-active="pos-mapping"></script>
+  <script src="../shared/shell.js?v=5" data-active="pos-mapping-monitoring"></script>
 
 <main class="main">
   <div class="napp-canvas" data-measure="wide">
@@ -136,12 +130,6 @@
         <button class="btn btn-primary" onclick="alert('Syncing POS now…')">↻ Sync now</button>
       </div>
     </div>
-
-    <!-- ── Section nav ── -->
-    <nav class="section-nav">
-      <a href="pos-mapping.html" class="section-nav-item"><i class="ti ti-settings"></i>Configuration</a>
-      <a href="pos-mapping-monitoring.html" class="section-nav-item active"><i class="ti ti-activity"></i>Monitoring</a>
-    </nav>
 
     <!-- ── Sloan agent card ── -->
     <article class="agent-surface" id="sloan-card" style="margin-bottom:var(--space-lg)">
@@ -191,8 +179,6 @@
 
     <!-- ── Trend tiles ── -->
     <div class="trend-strip">
-
-      <!-- Mapping coverage -->
       <div class="trend-tile">
         <div class="trend-head">
           <span class="kpi-label">Mapping coverage</span>
@@ -209,8 +195,6 @@
         </svg>
         <span class="trend-range">Target 95%+ · 8-week trend</span>
       </div>
-
-      <!-- Sync success rate -->
       <div class="trend-tile">
         <div class="trend-head">
           <span class="kpi-label">Sync success rate</span>
@@ -227,8 +211,6 @@
         </svg>
         <span class="trend-range">Abacus API + Batch · 14-day window</span>
       </div>
-
-      <!-- Stale mappings -->
       <div class="trend-tile">
         <div class="trend-head">
           <span class="kpi-label">Stale mappings</span>
@@ -245,13 +227,11 @@
         </svg>
         <span class="trend-range">Items not seen in sales for 30+ days</span>
       </div>
-
     </div>
 
     <!-- ── Active Issues ── -->
     <div class="section-gap">
       <h3 class="section-heading"><i class="ti ti-alert-triangle" style="color:#D97706"></i>Active Issues</h3>
-
       <div class="issue-row">
         <div class="issue-icon warn">⚠</div>
         <div class="issue-body">
@@ -262,7 +242,6 @@
           <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Map now →</a>
         </div>
       </div>
-
       <div class="issue-row">
         <div class="issue-icon warn">⚠</div>
         <div class="issue-body">
@@ -273,7 +252,6 @@
           <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Review →</a>
         </div>
       </div>
-
       <div class="issue-row" style="opacity:0.6">
         <div class="issue-icon info">ℹ</div>
         <div class="issue-body">
@@ -286,7 +264,7 @@
       </div>
     </div>
 
-    <!-- ── Connection health ── -->
+    <!-- ── Connection Health ── -->
     <div class="section-gap">
       <h3 class="section-heading"><i class="ti ti-plug-connected" style="color:var(--text-accent)"></i>Connection Health</h3>
       <div class="conn-grid">
@@ -324,7 +302,6 @@
         <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Push mappings →</a>
       </div>
 
-      <!-- HQ cross-outlet issues -->
       <div class="issue-row" style="margin-bottom:var(--space-sm)">
         <div class="issue-icon risk">✕</div>
         <div class="issue-body">
@@ -416,17 +393,19 @@
       </div>
     </div>
 
+    <div style="height:var(--space-3xl)"></div>
+
   </div><!-- /napp-canvas -->
 </main>
 
 <script>
+  NomniShell.init('POS Mapping · Monitoring');
   let currentMode = 'standalone';
 
   function switchMode(mode) {
     currentMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     document.querySelector(`.mode-btn[onclick="switchMode('${mode}')"]`).classList.add('active');
-    const hqCoverage = document.getElementById('hq-coverage');
     if (mode === 'hq') {
       document.querySelectorAll('.hq-block').forEach(el => el.style.display = 'block');
     } else {

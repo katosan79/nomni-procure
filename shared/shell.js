@@ -16,7 +16,10 @@
     ]},
     { id: 'market-list', icon: 'ti-receipt',            label: 'Market lists', href: 'market-list.html' },
     { id: 'recipes',     icon: 'ti-tools-kitchen-2',    label: 'Recipes',      href: 'recipes.html' },
-    { id: 'pos-mapping', icon: 'ti-device-desktop',     label: 'POS mapping',  href: 'pos-mapping.html' },
+    { id: 'pos-mapping', icon: 'ti-device-desktop', label: 'POS mapping', children: [
+      { id: 'pos-mapping-config',     label: 'Configuration', href: 'pos-mapping.html' },
+      { id: 'pos-mapping-monitoring', label: 'Monitoring',    href: 'pos-mapping-monitoring.html' },
+    ]},
     { id: 'reporting',   icon: 'ti-chart-bar',          label: 'Reporting',    href: 'reporting.html' },
     { id: 'outlets',      icon: 'ti-building-store',     label: 'Outlets',       href: 'outlets.html' },
     { id: 'suppliers',   icon: 'ti-truck',              label: 'Suppliers',    href: 'suppliers.html' },
@@ -44,7 +47,9 @@
     'inventory-governance':   ['hq-admin','hq-approver'],
     'market-list': ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
     recipes:       ['hq-admin','hq-approver','outlet-mgr','outlet-user'],
-    'pos-mapping': ['hq-admin','hq-approver','outlet-mgr'],
+    'pos-mapping':            ['hq-admin','hq-approver','outlet-mgr'],
+    'pos-mapping-config':     ['hq-admin','hq-approver','outlet-mgr'],
+    'pos-mapping-monitoring': ['hq-admin','hq-approver','outlet-mgr'],
     reporting:     ['hq-admin','hq-approver','finance'],
     outlets:        ['hq-admin','hq-approver'],
     suppliers:     ['hq-admin','hq-approver','finance'],
@@ -244,6 +249,11 @@
     }
     .shell-chrome.nav-collapsed .group-chevron { display: none; }
     .shell-chrome.nav-collapsed .shell-nav-subitems { display: none !important; }
+    /* Active icon highlight when a child of this group is the current page */
+    .shell-chrome.nav-collapsed .shell-nav-group-toggle.active {
+      background: var(--chrome-active);
+      color: var(--chrome-fg);
+    }
 
     /* Compact flyout for collapsed nav groups */
     .shell-nav-compact-flyout {
@@ -261,6 +271,11 @@
       pointer-events: none;
     }
     .shell-nav-compact-flyout.open { display: block; pointer-events: all; }
+    /* Hover-to-open flyout in collapsed mode — keeps it open while mousing over the flyout itself */
+    .shell-chrome.nav-collapsed .shell-nav-group:hover .shell-nav-compact-flyout {
+      display: block;
+      pointer-events: all;
+    }
     .shell-nav-compact-flyout-title {
       font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.08em; color: rgba(250,247,233,0.4);

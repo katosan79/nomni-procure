@@ -32,11 +32,35 @@
     .pm-subtitle { font-size: 14px; color: var(--text-soft); margin: 0; }
     .pm-header-right { display: flex; align-items: center; gap: var(--space-md); flex-shrink: 0; }
 
-    /* ─── Section nav ─── */
-    .section-nav { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:var(--space-xl); }
-    .section-nav-item { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; font-size:14px; font-weight:600; color:var(--text-soft); text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color 150ms, border-color 150ms; }
-    .section-nav-item:hover { color:var(--text); }
-    .section-nav-item.active { color:var(--text-accent); border-bottom-color:var(--text-accent); }
+
+    /* ─── Monitoring: KPI strip ─── */
+    .kpi-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); margin-bottom:var(--space-lg); }
+    .kpi-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); }
+    .kpi-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
+    .kpi-value { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.02em; font-feature-settings:'tnum' 1; line-height:1.1; }
+    .kpi-sub { font-size:12px; color:var(--text-soft); margin-top:4px; }
+    .kpi-tile.ok .kpi-value { color:var(--status-ok-fg); }
+    .kpi-tile.warn .kpi-value { color:#D97706; }
+    .kpi-tile.risk .kpi-value { color:#DC2626; }
+
+    /* ─── Monitoring: trend strip ─── */
+    .trend-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); margin-bottom:var(--space-xl); }
+    .trend-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xs); }
+    .trend-head { display:flex; align-items:center; justify-content:space-between; }
+    .trend-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .trend-badge.ok   { background:var(--status-ok-bg);   color:var(--status-ok-fg); }
+    .trend-badge.warn { background:var(--status-warn-bg); color:#7A5000; }
+    .trend-badge.risk { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .trend-value { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.02em; font-feature-settings:'tnum' 1; }
+    .sparkline { width:100%; height:36px; overflow:visible; display:block; margin-block:var(--space-sm); }
+    .trend-range { font-size:11px; color:var(--text-soft); }
+
+    /* ─── Monitoring: section heading / gaps / HQ gating ─── */
+    .section-heading { font-size:14px; font-weight:700; color:var(--text); margin:0 0 var(--space-md); display:flex; align-items:center; gap:var(--space-sm); }
+    .section-gap { margin-bottom:var(--space-2xl); }
+    .hq-block { display:none; }
+
+    @media (max-width:900px) { .kpi-strip { grid-template-columns:repeat(2,1fr); } .trend-strip { grid-template-columns:1fr 1fr; } }
 
     /* ─── Mode toggle ─── */
     .mode-toggle {
@@ -588,7 +612,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=5" data-active="pos-mapping"></script>
+  <script src="../shared/shell.js?v=5" data-active="pos-mapping-config"></script>
 
 <main class="main">
   <div class="napp-canvas" data-measure="wide">
@@ -596,9 +620,9 @@
     <!-- ── Page header ── -->
     <div class="pm-header">
       <div>
-        <div class="pm-eyebrow">Configuration</div>
+        <div class="pm-eyebrow">POS Mapping</div>
         <h1>POS Mapping</h1>
-        <p class="pm-subtitle">Connect your point-of-sale system and map menu items to recipes and inventory</p>
+        <p class="pm-subtitle">Connect your POS system and map menu items to recipes and inventory</p>
       </div>
       <div class="pm-header-right">
         <div class="mode-toggle">
@@ -608,12 +632,6 @@
         <button class="btn btn-primary" onclick="alert('Syncing POS now…')">↻ Sync now</button>
       </div>
     </div>
-
-    <!-- ── Section nav ── -->
-    <nav class="section-nav">
-      <a href="pos-mapping.html" class="section-nav-item active"><i class="ti ti-settings"></i>Configuration</a>
-      <a href="pos-mapping-monitoring.html" class="section-nav-item"><i class="ti ti-activity"></i>Monitoring</a>
-    </nav>
 
     <!-- ── Tab navigation ── -->
     <nav class="tab-nav" role="tablist">
@@ -1265,6 +1283,8 @@
   </div><!-- /napp-canvas -->
 </main>
 
+<!-- ══════════════════════════════════════════════
+
 
 <!-- ══════════════════════════════════════════════
      OUTLET COVERAGE DRAWER
@@ -1361,11 +1381,13 @@
 
     if (mode === 'hq') {
       hqEls.forEach(el => el.style.display = el.tagName === 'BUTTON' ? 'inline-flex' : 'block');
+      document.querySelectorAll('.hq-block').forEach(el => el.style.display = 'block');
       if (hqSeverity) hqSeverity.style.display = 'block';
       lblStand.forEach(l => l.style.display = 'none');
       lblHq.forEach(l => l.style.display = 'inline');
     } else {
       hqEls.forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.hq-block').forEach(el => el.style.display = 'none');
       if (hqSeverity) hqSeverity.style.display = 'none';
       lblStand.forEach(l => l.style.display = 'inline');
       lblHq.forEach(l => l.style.display = 'none');
