@@ -621,13 +621,13 @@
     <div class="pm-header">
       <div>
         <div class="pm-eyebrow">POS Mapping</div>
-        <h1>POS Mapping</h1>
+        <h1>Configuration</h1>
         <p class="pm-subtitle">Connect your POS system and map menu items to recipes and inventory</p>
       </div>
       <div class="pm-header-right">
         <div class="mode-toggle">
-          <button class="mode-btn active" onclick="switchMode('standalone')">Standalone</button>
-          <button class="mode-btn" onclick="switchMode('hq')">HQ View</button>
+          <button class="mode-btn" onclick="switchMode('standalone')">Standalone</button>
+          <button class="mode-btn active" onclick="switchMode('hq')">HQ View</button>
         </div>
         <button class="btn btn-primary" onclick="alert('Syncing POS now…')">↻ Sync now</button>
       </div>
@@ -1760,6 +1760,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     NomniShell.init('POS Mapping · Configuration');
     document.getElementById('create-override-panel').style.display = 'none';
+    switchMode('hq');
   });
 </script>
 

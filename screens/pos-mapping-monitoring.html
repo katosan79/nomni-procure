@@ -124,8 +124,8 @@
       </div>
       <div class="pm-header-right">
         <div class="mode-toggle">
-          <button class="mode-btn active" onclick="switchMode('standalone')">Standalone</button>
-          <button class="mode-btn" onclick="switchMode('hq')">HQ View</button>
+          <button class="mode-btn" onclick="switchMode('standalone')">Standalone</button>
+          <button class="mode-btn active" onclick="switchMode('hq')">HQ View</button>
         </div>
         <button class="btn btn-primary" onclick="alert('Syncing POS now…')">↻ Sync now</button>
       </div>
@@ -266,32 +266,38 @@
 
     <!-- ── Connection Health ── -->
     <div class="section-gap">
-      <h3 class="section-heading"><i class="ti ti-plug-connected" style="color:var(--text-accent)"></i>Connection Health</h3>
-      <div class="conn-grid">
-        <div class="conn-card connected">
-          <div class="conn-header">
-            <div class="conn-title">Abacus POS — Live API</div>
-            <span class="pill ok"><span class="pill-dot"></span>Connected</span>
-          </div>
-          <div class="conn-meta">Venue: <strong>Bondi Beach</strong> &nbsp;·&nbsp; Terminal ID: <span class="plu">ABX-0042</span></div>
-          <div class="conn-sync">Last sync: 14 Jun 2026 · 11:58 PM &nbsp;·&nbsp; 847 transactions received</div>
-          <div class="conn-actions">
-            <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Settings →</a>
-            <button class="btn btn-secondary btn-sm">View sync log</button>
-          </div>
-        </div>
-        <div class="conn-card batch">
-          <div class="conn-header">
-            <div class="conn-title">Batch Import — Other POS</div>
-            <span class="pill warn"><span class="pill-dot"></span>Configured</span>
-          </div>
-          <div class="conn-meta">Source: <strong>Google Drive</strong> &nbsp;·&nbsp; /pos-exports/bondi &nbsp;·&nbsp; Polls every 24 h</div>
-          <div class="conn-sync">Last import: 14 Jun 2026 · 11:45 PM &nbsp;·&nbsp; 1 file · 312 transactions</div>
-          <div class="conn-actions">
-            <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Configure →</a>
-            <button class="btn btn-secondary btn-sm">Import history</button>
-          </div>
-        </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
+        <h3 class="section-heading" style="margin:0"><i class="ti ti-plug-connected" style="color:var(--text-accent)"></i>Connection Health</h3>
+        <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Manage connections →</a>
+      </div>
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Connection</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Last Sync</th>
+              <th>Transactions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Abacus POS</strong> <span style="color:var(--text-soft);font-size:12px">· Bondi Beach · ABX-0042</span></td>
+              <td style="color:var(--text-soft)">Live API</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Connected</span></td>
+              <td class="plu" style="font-size:12px">14 Jun 2026 · 11:58 PM</td>
+              <td style="font-variant-numeric:tabular-nums;font-size:13px">847</td>
+            </tr>
+            <tr>
+              <td><strong>Batch Import</strong> <span style="color:var(--text-soft);font-size:12px">· Google Drive · /pos-exports/bondi</span></td>
+              <td style="color:var(--text-soft)">Batch · 24 h poll</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Configured</span></td>
+              <td class="plu" style="font-size:12px">14 Jun 2026 · 11:45 PM</td>
+              <td style="font-variant-numeric:tabular-nums;font-size:13px">312</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -400,7 +406,7 @@
 
 <script>
   NomniShell.init('POS Mapping · Monitoring');
-  let currentMode = 'standalone';
+  let currentMode = 'hq';
 
   function switchMode(mode) {
     currentMode = mode;
@@ -412,6 +418,8 @@
       document.querySelectorAll('.hq-block').forEach(el => el.style.display = 'none');
     }
   }
+
+  document.addEventListener('DOMContentLoaded', () => { switchMode('hq'); });
 
   function resolveSloan() {
     const card = document.getElementById('sloan-card');
