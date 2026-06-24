@@ -1102,14 +1102,14 @@
             <div style="display:grid;grid-template-columns:160px 1fr;gap:var(--space-lg)">
               <div class="form-group">
                 <label class="form-label">Maps to</label>
-                <select class="form-select">
-                  <option>Recipe</option>
-                  <option>Internal Item</option>
+                <select class="form-select" id="override-maps-to" onchange="overrideSwapTarget(this.value)">
+                  <option value="recipe">Recipe</option>
+                  <option value="item">Internal Item</option>
                 </select>
               </div>
               <div class="form-group">
                 <label class="form-label">Target Recipe / Item</label>
-                <input type="text" class="form-input" placeholder="Search recipe or item…">
+                <select class="form-select" id="override-target"></select>
               </div>
             </div>
             <div style="display:flex;gap:var(--space-md)">
@@ -1640,7 +1640,215 @@
       targetType: null, targetName: '',
       modGroups: []
     },
+    'latte': {
+      name: 'Latte', plu: '1003', status: 'mapped',
+      targetType: 'recipe', targetName: 'Latte',
+      modGroups: [
+        { name: 'Milk Type', mods: [
+          { name: 'Oat Milk',    action: 'substitute', from: 'Full cream milk', to: 'Oat milk' },
+          { name: 'Almond Milk', action: 'substitute', from: 'Full cream milk', to: 'Almond milk' },
+          { name: 'Soy Milk',    action: 'substitute', from: 'Full cream milk', to: 'Soy milk' },
+        ]},
+        { name: 'Size & Extras', mods: [
+          { name: 'Large',      action: 'multiply',  target: 'Whole recipe', multiplier: '1.33' },
+          { name: 'Extra Shot', action: 'add-on',    ingredient: 'Espresso', qty: '30', uom: 'mL' },
+          { name: 'Sugar',      action: 'add-on',    ingredient: 'Sugar syrup', qty: '10', uom: 'mL' },
+        ]},
+      ]
+    },
+    'long-black': {
+      name: 'Long Black', plu: '1004', status: 'mapped',
+      targetType: 'recipe', targetName: 'Long Black',
+      modGroups: [
+        { name: 'Strength', mods: [
+          { name: 'Extra Shot', action: 'add-on', ingredient: 'Espresso', qty: '30', uom: 'mL' },
+          { name: 'Weak',       action: 'multiply', target: 'Whole recipe', multiplier: '0.75' },
+        ]},
+      ]
+    },
+    'croissant': {
+      name: 'Croissant', plu: '5001', status: 'mapped',
+      targetType: 'recipe', targetName: 'Croissant',
+      modGroups: [
+        { name: 'Accompaniments', mods: [
+          { name: 'Add Butter',    action: 'add-on', ingredient: 'Butter', qty: '10', uom: 'g' },
+          { name: 'Add Jam',       action: 'add-on', ingredient: 'Jam', qty: '15', uom: 'g' },
+          { name: 'Add Vegemite',  action: 'add-on', ingredient: 'Vegemite', qty: '5', uom: 'g' },
+        ]},
+      ]
+    },
+    'eggs-benny': {
+      name: 'Eggs Benedict', plu: '2006', status: 'mapped',
+      targetType: 'recipe', targetName: 'Eggs Benedict',
+      modGroups: [
+        { name: 'Protein', mods: [
+          { name: 'Bacon',         action: 'substitute', from: 'Smoked salmon', to: 'Bacon' },
+          { name: 'Spinach (V)',   action: 'substitute', from: 'Smoked salmon', to: 'Spinach' },
+          { name: 'Extra Salmon',  action: 'add-on', ingredient: 'Smoked salmon', qty: '30', uom: 'g' },
+        ]},
+        { name: 'Bread', mods: [
+          { name: 'GF bread',      action: 'substitute', from: 'Sourdough', to: 'GF sourdough' },
+          { name: 'No bread',      action: 'remove', ingredient: 'Sourdough' },
+        ]},
+      ]
+    },
+    'hot-choc': {
+      name: 'Hot Chocolate', plu: '1005', status: 'mapped',
+      targetType: 'recipe', targetName: 'Hot Chocolate',
+      modGroups: [
+        { name: 'Milk Type', mods: [
+          { name: 'Oat Milk',    action: 'substitute', from: 'Full cream milk', to: 'Oat milk' },
+          { name: 'Almond Milk', action: 'substitute', from: 'Full cream milk', to: 'Almond milk' },
+        ]},
+        { name: 'Extras', mods: [
+          { name: 'Large',          action: 'multiply', target: 'Whole recipe', multiplier: '1.33' },
+          { name: 'Extra Choc',     action: 'add-on', ingredient: 'Chocolate sauce', qty: '10', uom: 'mL' },
+          { name: 'Marshmallows',   action: 'add-on', ingredient: 'Marshmallows', qty: '5', uom: 'g' },
+        ]},
+      ]
+    },
+    'iced-coffee': {
+      name: 'Iced Coffee', plu: '1006', status: 'partial',
+      targetType: 'recipe', targetName: 'Iced Coffee',
+      modGroups: [
+        { name: 'Milk Type', mods: [
+          { name: 'Oat Milk',    action: 'substitute', from: 'Full cream milk', to: 'Oat milk' },
+          { name: 'Almond Milk', action: 'unset' },
+        ]},
+        { name: 'Extras', mods: [
+          { name: 'Extra Shot', action: 'add-on', ingredient: 'Espresso', qty: '30', uom: 'mL' },
+          { name: 'No Ice Cream', action: 'remove', ingredient: 'Vanilla ice cream' },
+        ]},
+      ]
+    },
+    'club-sandwich': {
+      name: 'Club Sandwich', plu: '2007', status: 'mapped',
+      targetType: 'recipe', targetName: 'Club Sandwich',
+      modGroups: [
+        { name: 'Bread', mods: [
+          { name: 'GF Bread',    action: 'substitute', from: 'Sourdough', to: 'GF sourdough' },
+          { name: 'Rye Bread',   action: 'substitute', from: 'Sourdough', to: 'Rye bread' },
+        ]},
+        { name: 'Customise', mods: [
+          { name: 'No Tomato',   action: 'remove', ingredient: 'Tomato' },
+          { name: 'Add Bacon',   action: 'add-on', ingredient: 'Bacon', qty: '30', uom: 'g' },
+          { name: 'Add Avocado', action: 'add-on', ingredient: 'Avocado', qty: '40', uom: 'g' },
+        ]},
+      ]
+    },
+    'blueberry-muffin': {
+      name: 'Blueberry Muffin', plu: '5002', status: 'mapped',
+      targetType: 'recipe', targetName: 'Blueberry Muffin',
+      modGroups: [
+        { name: 'Warmed', mods: [
+          { name: 'Warm it up', action: 'default' },
+        ]},
+        { name: 'Accompaniments', mods: [
+          { name: 'Add Butter', action: 'add-on', ingredient: 'Butter', qty: '10', uom: 'g' },
+        ]},
+      ]
+    },
+    'fish-chips': {
+      name: 'Fish & Chips', plu: '2008', status: 'unmapped',
+      targetType: null, targetName: '',
+      modGroups: []
+    },
+    'tiramisu': {
+      name: 'Tiramisu', plu: '3008', status: 'unmapped',
+      targetType: null, targetName: '',
+      modGroups: []
+    },
+    'cheesecake': {
+      name: 'Cheesecake', plu: '3009', status: 'mapped',
+      targetType: 'recipe', targetName: 'Cheesecake',
+      modGroups: [
+        { name: 'Toppings', mods: [
+          { name: 'Add Berry Coulis', action: 'add-on', ingredient: 'Berry coulis', qty: '20', uom: 'mL' },
+          { name: 'Add Cream',        action: 'add-on', ingredient: 'Whipped cream', qty: '30', uom: 'mL' },
+        ]},
+      ]
+    },
+    'greek-salad': {
+      name: 'Greek Salad', plu: '3002', status: 'mapped',
+      targetType: 'recipe', targetName: 'Greek Salad',
+      modGroups: [
+        { name: 'Protein Add-ons', mods: [
+          { name: 'Add Chicken',      action: 'add-on', ingredient: 'Chicken breast', qty: '120', uom: 'g' },
+          { name: 'Add Haloumi',      action: 'add-on', ingredient: 'Haloumi', qty: '60', uom: 'g' },
+          { name: 'Extra Feta',       action: 'add-on', ingredient: 'Feta cheese', qty: '30', uom: 'g' },
+        ]},
+        { name: 'Dressing', mods: [
+          { name: 'No Dressing',      action: 'remove', ingredient: 'Lemon dressing' },
+          { name: 'Extra Dressing',   action: 'multiply', target: 'Lemon dressing', multiplier: '2' },
+        ]},
+      ]
+    },
+    'nicoise': {
+      name: 'Niçoise Salad', plu: '3003', status: 'unmapped',
+      targetType: null, targetName: '',
+      modGroups: []
+    },
+    'service-charge': {
+      name: 'Service Charge', plu: '6001', status: 'ignored',
+      targetType: null, targetName: '',
+      modGroups: []
+    },
   };
+
+  /* Controlled recipe list (for "Maps to → Recipe") */
+  const RECIPE_OPTIONS = [
+    { value: '', label: '— Select recipe —' },
+    { value: 'flat-white',      label: 'Flat White' },
+    { value: 'latte',           label: 'Latte' },
+    { value: 'cappuccino',      label: 'Cappuccino' },
+    { value: 'long-black',      label: 'Long Black' },
+    { value: 'iced-coffee',     label: 'Iced Coffee' },
+    { value: 'hot-chocolate',   label: 'Hot Chocolate' },
+    { value: 'avocado-toast',   label: 'Avocado Toast' },
+    { value: 'eggs-benedict',   label: 'Eggs Benedict' },
+    { value: 'chicken-burger',  label: 'Chicken Burger' },
+    { value: 'club-sandwich',   label: 'Club Sandwich' },
+    { value: 'smashed-avo',     label: 'Smashed Avo' },
+    { value: 'caesar-salad',    label: 'Caesar Salad' },
+    { value: 'greek-salad',     label: 'Greek Salad' },
+    { value: 'nicoise-salad',   label: 'Niçoise Salad' },
+    { value: 'cheesecake',      label: 'Cheesecake' },
+    { value: 'tiramisu',        label: 'Tiramisu' },
+    { value: 'croissant',       label: 'Croissant' },
+    { value: 'blueberry-muffin',label: 'Blueberry Muffin' },
+    { value: 'fish-chips',      label: 'Fish & Chips' },
+  ];
+
+  /* Controlled internal item list (for "Maps to → Internal Item") */
+  const INTERNAL_ITEM_OPTIONS = [
+    { value: '', label: '— Select internal item —' },
+    { value: 'full-cream-milk', label: 'Full cream milk' },
+    { value: 'oat-milk',        label: 'Oat milk' },
+    { value: 'almond-milk',     label: 'Almond milk' },
+    { value: 'soy-milk',        label: 'Soy milk' },
+    { value: 'skim-milk',       label: 'Skim milk' },
+    { value: 'coffee-beans',    label: 'Coffee beans' },
+    { value: 'espresso',        label: 'Espresso' },
+    { value: 'sourdough',       label: 'Sourdough' },
+    { value: 'gf-sourdough',    label: 'GF sourdough' },
+    { value: 'chicken-breast',  label: 'Chicken breast' },
+    { value: 'bacon',           label: 'Bacon' },
+    { value: 'egg',             label: 'Egg' },
+    { value: 'avocado',         label: 'Avocado' },
+    { value: 'feta-cheese',     label: 'Feta cheese' },
+    { value: 'smoked-salmon',   label: 'Smoked salmon' },
+    { value: 'spinach',         label: 'Spinach' },
+    { value: 'tomato',          label: 'Tomato' },
+    { value: 'vanilla-syrup',   label: 'Vanilla syrup' },
+    { value: 'chocolate-sauce', label: 'Chocolate sauce' },
+  ];
+
+  function buildTargetSelect(options, selectedValue) {
+    const opts = options.map(o =>
+      `<option value="${o.value}" ${(o.value===selectedValue||o.label===selectedValue)?'selected':''}>${o.label}</option>`
+    ).join('');
+    return `<select class="md-search" id="md-target-search" style="width:100%">${opts}</select>`;
+  }
 
   /* Controlled ingredient / recipe / sub-recipe list */
   const INVENTORY_OPTIONS = [
@@ -1787,9 +1995,7 @@
             <button class="md-type-btn ${recipeActive}" onclick="mdToggleType(this,'recipe')">Recipe</button>
             <button class="md-type-btn ${itemActive}"   onclick="mdToggleType(this,'item')">Internal Item</button>
           </div>
-          <input class="md-search" id="md-target-search"
-            value="${item.targetName||''}"
-            placeholder="${placeholder}">
+          ${buildTargetSelect(item.targetType === 'item' ? INTERNAL_ITEM_OPTIONS : RECIPE_OPTIONS, item.targetName||'')}
           ${item.status === 'unmapped' ? `
             <div class="md-notice" style="margin-top:var(--space-md);background:#FEF9F0;border-color:#F59E0B;color:#92400E">
               ⚠ No target assigned yet — inventory depletion cannot occur until this item is mapped.
@@ -1845,8 +2051,17 @@
   function mdToggleType(btn, type) {
     btn.closest('.md-type-toggle').querySelectorAll('.md-type-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const search = document.getElementById('md-target-search');
-    if (search) search.placeholder = type === 'recipe' ? 'Search recipes…' : 'Search internal items…';
+    const container = document.getElementById('md-target-search');
+    if (!container) return;
+    const options = type === 'recipe' ? RECIPE_OPTIONS : INTERNAL_ITEM_OPTIONS;
+    container.innerHTML = options.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+  }
+
+  function overrideSwapTarget(type) {
+    const sel = document.getElementById('override-target');
+    if (!sel) return;
+    const options = type === 'recipe' ? RECIPE_OPTIONS : INTERNAL_ITEM_OPTIONS;
+    sel.innerHTML = options.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
   }
 
   /* ─── Override form toggle ─── */
@@ -1854,7 +2069,10 @@
     const panel = document.getElementById('create-override-panel');
     const visible = panel.style.display !== 'none';
     panel.style.display = visible ? 'none' : 'block';
-    if (!visible) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!visible) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      overrideSwapTarget('recipe'); // initialise target dropdown
+    }
   }
 
   /* ─── Batch setup ─── */
@@ -1882,6 +2100,7 @@
     NomniShell.init('POS Mapping · Configuration');
     document.getElementById('create-override-panel').style.display = 'none';
     switchMode('hq');
+    overrideSwapTarget('recipe');
   });
 </script>
 
