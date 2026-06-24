@@ -92,8 +92,19 @@
     .conn-actions { display:flex; gap:var(--space-sm); margin-top:var(--space-md); }
     @media (max-width:900px) { .conn-grid { grid-template-columns:1fr; } }
 
-    /* ─── Outlet coverage table (HQ) ─── */
+    /* ─── Outlet coverage (HQ) ─── */
     .hq-block { display:none; }
+    .cov-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); margin-bottom:var(--space-xl); }
+    .cov-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:var(--space-lg) var(--space-xl); display:flex; align-items:center; gap:var(--space-lg); }
+    .cov-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .cov-icon.ok   { background:#D1FAE5; }
+    .cov-icon.warn { background:#FEF3C7; }
+    .cov-icon.risk { background:#FEE2E2; }
+    .cov-label { font-size:12px; color:var(--text-soft); margin-bottom:2px; }
+    .cov-value { font-size:24px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
+    @media (max-width:900px) { .cov-summary { grid-template-columns:1fr 1fr; } }
+
+    /* ─── Card / table ─── */
     .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
     .card-header { padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
     .card-title { font-size:14px; font-weight:600; color:var(--text); }
@@ -107,6 +118,20 @@
     .prog-fill { height:100%; border-radius:2px; background:var(--text-accent); }
     .prog-fill.warn { background:#D97706; }
     .prog-fill.risk { background:#DC2626; }
+    .sort-sel { padding:7px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; cursor:pointer; }
+
+    /* ─── Push confirm dialog ─── */
+    dialog { border:none; border-radius:var(--radius-lg); padding:0; box-shadow:var(--shadow-lg); max-width:440px; width:90%; }
+    dialog::backdrop { background:rgba(14,55,39,0.35); }
+    .dialog-inner { padding:var(--space-2xl); display:flex; flex-direction:column; gap:var(--space-xl); }
+    .dialog-warn-icon { width:44px; height:44px; border-radius:var(--radius-md); background:var(--status-warn-bg); color:var(--status-warn-fg); display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:var(--space-xs); }
+    .dialog-title { font-size:20px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
+    .dialog-subtitle { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .dialog-impact { background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md); }
+    .impact-row { display:flex; align-items:center; gap:var(--space-md); font-size:13px; }
+    .impact-count { font-size:20px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; min-width:32px; }
+    .impact-label { color:var(--text-soft); }
+    .dialog-footer { display:flex; justify-content:flex-end; gap:var(--space-sm); }
   </style>
 </head>
 <body>
@@ -303,11 +328,25 @@
 
     <!-- ── Outlet Coverage (HQ only) ── -->
     <div class="hq-block section-gap" id="hq-coverage">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
-        <h3 class="section-heading" style="margin:0"><i class="ti ti-building-store" style="color:var(--text-accent)"></i>Outlet Coverage</h3>
-        <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Push mappings →</a>
+      <h3 class="section-heading" style="margin-bottom:var(--space-lg)"><i class="ti ti-building-store" style="color:var(--text-accent)"></i>Outlet Coverage</h3>
+
+      <!-- Summary cards -->
+      <div class="cov-summary">
+        <div class="cov-card">
+          <div class="cov-icon ok">✓</div>
+          <div><div class="cov-label">Fully Mapped</div><div class="cov-value">2</div></div>
+        </div>
+        <div class="cov-card">
+          <div class="cov-icon warn">◑</div>
+          <div><div class="cov-label">Partial Coverage</div><div class="cov-value">2</div></div>
+        </div>
+        <div class="cov-card">
+          <div class="cov-icon risk">○</div>
+          <div><div class="cov-label">Dark — No POS</div><div class="cov-value">2</div></div>
+        </div>
       </div>
 
+      <!-- Issue callouts -->
       <div class="issue-row" style="margin-bottom:var(--space-sm)">
         <div class="issue-icon risk">✕</div>
         <div class="issue-body">
@@ -315,7 +354,7 @@
           <div class="issue-detail">Brisbane CBD, Gold Coast &nbsp;·&nbsp; Inventory depletion is not occurring &nbsp;·&nbsp; Variance data will be unreliable</div>
         </div>
         <div class="issue-cta">
-          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">View outlets →</a>
+          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Configure POS →</a>
         </div>
       </div>
       <div class="issue-row" style="margin-bottom:var(--space-lg)">
@@ -325,20 +364,41 @@
           <div class="issue-detail">Surry Hills (18 unmapped), St Kilda (24 unmapped) &nbsp;·&nbsp; Push master mapping to resolve quickly</div>
         </div>
         <div class="issue-cta">
-          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Push mapping →</a>
+          <button class="btn btn-secondary btn-sm" onclick="openPushConfirm('selected')">Push mapping →</button>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">All outlets</div>
-          <span style="font-size:12px;color:var(--text-soft)">2 full · 2 partial · 2 dark</span>
+      <!-- Filter + push controls -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+        <div style="display:flex;gap:var(--space-md)">
+          <select class="sort-sel">
+            <option>All groups</option>
+            <option>Sydney Cafes</option>
+            <option>Melbourne</option>
+            <option>Queensland</option>
+          </select>
+          <select class="sort-sel">
+            <option>All statuses</option>
+            <option>Full</option>
+            <option>Partial</option>
+            <option>Dark</option>
+          </select>
         </div>
+        <div style="display:flex;gap:var(--space-sm)">
+          <button class="btn btn-secondary" onclick="openPushConfirm('selected')">Push to selected outlets</button>
+          <button class="btn btn-primary" onclick="openPushConfirm('all')">Push master mapping to 12 outlets ▾</button>
+        </div>
+      </div>
+
+      <!-- Outlet table -->
+      <div class="card">
         <table class="data-table">
           <thead>
             <tr>
+              <th style="width:36px"><input type="checkbox"></th>
               <th>Outlet</th>
               <th>Group</th>
+              <th>POS System</th>
               <th>Connection</th>
               <th>Last Sync</th>
               <th>Coverage</th>
@@ -347,48 +407,60 @@
           </thead>
           <tbody>
             <tr>
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Bondi Beach</strong></td>
               <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td>Abacus</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
               <td class="plu" style="font-size:12px">14 Jun · 11:58 PM</td>
               <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
               <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
             </tr>
             <tr>
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Surry Hills</strong></td>
               <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td>Abacus</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
               <td class="plu" style="font-size:12px">14 Jun · 11:55 PM</td>
               <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill warn" style="width:63%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">30/48</span></div></td>
               <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
             </tr>
             <tr>
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>St Kilda</strong></td>
               <td style="color:var(--text-soft)">Melbourne</td>
+              <td>Abacus</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
               <td class="plu" style="font-size:12px">14 Jun · 11:50 PM</td>
               <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill warn" style="width:50%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">24/48</span></div></td>
               <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
             </tr>
             <tr>
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Fitzroy</strong></td>
               <td style="color:var(--text-soft)">Melbourne</td>
+              <td>Lightspeed</td>
               <td><span class="pill warn"><span class="pill-dot"></span>Batch</span></td>
               <td class="plu" style="font-size:12px">14 Jun · 11:45 PM</td>
               <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
               <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
             </tr>
             <tr>
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Brisbane CBD</strong></td>
               <td style="color:var(--text-soft)">Queensland</td>
+              <td>Square</td>
               <td><span class="pill risk"><span class="pill-dot"></span>Not configured</span></td>
               <td class="plu" style="font-size:12px;color:var(--text-soft)">Never</td>
               <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span></div></td>
               <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
             </tr>
             <tr>
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Gold Coast</strong></td>
               <td style="color:var(--text-soft)">Queensland</td>
+              <td style="color:var(--text-soft)">—</td>
               <td><span class="pill risk"><span class="pill-dot"></span>No POS</span></td>
               <td class="plu" style="font-size:12px;color:var(--text-soft)">Never</td>
               <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span></div></td>
@@ -403,6 +475,21 @@
 
   </div><!-- /napp-canvas -->
 </main>
+
+<dialog id="push-confirm-dialog" aria-labelledby="push-dialog-title">
+  <div class="dialog-inner">
+    <div>
+      <div class="dialog-warn-icon"><i class="ti ti-alert-triangle"></i></div>
+      <h2 class="dialog-title" id="push-dialog-title">Push mapping to <span id="push-dialog-scope">all outlets</span>?</h2>
+      <p class="dialog-subtitle" style="margin-top:var(--space-xs)">Existing mappings at the outlets below will be overwritten. Changes take effect immediately.</p>
+    </div>
+    <div class="dialog-impact" id="push-impact"></div>
+    <div class="dialog-footer">
+      <button class="btn btn-secondary" onclick="closePushConfirm()">Cancel</button>
+      <button class="btn btn-primary" id="push-confirm-btn"><i class="ti ti-send"></i>Push mapping</button>
+    </div>
+  </div>
+</dialog>
 
 <script>
   NomniShell.init('POS Mapping · Monitoring');
@@ -419,7 +506,35 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => { switchMode('hq'); });
+  document.addEventListener('DOMContentLoaded', () => {
+    switchMode('hq');
+    document.getElementById('push-confirm-dialog')?.addEventListener('click', e => {
+      if (e.target === e.currentTarget) closePushConfirm();
+    });
+    document.getElementById('push-confirm-btn')?.addEventListener('click', () => {
+      closePushConfirm();
+      const t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--seaweed);color:#fff;padding:10px 18px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;';
+      t.textContent = 'Master mapping pushed to all outlets';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    });
+  });
+
+  function openPushConfirm(scope) {
+    const checked = document.querySelectorAll('#hq-coverage input[type=checkbox]:checked').length;
+    const total   = scope === 'all' ? 12 : (checked || 2);
+    const mapped  = scope === 'all' ? 9  : Math.min(total, 7);
+    document.getElementById('push-dialog-scope').textContent =
+      scope === 'all' ? 'all outlets' : `${total} selected outlet${total !== 1 ? 's' : ''}`;
+    document.getElementById('push-impact').innerHTML =
+      `<div class="impact-row"><span class="impact-count">${total}</span><span class="impact-label">outlets will receive the master mapping</span></div>` +
+      `<div class="impact-row"><span class="impact-count">${mapped}</span><span class="impact-label">have existing mappings that will be overwritten</span></div>`;
+    document.getElementById('push-confirm-dialog').showModal();
+  }
+  function closePushConfirm() {
+    document.getElementById('push-confirm-dialog').close();
+  }
 
   function resolveSloan() {
     const card = document.getElementById('sloan-card');
