@@ -33,44 +33,40 @@
     .btn-ghost:hover { background:var(--surface-soft); color:var(--text); }
     .btn-sm { padding:5px 12px; font-size:12px; }
 
-    /* ─── KPI strip ─── */
-    .kpi-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); margin-bottom:var(--space-lg); }
-    .kpi-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); }
-    .kpi-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
-    .kpi-value { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.02em; font-feature-settings:'tnum' 1; line-height:1.1; }
-    .kpi-sub { font-size:12px; color:var(--text-soft); margin-top:4px; }
-    .kpi-tile.ok   .kpi-value { color:var(--status-ok-fg); }
-    .kpi-tile.warn .kpi-value { color:#D97706; }
-    .kpi-tile.risk .kpi-value { color:#DC2626; }
-    @media (max-width:900px) { .kpi-strip { grid-template-columns:repeat(2,1fr); } }
-
-    /* ─── Trend strip ─── */
-    .trend-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); margin-bottom:var(--space-xl); }
-    .trend-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xs); }
-    .trend-head { display:flex; align-items:center; justify-content:space-between; }
-    .trend-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
-    .trend-badge.ok   { background:var(--status-ok-bg);   color:var(--status-ok-fg); }
-    .trend-badge.warn { background:var(--status-warn-bg); color:#7A5000; }
-    .trend-badge.risk { background:var(--status-risk-bg); color:var(--status-risk-fg); }
-    .trend-value { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.02em; font-feature-settings:'tnum' 1; }
-    .sparkline { width:100%; height:36px; overflow:visible; display:block; margin-block:var(--space-sm); }
-    .trend-range { font-size:11px; color:var(--text-soft); }
-    @media (max-width:900px) { .trend-strip { grid-template-columns:1fr 1fr; } }
+    /* ─── Health bar ─── */
+    .health-bar { display:flex; align-items:center; gap:var(--space-lg); background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:var(--space-md) var(--space-xl); margin-bottom:var(--space-xl); }
+    .health-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .health-dot.ok   { background:#059669; }
+    .health-dot.warn { background:#D97706; }
+    .health-dot.risk { background:#DC2626; }
+    .health-text { font-size:14px; font-weight:500; color:var(--text); flex:1; }
+    .health-text span { color:var(--text-soft); font-weight:400; }
+    .health-chips { display:flex; gap:var(--space-sm); }
+    .h-chip { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:99px; }
+    .h-chip.risk { background:#FEE2E2; color:#991B1B; }
+    .h-chip.warn { background:#FEF3C7; color:#92400E; }
+    .h-chip.ok   { background:#D1FAE5; color:#065F46; }
 
     /* ─── Section headings ─── */
     .section-heading { font-size:14px; font-weight:700; color:var(--text); margin:0 0 var(--space-md); display:flex; align-items:center; gap:var(--space-sm); }
     .section-gap { margin-bottom:var(--space-2xl); }
 
-    /* ─── Issues ─── */
-    .issue-row { display:flex; align-items:flex-start; gap:var(--space-lg); padding:var(--space-md) var(--space-lg); background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:var(--space-sm); }
-    .issue-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; margin-top:2px; }
-    .issue-icon.risk { background:#FEE2E2; color:#DC2626; }
-    .issue-icon.warn { background:#FEF3C7; color:#D97706; }
-    .issue-icon.info { background:#EFF6FF; color:#2563EB; }
-    .issue-body { flex:1; }
-    .issue-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:2px; }
-    .issue-detail { font-size:12px; color:var(--text-soft); }
-    .issue-cta { flex-shrink:0; align-self:center; }
+    /* ─── Attention cards ─── */
+    .attn-grid { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .attn-card { display:grid; grid-template-columns:4px 40px 1fr auto; align-items:center; gap:var(--space-lg); background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; padding:var(--space-lg) var(--space-xl) var(--space-lg) 0; }
+    .attn-severity { height:100%; border-radius:0; align-self:stretch; min-height:56px; }
+    .attn-severity.risk { background:#DC2626; }
+    .attn-severity.warn { background:#D97706; }
+    .attn-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .attn-icon.risk { background:#FEE2E2; }
+    .attn-icon.warn { background:#FEF3C7; }
+    .attn-body { min-width:0; }
+    .attn-title { font-size:14px; font-weight:600; color:var(--text); margin-bottom:3px; }
+    .attn-detail { font-size:12px; color:var(--text-soft); line-height:1.5; }
+    .attn-impact { font-size:12px; font-weight:600; margin-top:4px; }
+    .attn-impact.risk { color:#DC2626; }
+    .attn-impact.warn { color:#D97706; }
+    .attn-cta { flex-shrink:0; }
 
     /* ─── Pills ─── */
     .pill { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:600; white-space:nowrap; }
@@ -80,30 +76,6 @@
     .pill.risk { background:#FEE2E2; color:#991B1B; } .pill.risk .pill-dot { background:#DC2626; }
     .pill.info { background:#EFF6FF; color:#1D4ED8; } .pill.info .pill-dot { background:#2563EB; }
 
-    /* ─── Connection cards ─── */
-    .conn-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); }
-    .conn-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:var(--space-xl); border-left-width:3px; }
-    .conn-card.connected { border-left-color:var(--text-accent); }
-    .conn-card.batch     { border-left-color:#D97706; }
-    .conn-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-md); }
-    .conn-title  { font-size:15px; font-weight:600; color:var(--text); }
-    .conn-meta   { font-size:13px; color:var(--text-soft); margin-bottom:4px; }
-    .conn-sync   { font-size:12px; color:var(--text-soft); font-family:'IBM Plex Mono',monospace; }
-    .conn-actions { display:flex; gap:var(--space-sm); margin-top:var(--space-md); }
-    @media (max-width:900px) { .conn-grid { grid-template-columns:1fr; } }
-
-    /* ─── Outlet coverage (HQ) ─── */
-    .hq-block { display:none; }
-    .cov-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); margin-bottom:var(--space-xl); }
-    .cov-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:var(--space-lg) var(--space-xl); display:flex; align-items:center; gap:var(--space-lg); }
-    .cov-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-    .cov-icon.ok   { background:#D1FAE5; }
-    .cov-icon.warn { background:#FEF3C7; }
-    .cov-icon.risk { background:#FEE2E2; }
-    .cov-label { font-size:12px; color:var(--text-soft); margin-bottom:2px; }
-    .cov-value { font-size:24px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
-    @media (max-width:900px) { .cov-summary { grid-template-columns:1fr 1fr; } }
-
     /* ─── Card / table ─── */
     .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
     .card-header { padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -111,27 +83,17 @@
     .data-table { width:100%; border-collapse:collapse; }
     .data-table th { font-size:11px; font-weight:500; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-soft); padding:10px 14px; text-align:left; background:var(--surface-soft); border-bottom:1px solid var(--border); }
     .data-table td { padding:0 14px; height:48px; border-bottom:1px solid var(--border); vertical-align:middle; font-size:13px; color:var(--text); }
-    .data-table tr:hover td { background:var(--surface-soft); cursor:pointer; }
+    .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table tr:hover td { background:var(--surface-soft); }
     .plu { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-soft); }
     .prog-wrap { display:flex; align-items:center; gap:var(--space-sm); }
-    .prog-bar  { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; max-width:80px; }
+    .prog-bar  { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; max-width:72px; }
     .prog-fill { height:100%; border-radius:2px; background:var(--text-accent); }
     .prog-fill.warn { background:#D97706; }
     .prog-fill.risk { background:#DC2626; }
-    .sort-sel { padding:7px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; cursor:pointer; }
 
-    /* ─── Push confirm dialog ─── */
-    dialog { border:none; border-radius:var(--radius-lg); padding:0; box-shadow:var(--shadow-lg); max-width:440px; width:90%; }
-    dialog::backdrop { background:rgba(14,55,39,0.35); }
-    .dialog-inner { padding:var(--space-2xl); display:flex; flex-direction:column; gap:var(--space-xl); }
-    .dialog-warn-icon { width:44px; height:44px; border-radius:var(--radius-md); background:var(--status-warn-bg); color:var(--status-warn-fg); display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:var(--space-xs); }
-    .dialog-title { font-size:20px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
-    .dialog-subtitle { font-size:13px; color:var(--text-soft); line-height:1.5; }
-    .dialog-impact { background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md); }
-    .impact-row { display:flex; align-items:center; gap:var(--space-md); font-size:13px; }
-    .impact-count { font-size:20px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; min-width:32px; }
-    .impact-label { color:var(--text-soft); }
-    .dialog-footer { display:flex; justify-content:flex-end; gap:var(--space-sm); }
+    /* ─── HQ-only block ─── */
+    .hq-block { display:none; }
   </style>
 </head>
 <body>
@@ -145,19 +107,31 @@
       <div>
         <div class="pm-eyebrow">POS Mapping</div>
         <h1>Monitoring</h1>
-        <p class="pm-subtitle">Connection health, mapping coverage, and active issues across all venues</p>
+        <p class="pm-subtitle">Sync health and mapping coverage across all venues</p>
       </div>
       <div class="pm-header-right">
         <div class="mode-toggle">
           <button class="mode-btn" onclick="switchMode('standalone')">Standalone</button>
           <button class="mode-btn active" onclick="switchMode('hq')">HQ View</button>
         </div>
-        <button class="btn btn-primary" onclick="alert('Syncing POS now…')">↻ Sync now</button>
+        <button class="btn btn-secondary" onclick="alert('Syncing POS now…')">↻ Sync now</button>
+      </div>
+    </div>
+
+    <!-- ── Section 1: System Health Bar ── -->
+    <div class="health-bar" id="health-bar">
+      <div class="health-dot warn" id="health-dot"></div>
+      <div class="health-text" id="health-text">
+        <strong>4 outlets need attention</strong> <span>· 8 of 12 fully synced and mapped</span>
+      </div>
+      <div class="health-chips" id="health-chips">
+        <span class="h-chip risk">2 dark</span>
+        <span class="h-chip warn">2 mapping gaps</span>
       </div>
     </div>
 
     <!-- ── Sloan agent card ── -->
-    <article class="agent-surface" id="sloan-card" style="margin-bottom:var(--space-lg)">
+    <article class="agent-surface" id="sloan-card" style="margin-bottom:var(--space-xl)">
       <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
         <div class="agent-card-head">
           <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
@@ -178,100 +152,193 @@
       </div>
     </article>
 
+    <!-- ── Section 2: Outlets Requiring Attention (HQ only) ── -->
+    <div class="hq-block section-gap" id="hq-attention">
+      <h3 class="section-heading"><i class="ti ti-alert-triangle" style="color:#D97706"></i>Outlets Requiring Attention</h3>
+      <div class="attn-grid">
 
-    <!-- ── Trend tiles ── -->
-    <div class="trend-strip">
-      <div class="trend-tile">
-        <div class="trend-head">
-          <span class="kpi-label">Mapping coverage</span>
-          <span class="trend-badge warn">79% · 7 gaps</span>
+        <!-- Dark: Brisbane CBD -->
+        <div class="attn-card">
+          <div class="attn-severity risk"></div>
+          <div class="attn-icon risk">🔴</div>
+          <div class="attn-body">
+            <div class="attn-title">Brisbane CBD — No POS connected</div>
+            <div class="attn-detail">No sales data flowing · Inventory depletion is not occurring · COGS calculations will be unreliable until POS is configured</div>
+            <div class="attn-impact risk">COGS impact: theoretical consumption cannot be calculated for this outlet</div>
+          </div>
+          <div class="attn-cta">
+            <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Configure POS →</a>
+          </div>
         </div>
-        <span class="trend-value">79%</span>
-        <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
-          <rect x="0" y="6" width="120" height="24" fill="var(--mint)" opacity="0.8"/>
-          <line x1="0" y1="6"  x2="120" y2="6"  stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
-          <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
-          <polyline points="0,28 17,26 34,23 51,21 68,19 85,18 102,17 119,15"
-            fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-          <circle cx="119" cy="15" r="3" fill="#D97706"/>
-        </svg>
-        <span class="trend-range">Target 95%+ · 8-week trend</span>
-      </div>
-      <div class="trend-tile">
-        <div class="trend-head">
-          <span class="kpi-label">Sync success rate</span>
-          <span class="trend-badge ok">100% · 14 days</span>
+
+        <!-- Dark: Gold Coast -->
+        <div class="attn-card">
+          <div class="attn-severity risk"></div>
+          <div class="attn-icon risk">🔴</div>
+          <div class="attn-body">
+            <div class="attn-title">Gold Coast — No POS connected</div>
+            <div class="attn-detail">No POS system assigned · Inventory depletion is not occurring · Stock variance data will be inaccurate</div>
+            <div class="attn-impact risk">COGS impact: theoretical consumption cannot be calculated for this outlet</div>
+          </div>
+          <div class="attn-cta">
+            <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Configure POS →</a>
+          </div>
         </div>
-        <span class="trend-value">100%</span>
-        <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
-          <rect x="0" y="6" width="120" height="24" fill="var(--mint)" opacity="0.8"/>
-          <line x1="0" y1="6"  x2="120" y2="6"  stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
-          <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
-          <polyline points="0,10 17,10 34,12 51,10 68,11 85,10 102,10 119,10"
-            fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-          <circle cx="119" cy="10" r="3" fill="var(--status-ok-fg)"/>
-        </svg>
-        <span class="trend-range">Abacus API + Batch · 14-day window</span>
-      </div>
-      <div class="trend-tile">
-        <div class="trend-head">
-          <span class="kpi-label">Stale mappings</span>
-          <span class="trend-badge warn">1 stale &gt;45 days</span>
+
+        <!-- Mapping gap: Surry Hills -->
+        <div class="attn-card">
+          <div class="attn-severity warn"></div>
+          <div class="attn-icon warn">🟠</div>
+          <div class="attn-body">
+            <div class="attn-title">Surry Hills — 18 items unmapped (63% coverage)</div>
+            <div class="attn-detail">POS is syncing · Sales for unmapped items are not depleting inventory · Push master mapping to resolve quickly</div>
+            <div class="attn-impact warn">COGS impact: ~18 menu items not reducing on-hand stock — variance data is understated</div>
+          </div>
+          <div class="attn-cta">
+            <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Map now →</a>
+          </div>
         </div>
-        <span class="trend-value">1</span>
-        <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
-          <rect x="0" y="14" width="120" height="16" fill="var(--mint)" opacity="0.8"/>
-          <line x1="0" y1="14" x2="120" y2="14" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
-          <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
-          <polyline points="0,29 17,28 34,29 51,28 68,27 85,27 102,26 119,22"
-            fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-          <circle cx="119" cy="22" r="3" fill="#D97706"/>
-        </svg>
-        <span class="trend-range">Items not seen in sales for 30+ days</span>
+
+        <!-- Mapping gap: St Kilda -->
+        <div class="attn-card">
+          <div class="attn-severity warn"></div>
+          <div class="attn-icon warn">🟡</div>
+          <div class="attn-body">
+            <div class="attn-title">St Kilda — 24 items unmapped (50% coverage)</div>
+            <div class="attn-detail">POS is syncing · Sales for unmapped items are not depleting inventory · Push master mapping to resolve quickly</div>
+            <div class="attn-impact warn">COGS impact: ~24 menu items not reducing on-hand stock — variance data is understated</div>
+          </div>
+          <div class="attn-cta">
+            <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Map now →</a>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- ── Active Issues ── -->
-    <div class="section-gap">
-      <h3 class="section-heading"><i class="ti ti-alert-triangle" style="color:#D97706"></i>Active Issues</h3>
-      <div class="issue-row">
-        <div class="issue-icon warn">⚠</div>
-        <div class="issue-body">
-          <div class="issue-title">7 POS items sold but not yet mapped</div>
-          <div class="issue-detail">Inventory is not depleting for these sales · Highest impact: Smashed Avo (52/day), Caesar Salad (15/day), Greek Salad (8/day)</div>
-        </div>
-        <div class="issue-cta">
-          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Map now →</a>
-        </div>
-      </div>
-      <div class="issue-row">
-        <div class="issue-icon warn">⚠</div>
-        <div class="issue-body">
-          <div class="issue-title">2 modifier groups on Chicken Burger have no action assigned</div>
-          <div class="issue-detail">Gluten-Free Bun and No Bun modifiers will not affect ingredient depletion until configured</div>
-        </div>
-        <div class="issue-cta">
-          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Review →</a>
-        </div>
-      </div>
-      <div class="issue-row" style="opacity:0.6">
-        <div class="issue-icon info">ℹ</div>
-        <div class="issue-body">
-          <div class="issue-title">1 mapping may be stale</div>
-          <div class="issue-detail">Greek Salad (PLU 3002) was mapped 47 days ago but has not appeared in sales for 12 days — may have been removed from menu</div>
-        </div>
-        <div class="issue-cta">
-          <button class="btn btn-ghost btn-sm">Dismiss</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Connection Health ── -->
-    <div class="section-gap">
+    <!-- ── Section 3: All Outlets (HQ only) ── -->
+    <div class="hq-block section-gap" id="hq-outlets">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
-        <h3 class="section-heading" style="margin:0"><i class="ti ti-plug-connected" style="color:var(--text-accent)"></i>Connection Health</h3>
-        <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Manage connections →</a>
+        <h3 class="section-heading" style="margin:0"><i class="ti ti-building-store" style="color:var(--text-accent)"></i>All Outlets</h3>
+        <span style="font-size:12px;color:var(--text-soft)">12 outlets · Last refreshed just now</span>
       </div>
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Outlet</th>
+              <th>Group</th>
+              <th>POS System</th>
+              <th>Last Sync</th>
+              <th>Coverage</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bondi Beach</strong></td>
+              <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td style="color:var(--text-soft)">Abacus</td>
+              <td class="plu">24 Jun · 11:58 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>Surry Hills</strong></td>
+              <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td style="color:var(--text-soft)">Abacus</td>
+              <td class="plu">24 Jun · 11:55 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill warn" style="width:63%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#D97706">30/48</span></div></td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+            </tr>
+            <tr>
+              <td><strong>Newtown</strong></td>
+              <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td style="color:var(--text-soft)">Abacus</td>
+              <td class="plu">24 Jun · 11:52 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>Manly</strong></td>
+              <td style="color:var(--text-soft)">Sydney Cafes</td>
+              <td style="color:var(--text-soft)">Abacus</td>
+              <td class="plu">24 Jun · 11:50 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>St Kilda</strong></td>
+              <td style="color:var(--text-soft)">Melbourne</td>
+              <td style="color:var(--text-soft)">Abacus</td>
+              <td class="plu">24 Jun · 11:50 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill warn" style="width:50%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#D97706">24/48</span></div></td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+            </tr>
+            <tr>
+              <td><strong>Fitzroy</strong></td>
+              <td style="color:var(--text-soft)">Melbourne</td>
+              <td style="color:var(--text-soft)">Lightspeed</td>
+              <td class="plu">24 Jun · 11:45 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>South Yarra</strong></td>
+              <td style="color:var(--text-soft)">Melbourne</td>
+              <td style="color:var(--text-soft)">Lightspeed</td>
+              <td class="plu">24 Jun · 11:44 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>Collingwood</strong></td>
+              <td style="color:var(--text-soft)">Melbourne</td>
+              <td style="color:var(--text-soft)">Lightspeed</td>
+              <td class="plu">24 Jun · 11:43 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>Fortitude Valley</strong></td>
+              <td style="color:var(--text-soft)">Queensland</td>
+              <td style="color:var(--text-soft)">Square</td>
+              <td class="plu">24 Jun · 11:40 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>Paddington QLD</strong></td>
+              <td style="color:var(--text-soft)">Queensland</td>
+              <td style="color:var(--text-soft)">Square</td>
+              <td class="plu">24 Jun · 11:38 PM</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
+            </tr>
+            <tr>
+              <td><strong>Brisbane CBD</strong></td>
+              <td style="color:var(--text-soft)">Queensland</td>
+              <td style="color:var(--text-soft)">—</td>
+              <td class="plu" style="color:var(--text-soft)">Never</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span></div></td>
+              <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
+            </tr>
+            <tr>
+              <td><strong>Gold Coast</strong></td>
+              <td style="color:var(--text-soft)">Queensland</td>
+              <td style="color:var(--text-soft)">—</td>
+              <td class="plu" style="color:var(--text-soft)">Never</td>
+              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span></div></td>
+              <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Standalone: single-outlet view (non-HQ) ── -->
+    <div class="standalone-block section-gap" id="standalone-view" style="display:none">
+      <h3 class="section-heading"><i class="ti ti-plug-connected" style="color:var(--text-accent)"></i>Connection Status</h3>
       <div class="card">
         <table class="data-table">
           <thead>
@@ -288,160 +355,15 @@
               <td><strong>Abacus POS</strong> <span style="color:var(--text-soft);font-size:12px">· Bondi Beach · ABX-0042</span></td>
               <td style="color:var(--text-soft)">Live API</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Connected</span></td>
-              <td class="plu" style="font-size:12px">14 Jun 2026 · 11:58 PM</td>
+              <td class="plu">24 Jun · 11:58 PM</td>
               <td style="font-variant-numeric:tabular-nums;font-size:13px">847</td>
             </tr>
             <tr>
               <td><strong>Batch Import</strong> <span style="color:var(--text-soft);font-size:12px">· Google Drive · /pos-exports/bondi</span></td>
               <td style="color:var(--text-soft)">Batch · 24 h poll</td>
               <td><span class="pill warn"><span class="pill-dot"></span>Configured</span></td>
-              <td class="plu" style="font-size:12px">14 Jun 2026 · 11:45 PM</td>
+              <td class="plu">24 Jun · 11:45 PM</td>
               <td style="font-variant-numeric:tabular-nums;font-size:13px">312</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ── Outlet Coverage (HQ only) ── -->
-    <div class="hq-block section-gap" id="hq-coverage">
-      <h3 class="section-heading" style="margin-bottom:var(--space-lg)"><i class="ti ti-building-store" style="color:var(--text-accent)"></i>Outlet Coverage</h3>
-
-      <!-- Summary cards -->
-      <div class="cov-summary">
-        <div class="cov-card">
-          <div class="cov-icon ok">✓</div>
-          <div><div class="cov-label">Fully Mapped</div><div class="cov-value">2</div></div>
-        </div>
-        <div class="cov-card">
-          <div class="cov-icon warn">◑</div>
-          <div><div class="cov-label">Partial Coverage</div><div class="cov-value">2</div></div>
-        </div>
-        <div class="cov-card">
-          <div class="cov-icon risk">○</div>
-          <div><div class="cov-label">Dark — No POS</div><div class="cov-value">2</div></div>
-        </div>
-      </div>
-
-      <!-- Issue callouts -->
-      <div class="issue-row" style="margin-bottom:var(--space-sm)">
-        <div class="issue-icon risk">✕</div>
-        <div class="issue-body">
-          <div class="issue-title">2 outlets have no POS connected — no sales data flowing</div>
-          <div class="issue-detail">Brisbane CBD, Gold Coast &nbsp;·&nbsp; Inventory depletion is not occurring &nbsp;·&nbsp; Variance data will be unreliable</div>
-        </div>
-        <div class="issue-cta">
-          <a class="btn btn-secondary btn-sm" href="pos-mapping.html">Configure POS →</a>
-        </div>
-      </div>
-      <div class="issue-row" style="margin-bottom:var(--space-lg)">
-        <div class="issue-icon warn">⚠</div>
-        <div class="issue-body">
-          <div class="issue-title">2 outlets connected but have mapping gaps</div>
-          <div class="issue-detail">Surry Hills (18 unmapped), St Kilda (24 unmapped) &nbsp;·&nbsp; Push master mapping to resolve quickly</div>
-        </div>
-        <div class="issue-cta">
-          <button class="btn btn-secondary btn-sm" onclick="openPushConfirm('selected')">Push mapping →</button>
-        </div>
-      </div>
-
-      <!-- Filter + push controls -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
-        <div style="display:flex;gap:var(--space-md)">
-          <select class="sort-sel">
-            <option>All groups</option>
-            <option>Sydney Cafes</option>
-            <option>Melbourne</option>
-            <option>Queensland</option>
-          </select>
-          <select class="sort-sel">
-            <option>All statuses</option>
-            <option>Full</option>
-            <option>Partial</option>
-            <option>Dark</option>
-          </select>
-        </div>
-        <div style="display:flex;gap:var(--space-sm)">
-          <button class="btn btn-secondary" onclick="openPushConfirm('selected')">Push to selected outlets</button>
-          <button class="btn btn-primary" onclick="openPushConfirm('all')">Push master mapping to 12 outlets ▾</button>
-        </div>
-      </div>
-
-      <!-- Outlet table -->
-      <div class="card">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width:36px"><input type="checkbox"></th>
-              <th>Outlet</th>
-              <th>Group</th>
-              <th>POS System</th>
-              <th>Connection</th>
-              <th>Last Sync</th>
-              <th>Coverage</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td><strong>Bondi Beach</strong></td>
-              <td style="color:var(--text-soft)">Sydney Cafes</td>
-              <td>Abacus</td>
-              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
-              <td class="plu" style="font-size:12px">14 Jun · 11:58 PM</td>
-              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
-              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
-            </tr>
-            <tr>
-              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td><strong>Surry Hills</strong></td>
-              <td style="color:var(--text-soft)">Sydney Cafes</td>
-              <td>Abacus</td>
-              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
-              <td class="plu" style="font-size:12px">14 Jun · 11:55 PM</td>
-              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill warn" style="width:63%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">30/48</span></div></td>
-              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
-            </tr>
-            <tr>
-              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td><strong>St Kilda</strong></td>
-              <td style="color:var(--text-soft)">Melbourne</td>
-              <td>Abacus</td>
-              <td><span class="pill ok"><span class="pill-dot"></span>Live API</span></td>
-              <td class="plu" style="font-size:12px">14 Jun · 11:50 PM</td>
-              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill warn" style="width:50%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">24/48</span></div></td>
-              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
-            </tr>
-            <tr>
-              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td><strong>Fitzroy</strong></td>
-              <td style="color:var(--text-soft)">Melbourne</td>
-              <td>Lightspeed</td>
-              <td><span class="pill warn"><span class="pill-dot"></span>Batch</span></td>
-              <td class="plu" style="font-size:12px">14 Jun · 11:45 PM</td>
-              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">48/48</span></div></td>
-              <td><span class="pill ok"><span class="pill-dot"></span>Full</span></td>
-            </tr>
-            <tr>
-              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td><strong>Brisbane CBD</strong></td>
-              <td style="color:var(--text-soft)">Queensland</td>
-              <td>Square</td>
-              <td><span class="pill risk"><span class="pill-dot"></span>Not configured</span></td>
-              <td class="plu" style="font-size:12px;color:var(--text-soft)">Never</td>
-              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span></div></td>
-              <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
-            </tr>
-            <tr>
-              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td><strong>Gold Coast</strong></td>
-              <td style="color:var(--text-soft)">Queensland</td>
-              <td style="color:var(--text-soft)">—</td>
-              <td><span class="pill risk"><span class="pill-dot"></span>No POS</span></td>
-              <td class="plu" style="font-size:12px;color:var(--text-soft)">Never</td>
-              <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill risk" style="width:0%"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums;color:#DC2626">0/48</span></div></td>
-              <td><span class="pill risk"><span class="pill-dot"></span>Dark</span></td>
             </tr>
           </tbody>
         </table>
@@ -453,21 +375,6 @@
   </div><!-- /napp-canvas -->
 </main>
 
-<dialog id="push-confirm-dialog" aria-labelledby="push-dialog-title">
-  <div class="dialog-inner">
-    <div>
-      <div class="dialog-warn-icon"><i class="ti ti-alert-triangle"></i></div>
-      <h2 class="dialog-title" id="push-dialog-title">Push mapping to <span id="push-dialog-scope">all outlets</span>?</h2>
-      <p class="dialog-subtitle" style="margin-top:var(--space-xs)">Existing mappings at the outlets below will be overwritten. Changes take effect immediately.</p>
-    </div>
-    <div class="dialog-impact" id="push-impact"></div>
-    <div class="dialog-footer">
-      <button class="btn btn-secondary" onclick="closePushConfirm()">Cancel</button>
-      <button class="btn btn-primary" id="push-confirm-btn"><i class="ti ti-send"></i>Push mapping</button>
-    </div>
-  </div>
-</dialog>
-
 <script>
   NomniShell.init('POS Mapping · Monitoring');
   let currentMode = 'hq';
@@ -476,42 +383,13 @@
     currentMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     document.querySelector(`.mode-btn[onclick="switchMode('${mode}')"]`).classList.add('active');
-    if (mode === 'hq') {
-      document.querySelectorAll('.hq-block').forEach(el => el.style.display = 'block');
-    } else {
-      document.querySelectorAll('.hq-block').forEach(el => el.style.display = 'none');
-    }
+    const isHq = mode === 'hq';
+    document.querySelectorAll('.hq-block').forEach(el => el.style.display = isHq ? 'block' : 'none');
+    document.getElementById('standalone-view').style.display = isHq ? 'none' : 'block';
+    document.getElementById('health-bar').style.display = isHq ? 'flex' : 'none';
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    switchMode('hq');
-    document.getElementById('push-confirm-dialog')?.addEventListener('click', e => {
-      if (e.target === e.currentTarget) closePushConfirm();
-    });
-    document.getElementById('push-confirm-btn')?.addEventListener('click', () => {
-      closePushConfirm();
-      const t = document.createElement('div');
-      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--seaweed);color:#fff;padding:10px 18px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;';
-      t.textContent = 'Master mapping pushed to all outlets';
-      document.body.appendChild(t);
-      setTimeout(() => t.remove(), 3500);
-    });
-  });
-
-  function openPushConfirm(scope) {
-    const checked = document.querySelectorAll('#hq-coverage input[type=checkbox]:checked').length;
-    const total   = scope === 'all' ? 12 : (checked || 2);
-    const mapped  = scope === 'all' ? 9  : Math.min(total, 7);
-    document.getElementById('push-dialog-scope').textContent =
-      scope === 'all' ? 'all outlets' : `${total} selected outlet${total !== 1 ? 's' : ''}`;
-    document.getElementById('push-impact').innerHTML =
-      `<div class="impact-row"><span class="impact-count">${total}</span><span class="impact-label">outlets will receive the master mapping</span></div>` +
-      `<div class="impact-row"><span class="impact-count">${mapped}</span><span class="impact-label">have existing mappings that will be overwritten</span></div>`;
-    document.getElementById('push-confirm-dialog').showModal();
-  }
-  function closePushConfirm() {
-    document.getElementById('push-confirm-dialog').close();
-  }
+  document.addEventListener('DOMContentLoaded', () => { switchMode('hq'); });
 
   function resolveSloan() {
     const card = document.getElementById('sloan-card');
