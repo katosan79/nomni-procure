@@ -633,6 +633,141 @@
       </div>
     </div>
 
+    <!-- ── Two-column layout ── -->
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:var(--space-xl);align-items:start">
+
+    <!-- LEFT: Summary panel -->
+    <div style="display:flex;flex-direction:column;gap:var(--space-lg);position:sticky;top:var(--space-xl)">
+
+    <!-- ── KPI strip ── -->
+    <div class="kpi-strip" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+      <div class="kpi-tile">
+        <div class="kpi-label">Total POS Items</div>
+        <div class="kpi-value">547</div>
+        <div class="kpi-sub">Across 8 categories</div>
+      </div>
+      <div class="kpi-tile ok">
+        <div class="kpi-label">Mapped</div>
+        <div class="kpi-value">468</div>
+        <div class="kpi-sub">85% coverage</div>
+      </div>
+      <div class="kpi-tile warn">
+        <div class="kpi-label">Unmapped</div>
+        <div class="kpi-value">52</div>
+        <div class="kpi-sub">Sold in last 30 days</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Stale / Partial</div>
+        <div class="kpi-value">27</div>
+        <div class="kpi-sub">11 stale · 16 partial</div>
+      </div>
+    </div>
+
+    <!-- ── Category coverage chart ── -->
+    <div class="card" style="padding:var(--space-lg) var(--space-xl)">
+      <div style="margin-bottom:var(--space-md)">
+        <div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);margin-bottom:2px">Coverage by Category</div>
+        <div style="font-size:12px;color:var(--text-soft)">85% overall · 79 items need attention</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0">
+
+        <!-- row macro: name + count top, bar + % bottom -->
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Beverages</span>
+            <span style="font-size:11px;color:var(--text-soft)">120 items</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:95%;height:100%;background:var(--status-ok-fg);border-radius:3px"></div></div>
+            <span style="font-size:12px;font-weight:700;color:var(--status-ok-fg);min-width:32px;text-align:right">95%</span>
+          </div>
+        </div>
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Mains</span>
+            <span style="font-size:11px;color:var(--text-soft)">145 items</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:92%;height:100%;background:var(--status-ok-fg);border-radius:3px"></div></div>
+            <span style="font-size:12px;font-weight:700;color:var(--status-ok-fg);min-width:32px;text-align:right">92%</span>
+          </div>
+        </div>
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Breakfast</span>
+            <span style="font-size:11px;color:var(--text-soft)">28 items</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:89%;height:100%;background:#D97706;border-radius:3px"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#D97706;min-width:32px;text-align:right">89%</span>
+          </div>
+        </div>
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Bakery</span>
+            <span style="font-size:11px;color:var(--text-soft)">68 items</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:85%;height:100%;background:#D97706;border-radius:3px"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#D97706;min-width:32px;text-align:right">85%</span>
+          </div>
+        </div>
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Snacks &amp; Sides</span>
+            <span style="font-size:11px;color:var(--text-soft)">60 items</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:80%;height:100%;background:#D97706;border-radius:3px"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#D97706;min-width:32px;text-align:right">80%</span>
+          </div>
+        </div>
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Salads</span>
+            <span style="font-size:11px;color:var(--text-soft)">58 items</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:78%;height:100%;background:#D97706;border-radius:3px"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#D97706;min-width:32px;text-align:right">78%</span>
+          </div>
+        </div>
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Desserts</span>
+            <span style="font-size:11px;color:var(--text-soft)">52 items</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:74%;height:100%;background:#DC2626;border-radius:3px"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#DC2626;min-width:32px;text-align:right">74%</span>
+          </div>
+        </div>
+
+        <div style="padding:8px 0">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Other</span>
+            <span style="font-size:11px;color:var(--text-soft)">16 items</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:44%;height:100%;background:#DC2626;border-radius:3px"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#DC2626;min-width:32px;text-align:right">44%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- END left panel -->
+    </div>
+
+    <!-- RIGHT: Working area -->
+    <div>
+
     <!-- ── Tab navigation ── -->
     <nav class="tab-nav" role="tablist">
       <button class="tab-btn active" data-tab="mapping"  onclick="switchTab('mapping')">
@@ -646,62 +781,6 @@
     </nav>
 
 
-    <!-- ── POS Connections (always visible above tabs) ── -->
-    <div class="conn-grid" style="margin-bottom:var(--space-xl)">
-      <div class="conn-card connected">
-        <div class="conn-header">
-          <div class="conn-title">Abacus POS — Live API</div>
-          <span class="pill ok"><span class="pill-dot"></span>Connected</span>
-        </div>
-        <div class="conn-meta">Venue: <strong>Bondi Beach</strong> &nbsp;·&nbsp; Terminal ID: <span class="plu">ABX-0042</span></div>
-        <div class="conn-sync">Last sync: 14 Jun 2026 · 11:58 PM &nbsp;·&nbsp; 847 transactions received</div>
-        <div class="conn-actions">
-          <button class="btn btn-secondary btn-sm">Settings</button>
-          <button class="btn btn-secondary btn-sm">View sync log</button>
-        </div>
-      </div>
-      <div class="conn-card batch">
-        <div class="conn-header">
-          <div class="conn-title">Batch Import — Other POS</div>
-          <span class="pill warn"><span class="pill-dot"></span>Configured</span>
-        </div>
-        <div class="conn-meta">Source: <strong>Google Drive</strong> &nbsp;·&nbsp; /pos-exports/bondi &nbsp;·&nbsp; Polls every 24 h</div>
-        <div class="conn-sync">Last import: 14 Jun 2026 · 11:45 PM &nbsp;·&nbsp; 1 file · 312 transactions</div>
-        <div class="conn-actions">
-          <button class="btn btn-secondary btn-sm" onclick="openBatchSetup()">Configure</button>
-          <button class="btn btn-secondary btn-sm">Import history</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Batch setup panel (hidden) -->
-    <div id="batch-setup-panel" style="display:none;margin-bottom:var(--space-xl)">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Batch Import Configuration</div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('batch-setup-panel').style.display='none'">✕</button>
-        </div>
-        <div style="padding:var(--space-xl)">
-          <p style="font-size:13px;color:var(--text-soft);margin:0 0 var(--space-lg)">
-            For POS systems without a direct API, configure an end-of-day sales report delivered via one of the methods below. Nomni will process the file automatically each night.
-          </p>
-          <div class="batch-methods">
-            <div class="batch-method selected" onclick="selectBatch(this)"><div class="batch-icon">📁</div><div class="batch-name">Google Drive</div><div class="batch-desc">Watch a Drive folder for new CSV/Excel files</div></div>
-            <div class="batch-method" onclick="selectBatch(this)"><div class="batch-icon">📧</div><div class="batch-name">Email</div><div class="batch-desc">Receive files sent to a dedicated Nomni inbox</div></div>
-            <div class="batch-method" onclick="selectBatch(this)"><div class="batch-icon">🗄</div><div class="batch-name">FTP / SFTP</div><div class="batch-desc">Pull files from your POS SFTP endpoint</div></div>
-          </div>
-          <div style="margin-top:var(--space-xl);display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
-            <div class="form-group"><label class="form-label">POS System Name</label><input type="text" class="form-input" value="Lightspeed Restaurant"></div>
-            <div class="form-group"><label class="form-label">Google Drive Folder Path</label><input type="text" class="form-input" value="/pos-exports/bondi"></div>
-          </div>
-          <div style="display:flex;gap:var(--space-sm)">
-            <button class="btn btn-primary">Save configuration</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('batch-setup-panel').style.display='none'">Cancel</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- ══════════════════════════════════════════════
          TAB · MENU MAPPING / MASTER MAPPING
     ══════════════════════════════════════════════ -->
@@ -709,11 +788,11 @@
 
       <div class="mapping-toolbar">
         <div class="filter-tabs">
-          <button class="filter-tab active" onclick="setFilter(this,'all')">All <span class="ftab-count">48</span></button>
-          <button class="filter-tab ftab-warn" onclick="setFilter(this,'unmapped')">Unmapped <span class="ftab-count">7</span></button>
-          <button class="filter-tab" onclick="setFilter(this,'partial')">Partial <span class="ftab-count">3</span></button>
-          <button class="filter-tab" onclick="setFilter(this,'mapped')">Mapped <span class="ftab-count">35</span></button>
-          <button class="filter-tab" onclick="setFilter(this,'ignored')">Ignored <span class="ftab-count">3</span></button>
+          <button class="filter-tab active" onclick="setFilter(this,'all')">All <span class="ftab-count">547</span></button>
+          <button class="filter-tab ftab-warn" onclick="setFilter(this,'unmapped')">Unmapped <span class="ftab-count">52</span></button>
+          <button class="filter-tab" onclick="setFilter(this,'partial')">Partial <span class="ftab-count">16</span></button>
+          <button class="filter-tab" onclick="setFilter(this,'mapped')">Mapped <span class="ftab-count">468</span></button>
+          <button class="filter-tab" onclick="setFilter(this,'ignored')">Ignored <span class="ftab-count">11</span></button>
         </div>
         <input type="search" class="search-box" placeholder="Search by name or PLU…">
         <select class="sort-sel">
@@ -752,25 +831,15 @@
               <td style="font-size:12px;color:var(--text-soft)">2 groups · 5 mods</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
             </tr>
-            <tr class="item-row" onclick="openMappingDrawer('avo-toast')">
+            <tr class="item-row" onclick="openMappingDrawer('latte')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td><strong>Avocado Toast</strong></td>
-              <td><span class="plu">2003</span></td>
-              <td style="color:var(--text-soft)">Mains</td>
-              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">52</td>
-              <td><span class="type-badge recipe">Recipe</span> Avocado Toast</td>
-              <td style="font-size:12px;color:var(--text-soft)">3 groups · 6 mods</td>
+              <td><strong>Latte</strong></td>
+              <td><span class="plu">1003</span></td>
+              <td style="color:var(--text-soft)">Beverages</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">98</td>
+              <td><span class="type-badge recipe">Recipe</span> Latte</td>
+              <td style="font-size:12px;color:var(--text-soft)">2 groups · 3 mods</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
-            </tr>
-            <tr class="item-row" onclick="openMappingDrawer('chk-burger')">
-              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
-              <td><strong>Chicken Burger</strong></td>
-              <td><span class="plu">2001</span></td>
-              <td style="color:var(--text-soft)">Mains</td>
-              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">34</td>
-              <td><span class="type-badge recipe">Recipe</span> Chicken Burger</td>
-              <td style="font-size:12px"><span style="color:#D97706;font-weight:600">⚠ 2 unset</span> · 2 groups · 5 mods</td>
-              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
             </tr>
             <tr class="item-row" onclick="openMappingDrawer('cappuccino')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
@@ -782,12 +851,112 @@
               <td style="font-size:12px;color:var(--text-soft)">No modifiers</td>
               <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
             </tr>
+            <tr class="item-row" onclick="openMappingDrawer('long-black')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Long Black</strong></td>
+              <td><span class="plu">1004</span></td>
+              <td style="color:var(--text-soft)">Beverages</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">76</td>
+              <td><span class="type-badge recipe">Recipe</span> Long Black</td>
+              <td style="font-size:12px;color:var(--text-soft)">1 group · 2 mods</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('croissant')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Croissant</strong></td>
+              <td><span class="plu">5001</span></td>
+              <td style="color:var(--text-soft)">Bakery</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">55</td>
+              <td><span class="type-badge recipe">Recipe</span> Croissant</td>
+              <td style="font-size:12px;color:var(--text-soft)">No modifiers</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('avo-toast')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Avocado Toast</strong></td>
+              <td><span class="plu">2003</span></td>
+              <td style="color:var(--text-soft)">Mains</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">52</td>
+              <td><span class="type-badge recipe">Recipe</span> Avocado Toast</td>
+              <td style="font-size:12px;color:var(--text-soft)">3 groups · 6 mods</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
             <tr class="item-row unmapped-row" onclick="openMappingDrawer('smashed-avo')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Smashed Avo</strong></td>
               <td><span class="plu">2005</span></td>
               <td style="color:var(--text-soft)">Mains</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#D97706">52</td>
+              <td style="color:var(--text-soft);font-size:12px;font-style:italic">Not mapped</td>
+              <td style="color:var(--text-soft);font-size:12px">—</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('eggs-benny')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Eggs Benedict</strong></td>
+              <td><span class="plu">2006</span></td>
+              <td style="color:var(--text-soft)">Mains</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">48</td>
+              <td><span class="type-badge recipe">Recipe</span> Eggs Benedict</td>
+              <td style="font-size:12px;color:var(--text-soft)">2 groups · 4 mods</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('hot-choc')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Hot Chocolate</strong></td>
+              <td><span class="plu">1005</span></td>
+              <td style="color:var(--text-soft)">Beverages</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">42</td>
+              <td><span class="type-badge recipe">Recipe</span> Hot Chocolate</td>
+              <td style="font-size:12px;color:var(--text-soft)">1 group · 2 mods</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('iced-coffee')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Iced Coffee</strong></td>
+              <td><span class="plu">1006</span></td>
+              <td style="color:var(--text-soft)">Beverages</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">38</td>
+              <td><span class="type-badge recipe">Recipe</span> Iced Coffee</td>
+              <td style="font-size:12px"><span style="color:#D97706;font-weight:600">⚠ 1 unset</span> · 1 group · 2 mods</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('chk-burger')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Chicken Burger</strong></td>
+              <td><span class="plu">2001</span></td>
+              <td style="color:var(--text-soft)">Mains</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">34</td>
+              <td><span class="type-badge recipe">Recipe</span> Chicken Burger</td>
+              <td style="font-size:12px"><span style="color:#D97706;font-weight:600">⚠ 2 unset</span> · 2 groups · 5 mods</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Partial</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('club-sandwich')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Club Sandwich</strong></td>
+              <td><span class="plu">2007</span></td>
+              <td style="color:var(--text-soft)">Mains</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">31</td>
+              <td><span class="type-badge recipe">Recipe</span> Club Sandwich</td>
+              <td style="font-size:12px;color:var(--text-soft)">2 groups · 3 mods</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('blueberry-muffin')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Blueberry Muffin</strong></td>
+              <td><span class="plu">5002</span></td>
+              <td style="color:var(--text-soft)">Bakery</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">28</td>
+              <td><span class="type-badge recipe">Recipe</span> Blueberry Muffin</td>
+              <td style="font-size:12px;color:var(--text-soft)">No modifiers</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
+            <tr class="item-row unmapped-row" onclick="openMappingDrawer('fish-chips')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Fish &amp; Chips</strong></td>
+              <td><span class="plu">2008</span></td>
+              <td style="color:var(--text-soft)">Mains</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#D97706">18</td>
               <td style="color:var(--text-soft);font-size:12px;font-style:italic">Not mapped</td>
               <td style="color:var(--text-soft);font-size:12px">—</td>
               <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
@@ -802,10 +971,60 @@
               <td style="color:var(--text-soft);font-size:12px">—</td>
               <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
             </tr>
+            <tr class="item-row unmapped-row" onclick="openMappingDrawer('tiramisu')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Tiramisu</strong></td>
+              <td><span class="plu">3008</span></td>
+              <td style="color:var(--text-soft)">Desserts</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#D97706">14</td>
+              <td style="color:var(--text-soft);font-size:12px;font-style:italic">Not mapped</td>
+              <td style="color:var(--text-soft);font-size:12px">—</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('cheesecake')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Cheesecake</strong></td>
+              <td><span class="plu">3009</span></td>
+              <td style="color:var(--text-soft)">Desserts</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">12</td>
+              <td><span class="type-badge recipe">Recipe</span> Cheesecake</td>
+              <td style="font-size:12px;color:var(--text-soft)">No modifiers</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
+            <tr class="item-row" onclick="openMappingDrawer('greek-salad')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Greek Salad</strong></td>
+              <td><span class="plu">3002</span></td>
+              <td style="color:var(--text-soft)">Salads</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">8</td>
+              <td><span class="type-badge recipe">Recipe</span> Greek Salad</td>
+              <td style="font-size:12px;color:var(--text-soft)">No modifiers</td>
+              <td><span class="pill ok"><span class="pill-dot"></span>Mapped</span></td>
+            </tr>
+            <tr class="item-row unmapped-row" onclick="openMappingDrawer('nicoise')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Niçoise Salad</strong></td>
+              <td><span class="plu">3003</span></td>
+              <td style="color:var(--text-soft)">Salads</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#D97706">6</td>
+              <td style="color:var(--text-soft);font-size:12px;font-style:italic">Not mapped</td>
+              <td style="color:var(--text-soft);font-size:12px">—</td>
+              <td><span class="pill warn"><span class="pill-dot"></span>Unmapped</span></td>
+            </tr>
             <tr class="item-row ignored-row" onclick="openMappingDrawer('gift-card')">
               <td onclick="event.stopPropagation()"><input type="checkbox"></td>
               <td><strong>Gift Card</strong></td>
               <td><span class="plu">4001</span></td>
+              <td style="color:var(--text-soft)">Other</td>
+              <td style="text-align:right;color:var(--text-soft)">—</td>
+              <td style="color:var(--text-soft);font-size:12px;font-style:italic">Non-inventory · ignored</td>
+              <td style="color:var(--text-soft);font-size:12px">—</td>
+              <td><span class="pill neutral">Ignored</span></td>
+            </tr>
+            <tr class="item-row ignored-row" onclick="openMappingDrawer('service-charge')">
+              <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+              <td><strong>Service Charge</strong></td>
+              <td><span class="plu">6001</span></td>
               <td style="color:var(--text-soft)">Other</td>
               <td style="text-align:right;color:var(--text-soft)">—</td>
               <td style="color:var(--text-soft);font-size:12px;font-style:italic">Non-inventory · ignored</td>
@@ -817,7 +1036,7 @@
 
         <!-- Pagination footer -->
         <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border)">
-          <span style="font-size:12px;color:var(--text-soft)">Showing 7 of 48 items</span>
+          <span style="font-size:12px;color:var(--text-soft)">Showing 20 of 547 items</span>
           <div style="display:flex;gap:4px">
             <button class="btn btn-secondary btn-sm">← Prev</button>
             <button class="btn btn-primary btn-sm">Next →</button>
@@ -1121,6 +1340,9 @@
       </div>
     </div><!-- /tab-wastage -->
 
+    </div><!-- /right column -->
+    </div><!-- /two-column grid -->
+
   </div><!-- /napp-canvas -->
 </main>
 
@@ -1251,6 +1473,12 @@
   function setFilter(el, filter) {
     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
+    document.querySelectorAll('#tab-mapping tbody .item-row').forEach(row => {
+      const pillText = (row.querySelector('.pill') || {}).textContent || '';
+      const status = pillText.trim().toLowerCase();
+      const show = filter === 'all' || status === filter;
+      row.style.display = show ? '' : 'none';
+    });
   }
 
   /* ─── Outlet drawer ─── */
