@@ -609,6 +609,10 @@
     .impact-count { font-size: 20px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; min-width: 32px; }
     .impact-label { color: var(--text-soft); }
     .dialog-footer { display: flex; justify-content: flex-end; gap: var(--space-sm); }
+    .cat-row { cursor:pointer; border-radius:var(--radius-sm); margin:0 calc(-1 * var(--space-md)); padding:8px var(--space-md) !important; transition:background 120ms; }
+    .cat-row:hover { background:var(--surface-soft); }
+    .cat-row.active { background:color-mix(in srgb, var(--text-accent) 10%, transparent); }
+    .cat-row.active .cat-name { color:var(--text-accent); font-weight:600; }
   </style>
 </head>
 <body>
@@ -672,9 +676,9 @@
       <div style="display:flex;flex-direction:column;gap:0">
 
         <!-- row macro: name + count top, bar + % bottom -->
-        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="cat-row" data-category="Beverages" onclick="setCategoryFilter('Beverages')" style="border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Beverages</span>
+            <span class="cat-name" style="font-size:13px;font-weight:500;color:var(--text)">Beverages</span>
             <span style="font-size:11px;color:var(--text-soft)">120 items</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -683,9 +687,9 @@
           </div>
         </div>
 
-        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="cat-row" data-category="Mains" onclick="setCategoryFilter('Mains')" style="border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Mains</span>
+            <span class="cat-name" style="font-size:13px;font-weight:500;color:var(--text)">Mains</span>
             <span style="font-size:11px;color:var(--text-soft)">145 items</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -694,9 +698,9 @@
           </div>
         </div>
 
-        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="cat-row" data-category="Breakfast" onclick="setCategoryFilter('Breakfast')" style="border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Breakfast</span>
+            <span class="cat-name" style="font-size:13px;font-weight:500;color:var(--text)">Breakfast</span>
             <span style="font-size:11px;color:var(--text-soft)">28 items</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -705,9 +709,9 @@
           </div>
         </div>
 
-        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="cat-row" data-category="Bakery" onclick="setCategoryFilter('Bakery')" style="border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Bakery</span>
+            <span class="cat-name" style="font-size:13px;font-weight:500;color:var(--text)">Bakery</span>
             <span style="font-size:11px;color:var(--text-soft)">68 items</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -716,9 +720,9 @@
           </div>
         </div>
 
-        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="cat-row" data-category="Snacks &amp; Sides" onclick="setCategoryFilter('Snacks &amp; Sides')" style="border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Snacks &amp; Sides</span>
+            <span class="cat-name" style="font-size:13px;font-weight:500;color:var(--text)">Snacks &amp; Sides</span>
             <span style="font-size:11px;color:var(--text-soft)">60 items</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -727,9 +731,9 @@
           </div>
         </div>
 
-        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="cat-row" data-category="Salads" onclick="setCategoryFilter('Salads')" style="border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Salads</span>
+            <span class="cat-name" style="font-size:13px;font-weight:500;color:var(--text)">Salads</span>
             <span style="font-size:11px;color:var(--text-soft)">58 items</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -738,9 +742,9 @@
           </div>
         </div>
 
-        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="cat-row" data-category="Desserts" onclick="setCategoryFilter('Desserts')" style="border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Desserts</span>
+            <span class="cat-name" style="font-size:13px;font-weight:500;color:var(--text)">Desserts</span>
             <span style="font-size:11px;color:var(--text-soft)">52 items</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -749,9 +753,9 @@
           </div>
         </div>
 
-        <div style="padding:8px 0">
+        <div class="cat-row" data-category="Other" onclick="setCategoryFilter('Other')" style="padding:8px 0">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Other</span>
+            <span class="cat-name" style="font-size:13px;font-weight:500;color:var(--text)">Other</span>
             <span style="font-size:11px;color:var(--text-soft)">16 items</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -1469,16 +1473,40 @@
     if (btn)   btn.classList.add('active');
   }
 
-  /* ─── Filter tabs ─── */
-  function setFilter(el, filter) {
-    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
+  /* ─── Filter state ─── */
+  let activeStatus   = 'all';
+  let activeCategory = null;
+
+  function applyFilters() {
     document.querySelectorAll('#tab-mapping tbody .item-row').forEach(row => {
       const pillText = (row.querySelector('.pill') || {}).textContent || '';
-      const status = pillText.trim().toLowerCase();
-      const show = filter === 'all' || status === filter;
-      row.style.display = show ? '' : 'none';
+      const status   = pillText.trim().toLowerCase();
+      const catCell  = row.querySelectorAll('td')[3];
+      const category = catCell ? catCell.textContent.trim() : '';
+
+      const statusOk   = activeStatus === 'all' || status === activeStatus;
+      const categoryOk = !activeCategory || category === activeCategory;
+      row.style.display = (statusOk && categoryOk) ? '' : 'none';
     });
+  }
+
+  function setFilter(el, filter) {
+    activeStatus = filter;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    applyFilters();
+  }
+
+  function setCategoryFilter(category) {
+    const rows = document.querySelectorAll('.cat-row');
+    if (activeCategory === category) {
+      activeCategory = null;
+      rows.forEach(r => r.classList.remove('active'));
+    } else {
+      activeCategory = category;
+      rows.forEach(r => r.classList.toggle('active', r.dataset.category === category));
+    }
+    applyFilters();
   }
 
   /* ─── Outlet drawer ─── */
@@ -1614,6 +1642,55 @@
     },
   };
 
+  /* Controlled ingredient / recipe / sub-recipe list */
+  const INVENTORY_OPTIONS = [
+    { value: '', label: '— Select item —' },
+    { value: 'whole-recipe',    label: 'Whole recipe' },
+    // Dairy & milk
+    { value: 'full-cream-milk', label: 'Full cream milk' },
+    { value: 'oat-milk',        label: 'Oat milk' },
+    { value: 'almond-milk',     label: 'Almond milk' },
+    { value: 'soy-milk',        label: 'Soy milk' },
+    { value: 'skim-milk',       label: 'Skim milk' },
+    { value: 'coconut-milk',    label: 'Coconut milk' },
+    { value: 'lactose-free-milk', label: 'Lactose-free milk' },
+    // Coffee
+    { value: 'espresso',        label: 'Espresso' },
+    { value: 'coffee-beans',    label: 'Coffee beans' },
+    // Bread & bakery
+    { value: 'sourdough',       label: 'Sourdough' },
+    { value: 'gf-sourdough',    label: 'GF sourdough' },
+    { value: 'rye-bread',       label: 'Rye bread' },
+    { value: 'ciabatta',        label: 'Ciabatta' },
+    // Protein
+    { value: 'chicken-breast',  label: 'Chicken breast' },
+    { value: 'bacon',           label: 'Bacon' },
+    { value: 'egg',             label: 'Egg' },
+    { value: 'smoked-salmon',   label: 'Smoked salmon' },
+    // Produce
+    { value: 'avocado',         label: 'Avocado' },
+    { value: 'feta-cheese',     label: 'Feta cheese' },
+    { value: 'haloumi',         label: 'Haloumi' },
+    { value: 'spinach',         label: 'Spinach' },
+    { value: 'tomato',          label: 'Tomato' },
+    // Syrups / extras
+    { value: 'vanilla-syrup',   label: 'Vanilla syrup' },
+    { value: 'caramel-syrup',   label: 'Caramel syrup' },
+    { value: 'sugar-syrup',     label: 'Sugar syrup' },
+    { value: 'chocolate-sauce', label: 'Chocolate sauce' },
+    // Sub-recipes
+    { value: 'hollandaise',     label: 'Hollandaise (sub-recipe)' },
+    { value: 'caesar-dressing', label: 'Caesar dressing (sub-recipe)' },
+    { value: 'pesto',           label: 'Pesto (sub-recipe)' },
+  ];
+
+  function inventorySelect(selectedValue, width) {
+    const opts = INVENTORY_OPTIONS.map(o =>
+      `<option value="${o.value}" ${o.value===selectedValue||o.label===selectedValue?'selected':''}>${o.label}</option>`
+    ).join('');
+    return `<select class="md-drawer-input" style="width:${width||'150px'}">${opts}</select>`;
+  }
+
   function renderModRow(mod) {
     const isUnset = mod.action === 'unset';
     const actionOptions = ['default','add-on','remove','substitute','multiply','ignore'].map(a => {
@@ -1626,25 +1703,25 @@
     if (mod.action === 'add-on') {
       detail = `<div class="md-detail-row">
         <span class="md-detail-label">Ingredient:</span>
-        <input class="md-drawer-input" style="width:130px" value="${mod.ingredient||''}">
+        ${inventorySelect(mod.ingredient||'', '150px')}
         <input class="md-drawer-input mono" style="width:48px" value="${mod.qty||''}">
         <input class="md-drawer-input" style="width:44px" value="${mod.uom||''}">
       </div>`;
     } else if (mod.action === 'remove') {
       detail = `<div class="md-detail-row">
         <span class="md-detail-label">Remove:</span>
-        <input class="md-drawer-input" style="width:180px" value="${mod.ingredient||''}">
+        ${inventorySelect(mod.ingredient||'', '200px')}
       </div>`;
     } else if (mod.action === 'substitute') {
       detail = `<div class="md-detail-row">
-        <input class="md-drawer-input" style="width:130px" value="${mod.from||''}">
+        ${inventorySelect(mod.from||'', '140px')}
         <span class="md-arrow">→</span>
-        <input class="md-drawer-input" style="width:130px" value="${mod.to||''}">
+        ${inventorySelect(mod.to||'', '140px')}
       </div>`;
     } else if (mod.action === 'multiply') {
       detail = `<div class="md-detail-row">
         <span class="md-detail-label">Target:</span>
-        <input class="md-drawer-input" style="width:130px" value="${mod.target||'Whole recipe'}">
+        ${inventorySelect(mod.target||'whole-recipe', '150px')}
         <span class="md-arrow">×</span>
         <input class="md-drawer-input mono" style="width:56px" value="${mod.multiplier||'1'}">
       </div>`;
