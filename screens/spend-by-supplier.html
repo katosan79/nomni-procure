@@ -46,7 +46,8 @@
 
     /* KPI strip */
     .kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: var(--space-lg); }
-    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm); }
+    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm); transition: box-shadow var(--dur-1) var(--ease-standard); }
+    .kpi-tile:hover { box-shadow: var(--shadow-md); }
     .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
     .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; font-feature-settings: 'tnum' 1; }
     .kpi-value sup { font-size: 16px; font-weight: 600; }
