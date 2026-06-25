@@ -41,16 +41,16 @@
     .range-sep { font-size: 13px; color: var(--text-soft); }
 
     /* Filter selects */
-    .filter-select { height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-sm) center; transition: border-color var(--dur-1); }
+    .filter-select { height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-sm) center; transition: border-color var(--dur-1); }
     .filter-select:focus { border-color: var(--text-accent); }
 
     /* KPI strip */
     .kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: var(--space-lg); }
     .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm); }
-    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
-    .kpi-value { font-size: 30px; font-weight: 700; color: var(--text); letter-spacing: -0.025em; line-height: 1; font-feature-settings: 'tnum' 1; }
-    .kpi-value sup { font-size: 15px; font-weight: 600; }
-    .kpi-context { font-size: 12px; color: var(--text-soft); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+    .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; font-feature-settings: 'tnum' 1; }
+    .kpi-value sup { font-size: 16px; font-weight: 600; }
+    .kpi-context { font-size: 12px; font-weight: 500; color: var(--text-soft); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
     .kpi-context .ok   { color: var(--status-ok-fg); font-weight: 600; }
     .kpi-context .warn { color: var(--status-warn-fg); font-weight: 600; }
     .kpi-context .risk { color: var(--status-risk-fg); font-weight: 600; }
@@ -76,10 +76,10 @@
     /* Data table */
     .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .data-table thead { background: var(--surface-soft); }
-    .data-table th { text-align: left; padding: var(--space-sm) var(--space-lg); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .data-table th { text-align: left; padding: var(--space-sm) var(--space-lg); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); border-bottom: 1px solid var(--border); white-space: nowrap; }
     .data-table th.r, .data-table td.r { text-align: right; font-feature-settings: 'tnum' 1; }
     .data-table th.sort-active { color: var(--text); }
-    .data-table td { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; height: 64px; }
+    .data-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; }
     .data-table tbody tr:last-child td { border-bottom: none; }
     .data-table tbody tr { cursor: pointer; transition: background var(--dur-1); }
     .data-table tbody tr:hover td { background: var(--surface-soft); }
