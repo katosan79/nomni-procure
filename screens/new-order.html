@@ -127,6 +127,29 @@
     .po-card-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); white-space: nowrap; flex-shrink: 0; }
     .po-card-status.sending { background: var(--status-info-bg); color: var(--status-info-fg); }
     .po-card-status.ok { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+
+    /* Add-on order callout (appears in Step 3 route groups) */
+    .addon-callout {
+      display:flex; align-items:flex-start; gap:var(--space-md);
+      padding:var(--space-md) var(--space-lg);
+      background:color-mix(in srgb, #17B3A3 8%, transparent);
+      border:1.5px solid color-mix(in srgb, #17B3A3 28%, transparent);
+      border-radius:var(--radius-md); margin-top:var(--space-sm);
+      animation:row-in var(--dur-3) var(--ease-emphasized) both;
+    }
+    .addon-callout-icon {
+      width:32px; height:32px; border-radius:50%;
+      background:color-mix(in srgb,#17B3A3 16%,transparent); color:#17B3A3;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; flex-shrink:0; margin-top:1px;
+    }
+    .addon-callout-title { font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-xs); flex-wrap:wrap; }
+    .addon-callout-title a { color:#17B3A3; text-decoration:none; }
+    .addon-callout-title a:hover { text-decoration:underline; }
+    .addon-mov-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700; padding:1px 7px; border-radius:var(--radius-pill); background:color-mix(in srgb,#17B3A3 12%,transparent); color:#17B3A3; }
+    .addon-callout-sub { font-size:12px; color:var(--text-soft); margin-top:3px; line-height:1.45; }
+    /* Add-on badge in done cards */
+    .addon-done-tag { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700; color:#17B3A3; margin-top:2px; }
     .po-card-status.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
     .po-progress-track { height: 3px; background: var(--border); border-radius: var(--radius-pill); overflow: hidden; margin-top: var(--space-sm); }
     .po-progress-fill { height: 100%; background: var(--spring); border-radius: var(--radius-pill); width: 0%; animation: po-fill 1.4s var(--ease-standard) forwards; }
@@ -317,6 +340,44 @@
       'Pacific Drinks Wholesale': { days:[2,4], cutoff:16 },
       'Artisan Bakehouse':        { days:[1,2,3,4,5,6], cutoff:8 },
     };
+
+    // Existing open POs used to detect add-on eligibility in Step 3.
+    // Matched against supplier + next-available delivery date at review time.
+    const EXISTING_POS_SEED = [
+      { id: 'PO-5520', supplier: 'Fresh Produce Co' },
+      { id: 'PO-5521', supplier: 'Harbour Meats' },
+    ];
+
+    const addOnFlags = new Map(); // supplier → { parentId } when add-on detected
+
+    function checkAddOn(supplier, deliveryStr, groupEl) {
+      groupEl.querySelector('.addon-callout')?.remove();
+      addOnFlags.delete(supplier);
+
+      const match = EXISTING_POS_SEED.find(p =>
+        p.supplier === supplier &&
+        nextDelivery(supplier)?.shortStr === deliveryStr
+      );
+
+      if (match) {
+        addOnFlags.set(supplier, { parentId: match.id });
+        const div = document.createElement('div');
+        div.className = 'addon-callout';
+        div.innerHTML = `
+          <div class="addon-callout-icon"><i class="ti ti-plus"></i></div>
+          <div>
+            <div class="addon-callout-title">
+              Add-on to <a href="order-detail.html?id=${match.id}">${match.id}</a>
+              <span class="addon-mov-badge"><i class="ti ti-bolt"></i>MOV waived</span>
+            </div>
+            <div class="addon-callout-sub">
+              An open order to ${supplier} is already scheduled for this delivery date.
+              This order will be added on — the minimum order value guardrail does not apply.
+            </div>
+          </div>`;
+        groupEl.appendChild(div);
+      }
+    }
 
     function formatDays(days) {
       return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].filter((_,i)=>days.includes(i)).join(' / ');
@@ -560,12 +621,20 @@
             <div class="route-items" style="margin-bottom:var(--space-sm);">${items.map(i=>`<div>${i.name} ×${i.qty}${i.uom?' '+i.uom:''}</div>`).join('')}</div>
             <div style="display:flex;align-items:center;gap:var(--space-md);">
               <span style="font-size:12px;font-weight:600;color:var(--text-soft);white-space:nowrap;"><i class="ti ti-calendar-event"></i> Delivery</span>
-              <select class="select-input" id="${safeId}" style="max-width:none;flex:1;">${buildDeliveryOptions(sup)}</select>
+              <select class="select-input" id="${safeId}" style="max-width:none;flex:1;"
+                onchange="checkAddOn('${sup}', this.value, this.closest('.route-group'))">${buildDeliveryOptions(sup)}</select>
             </div>
           </div>`;
         }).join('') + (poEntries.length > 1
           ? '<div class="route-summary"><i class="ti ti-git-branch"></i> This will create '+poEntries.length+' purchase orders to '+poEntries.length+' suppliers</div>'
           : '');
+
+        // Run add-on detection for each supplier's default (first) delivery date
+        addOnFlags.clear();
+        poEntries.forEach(([sup]) => {
+          const sel = document.getElementById('del-' + sup.replace(/\W+/g,'-'));
+          if (sel) checkAddOn(sup, sel.value, sel.closest('.route-group'));
+        });
       }
     }
     function onRouteChange(sel) { routeSuppliers[sel.dataset.cat] = sel.value.replace(' — preferred',''); updateRouteSummary(); }
@@ -639,20 +708,23 @@
           return { id:pos[i], sup, v, needsApproval, delay: i*280 };
         });
         done.className = ''; // clear done-ids flex wrap for card layout
-        done.innerHTML = `<div class="po-cards-wrap">${cardData.map(d =>
-          `<div class="po-card-anim">
+        done.innerHTML = `<div class="po-cards-wrap">${cardData.map(d => {
+          const ao = addOnFlags.get(d.sup);
+          return `<div class="po-card-anim">
             <div class="po-card-row">
               <div class="po-init" data-sup="${d.sup}">${supInitials(d.sup)}</div>
               <div class="po-card-info">
                 <div class="po-card-id">${d.id}</div>
                 <div class="po-card-sup">${d.sup} · $${d.v}</div>
+                ${ao ? `<div class="addon-done-tag"><i class="ti ti-plus" style="font-size:11px;"></i>Add-on · ${ao.parentId}</div>` : ''}
               </div>
               <span class="po-card-status sending" id="pcs-${d.delay}">Sending…</span>
             </div>
             <div class="po-progress-track">
               <div class="po-progress-fill" style="animation-delay:${d.delay}ms;"></div>
             </div>
-          </div>`).join('')}</div>`;
+          </div>`;
+        }).join('')}</div>`;
         // Transition each card to its final state after its progress bar finishes
         cardData.forEach(d => {
           setTimeout(() => {
