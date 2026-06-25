@@ -4,8 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Orders — Nomni HQ</title>
-  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
-  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
   <style>
     body { background: var(--surface-soft); }
     .page-body { display: flex; flex-direction: column; padding-block: var(--space-2xl); }
@@ -163,7 +163,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=6" data-active="orders"></script>
+  <script src="../shared/shell.js?v=7" data-active="orders"></script>
   <div class="page-body">
     <div class="napp-canvas" data-measure="wide">
 
@@ -232,7 +232,7 @@
         <div class="table-card">
           <table class="data-table" aria-label="Purchase requisitions">
             <thead><tr><th>Requisition</th><th>Outlet</th><th>Items</th><th class="num">Est. value</th><th>Raised by</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
-            <tbody>
+            <tbody data-stagger>
               <tr>
                 <td class="cell-id">PR-1042</td>
                 <td class="cell-name">Surry Hills</td>
@@ -390,7 +390,7 @@
               <span class="attn-label">Showing all open orders</span>
             </div>
             <thead><tr><th>PO</th><th>Supplier</th><th>Outlet</th><th class="num">Value</th><th>Expected</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
-            <tbody>
+            <tbody data-stagger>
               <tr id="po-5521" onclick="location.href='order-detail.html?id=PO-5521'">
                 <td class="cell-id">PO-5521</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$640</td>
@@ -512,7 +512,7 @@
                 <th><span class="sr-only">Actions</span></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-stagger>
               <tr onclick="location.href='standing-order-detail.html?id=SO-001'">
                 <td><div class="cell-name">Bondi Beach</div><div class="cell-sub">Harbour Meats</div></td>
                 <td><div style="font-size:13px;font-weight:600;color:var(--text);">Every Tuesday</div><div class="cell-sub">Weekly</div></td>
@@ -667,6 +667,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       NomniShell.init('Orders');
       injectNewOrders();
+      NomniShell.initStagger();
       if (location.hash === '#standing') {
         switchTab('standing');
         setTimeout(() => document.querySelector('.order-tabs')?.scrollIntoView({block:'start'}), 100);

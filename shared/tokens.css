@@ -94,10 +94,19 @@
   --radius-xl:    12px;  /* drawers, modals — left corners only on drawers */
   --radius-pill:  999px; /* status pill verdicts only */
 
-  /* ── Elevation (forest-green tinted shadows) ── */
-  --shadow-sm: 0 1px 3px rgba(14,55,39,0.10), 0 1px 2px rgba(14,55,39,0.06);  /* resting cards */
-  --shadow-md: 0 4px 12px rgba(14,55,39,0.12), 0 2px 4px rgba(14,55,39,0.07); /* hover, popovers */
-  --shadow-lg: 0 12px 32px rgba(14,55,39,0.16), 0 4px 8px rgba(14,55,39,0.08);/* drawers, modals, toasts */
+  /* ── Elevation (forest-green tinted shadows — layered) ── */
+  --shadow-sm:
+    0px 0px 0px 1px rgba(14,55,39,0.06),
+    0px 1px 2px -1px rgba(14,55,39,0.06),
+    0px 2px 4px 0px rgba(14,55,39,0.04);   /* resting cards */
+  --shadow-md:
+    0px 0px 0px 1px rgba(14,55,39,0.08),
+    0px 4px 12px rgba(14,55,39,0.10),
+    0px 2px 4px rgba(14,55,39,0.06);       /* hover, popovers */
+  --shadow-lg:
+    0px 0px 0px 1px rgba(14,55,39,0.08),
+    0px 12px 32px rgba(14,55,39,0.14),
+    0px 4px 8px rgba(14,55,39,0.07);       /* drawers, modals, toasts */
 
   /* ── Motion ── */
   --dur-1: 80ms;   /* micro: hover, press */
@@ -114,7 +123,13 @@
   /* ── Typography ── */
   font-family: 'Hanken Grotesk', system-ui, sans-serif;
   font-feature-settings: 'tnum' 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Balanced headings — prevents orphaned single words */
+h1, h2, h3, h4 { text-wrap: balance; }
+p { text-wrap: pretty; }
 
 /* Compact density modifier */
 [data-density="compact"] {

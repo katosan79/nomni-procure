@@ -4,8 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Standing Order — Nomni HQ</title>
-  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
-  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
   <style>
     body { background: var(--surface-soft); }
     .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
@@ -80,7 +80,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=6" data-active="orders"></script>
+  <script src="../shared/shell.js?v=7" data-active="orders"></script>
   <div class="page-body">
     <div class="napp-canvas" data-measure="content">
 
@@ -181,7 +181,7 @@
               <th class="num">Est. cost</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody data-stagger>
             <tr>
               <td><div style="font-weight:600;">Chicken Breast 500g</div><div style="font-size:12px;color:var(--text-soft);">Proteins</div></td>
               <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-soft);">CHK-001</span></td>
@@ -229,7 +229,7 @@
               <th>Notes</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody data-stagger>
             <tr onclick="soToast('Navigating to draft PO for 1 Jul…')">
               <td><div style="font-weight:600;">1 Jul 2026</div><div style="font-size:12px;color:var(--text-soft);">Tuesday · draft in 2 days</div></td>
               <td><span class="occ-badge pending"><i class="ti ti-clock"></i>Draft pending</span></td>
@@ -282,15 +282,28 @@
   <div id="so-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => { NomniShell.init('Orders'); });
+    document.addEventListener('DOMContentLoaded', () => { NomniShell.init('Orders'); NomniShell.initStagger(); });
 
     let isPaused = false;
+
+    function swapPill(pill, newClass, iconClass, label) {
+      const icon = pill.querySelector('i');
+      icon.classList.add('icon-swap', 'swapping');
+      setTimeout(() => {
+        pill.className = 'nb-pill ' + newClass;
+        pill.style.cssText = 'font-size:11px;padding:1px 9px;';
+        icon.className = 'ti ' + iconClass + ' icon-swap';
+        pill.childNodes[1] ? pill.childNodes[1].textContent = label : pill.appendChild(document.createTextNode(label));
+        // force reflow so transition fires on re-add
+        void icon.offsetWidth;
+        icon.classList.remove('swapping');
+      }, 140);
+    }
 
     function pauseSO() {
       isPaused = true;
       document.getElementById('paused-banner').style.display = '';
-      document.querySelector('.nb-pill.ok').className = 'nb-pill warn';
-      document.querySelector('.nb-pill').innerHTML = '<i class="ti ti-pause"></i>Paused';
+      swapPill(document.querySelector('.nb-pill'), 'warn', 'ti-pause', 'Paused');
       document.querySelector('.btn-warn').style.display = 'none';
       soToast('Standing order paused — no orders will generate until resumed');
     }
@@ -298,8 +311,7 @@
     function resumeSO() {
       isPaused = false;
       document.getElementById('paused-banner').style.display = 'none';
-      document.querySelector('.nb-pill').className = 'nb-pill ok';
-      document.querySelector('.nb-pill').innerHTML = '<i class="ti ti-circle-check"></i>Active';
+      swapPill(document.querySelector('.nb-pill'), 'ok', 'ti-circle-check', 'Active');
       document.querySelector('.btn-warn') && (document.querySelector('.btn-warn').style.display = '');
       soToast('Standing order resumed — next run on 1 Jul 2026');
     }

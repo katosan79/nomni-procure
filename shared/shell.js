@@ -911,5 +911,15 @@
     },
 
     html: buildShell,
+
+    /* Stagger row enters on any [data-stagger] tbody in the document.
+       Call after your table rows are in the DOM. */
+    initStagger() {
+      document.querySelectorAll('[data-stagger]').forEach(tbody => {
+        tbody.querySelectorAll('tr').forEach((tr, i) => {
+          tr.style.setProperty('--si', i);
+        });
+      });
+    },
   };
 })();

@@ -4,8 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Order detail — Nomni Procure</title>
-  <link rel="stylesheet" href="../shared/tokens.css?v=3"/>
-  <link rel="stylesheet" href="../shared/components.css?v=3"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
   <style>
     body { background: var(--surface-soft); }
     .page-body { padding-block: var(--space-2xl) var(--space-5xl); }
@@ -183,7 +183,7 @@
   </style>
 </head>
 <body>
-  <script src="../shared/shell.js?v=6" data-active="orders"></script>
+  <script src="../shared/shell.js?v=7" data-active="orders"></script>
 
   <div class="page-body">
     <div class="napp-canvas" data-measure="content">
@@ -282,7 +282,7 @@
   <div id="toast-wrap" style="position:fixed;bottom:var(--space-xl);left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Order detail'));
+    document.addEventListener('DOMContentLoaded', () => { NomniShell.init('Order detail'); NomniShell.initStagger(); });
 
     /* Suppliers connected via Nomni Supply — only these can push a "delivered" status */
     const NOMNI_SUPPLY = new Set(['Pacific Drinks Wholesale']);
@@ -737,7 +737,7 @@
         `<span style="font-size:12px;color:var(--text-soft);">${po.items.length} item${po.items.length!==1?'s':''}</span>`,
         `<div style="overflow-x:auto;"><table class="items-tbl">
           <thead><tr><th>Item</th><th class="num">Qty</th><th>UoM</th><th class="num">Unit price</th>${showRecv?'<th class="num">Received</th><th class="num">Variance</th>':''}<th class="num">Total</th></tr></thead>
-          <tbody>${trows}</tbody>
+          <tbody data-stagger>${trows}</tbody>
           <tfoot><tr class="total-row"><td colspan="${showRecv?4:4}" style="color:var(--text-soft);font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Order total</td>${showRecv?'<td class="num"></td><td class="num"></td>':''}<td class="num">$${total.toFixed(2)}</td></tr></tfoot>
         </table></div>`);
       el.appendChild(card);
