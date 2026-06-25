@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Approvals &amp; workflows — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .back-btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:36px; padding-inline:var(--space-md); border-radius:var(--radius-md); border:1.5px solid var(--border); background:var(--surface); font-size:13px; font-weight:600; color:var(--text-soft); cursor:pointer; font-family:inherit; width:fit-content; text-decoration:none; }
+    .back-btn:hover { border-color:var(--fern); color:var(--text-accent); }
+
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+
+    /* Cards */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head {
+      display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg);
+      padding:var(--space-lg) var(--space-xl);
+      border-bottom:1px solid var(--border);
+    }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+    .card-body  { padding:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xl); }
+    .card-body.no-pad { padding:0; }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--btn-primary-hover); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-ghost:hover { color:var(--text-accent); }
+    .btn-danger-ghost { background:none; border:none; color:var(--status-risk-fg); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-danger-ghost:hover { opacity:0.75; }
+
+    /* Toggle switch */
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; gap:var(--space-xl); }
+    .toggle-info { display:flex; flex-direction:column; gap:3px; }
+    .toggle-label { font-size:14px; font-weight:600; color:var(--text); }
+    .toggle-sub   { font-size:13px; color:var(--text-soft); }
+    .toggle-wrap { position:relative; flex-shrink:0; }
+    .toggle-input { position:absolute; opacity:0; width:0; height:0; }
+    .toggle-track {
+      display:block; width:44px; height:24px; border-radius:var(--radius-pill);
+      background:var(--border); cursor:pointer;
+      transition:background var(--dur-2) var(--ease-standard);
+      position:relative;
+    }
+    .toggle-track::after {
+      content:''; position:absolute; top:3px; left:3px;
+      width:18px; height:18px; border-radius:50%;
+      background:#fff; transition:transform var(--dur-2) var(--ease-standard);
+      box-shadow:0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-input:checked + .toggle-track { background:var(--fern); }
+    .toggle-input:checked + .toggle-track::after { transform:translateX(20px); }
+
+    /* Approval rules table */
+    .rules-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .rules-table thead tr { border-bottom:1px solid var(--border); }
+    .rules-table th { padding:var(--space-sm) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); white-space:nowrap; }
+    .rules-table td { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .rules-table tbody tr:last-child td { border-bottom:none; }
+    .rules-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .rule-range { font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; font-size:13px; }
+    .rule-auto  { font-size:12px; font-weight:600; color:var(--status-ok-fg); background:var(--status-ok-bg); padding:2px 8px; border-radius:var(--radius-pill); display:inline-flex; align-items:center; gap:4px; }
+    .rule-approver { display:flex; align-items:center; gap:var(--space-sm); }
+    .approver-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+    .approver-name  { font-size:13px; font-weight:600; color:var(--text); }
+    .approver-role  { font-size:11px; color:var(--text-soft); }
+    .scope-badge { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; color:var(--text-soft); background:var(--surface-soft); border:1px solid var(--border); padding:2px 8px; border-radius:var(--radius-pill); }
+    .chain-badge { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; }
+    .chain-badge.seq  { color:var(--status-info-fg); }
+    .chain-badge.any  { color:var(--status-warn-fg); }
+    .chain-badge.all  { color:#7A3FD4; }
+    .rule-actions { display:flex; gap:var(--space-xs); }
+
+    /* Add rule row */
+    .add-rule-row { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-lg); border-top:1px solid var(--border); }
+
+    /* Section divider within card */
+    .card-divider { border:none; border-top:1px solid var(--border); margin:0; }
+
+    /* Form inline */
+    .form-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .form-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .form-select, .form-input {
+      height:40px; padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      font-family:inherit; font-size:14px; background:var(--surface); color:var(--text);
+      appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right var(--space-sm) center;
+    }
+    .form-input { background-image:none; }
+    .form-select:focus, .form-input:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .form-row { display:grid; gap:var(--space-lg); }
+    .form-row.cols-2 { grid-template-columns:1fr 1fr; }
+    .form-row.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+    .form-row.cols-4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+
+    /* Category overrides */
+    .override-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .override-row {
+      display:flex; align-items:center; gap:var(--space-md);
+      padding:var(--space-md) var(--space-lg);
+      background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md);
+    }
+    .override-cat { font-size:13px; font-weight:700; color:var(--text); flex:1; display:flex; align-items:center; gap:var(--space-sm); }
+    .override-cat i { font-size:15px; color:var(--text-soft); }
+    .override-rule { font-size:13px; color:var(--text-soft); flex:2; }
+    .override-rule strong { color:var(--text); }
+
+    /* Escalation row */
+    .escalation-row { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; }
+    .escalation-text { font-size:14px; color:var(--text-soft); display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; }
+    .escalation-text strong { color:var(--text); }
+    .inline-input { height:36px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; font-weight:700; color:var(--text); background:var(--surface); width:60px; text-align:center; font-feature-settings:'tnum' 1; }
+    .inline-input:focus { outline:none; border-color:var(--fern); }
+    .inline-select { height:36px; padding-inline:var(--space-sm) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; font-weight:600; color:var(--text); background:var(--surface); appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; cursor:pointer; }
+    .inline-select:focus { outline:none; border-color:var(--fern); }
+
+    /* Standing order defaults */
+    .exec-options { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); }
+    .exec-opt { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; transition:all 0.15s; }
+    .exec-opt:hover { border-color:var(--fern); }
+    .exec-opt.selected { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 6%,transparent); }
+    .exec-opt input[type=radio] { margin-top:2px; accent-color:var(--fern); flex-shrink:0; }
+    .exec-opt-body { display:flex; flex-direction:column; gap:3px; }
+    .exec-opt-title { font-size:14px; font-weight:700; color:var(--text); }
+    .exec-opt-desc  { font-size:13px; color:var(--text-soft); line-height:1.4; }
+
+    /* Save bar */
+    .save-bar {
+      position:fixed; bottom:0; left:0; right:0; z-index:40;
+      background:var(--surface-deep); border-top:1px solid rgba(255,255,255,0.1);
+      display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg);
+      padding:var(--space-md) var(--space-2xl);
+      transform:translateY(100%);
+      transition:transform var(--dur-3) var(--ease-standard);
+    }
+    .save-bar.visible { transform:translateY(0); }
+    .save-bar-msg { font-size:14px; font-weight:600; color:var(--cream); display:flex; align-items:center; gap:var(--space-sm); }
+    .save-bar-msg i { color:var(--sun); font-size:16px; }
+    .save-bar-actions { display:flex; align-items:center; gap:var(--space-sm); }
+    .btn-discard { background:none; border:1.5px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; height:36px; padding-inline:var(--space-md); border-radius:var(--radius-md); cursor:pointer; font-family:inherit; }
+    .btn-discard:hover { border-color:rgba(255,255,255,0.4); color:#fff; }
+    .btn-save { background:var(--spring); color:var(--seaweed); border:none; font-size:13px; font-weight:700; height:36px; padding-inline:var(--space-lg); border-radius:var(--radius-md); cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:var(--space-xs); }
+    .btn-save:hover { filter:brightness(0.92); }
+    .btn-save i { font-size:15px; }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <a class="back-btn" href="settings.html"><i class="ti ti-arrow-left"></i>Settings</a>
+
+      <div>
+        <h1 class="page-title">Approvals &amp; workflows</h1>
+        <p class="page-desc">Define when approvals are required, who approves them, and what happens if they're not actioned in time.</p>
+      </div>
+
+      <!-- ── PO Approval rules ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-git-branch"></i>Purchase order approval rules</div>
+            <div class="card-desc">Rules are applied in order — first matching rule wins. All orders over the last tier always require approval.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-md);">
+            <div class="toggle-row" style="gap:var(--space-sm);">
+              <span style="font-size:13px;font-weight:600;color:var(--text-soft);">Require approval</span>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="approval-on" class="toggle-input" checked onchange="markDirty()">
+                <label for="approval-on" class="toggle-track"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body no-pad">
+          <table class="rules-table" data-stagger>
+            <thead>
+              <tr>
+                <th>Order value</th>
+                <th>Approver</th>
+                <th>Scope</th>
+                <th>Chain type</th>
+                <th><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody data-stagger id="po-rules-tbody">
+              <tr>
+                <td><span class="rule-range">$0 – $499</span></td>
+                <td><span class="rule-auto"><i class="ti ti-check"></i>Auto-approved</span></td>
+                <td><span class="scope-badge"><i class="ti ti-world"></i>All outlets</span></td>
+                <td><span style="font-size:12px;color:var(--text-soft);">—</span></td>
+                <td class="rule-actions">
+                  <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="rule-range">$500 – $1,999</span></td>
+                <td>
+                  <div class="rule-approver">
+                    <div class="approver-avatar" style="background:var(--ordering);">OM</div>
+                    <div>
+                      <div class="approver-name">Outlet Manager</div>
+                      <div class="approver-role">Per outlet</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="scope-badge"><i class="ti ti-building-store"></i>Outlet level</span></td>
+                <td><span class="chain-badge seq"><i class="ti ti-arrow-right"></i>Sequential</span></td>
+                <td class="rule-actions">
+                  <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+                  <button class="btn-danger-ghost" onclick="deleteRule(this)"><i class="ti ti-trash"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="rule-range">$2,000 – $9,999</span></td>
+                <td>
+                  <div class="rule-approver">
+                    <div class="approver-avatar" style="background:var(--procurement);">HQ</div>
+                    <div>
+                      <div class="approver-name">HQ Administrator</div>
+                      <div class="approver-role">Organisation-wide</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="scope-badge"><i class="ti ti-building"></i>HQ level</span></td>
+                <td><span class="chain-badge seq"><i class="ti ti-arrow-right"></i>Sequential</span></td>
+                <td class="rule-actions">
+                  <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+                  <button class="btn-danger-ghost" onclick="deleteRule(this)"><i class="ti ti-trash"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="rule-range">$10,000+</span></td>
+                <td>
+                  <div class="rule-approver" style="flex-direction:column;align-items:flex-start;gap:4px;">
+                    <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                      <div class="approver-avatar" style="background:var(--procurement);">HQ</div>
+                      <div>
+                        <div class="approver-name">HQ Administrator</div>
+                        <div class="approver-role">Organisation-wide</div>
+                      </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                      <div class="approver-avatar" style="background:var(--seaweed);font-size:10px;">CEO</div>
+                      <div>
+                        <div class="approver-name">Keith Tan</div>
+                        <div class="approver-role">Owner</div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="scope-badge"><i class="ti ti-building"></i>HQ level</span></td>
+                <td><span class="chain-badge all"><i class="ti ti-users"></i>All must approve</span></td>
+                <td class="rule-actions">
+                  <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+                  <button class="btn-danger-ghost" onclick="deleteRule(this)"><i class="ti ti-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="add-rule-row">
+            <button class="btn btn-outline btn-sm" onclick="showAddRule()"><i class="ti ti-plus"></i>Add rule</button>
+            <span style="font-size:12px;color:var(--text-soft);">Rules are evaluated top-to-bottom — drag to reorder</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Requisition approval ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-clipboard-list"></i>Requisition routing</div>
+            <div class="card-desc">Who reviews outlet requisitions before they are routed to suppliers as POs.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Require HQ review before routing</div>
+              <div class="toggle-sub">All requisitions pass through HQ before becoming purchase orders. If off, outlet managers route directly.</div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="hq-review" class="toggle-input" checked onchange="markDirty()">
+              <label for="hq-review" class="toggle-track"></label>
+            </div>
+          </div>
+
+          <hr class="card-divider"/>
+
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Review window</label>
+              <select class="form-select" onchange="markDirty()">
+                <option>24 hours</option>
+                <option selected>48 hours</option>
+                <option>72 hours</option>
+                <option>Custom…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">If unreviewed after window</label>
+              <select class="form-select" onchange="markDirty()">
+                <option>Escalate to owner</option>
+                <option selected>Auto-approve and route</option>
+                <option>Block and notify</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="card-divider"/>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Agent-drafted requisitions skip manual review</div>
+              <div class="toggle-sub">When Otto (Ordering Agent) drafts a requisition within par limits, it routes directly without waiting for HQ review.</div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="agent-skip" class="toggle-input" onchange="markDirty()">
+              <label for="agent-skip" class="toggle-track"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Category overrides ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-tag"></i>Category overrides</div>
+            <div class="card-desc">Apply stricter approval rules to specific categories regardless of order value.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="awToast('Add category override…')"><i class="ti ti-plus"></i>Add override</button>
+        </div>
+        <div class="card-body">
+          <div class="override-list">
+            <div class="override-row">
+              <div class="override-cat"><i class="ti ti-meat"></i>Proteins</div>
+              <div class="override-rule">Always requires <strong>Outlet Manager</strong> approval — regardless of value</div>
+              <button class="btn-ghost btn-sm" onclick="awToast('Editing Proteins override…')"><i class="ti ti-pencil"></i>Edit</button>
+              <button class="btn-danger-ghost" onclick="this.closest('.override-row').remove(); markDirty()"><i class="ti ti-trash"></i></button>
+            </div>
+            <div class="override-row">
+              <div class="override-cat"><i class="ti ti-fish"></i>Seafood</div>
+              <div class="override-rule">Always requires <strong>HQ Administrator</strong> approval — regardless of value</div>
+              <button class="btn-ghost btn-sm" onclick="awToast('Editing Seafood override…')"><i class="ti ti-pencil"></i>Edit</button>
+              <button class="btn-danger-ghost" onclick="this.closest('.override-row').remove(); markDirty()"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Standing order execution defaults ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-repeat"></i>Standing order execution defaults</div>
+            <div class="card-desc">Default behaviour when a standing order generates a new purchase order. Can be overridden per standing order.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="exec-options" id="exec-opts">
+            <div class="exec-opt selected" onclick="selectExec(this)">
+              <input type="radio" name="exec-default" checked>
+              <div class="exec-opt-body">
+                <div class="exec-opt-title"><i class="ti ti-eye" style="font-size:15px;"></i> Auto-draft</div>
+                <div class="exec-opt-desc">A draft PO is created and held for review before being sent to the supplier. Recommended for most outlets.</div>
+              </div>
+            </div>
+            <div class="exec-opt" onclick="selectExec(this)">
+              <input type="radio" name="exec-default">
+              <div class="exec-opt-body">
+                <div class="exec-opt-title"><i class="ti ti-send" style="font-size:15px;"></i> Auto-submit</div>
+                <div class="exec-opt-desc">PO is generated and sent to the supplier automatically. Only use when approval rules already gate high-value orders.</div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="card-divider"/>
+
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Default review window</label>
+              <select class="form-select" onchange="markDirty()">
+                <option>12 hours</option>
+                <option>24 hours</option>
+                <option selected>48 hours</option>
+                <option>72 hours</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Auto-submit threshold</label>
+              <div style="position:relative;">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:600;color:var(--text-soft);">$</span>
+                <input type="number" class="form-input" value="500" style="padding-left:28px;font-feature-settings:'tnum' 1;" onchange="markDirty()" placeholder="0">
+              </div>
+              <span style="font-size:12px;color:var(--text-soft);margin-top:3px;">Standing order POs under this value skip the review window and submit automatically</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Escalation ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-alarm"></i>Escalation</div>
+            <div class="card-desc">What happens when an approval is not actioned within the review window.</div>
+          </div>
+        </div>
+        <div class="card-body" style="gap:var(--space-lg);">
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Enable escalation</div>
+              <div class="toggle-sub">Automatically escalate overdue approvals to the next approver in the chain.</div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="escalation-on" class="toggle-input" checked onchange="markDirty(); toggleEscalation(this.checked)">
+              <label for="escalation-on" class="toggle-track"></label>
+            </div>
+          </div>
+
+          <div id="escalation-detail" style="display:flex;flex-direction:column;gap:var(--space-lg);">
+            <hr class="card-divider"/>
+            <div class="escalation-row">
+              <span class="escalation-text">
+                If a PO approval is not actioned within
+                <input type="number" class="inline-input" value="24" onchange="markDirty()"> hours,
+                escalate to
+                <select class="inline-select" onchange="markDirty()">
+                  <option>HQ Administrator</option>
+                  <option>Owner</option>
+                  <option>Group Manager</option>
+                </select>
+              </span>
+            </div>
+            <div class="escalation-row">
+              <span class="escalation-text">
+                If still unresolved after another
+                <input type="number" class="inline-input" value="24" onchange="markDirty()"> hours,
+                <select class="inline-select" onchange="markDirty()">
+                  <option selected>Auto-approve</option>
+                  <option>Block order</option>
+                  <option>Notify owner</option>
+                </select>
+              </span>
+            </div>
+
+            <hr class="card-divider"/>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Notify approver by email</div>
+                <div class="toggle-sub">Send an email when a PO is waiting for their approval, and again 4 hours before escalation.</div>
+              </div>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="email-notify" class="toggle-input" checked onchange="markDirty()">
+                <label for="email-notify" class="toggle-track"></label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- bottom padding for save bar -->
+      <div style="height:40px;"></div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Save bar -->
+<div class="save-bar" id="save-bar">
+  <div class="save-bar-msg"><i class="ti ti-alert-circle"></i>You have unsaved changes</div>
+  <div class="save-bar-actions">
+    <button class="btn-discard" onclick="discardChanges()">Discard</button>
+    <button class="btn-save" id="save-btn" onclick="saveChanges()"><i class="ti ti-check"></i>Save changes</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="aw-toast-wrap" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=7" data-active="settings"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Approvals & workflows');
+    NomniShell.initStagger();
+  });
+
+  let dirty = false;
+
+  function markDirty() {
+    if (!dirty) {
+      dirty = true;
+      document.getElementById('save-bar').classList.add('visible');
+    }
+  }
+
+  function saveChanges() {
+    const btn = document.getElementById('save-btn');
+    btn.innerHTML = `<span class="success-check-wrap" style="display:inline-flex;align-items:center;gap:6px;">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <path class="success-check-path" d="M4 9l3.5 3.5L14 6" stroke="var(--seaweed)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Saved!
+    </span>`;
+    setTimeout(() => {
+      dirty = false;
+      document.getElementById('save-bar').classList.remove('visible');
+      btn.innerHTML = '<i class="ti ti-check"></i>Save changes';
+      awToast('Approval settings saved');
+    }, 1200);
+  }
+
+  function discardChanges() {
+    dirty = false;
+    document.getElementById('save-bar').classList.remove('visible');
+    location.reload();
+  }
+
+  function selectExec(opt) {
+    document.querySelectorAll('.exec-opt').forEach(o => { o.classList.remove('selected'); o.querySelector('input').checked = false; });
+    opt.classList.add('selected');
+    opt.querySelector('input').checked = true;
+    markDirty();
+  }
+
+  function toggleEscalation(on) {
+    document.getElementById('escalation-detail').style.display = on ? 'flex' : 'none';
+  }
+
+  function editRule(btn) {
+    awToast('Rule editor coming soon — edit inline support in progress');
+  }
+
+  function deleteRule(btn) {
+    const row = btn.closest('tr');
+    row.style.transition = 'opacity 200ms, transform 200ms';
+    row.style.opacity = '0';
+    row.style.transform = 'translateX(8px)';
+    setTimeout(() => { row.remove(); markDirty(); }, 220);
+  }
+
+  function showAddRule() {
+    awToast('Add rule — configure value range, approver, and scope');
+  }
+
+  function awToast(msg) {
+    const wrap = document.getElementById('aw-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;white-space:nowrap;';
+    t.innerHTML = `<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>${msg}`;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>
