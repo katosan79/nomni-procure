@@ -77,7 +77,8 @@ The persistent left-side shell nav renders the following items:
 | Inventory (+ sub-nav) | `inventory.html` (Operations), `inventory-analytics.html`, `inventory-governance.html`, `count-session-detail.html`, `count-sheet.html`, `spot-count.html`, `new-count-session.html` | Ordering roles |
 | Market lists | `market-list.html`, `market-list-detail.html`, `market-list-assign.html`, `market-list-new.html` | HQ roles |
 | Recipes | `recipes.html`, `recipe-detail.html`, `recipe-detail-finished.html`, `recipe-detail-prep.html`, `recipe-detail-production.html`, `new-recipe.html`, `import-recipes.html`, `outlet-recipes.html` | All roles |
-| POS mapping | `pos-mapping.html` | HQ roles |
+| POS mapping — Configuration | `pos-mapping.html` | HQ roles |
+| POS mapping — Monitoring | `pos-mapping-monitoring.html` | HQ roles |
 | Reporting | `reporting.html` | HQ Admin, HQ Approver, Finance, Outlet Manager (view) |
 | Outlets | `outlets.html`, `outlet-detail.html`, `outlet-group-detail.html` | HQ Admin |
 | Suppliers | `suppliers.html`, `supplier-detail.html` | HQ Admin |
@@ -88,7 +89,7 @@ The persistent left-side shell nav renders the following items:
 ### URL Structure (prototype filenames)
 
 ```
-/screens/                          (44 screens total)
+/screens/                          (45 screens total)
   login.html
   dashboard.html
   orders.html
@@ -117,7 +118,8 @@ The persistent left-side shell nav renders the following items:
   new-recipe.html
   import-recipes.html
   outlet-recipes.html
-  pos-mapping.html
+  pos-mapping.html                   ← Configuration (mapping table, drawers, category chart)
+  pos-mapping-monitoring.html        ← Monitoring (health bar, attention cards, outlet table + drawer)
   reporting.html
   outlets.html
   outlet-detail.html
@@ -920,43 +922,86 @@ CTA: "View heat map". Secondary: "Dismiss".
 
 ---
 
-### 3.9 POS Mapping — `pos-mapping.html`
+### 3.9 POS Mapping — `pos-mapping.html` + `pos-mapping-monitoring.html`
 
-**Purpose:** Map internal recipe items to POS menu codes across all outlets.
+**Purpose:** Map internal recipe/inventory items to POS PLU codes across all outlets; monitor sync health and coverage.
 
-**Screens:** One list page with push dialogs; outlet read-only banner.
+**Screens:** Two screens with distinct purposes — Configuration and Monitoring. The sub-nav inside POS Mapping links between them.
 
-**Health monitor strip (HQ only):** Mapped 312, Partial 14, Unmapped 6, Stale >90d 3
+---
 
-**Filter bar:** Search, Brand, Menu category, Outlet
+#### 3.9.1 Configuration — `pos-mapping.html`
 
-**Table columns:** Item name, Menu category, POS code (IBM Plex Mono), Variant, Price, Assigned outlets, Mapped status (Mapped / Partial / Unmapped)
+**Purpose:** Map each POS menu item (PLU) to a recipe, sub-recipe, or inventory item. Scale: ~547 POS items for a 12-outlet chain.
 
-**Mapped status pills:**
-- Mapped (ok — green)
-- Partial (warn — amber)
-- Unmapped (risk — red)
-- Stale >90d (implicit risk — surfaced in health strip)
+**Layout:** Two-column grid — 320px sticky left panel + scrollable right column.
 
-**Push actions:**
-- Per-row Push button → overwrite confirm dialog (requires checkbox acknowledgment)
-- Push to all → overwrite confirm for full mapping set (124 outlets)
+**Left panel (sticky):**
+- 2×2 KPI strip: Total POS Items (547), Mapped (468 · 85%), Unmapped (52), Stale/Partial (27)
+- Category coverage horizontal bar chart — one row per menu category (Beverages, Breakfast, Mains, Desserts, Sides, Salads, Specials, Other). Each row shows category name, bar, and % coverage. Colour-coded: ≥90% = green, 75–89% = amber, <75% = red. Category rows are **clickable** — clicking filters the right-column table to that category. Active category highlighted with `--text-accent` tinted background.
 
-**Sample data:**
-| Item | POS code(s) | Variant | Status |
-|---|---|---|---|
-| Avocado Toast v3 | BRG-001 / BRG-001-L | Regular / Large | Mapped |
-| Classic Cheeseburger | BRG-010 / BRG-010-D | Single / Double | Partial |
-| Flat White | BRG-050 / BRG-050-L | Regular / Large | Mapped |
-| Tiramisu | PST-020 | — | Unmapped |
-| Caesar Salad | PST-030 | — | Mapped |
+**Right column:**
+- Filter tabs: All 547 · Unmapped 52 · Partial 16 · Mapped 468 · Ignored 11
+- Category filter and status filter are **combined** — both apply simultaneously
+- Table columns: Item name, PLU code (IBM Plex Mono), Menu category, Mapped status pill, action
+- Every row is clickable → opens the **mapping detail drawer**
 
-**Activity timeline:** Recent mapping change log.
+**Mapping detail drawer:**
+- Fields: Item name, PLU, category, last seen in sales
+- "Maps to" target: controlled dropdown (not free-text); type toggle switches between Recipe / Internal Item lists
+- Modifier groups: each modifier row uses dropdowns for ingredient and recipe fields
+- Outlet Overrides section: same dropdown treatment — target type selector + controlled target dropdown
+- Business rule: all mapping targets must be selected from controlled lists; free-text is not permitted
+
+**Mapped status pills:** Mapped (ok) · Partial (warn) · Unmapped (risk) · Ignored (muted)
+
+**Agent touchpoints:**
+- Sloan appears as an agent card when new unmapped POS items are detected, proposes matches with confidence score (e.g. "Tiramisu" → "Tiramisu (Dessert)" at 18 outlets, 96% confidence); actions: Approve mapping, See alternatives, Dismiss
 
 **Outlet read-only banner:** "Managed by HQ — POS mappings are set centrally and can't be edited here."
 
+---
+
+#### 3.9.2 Monitoring — `pos-mapping-monitoring.html`
+
+**Purpose:** Operational health check — sync status, coverage gaps, and COGS impact across all outlets. Read-only; no push/config actions.
+
+**Page modes:** HQ View (default, shows all 12 outlets) · Standalone (single outlet connection table).
+
+**Section 1 — System Health Bar (always visible):**
+Single-line status summary: dot + "N outlets need attention · X of Y fully synced and mapped" + coloured chips (e.g. "2 dark", "2 mapping gaps"). Shows green/all-clear when no issues.
+
+**Section 2 — Outlets Requiring Attention (HQ only):**
+Cards sorted by severity: dark outlets (no POS) → sync failures → mapping gaps. Each card shows:
+- 4px severity bar (red for dark, amber for gaps)
+- Icon, outlet name, issue description
+- **COGS impact line** — explicitly states the downstream consequence on inventory accuracy
+- CTA linking to the relevant fix location (`outlet-detail.html` for POS config, `pos-mapping.html` for mapping gaps)
+
+Current issues modelled: Brisbane CBD (dark), Gold Coast (dark), Surry Hills (30/48 mapped, 63%), St Kilda (24/48 mapped, 50%).
+
+**Section 3 — All Outlets table (HQ only):**
+Compact 6-column read-only table: Outlet · Group · POS System · Last Sync · Coverage (progress bar + X/48) · Status pill (Full / Partial / Dark). No push buttons. Every row is clickable → opens **outlet detail drawer**.
+
+**Outlet detail drawer (from table row click):**
+Width 460px, slides in from right. Content varies by outlet state:
+
+*Connected outlet:*
+- POS Connection KV: System, Connection type, Connection ID, Status pill, Last sync, Transactions today
+- **14-day daily transaction bar chart** (inline SVG): bars with weekend/weekday opacity encoding, trend polyline, avg reference line, today highlighted
+- Mapping Coverage: progress bar + % + status banner (green if full, amber if partial)
+- Recent Sync History: last 4 entries (dot + monospace timestamp + note)
+- Footer: "Outlet Settings →" (links to `outlet-detail.html`) + "View mapping →" (links to `pos-mapping.html`)
+
+*Dark outlet (no POS):*
+- Red "No POS configured" banner with COGS impact explanation
+- 0% coverage section
+- Footer: "Configure in Outlet Settings →" (links to `outlet-detail.html`) — primary button; note that POS config lives in outlet settings, not here
+
+**Business rule:** POS connection configuration lives exclusively in `outlet-detail.html`. The monitoring drawer is read-only for all config.
+
 **Agent touchpoints:**
-- Sloan surfaces new POS items that arrive unmapped and suggests matches with confidence score (e.g. "Tiramisu" → "Tiramisu (Dessert)" at 18 outlets, 96% confidence); actions: Approve mapping, See alternatives, Dismiss
+- Sloan agent card appears above the attention section when new unmapped items are detected across outlets (same card as in Configuration)
 
 ---
 
