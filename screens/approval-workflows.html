@@ -140,24 +140,16 @@
     .exec-opt-title { font-size:14px; font-weight:700; color:var(--text); }
     .exec-opt-desc  { font-size:13px; color:var(--text-soft); line-height:1.4; }
 
-    /* Save bar */
-    .save-bar {
-      position:fixed; bottom:0; left:0; right:0; z-index:40;
-      background:var(--surface-deep); border-top:1px solid rgba(255,255,255,0.1);
-      display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg);
-      padding:var(--space-md) var(--space-2xl);
-      transform:translateY(100%);
-      transition:transform var(--dur-3) var(--ease-standard);
+    /* Per-card save indicator */
+    .card-save-status {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:12px; font-weight:600; white-space:nowrap;
+      opacity:0;
+      transition:opacity var(--dur-2) var(--ease-standard);
     }
-    .save-bar.visible { transform:translateY(0); }
-    .save-bar-msg { font-size:14px; font-weight:600; color:var(--cream); display:flex; align-items:center; gap:var(--space-sm); }
-    .save-bar-msg i { color:var(--sun); font-size:16px; }
-    .save-bar-actions { display:flex; align-items:center; gap:var(--space-sm); }
-    .btn-discard { background:none; border:1.5px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; height:36px; padding-inline:var(--space-md); border-radius:var(--radius-md); cursor:pointer; font-family:inherit; }
-    .btn-discard:hover { border-color:rgba(255,255,255,0.4); color:#fff; }
-    .btn-save { background:var(--spring); color:var(--seaweed); border:none; font-size:13px; font-weight:700; height:36px; padding-inline:var(--space-lg); border-radius:var(--radius-md); cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:var(--space-xs); }
-    .btn-save:hover { filter:brightness(0.92); }
-    .btn-save i { font-size:15px; }
+    .card-save-status.saving { opacity:1; color:var(--text-soft); }
+    .card-save-status.saved  { opacity:1; color:var(--status-ok-fg); }
+    .card-save-status.fading { opacity:0; }
   </style>
 </head>
 <body>
@@ -183,7 +175,7 @@
             <div class="toggle-row" style="gap:var(--space-sm);">
               <span style="font-size:13px;font-weight:600;color:var(--text-soft);">Require approval</span>
               <div class="toggle-wrap">
-                <input type="checkbox" id="approval-on" class="toggle-input" checked onchange="markDirty()">
+                <input type="checkbox" id="approval-on" class="toggle-input" checked onchange="saveSection(this.closest('.card'))">
                 <label for="approval-on" class="toggle-track"></label>
               </div>
             </div>
@@ -298,7 +290,7 @@
               <div class="toggle-sub">All requisitions pass through HQ before becoming purchase orders. If off, outlet managers route directly.</div>
             </div>
             <div class="toggle-wrap">
-              <input type="checkbox" id="hq-review" class="toggle-input" checked onchange="markDirty()">
+              <input type="checkbox" id="hq-review" class="toggle-input" checked onchange="saveSection(this.closest('.card'))">
               <label for="hq-review" class="toggle-track"></label>
             </div>
           </div>
@@ -308,7 +300,7 @@
           <div class="form-row cols-2">
             <div class="form-group">
               <label class="form-label">Review window</label>
-              <select class="form-select" onchange="markDirty()">
+              <select class="form-select" onchange="saveSection(this.closest('.card'))">
                 <option>24 hours</option>
                 <option selected>48 hours</option>
                 <option>72 hours</option>
@@ -317,7 +309,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">If unreviewed after window</label>
-              <select class="form-select" onchange="markDirty()">
+              <select class="form-select" onchange="saveSection(this.closest('.card'))">
                 <option>Escalate to owner</option>
                 <option selected>Auto-approve and route</option>
                 <option>Block and notify</option>
@@ -333,7 +325,7 @@
               <div class="toggle-sub">When Otto (Ordering Agent) drafts a requisition within par limits, it routes directly without waiting for HQ review.</div>
             </div>
             <div class="toggle-wrap">
-              <input type="checkbox" id="agent-skip" class="toggle-input" onchange="markDirty()">
+              <input type="checkbox" id="agent-skip" class="toggle-input" onchange="saveSection(this.closest('.card'))">
               <label for="agent-skip" class="toggle-track"></label>
             </div>
           </div>
@@ -355,13 +347,13 @@
               <div class="override-cat"><i class="ti ti-meat"></i>Proteins</div>
               <div class="override-rule">Always requires <strong>Outlet Manager</strong> approval — regardless of value</div>
               <button class="btn-ghost btn-sm" onclick="awToast('Editing Proteins override…')"><i class="ti ti-pencil"></i>Edit</button>
-              <button class="btn-danger-ghost" onclick="this.closest('.override-row').remove(); markDirty()"><i class="ti ti-trash"></i></button>
+              <button class="btn-danger-ghost" onclick="const _r=this.closest('.override-row'),_c=this.closest('.card');_r.remove();saveSection(_c)"><i class="ti ti-trash"></i></button>
             </div>
             <div class="override-row">
               <div class="override-cat"><i class="ti ti-fish"></i>Seafood</div>
               <div class="override-rule">Always requires <strong>HQ Administrator</strong> approval — regardless of value</div>
               <button class="btn-ghost btn-sm" onclick="awToast('Editing Seafood override…')"><i class="ti ti-pencil"></i>Edit</button>
-              <button class="btn-danger-ghost" onclick="this.closest('.override-row').remove(); markDirty()"><i class="ti ti-trash"></i></button>
+              <button class="btn-danger-ghost" onclick="const _r=this.closest('.override-row'),_c=this.closest('.card');_r.remove();saveSection(_c)"><i class="ti ti-trash"></i></button>
             </div>
           </div>
         </div>
@@ -398,7 +390,7 @@
           <div class="form-row cols-2">
             <div class="form-group">
               <label class="form-label">Default review window</label>
-              <select class="form-select" onchange="markDirty()">
+              <select class="form-select" onchange="saveSection(this.closest('.card'))">
                 <option>12 hours</option>
                 <option>24 hours</option>
                 <option selected>48 hours</option>
@@ -409,7 +401,7 @@
               <label class="form-label">Auto-submit threshold</label>
               <div style="position:relative;">
                 <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:600;color:var(--text-soft);">$</span>
-                <input type="number" class="form-input" value="500" style="padding-left:28px;font-feature-settings:'tnum' 1;" onchange="markDirty()" placeholder="0">
+                <input type="number" class="form-input" value="500" style="padding-left:28px;font-feature-settings:'tnum' 1;" onchange="saveSection(this.closest('.card'))" placeholder="0">
               </div>
               <span style="font-size:12px;color:var(--text-soft);margin-top:3px;">Standing order POs under this value skip the review window and submit automatically</span>
             </div>
@@ -433,7 +425,7 @@
               <div class="toggle-sub">Automatically escalate overdue approvals to the next approver in the chain.</div>
             </div>
             <div class="toggle-wrap">
-              <input type="checkbox" id="escalation-on" class="toggle-input" checked onchange="markDirty(); toggleEscalation(this.checked)">
+              <input type="checkbox" id="escalation-on" class="toggle-input" checked onchange="toggleEscalation(this.checked)">
               <label for="escalation-on" class="toggle-track"></label>
             </div>
           </div>
@@ -443,9 +435,9 @@
             <div class="escalation-row">
               <span class="escalation-text">
                 If a PO approval is not actioned within
-                <input type="number" class="inline-input" value="24" onchange="markDirty()"> hours,
+                <input type="number" class="inline-input" value="24" onchange="saveSection(this.closest('.card'))"> hours,
                 escalate to
-                <select class="inline-select" onchange="markDirty()">
+                <select class="inline-select" onchange="saveSection(this.closest('.card'))">
                   <option>HQ Administrator</option>
                   <option>Owner</option>
                   <option>Group Manager</option>
@@ -455,8 +447,8 @@
             <div class="escalation-row">
               <span class="escalation-text">
                 If still unresolved after another
-                <input type="number" class="inline-input" value="24" onchange="markDirty()"> hours,
-                <select class="inline-select" onchange="markDirty()">
+                <input type="number" class="inline-input" value="24" onchange="saveSection(this.closest('.card'))"> hours,
+                <select class="inline-select" onchange="saveSection(this.closest('.card'))">
                   <option selected>Auto-approve</option>
                   <option>Block order</option>
                   <option>Notify owner</option>
@@ -472,7 +464,7 @@
                 <div class="toggle-sub">Send an email when a PO is waiting for their approval, and again 4 hours before escalation.</div>
               </div>
               <div class="toggle-wrap">
-                <input type="checkbox" id="email-notify" class="toggle-input" checked onchange="markDirty()">
+                <input type="checkbox" id="email-notify" class="toggle-input" checked onchange="saveSection(this.closest('.card'))">
                 <label for="email-notify" class="toggle-track"></label>
               </div>
             </div>
@@ -481,24 +473,14 @@
         </div>
       </div>
 
-      <!-- bottom padding for save bar -->
-      <div style="height:40px;"></div>
+      <div style="height:24px;"></div>
 
     </div>
   </div>
 </main>
 
-<!-- Save bar -->
-<div class="save-bar" id="save-bar">
-  <div class="save-bar-msg"><i class="ti ti-alert-circle"></i>You have unsaved changes</div>
-  <div class="save-bar-actions">
-    <button class="btn-discard" onclick="discardChanges()">Discard</button>
-    <button class="btn-save" id="save-btn" onclick="saveChanges()"><i class="ti ti-check"></i>Save changes</button>
-  </div>
-</div>
-
 <!-- Toast -->
-<div id="aw-toast-wrap" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+<div id="aw-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
 
 <script src="../shared/shell.js?v=7" data-active="settings"></script>
 <script>
@@ -507,46 +489,58 @@
     NomniShell.initStagger();
   });
 
-  let dirty = false;
+  /* ── Per-section auto-save ── */
+  const debounceTimers = new WeakMap();
 
-  function markDirty() {
-    if (!dirty) {
-      dirty = true;
-      document.getElementById('save-bar').classList.add('visible');
+  function saveSection(card, delay) {
+    if (!card) return;
+    if (delay) {
+      clearTimeout(debounceTimers.get(card));
+      debounceTimers.set(card, setTimeout(() => saveSection(card), delay));
+      return;
     }
+    const head = card.querySelector('.card-head');
+    if (!head) return;
+
+    let ind = head.querySelector('.card-save-status');
+    if (!ind) {
+      ind = document.createElement('span');
+      ind.className = 'card-save-status';
+      head.appendChild(ind);
+    }
+
+    // Cancel any pending fade-out
+    clearTimeout(ind._fadeTimer);
+    clearTimeout(ind._doneTimer);
+
+    ind.className = 'card-save-status saving';
+    ind.innerHTML = '<i class="ti ti-loader-2" style="font-size:13px;animation:spin 600ms linear infinite;"></i>Saving…';
+
+    ind._doneTimer = setTimeout(() => {
+      ind.className = 'card-save-status saved';
+      ind.innerHTML = '<i class="ti ti-circle-check" style="font-size:13px;"></i>Saved';
+
+      ind._fadeTimer = setTimeout(() => {
+        ind.classList.add('fading');
+        setTimeout(() => { ind.className = 'card-save-status'; ind.innerHTML = ''; }, 220);
+      }, 2000);
+    }, 600);
   }
 
-  function saveChanges() {
-    const btn = document.getElementById('save-btn');
-    btn.innerHTML = `<span class="success-check-wrap" style="display:inline-flex;align-items:center;gap:6px;">
-      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-        <path class="success-check-path" d="M4 9l3.5 3.5L14 6" stroke="var(--seaweed)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Saved!
-    </span>`;
-    setTimeout(() => {
-      dirty = false;
-      document.getElementById('save-bar').classList.remove('visible');
-      btn.innerHTML = '<i class="ti ti-check"></i>Save changes';
-      awToast('Approval settings saved');
-    }, 1200);
-  }
-
-  function discardChanges() {
-    dirty = false;
-    document.getElementById('save-bar').classList.remove('visible');
-    location.reload();
-  }
+  const styleEl = document.createElement('style');
+  styleEl.textContent = '@keyframes spin { to { transform:rotate(360deg); } }';
+  document.head.appendChild(styleEl);
 
   function selectExec(opt) {
     document.querySelectorAll('.exec-opt').forEach(o => { o.classList.remove('selected'); o.querySelector('input').checked = false; });
     opt.classList.add('selected');
     opt.querySelector('input').checked = true;
-    markDirty();
+    saveSection(opt.closest('.card'));
   }
 
   function toggleEscalation(on) {
     document.getElementById('escalation-detail').style.display = on ? 'flex' : 'none';
+    saveSection(document.getElementById('escalation-on').closest('.card'));
   }
 
   function editRule(btn) {
@@ -555,10 +549,11 @@
 
   function deleteRule(btn) {
     const row = btn.closest('tr');
+    const card = btn.closest('.card');
     row.style.transition = 'opacity 200ms, transform 200ms';
     row.style.opacity = '0';
     row.style.transform = 'translateX(8px)';
-    setTimeout(() => { row.remove(); markDirty(); }, 220);
+    setTimeout(() => { row.remove(); saveSection(card); }, 220);
   }
 
   function showAddRule() {
@@ -569,7 +564,7 @@
     const wrap = document.getElementById('aw-toast-wrap');
     const t = document.createElement('div');
     t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;white-space:nowrap;';
-    t.innerHTML = `<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>${msg}`;
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
     wrap.appendChild(t);
     setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
   }
