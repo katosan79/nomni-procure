@@ -1,0 +1,56 @@
+---
+title: Inventory & Stock Counts
+description: Track stock levels, run counts, and understand variance.
+---
+
+The Inventory module has three tabs that cover different aspects of stock management:
+
+| Tab | Purpose |
+|---|---|
+| **Operations** | Current stock levels, adjustments, production runs |
+| **Analytics** | Variance heatmaps, theoretical vs actual consumption, agent insights |
+| **Governance** | Count templates, par overrides, HQ-wide compliance tracking |
+
+## Running a stock count
+
+<Steps>
+  <Step title="Create a count session">
+    Go to **Inventory → New count session**. Select the outlet, choose a count template (Full count / Spot count / Category count), and set the date.
+  </Step>
+  <Step title="Fill in the count sheet">
+    The count sheet lists all items with their last-known quantity. Count staff enter the actual quantity they find. Items can be counted by item name or by storage location.
+  </Step>
+  <Step title="Submit the count">
+    Once all items are counted, submit the session. Nomni calculates the variance: `actual − (opening + received − sold)`.
+  </Step>
+  <Step title="Review variance">
+    The Analytics tab shows which items are over or under theoretical. Items outside tolerance are flagged for investigation.
+  </Step>
+</Steps>
+
+## Understanding variance
+
+Variance = what your recipes say you should have used vs what you actually used.
+
+**Example:** Your recipes used 50kg of Chicken Breast this week (based on POS sales). You received 55kg and had 8kg carry-over. You counted 7kg at end of week. Theoretical closing stock: 55 + 8 − 50 = 13kg. Actual: 7kg. Variance: −6kg.
+
+Common causes of negative variance: portioning errors, waste, theft, incorrect GRN quantities, or recipe yield assumptions being off.
+
+<Info>
+Variance is only as accurate as your POS data, GRNs, and recipe yields. The Variance Agent (Vera) will flag anomalies and suggest likely causes.
+</Info>
+
+## Spot counts
+
+A spot count lets you count a single item or category quickly, without opening a full count session. Use these for high-value items (proteins, spirits) between full weekly counts.
+
+## Adjustments
+
+If you need to manually correct stock (damaged goods, discovered errors, write-offs), use **Inventory → Adjustments**. Every adjustment is logged with the reason and the user who made it.
+
+## Par levels and replenishment
+
+Par levels are set per item per outlet group. When stock falls below par, the Ordering Agent will draft a suggested order. Par levels are managed in:
+
+- **Items → [item] → Par levels** — for HQ Admins setting group-level defaults
+- **Inventory → Governance → Par overrides** — for outlet-level exceptions (Hybrid mode only)

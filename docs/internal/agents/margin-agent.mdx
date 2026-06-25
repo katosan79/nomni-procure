@@ -1,0 +1,63 @@
+---
+title: Cyrus — Margin Agent
+description: Recalculates recipe food cost % when ingredient prices change.
+---
+
+## What Cyrus does
+
+Cyrus listens for `invoice.price_changed` events from Mara. When a price change is detected, it recalculates the food cost % of every recipe that uses the affected item, and surfaces an alert if the new cost pushes a recipe outside the configured threshold.
+
+## Trigger
+
+```typescript
+// Listens to:
+{
+  type: 'invoice.price_changed',
+  internalItemId,
+  newUnitPrice,
+  ...
+}
+```
+
+## Algorithm
+
+```
+on price_changed(internalItemId, newUnitPrice):
+  affected = RecipeIngredient.where(internalItemId).map(ri => ri.recipeId)
+
+  for each recipeId in affected:
+    newCost = Σ(ingredient.qty × currentUnitCost for each ingredient)
+              + labourCost  // from Recipe.labourCost
+
+    newFoodCostPct = newCost / recipe.sellingPrice
+
+    if newFoodCostPct > group.foodCostAlertThreshold:
+      create MarginAlert {
+        recipeId,
+        internalItemId,
+        previousFoodCostPct,
+        newFoodCostPct,
+        delta: newFoodCostPct - previousFoodCostPct,
+        options: [reprice, re_source, reformulate]
+      }
+      emit 'margin.alert_created'
+```
+
+## Alert surface
+
+Cyrus alerts appear in the Recipe library as a coloured indicator on the food cost % cell, and as a suggestion card in the recipe detail page:
+
+> "Chicken Breast price increased by 8.5%. Avocado Toast v3 food cost % moved from 23.3% → 25.4%. Suggested actions:"
+> - Reprice menu item to maintain 23% target → new selling price: $19.60
+> - Find a cheaper supplier (Thomas Foods: $18.20/kg)
+> - Modify recipe (reduce chicken qty by 15g)
+
+The alert card shows all three options with their projected impact. Cyrus never modifies a recipe or price directly — always requires HQ approval.
+
+## Sub-recipe propagation
+
+If the price-changed item is used in a **Preparation** sub-recipe, Cyrus traces the cost up through all finished recipes that use that sub-recipe. The chain is resolved fully — no partial updates.
+
+## Threshold configuration
+
+`foodCostAlertThreshold` is set per outlet group in Settings. Default: any movement that pushes food cost % above 30%. Can be set tighter (e.g. alert at any upward change above 1%) for groups with tight margins.

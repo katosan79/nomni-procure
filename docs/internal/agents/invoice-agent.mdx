@@ -1,0 +1,75 @@
+---
+title: Mara — Invoice Agent
+description: Extracts invoice data, runs 3-way match, and queues for accounting export.
+---
+
+## What Mara does
+
+Mara ingests supplier invoices from any source (email, upload, supplier portal, PEPPOL), extracts structured line data, runs the 3-way match (PO × GRN × Invoice), and queues matched invoices for accounting export.
+
+## Ingestion sources
+
+| Source | How | Data quality |
+|---|---|---|
+| Email / PDF upload | OCR extraction | Medium — requires confidence threshold check |
+| Nomni Supply portal | Structured e-invoice | High — no OCR |
+| PEPPOL | EDI | High — structured |
+| Manual entry | Human-entered | High |
+
+## 3-way match logic
+
+```
+for each InvoiceLine:
+  matchPO  = find PurchaseOrderLine where supplierSku matches and orderId = invoice.purchaseOrderId
+  matchGRN = find GoodsReceiptLine where orderLineId = matchPO.orderLineId
+
+  priceVariance = abs(InvoiceLine.unitPrice - matchPO.orderedUnitCost) / matchPO.orderedUnitCost
+  qtyVariance   = abs(InvoiceLine.qty - matchGRN.receivedQty)
+
+  if priceVariance <= group.priceTolerance AND qtyVariance == 0:
+    line.matchStatus = 'matched'
+  else:
+    line.matchStatus = 'variance'
+    log DiscrepancyRecord { type, magnitude, invoiceLineId, matchPO, matchGRN }
+```
+
+Default tolerances: ±2% price, ±0 qty (configurable per outlet group).
+
+## Invoice statuses
+
+```
+processing → needs_review → matched (or partially_matched) → approved → paid
+                                                            → disputed
+                         → rejected
+```
+
+## Price change event
+
+When an invoice is posted with a unit price that differs from `SupplierSkuLink.lastCost`, Mara fires:
+
+```typescript
+{
+  type: 'invoice.price_changed',
+  internalItemId,
+  previousUnitPrice,
+  newUnitPrice,
+  invoiceId,
+  supplierId,
+  effectiveDate
+}
+```
+
+This triggers Cyrus (Margin Agent) to recalculate affected recipe costs.
+
+## Undo window (AG-8)
+
+Auto-posted invoices have a 120-minute undo window. Reversing undoes the inventory cost update and sets the invoice back to `needs_review`.
+
+## Accounting export
+
+Xero is the current export target. On export:
+- Creates a Bill in Xero with full line-item detail
+- Maps `InternalItem.category` to GL codes (configured in Settings → Accounting)
+- Marks invoice as `paid` in Nomni when Xero confirms payment
+
+MYOB and QuickBooks are planned for Phase 6.

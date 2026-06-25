@@ -1,0 +1,75 @@
+---
+title: Market Lists Screens
+description: market-list.html, market-list-detail.html, market-list-assign.html, market-list-new.html — spec.
+---
+
+## market-list.html
+
+List of all market lists across brands.
+
+**Table columns:** Name · Brand · Assigned groups · Last updated · Status (Active / Pending / Draft / Archived)
+
+**Actions:** Push (split button: Push to group / Push to selection / Push to all) · Kebab (Edit / Duplicate / Archive)
+
+**Sloan agent card:** Surfaces staged price changes from uploaded supplier files, pending HQ review. Shows N changes, supplier name, and "Review" CTA.
+
+---
+
+## market-list-detail.html
+
+Full view of a market list.
+
+**Header:** Name · Brand · Status pill · Assigned groups
+
+**Line items table:** Item name · Category · Supplier · Their SKU (IBM Plex Mono) · Pack size · Approved unit cost · Last updated · Variance from previous (colour-coded ±%)
+
+**Push controls (HQ Admin only):**
+Split button: Push to group / Push to selection / Push to all
+
+**Push modal fields:**
+- Schedule: Immediately / Scheduled date-time
+- Conflict resolution: Keep local overrides / Overwrite with HQ values
+- Scope: All outlets in group / Selected outlets (multi-select)
+
+**Business rule:** Push does not affect in-flight orders (status: submitted, approved, sent, partially_delivered).
+
+---
+
+## market-list-assign.html
+
+Assign a market list to outlet groups. Tree view: Brand → Region → Outlet Group → Outlet.
+
+Radio for scope: All in group / Selected subset. Multi-select for subset.
+
+`POST /market-lists/:id/assign`
+
+---
+
+## market-list-new.html
+
+Create a new market list from scratch or clone an existing one.
+
+Fields: Name · Brand · Description
+
+Then redirects to `market-list-detail.html` to add line items.
+
+---
+
+## Endpoints
+
+- `GET /market-lists?brandId&status` — list
+- `GET /market-lists/:id` — detail with lines
+- `POST /market-lists` — create
+- `PUT /market-lists/:id/lines` — replace line set
+- `POST /market-lists/:id/push` — trigger push (body: `{ scope, scheduleAt?, conflictResolution }`)
+- `POST /market-lists/:id/assign` — assign to outlet groups
+
+## Data model notes
+
+`MarketListLine` stores:
+- `internalItemId` — the buyer's canonical item
+- `supplierSkuLinkId` — which supplier SKU to use for ordering
+- `approvedUnitCost` — HQ-set price; `PurchaseOrderLine.orderedUnitCost` is populated from this when Otto drafts an order
+- `effectiveFrom` — date the price becomes active
+
+When a push is received at the outlet, the outlet's `SupplierSkuLink.lastCost` is updated (for display), but existing `PurchaseOrderLine` costs are never modified retroactively.

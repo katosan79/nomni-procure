@@ -1,0 +1,68 @@
+---
+title: Item Catalogue
+description: Your buyer-defined master list of ingredients and supplies.
+---
+
+The **Item Catalogue** is the source of truth for everything you order, cook with, and count. Every purchase order line, recipe ingredient, and inventory count traces back to an item here.
+
+## The buyer-primary model
+
+Nomni uses a **buyer-primary** naming model. You define the item by your own name — "Chicken Breast 500g" — and then link one or more supplier-specific SKU codes to it. This means:
+
+- Your recipes always reference "Chicken Breast 500g", regardless of which supplier you use
+- Switching suppliers doesn't break any recipes or orders
+- You can compare prices across suppliers for the same item
+
+## Viewing your catalogue
+
+Go to **Items** in the left nav. You'll see a category grid by default, showing coverage at a glance:
+
+| Category | Items | Typical coverage |
+|---|---|---|
+| Produce | 47 | 89% supplier-linked |
+| Protein | 31 | 97% |
+| Dairy | 18 | 100% |
+| Dry goods & Bakery | 58 | 76% |
+| Beverages | 22 | 91% |
+| Cleaning & Supplies | 12 | 58% |
+
+Items without a preferred supplier are flagged in the "Need attention" count at the top.
+
+## Adding a new item
+
+Click **New item** and follow the 4-step wizard:
+
+<Steps>
+  <Step title="Define the item">
+    Set the buyer name, category, and unit of measure (UOM). The name you set here appears everywhere — orders, recipes, stock counts.
+  </Step>
+  <Step title="Link suppliers">
+    Add one or more supplier SKUs. For each supplier, enter their SKU code, the pack size they sell in, the conversion factor to your UOM, and the last known cost. Mark one as **Preferred** — this is what the Ordering Agent uses by default.
+  </Step>
+  <Step title="Set par levels">
+    Set par levels per outlet group. The Ordering Agent uses these to calculate suggested order quantities.
+  </Step>
+  <Step title="Done">
+    The item is live in your catalogue and available across orders, recipes, and inventory.
+  </Step>
+</Steps>
+
+<Tip>
+Use **Import items** to bulk-upload via Excel if you're migrating from another system. Download the template for the correct column format.
+</Tip>
+
+## Unit of measure (UOM)
+
+Choose the UOM that matches how you use the item in recipes and counting, not how the supplier sells it. The conversion factor handles the translation.
+
+**Example:** You buy "Chicken Breast" in 5kg cartons from a supplier, but your recipes and counts use kilograms. Set UOM to `kg`, order in `carton`, and conversion factor to `5`. Nomni handles the rest.
+
+Available UOMs: kg · g · lb · L · mL · each · dozen · portion · serve · loaf · bottle · can · carton · bag · box · case
+
+## Removing an item
+
+Before removing an item, Nomni shows a downstream impact count: how many recipes, open orders, and outlet groups reference it. You must acknowledge this before deletion proceeds.
+
+<Warning>
+Removing an item removes it from all recipes and marks any open order lines as invalid. This cannot be undone.
+</Warning>

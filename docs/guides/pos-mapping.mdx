@@ -1,0 +1,75 @@
+---
+title: POS Mapping
+description: Connect your POS menu items to Nomni recipes for automatic COGS tracking.
+---
+
+POS mapping is how Nomni knows which recipe to deplete inventory for when a sale is recorded. Without a mapping, your food cost and variance numbers can't be calculated from POS sales.
+
+## Why it matters
+
+When your POS records a sale of "Avocado Toast v3", Nomni needs to know that maps to the "Avocado Toast v3" recipe. That recipe then depletes the ingredients from inventory automatically. Without the mapping, those sales are invisible to your COGS and variance reporting.
+
+## Two screens
+
+POS mapping is split into two screens — one for setting up mappings, one for monitoring them:
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="sliders" href="#configuration">
+    Map each POS PLU code to a recipe, sub-recipe, or inventory item.
+  </Card>
+  <Card title="Monitoring" icon="chart-line" href="#monitoring">
+    Track sync health, identify outlets with coverage gaps.
+  </Card>
+</CardGroup>
+
+## Configuration
+
+The Configuration screen shows all POS items imported from your POS system. Coverage is shown per menu category in a bar chart on the left.
+
+**Mapping an item:**
+
+1. Click any unmapped row to open the mapping drawer
+2. Select whether it maps to a **Recipe** or **Inventory item**
+3. Choose the target from the controlled dropdown — you can't type a free-text name
+4. For items with modifiers (e.g. "Flat White — Large"), map each modifier variant
+
+<Tip>
+Start with your highest-volume categories (Beverages, Mains) to get the most impact on variance accuracy first.
+</Tip>
+
+**Coverage status:**
+
+| Status | Meaning |
+|---|---|
+| **Mapped** | Item has a confirmed recipe or item link |
+| **Partial** | Some variants are mapped, others aren't |
+| **Unmapped** | No link set — COGS not tracked for this item |
+| **Ignored** | Intentionally skipped (e.g. service fees, gift cards) |
+
+## Monitoring
+
+The Monitoring screen gives you a health overview across all outlets:
+
+- **Health bar** — one-line summary: how many outlets are fully synced
+- **Attention cards** — outlets with issues (dark outlets, sync failures, coverage gaps) with the COGS impact of each gap
+- **Outlet table** — all outlets with POS system, last sync time, and mapping coverage
+
+Click any outlet row to see its connection details, a 14-day transaction history chart, and recent sync log entries.
+
+**Outlet states:**
+
+| Status | Meaning |
+|---|---|
+| **Full** | Connected and 100% mapped |
+| **Partial** | Connected but some items unmapped |
+| **Dark** | No POS system configured |
+
+## Dark outlets
+
+An outlet with no POS configured shows as "Dark". This means zero COGS data from that outlet — inventory and variance reporting for that outlet is incomplete.
+
+To configure a POS connection for an outlet, go to **Outlets → [outlet] → Integrations**. POS configuration lives in the outlet settings, not in the POS mapping screen.
+
+## The Governance Agent (Sloan)
+
+When new POS items arrive from a sync that don't have a mapping, Sloan will suggest matches based on name similarity and category. Review suggestions in the Configuration screen — approve matches that look right, dismiss ones that don't.

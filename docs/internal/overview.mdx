@@ -1,0 +1,80 @@
+---
+title: Product Overview
+description: What Nomni Procure is, who uses it, and how it's structured — for backend engineers.
+---
+
+## What it is
+
+Nomni Procure is a B2B procurement and inventory platform for multi-outlet hospitality groups. It covers the full procure-to-pay cycle: par-based replenishment → purchase orders → goods receipt → invoice matching → accounting export. It also handles recipe costing, stock counting, POS menu mapping, and cross-outlet reporting.
+
+**Live prototype:** https://katosan79.github.io/nomni-procure/  
+**PRD:** `/PRD.md` in this repo — primary source of truth for feature specs  
+**Screen count:** 45 HTML prototype screens in `/screens/`
+
+## User roles
+
+| Role | Primary tasks |
+|---|---|
+| HQ Administrator | Full platform: market lists, recipes, POS mapping, users, suppliers, approval, reporting |
+| HQ Approver | Review and approve high-value orders, recipes, POS mappings |
+| Outlet Manager | Raise requisitions, receive goods, manage stock counts, view recipes and POS |
+| Outlet User | Raise requisitions, receive goods, run stock counts |
+| Finance User | Invoice management, 3-way match, Xero export, reporting |
+| Supplier User | Nomni Supply portal: view orders, submit e-invoices, manage catalogue |
+
+Roles are template wrappers over a permission engine of **200+ discrete permissions** enforced at the API layer. Scope is set per outlet group — one user can be HQ Admin for one brand and Outlet Manager for another.
+
+## Organisational hierarchy
+
+```
+HQ → Brand → Region → Outlet Group → Outlet
+```
+
+Prototype shows 124 outlets across four outlet groups (NSW Metro 38, VIC Metro 29, QLD Coastal 32, SA&WA 25). The Outlets screen demo uses a smaller 12-outlet cluster (CBD Cluster, Beachside, Suburban, Ungrouped).
+
+## Operating modes
+
+Each outlet group runs in one of three modes:
+
+| Mode | Description |
+|---|---|
+| **HQ Mode** | Market lists, recipes, POS mappings governed centrally. Outlets read-only. |
+| **Hybrid** | Outlets raise orders and run counts. HQ controls pricing and recipes. |
+| **Standalone** | Individual outlet operates independently. Shown as "Ungrouped". |
+
+## Buyer-primary item model
+
+This is the most important data model decision. **Internal buyer item names are the canonical identity** across the entire platform.
+
+```
+InternalItem ("Chicken Breast 500g")
+  └── SupplierSkuLink → Supplier A · SKU: CHK-001 · pack: 5kg carton
+  └── SupplierSkuLink → Supplier B · SKU: CB500G · pack: 500g each
+```
+
+Ordering, recipes, inventory, and POS all reference `internalItemId`. Supplier SKUs are an implementation detail surfaced in the item drawer and order lines. Switching suppliers never breaks recipes or counts.
+
+## Agent layer
+
+Five AI agents run on the event bus:
+
+| Agent | Trigger | Purpose |
+|---|---|---|
+| Otto (Ordering) | Schedule / par alert | Drafts POs per outlet |
+| Vera (Variance) | Stock count submitted | Actual vs theoretical |
+| Sloan (Governance) | Price file upload / POS sync | Market list + POS mapping |
+| Mara (Invoice) | New invoice (any source) | Extract, match, post |
+| Cyrus (Margin) | `price_changed` event | Recipe margin recalc |
+
+All agents are **read-and-suggest only** by default. Auto-apply requires an explicit threshold configured per group.
+
+[Full agent spec →](/internal/agents/overview)
+
+## Design system
+
+All screens use Nomni Design System v1.6.0:
+- `tokens.css?v=3` — CSS variables for colour, spacing, typography
+- `components.css?v=3` — component classes
+- `shell.js?v=6` — persistent nav shell, role switcher
+
+[Design system reference →](/internal/architecture)

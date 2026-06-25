@@ -1,0 +1,71 @@
+---
+title: Invoices Screens
+description: invoices.html, invoice-detail.html — spec for backend engineers.
+---
+
+## invoices.html
+
+**Canvas:** `data-measure="content"` (1080px)
+
+### KPI strip
+
+- Pending match: 14
+- Matched today: 28
+- Disputed: 3
+- Total this month: $184,293
+
+### Filter tabs
+
+All · Needs Review · Matched · Disputed · Approved · Paid
+
+### Table columns
+
+Invoice # (IBM Plex Mono) · Supplier · Date · Total (AUD) · PO # · Status pill · Source icon (upload / portal / PEPPOL / manual) · Match score
+
+**Every row is clickable** → navigates to `invoice-detail.html?id=...`
+
+### Upload button
+
+"Upload invoice" → file picker (PDF, image). Triggers `POST /invoices/upload` multipart. Invoice enters `processing` status while Mara extracts data.
+
+---
+
+## invoice-detail.html
+
+### Header
+
+Invoice number · Supplier · Invoice date · Total · Status pill · Source
+
+### 3-way match panel
+
+Three-column view: Purchase Order · Goods Receipt · Invoice
+
+Per line: item name, qty, unit price, line total. Discrepancies highlighted in amber (price) or red (qty).
+
+Match summary: X of Y lines matched · Price variance: $N · Qty variance: N units
+
+### Approve / Dispute actions
+
+| State | Available actions |
+|---|---|
+| needs_review | Approve · Dispute (with reason) |
+| partially_matched | Approve with exceptions · Dispute |
+| matched | Approve · Dispute |
+| approved | Export to Xero · Mark as paid |
+| disputed | Resolve dispute · Reject invoice |
+
+### Activity timeline
+
+Invoice receipt → OCR extraction → match attempt → any manual edits → approval → export.
+
+### Endpoints
+
+- `GET /invoices/:id` — with lines and match result
+- `PATCH /invoices/:id/approve`
+- `PATCH /invoices/:id/dispute` — requires `{ "reason": "..." }`
+- `POST /invoices/:id/export-xero`
+- `PATCH /invoices/:id/mark-paid`
+
+### Mara agent surface
+
+If Mara's OCR confidence is below threshold on any line, a yellow banner appears: "Some fields need review — extracted data may be inaccurate." Affected fields are highlighted. User can correct inline before approving.

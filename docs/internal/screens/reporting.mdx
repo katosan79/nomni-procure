@@ -1,0 +1,88 @@
+---
+title: Reporting Screen
+description: reporting.html — spec for backend engineers.
+---
+
+## reporting.html
+
+**Canvas:** `data-measure="wide"` (1280px)
+
+**Access:** HQ Admin · HQ Approver · Finance · Outlet Manager (own outlet only)
+
+---
+
+## Filter bar (global, affects all sections)
+
+- Date range (preset: This week / This month / Last month / Custom)
+- Outlet group
+- Outlet
+- Category (food / beverage / supply)
+
+All chart and table sections respond to filter changes simultaneously.
+
+---
+
+## Sections
+
+### Revenue & food cost
+
+Line/area chart: revenue vs food cost $ over the selected period. Overlay: food cost % line. Filter by outlet or group.
+
+### Top spend items
+
+Ranked list (top 20): Item name · Category · Total spend · % of total COGS · Trend chip.
+
+### Supplier spend
+
+Table: Supplier · Total spend · Order count · Average order value · YoY change.
+
+### Variance summary
+
+Table: Item · Theoretical usage · Actual usage · Variance · Variance % · Trend. Sorted by variance % descending. Colour-coded: within tolerance = green, outside = red.
+
+### Order activity
+
+Table: Period · Orders raised · Total value · Avg approval time · Rejection rate.
+
+### Invoice reconciliation
+
+Table: Total invoices · Matched · Partially matched · Unmatched · Disputed · Avg days to match.
+
+---
+
+## Data completeness checklist
+
+Sidebar or banner (when any score is low):
+
+| Signal | Good | Warning |
+|---|---|---|
+| POS mapping coverage | ≥90% | <90% |
+| GRN completeness | ≥95% of orders have a GRN | <95% |
+| Count frequency | All outlets counted in last 7 days | Any outlet >14 days |
+| Invoice reconciliation | <5 unmatched | ≥5 unmatched |
+
+---
+
+## Export
+
+"Export" button on each section → `GET /reporting/[section]?filters&format=xlsx`
+
+---
+
+## Endpoints
+
+All reporting endpoints accept the same filter params: `outletId`, `groupId`, `dateFrom`, `dateTo`, `category`.
+
+- `GET /reporting/revenue-and-food-cost`
+- `GET /reporting/top-spend-items`
+- `GET /reporting/supplier-spend`
+- `GET /reporting/variance`
+- `GET /reporting/order-activity`
+- `GET /reporting/invoice-reconciliation`
+- `GET /reporting/data-completeness`
+
+All endpoints are read-only. No mutations from the reporting screen.
+
+## Performance note
+
+Reporting endpoints should be backed by a pre-aggregated reporting table updated on a schedule (nightly + on-demand after significant events: GRN submitted, invoice approved, stock count submitted). Real-time calculation across 124 outlets is not feasible at query time.

@@ -1,0 +1,89 @@
+---
+title: Recipes Screens
+description: recipes.html, recipe-detail.html, outlet-recipes.html — spec for backend engineers.
+---
+
+## recipes.html
+
+**Canvas:** `data-measure="content"` (1080px)
+
+### KPI strip
+
+| Tile | Value |
+|---|---|
+| Total recipes | 346 |
+| Finished | 320 |
+| Preparations | 18 |
+| Production batches | 8 |
+
+### Filter bar
+
+Search · Type (All / Finished / Preparation / Production batch) · Category · Brand · Status tabs (All / Active / Draft / Archived)
+
+### Table columns
+
+Name (with type badge + category sub-line) · Category · Brand · Cost (with food cost % sub-value, colour-coded) · Selling price (— for Preparation and Production batch) · Status pill · Locked · Actions
+
+**Food cost % colour coding:** <25% = green · 25–32% = amber · >32% = red
+
+### Per-type row actions
+
+| Type | Actions |
+|---|---|
+| Finished | View + Push (split button) + kebab (Edit / Duplicate / Push to outlets / Lock-Unlock / Archive / Delete) |
+| Preparation | View + kebab (Edit / Duplicate / Archive / Delete) |
+| Production batch | View + "Record production →" link to inventory.html + kebab |
+
+**Every row is clickable** → navigates to `recipe-detail.html?id=...`
+
+### Endpoints
+
+- `GET /recipes?type&category&brandId&status&search` — paginated list
+- `POST /recipes` — create
+- `POST /recipes/:id/push` — push to outlet group
+
+---
+
+## recipe-detail.html
+
+**Layout:** Page header + 4-tile KPI strip + tabbed main panel (1fr) + aside (280px)
+
+### KPI strip (live-calculated)
+
+| Tile | Calculation |
+|---|---|
+| Prime cost | ingredient cost + labour cost |
+| Food cost % | ingredient cost ÷ selling price |
+| Selling price | Manual entry (synced with POS) |
+| Gross margin | (selling − prime) ÷ selling |
+
+### Tabs
+
+**Ingredients tab:** Ingredient rows — name, qty, UOM, unit cost, line cost. Sub-recipe ingredients show "expand" to see component ingredients. Edit controls visible to HQ Admin only (hidden when `lockedByHq: true`).
+
+**Costing tab:** Cost breakdown by ingredient category. Shows cost impact if a specific ingredient price changes (hypothetical slider). Labour cost input.
+
+**Outlets tab:** Which outlet groups this recipe is pushed to, push status per group, last push date.
+
+**Settings tab:** Recipe type, brand, category, version history (accordion), lock/unlock toggle (HQ Admin only).
+
+### Endpoints
+
+- `GET /recipes/:id` — full recipe with ingredients
+- `PUT /recipes/:id/ingredients` — replace ingredient set (creates new version)
+- `PATCH /recipes/:id/lock`
+- `POST /recipes/:id/push`
+- `GET /recipes/:id/versions` — version history
+
+---
+
+## outlet-recipes.html
+
+Read-only view for Outlet Manager and Outlet User roles.
+
+Identical layout to `recipe-detail.html` but:
+- All edit controls hidden (not disabled — hidden)
+- Banner: "Managed by HQ — POS mappings are set centrally and can't be edited here"
+- Lock icon shown on header
+
+No write endpoints are called from this screen.
