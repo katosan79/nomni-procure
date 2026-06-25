@@ -122,6 +122,18 @@
     @media (max-width: 768px) { .page-header { flex-direction: column; align-items: flex-start; } .page-title { font-size: 24px; } }
     @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } }
 
+    /* ── Standing orders ── */
+    .so-kpi-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); }
+    .so-mode-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .so-mode-badge.fixed  { background:var(--status-ok-bg); color:var(--status-ok-fg); }
+    .so-mode-badge.dynamic{ background:var(--status-warn-bg); color:#7A5000; }
+    .so-exec-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .so-exec-badge.draft  { background:var(--status-info-bg); color:var(--status-info-fg); }
+    .so-exec-badge.submit { background:color-mix(in srgb,var(--fern) 12%,transparent); color:var(--spinach); }
+    .so-next-run { font-size:13px; font-weight:600; color:var(--text); }
+    .so-next-run.soon { color:var(--text-accent); }
+    .so-next-run.today { color:var(--status-risk-fg); }
+
     /* ── Trend monitor (sparkline tiles) ── */
     .trend-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-lg); }
     .trend-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-xs); }
@@ -206,6 +218,7 @@
       <div class="order-tabs" role="tablist" aria-label="Order type">
         <button class="order-tab" role="tab" aria-selected="false" onclick="switchTab('pr')"><i class="ti ti-clipboard-list"></i>Requisitions <span class="count">5</span></button>
         <button class="order-tab active" role="tab" aria-selected="true" onclick="switchTab('po')"><i class="ti ti-file-invoice"></i>Purchase orders <span class="count">12</span></button>
+        <button class="order-tab" role="tab" aria-selected="false" onclick="switchTab('standing')"><i class="ti ti-repeat"></i>Standing orders <span class="count">8</span></button>
       </div>
 
       <!-- ══ Requisitions panel (PR → HQ → multiple POs) ══ -->
@@ -447,6 +460,144 @@
         </div>
       </div>
 
+      <!-- ══ Standing orders panel ══ -->
+      <div class="order-panel" id="panel-standing">
+
+        <!-- Otto pattern suggestion -->
+        <article class="agent-surface" id="otto-standing">
+          <div class="agent-card" style="padding:var(--space-lg) var(--space-xl);gap:var(--space-md);">
+            <div class="agent-card-head">
+              <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
+              <span class="agent-id"><span class="agent-name">Otto</span><span class="agent-role">Ordering agent</span></span>
+              <span class="agent-card-spacer" style="flex:1"></span>
+              <span class="agent-state proposed"><i class="ti ti-bulb"></i>Pattern detected</span>
+            </div>
+            <p style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">Bondi Beach has ordered from Sydney Butchers Co. every Tuesday for 8 consecutive weeks</p>
+            <p class="agent-why">Each order is $280–$340 for the same 3 protein SKUs. Converting this to a standing order would save ~15 min of manual work per week and reduce the risk of a missed order on busy days.</p>
+            <div class="agent-actions">
+              <button class="nb-btn primary" onclick="location.href='new-standing-order.html'"><i class="ti ti-repeat"></i>Set up standing order</button>
+              <button class="nb-btn ghost" onclick="dismissOttoSO()">Dismiss</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- KPI strip -->
+        <div class="so-kpi-strip">
+          <div class="kpi-tile"><span class="kpi-label">Active</span><span class="kpi-value">8</span><span class="kpi-sub">Standing orders</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Next run</span><span class="kpi-value">Tomorrow</span><span class="kpi-sub">3 orders scheduled</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Avg monthly value</span><span class="kpi-value">$24,800</span><span class="kpi-sub">Across all active</span></div>
+          <div class="kpi-tile"><span class="kpi-label">Paused</span><span class="kpi-value">1</span><span class="kpi-sub">Artisan Bakehouse</span></div>
+        </div>
+
+        <!-- New standing order CTA + table -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-lg);">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--text);">All standing orders</div>
+            <div style="font-size:13px;color:var(--text-soft);margin-top:2px;">Recurring orders that generate automatically on schedule</div>
+          </div>
+          <button class="btn btn-primary" onclick="location.href='new-standing-order.html'"><i class="ti ti-plus"></i>New standing order</button>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table" aria-label="Standing orders">
+            <thead>
+              <tr>
+                <th>Outlet · Supplier</th>
+                <th>Schedule</th>
+                <th>Items</th>
+                <th>Qty mode</th>
+                <th>Execution</th>
+                <th>Next run</th>
+                <th>Status</th>
+                <th><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="location.href='standing-order-detail.html?id=SO-001'">
+                <td><div class="cell-name">Bondi Beach</div><div class="cell-sub">Harbour Meats</div></td>
+                <td><div style="font-size:13px;font-weight:600;color:var(--text);">Every Tuesday</div><div class="cell-sub">Weekly</div></td>
+                <td class="cell-sub">3 items · proteins</td>
+                <td><span class="so-mode-badge fixed"><i class="ti ti-lock"></i>Fixed</span></td>
+                <td><span class="so-exec-badge draft"><i class="ti ti-eye"></i>Auto-draft</span></td>
+                <td><div class="so-next-run soon">1 Jul</div><div class="cell-sub">Tomorrow</div></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='standing-order-detail.html?id=SO-001'">View</button></td>
+              </tr>
+              <tr onclick="location.href='standing-order-detail.html?id=SO-002'">
+                <td><div class="cell-name">Bondi Beach</div><div class="cell-sub">Fresh Produce Co</div></td>
+                <td><div style="font-size:13px;font-weight:600;color:var(--text);">Mon + Thu</div><div class="cell-sub">Weekly · 2 days</div></td>
+                <td class="cell-sub">8 items · produce</td>
+                <td><span class="so-mode-badge fixed"><i class="ti ti-lock"></i>Fixed</span></td>
+                <td><span class="so-exec-badge draft"><i class="ti ti-eye"></i>Auto-draft</span></td>
+                <td><div class="so-next-run soon">30 Jun</div><div class="cell-sub">Today</div></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='standing-order-detail.html?id=SO-002'">View</button></td>
+              </tr>
+              <tr onclick="location.href='standing-order-detail.html?id=SO-003'">
+                <td><div class="cell-name">Surry Hills</div><div class="cell-sub">Pacific Drinks Wholesale</div></td>
+                <td><div style="font-size:13px;font-weight:600;color:var(--text);">Every Friday</div><div class="cell-sub">Weekly</div></td>
+                <td class="cell-sub">4 items · beverages</td>
+                <td><span class="so-mode-badge fixed"><i class="ti ti-lock"></i>Fixed</span></td>
+                <td><span class="so-exec-badge submit"><i class="ti ti-send"></i>Auto-submit</span></td>
+                <td><div class="so-next-run">4 Jul</div><div class="cell-sub">Fri</div></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='standing-order-detail.html?id=SO-003'">View</button></td>
+              </tr>
+              <tr onclick="location.href='standing-order-detail.html?id=SO-004'">
+                <td><div class="cell-name">Newtown</div><div class="cell-sub">Green Farmers Market</div></td>
+                <td><div style="font-size:13px;font-weight:600;color:var(--text);">Every Tuesday</div><div class="cell-sub">Weekly</div></td>
+                <td class="cell-sub">5 items · produce</td>
+                <td><span class="so-mode-badge dynamic"><i class="ti ti-chart-bar"></i>Dynamic</span></td>
+                <td><span class="so-exec-badge draft"><i class="ti ti-eye"></i>Auto-draft</span></td>
+                <td><div class="so-next-run soon">1 Jul</div><div class="cell-sub">Tomorrow</div></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='standing-order-detail.html?id=SO-004'">View</button></td>
+              </tr>
+              <tr onclick="location.href='standing-order-detail.html?id=SO-005'">
+                <td><div class="cell-name">Melbourne CBD</div><div class="cell-sub">Harbour Meats</div></td>
+                <td><div style="font-size:13px;font-weight:600;color:var(--text);">Every Monday</div><div class="cell-sub">Weekly</div></td>
+                <td class="cell-sub">4 items · proteins</td>
+                <td><span class="so-mode-badge fixed"><i class="ti ti-lock"></i>Fixed</span></td>
+                <td><span class="so-exec-badge draft"><i class="ti ti-eye"></i>Auto-draft</span></td>
+                <td><div class="so-next-run soon">30 Jun</div><div class="cell-sub">Today</div></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='standing-order-detail.html?id=SO-005'">View</button></td>
+              </tr>
+              <tr onclick="location.href='standing-order-detail.html?id=SO-006'">
+                <td><div class="cell-name">Parramatta Table</div><div class="cell-sub">Fresh Produce Co</div></td>
+                <td><div style="font-size:13px;font-weight:600;color:var(--text);">Every 2nd Monday</div><div class="cell-sub">Fortnightly</div></td>
+                <td class="cell-sub">6 items · produce, dry goods</td>
+                <td><span class="so-mode-badge fixed"><i class="ti ti-lock"></i>Fixed</span></td>
+                <td><span class="so-exec-badge submit"><i class="ti ti-send"></i>Auto-submit</span></td>
+                <td><div class="so-next-run">7 Jul</div><div class="cell-sub">Mon</div></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='standing-order-detail.html?id=SO-006'">View</button></td>
+              </tr>
+              <tr onclick="location.href='standing-order-detail.html?id=SO-007'">
+                <td><div class="cell-name">Surry Hills</div><div class="cell-sub">Sydney Butchers Co.</div></td>
+                <td><div style="font-size:13px;font-weight:600;color:var(--text);">Every Monday</div><div class="cell-sub">Weekly</div></td>
+                <td class="cell-sub">3 items · proteins</td>
+                <td><span class="so-mode-badge dynamic"><i class="ti ti-chart-bar"></i>Dynamic</span></td>
+                <td><span class="so-exec-badge draft"><i class="ti ti-eye"></i>Auto-draft</span></td>
+                <td><div class="so-next-run soon">30 Jun</div><div class="cell-sub">Today</div></td>
+                <td><span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='standing-order-detail.html?id=SO-007'">View</button></td>
+              </tr>
+              <tr onclick="location.href='standing-order-detail.html?id=SO-008'" style="opacity:0.6;">
+                <td><div class="cell-name">Newtown</div><div class="cell-sub">Artisan Bakehouse</div></td>
+                <td><div style="font-size:13px;font-weight:600;color:var(--text);">Every Wednesday</div><div class="cell-sub">Weekly</div></td>
+                <td class="cell-sub">2 items · dry goods</td>
+                <td><span class="so-mode-badge fixed"><i class="ti ti-lock"></i>Fixed</span></td>
+                <td><span class="so-exec-badge submit"><i class="ti ti-send"></i>Auto-submit</span></td>
+                <td><div class="so-next-run" style="color:var(--text-soft);">—</div><div class="cell-sub">Paused</div></td>
+                <td><span class="nb-pill" style="background:var(--surface-soft);color:var(--text-soft);border:1px solid var(--border);"><i class="ti ti-pause"></i>Paused</span></td>
+                <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='standing-order-detail.html?id=SO-008'">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /panel-standing -->
+
     </div><!-- /napp-canvas -->
   </div><!-- /page-body -->
 
@@ -513,7 +664,14 @@
   <div id="ord-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => { NomniShell.init('Orders'); injectNewOrders(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      NomniShell.init('Orders');
+      injectNewOrders();
+      if (location.hash === '#standing') {
+        switchTab('standing');
+        setTimeout(() => document.querySelector('.order-tabs')?.scrollIntoView({block:'start'}), 100);
+      }
+    });
 
     /* ── Inject orders created via the New Order flow (sessionStorage) ── */
     function injectNewOrders() {
@@ -724,6 +882,11 @@
       t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
       wrap.appendChild(t);
       setTimeout(() => t.remove(), 3000);
+    }
+
+    function dismissOttoSO() {
+      const card = document.getElementById('otto-standing');
+      card.style.display = 'none';
     }
 
     // Clickable rows — PR rows open route drawer; PO rows already have onclick on <tr>
