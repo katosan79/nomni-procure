@@ -179,6 +179,51 @@
     .scope-opt span, .chain-opt .chain-opt-label { font-weight:500; flex:1; }
     .chain-opt-desc { font-size:12px; color:var(--text-soft); }
 
+    /* Outlet picker (appears when Outlet level scope is chosen) */
+    .outlet-picker {
+      margin-top:var(--space-sm);
+      border:1.5px solid var(--border); border-radius:var(--radius-md);
+      overflow:hidden;
+      animation:row-in var(--dur-3) var(--ease-emphasized) both;
+    }
+    .outlet-picker-search {
+      display:flex; align-items:center; gap:var(--space-sm);
+      padding:var(--space-sm) var(--space-md);
+      border-bottom:1px solid var(--border);
+      background:var(--surface-soft);
+    }
+    .outlet-picker-search i { font-size:15px; color:var(--text-soft); flex-shrink:0; }
+    .outlet-search-input {
+      flex:1; border:none; outline:none; background:transparent;
+      font-family:inherit; font-size:13px; color:var(--text);
+    }
+    .outlet-search-input::placeholder { color:var(--text-soft); }
+    .outlet-select-all {
+      display:flex; align-items:center; gap:var(--space-sm);
+      padding:var(--space-sm) var(--space-md);
+      border-bottom:1px solid var(--border);
+      font-size:12px; font-weight:700; color:var(--text-soft);
+      cursor:pointer; background:var(--surface-soft);
+    }
+    .outlet-select-all input { accent-color:var(--fern); }
+    .outlet-list { max-height:192px; overflow-y:auto; }
+    .outlet-item {
+      display:flex; align-items:center; gap:var(--space-md);
+      padding:9px var(--space-md); border-bottom:1px solid var(--border);
+      cursor:pointer; transition:background 0.1s;
+    }
+    .outlet-item:last-child { border-bottom:none; }
+    .outlet-item:hover { background:color-mix(in srgb,var(--fern) 4%,transparent); }
+    .outlet-item input[type=checkbox] { accent-color:var(--fern); flex-shrink:0; }
+    .outlet-item-body { flex:1; }
+    .outlet-item-name { font-size:13px; font-weight:600; color:var(--text); }
+    .outlet-item-meta { font-size:11px; color:var(--text-soft); }
+    .outlet-picker-footer {
+      padding:var(--space-sm) var(--space-md);
+      border-top:1px solid var(--border);
+      font-size:12px; color:var(--text-soft); background:var(--surface-soft);
+    }
+    .outlet-picker-footer span { font-weight:600; color:var(--text-accent); }
     .drawer-error { font-size:12px; color:var(--status-risk-fg); display:none; margin-top:3px; }
     .has-error .form-input { border-color:var(--status-risk-fg) !important; }
     .has-error + .drawer-error, .show-error { display:block !important; }
@@ -605,18 +650,33 @@
       <div class="drawer-section-label">Scope</div>
       <div class="scope-options">
         <label class="scope-opt">
-          <input type="radio" name="rule-scope" value="all" checked>
+          <input type="radio" name="rule-scope" value="all" checked onchange="toggleOutletPicker(this.value)">
           <i class="ti ti-world"></i><span>All outlets</span>
         </label>
         <label class="scope-opt">
-          <input type="radio" name="rule-scope" value="outlet">
+          <input type="radio" name="rule-scope" value="outlet" onchange="toggleOutletPicker(this.value)">
           <i class="ti ti-building-store"></i><span>Outlet level</span>
         </label>
         <label class="scope-opt">
-          <input type="radio" name="rule-scope" value="hq">
+          <input type="radio" name="rule-scope" value="hq" onchange="toggleOutletPicker(this.value)">
           <i class="ti ti-building"></i><span>HQ level</span>
         </label>
       </div>
+
+      <!-- Outlet picker — visible when "outlet" scope selected -->
+      <div id="outlet-picker" class="outlet-picker" style="display:none;">
+        <div class="outlet-picker-search">
+          <i class="ti ti-search"></i>
+          <input class="outlet-search-input" id="outlet-search" type="text" placeholder="Search outlets…" oninput="filterOutlets(this.value)">
+        </div>
+        <label class="outlet-select-all" id="outlet-select-all-row">
+          <input type="checkbox" id="outlet-select-all" onchange="toggleAllOutlets(this.checked)">
+          Select all
+        </label>
+        <div class="outlet-list" id="outlet-list"></div>
+        <div class="outlet-picker-footer" id="outlet-footer">0 outlets selected</div>
+      </div>
+      <span class="drawer-error" id="outlet-error">Select at least one outlet</span>
     </div>
 
     <!-- Chain type (shown when non-auto approver) -->
@@ -744,6 +804,8 @@
     document.getElementById('chain-section').style.display = 'none';
     document.querySelectorAll('[name=rule-scope]')[0].checked = true;
     document.querySelectorAll('[name=rule-chain]')[0].checked = true;
+    document.getElementById('outlet-picker').style.display = 'none';
+    document.getElementById('outlet-error').style.display = 'none';
     document.getElementById('range-error').style.display = 'none';
     document.getElementById('approver-error').style.display = 'none';
     document.getElementById('from-group').classList.remove('has-error');
@@ -845,6 +907,7 @@
     document.getElementById('to-group').classList.remove('has-error');
     document.getElementById('range-error').style.display = 'none';
     document.getElementById('approver-error').style.display = 'none';
+    document.getElementById('outlet-error').style.display = 'none';
 
     if (fromStr === '' || isNaN(fromVal)) {
       document.getElementById('from-group').classList.add('has-error');
@@ -862,6 +925,15 @@
       valid = false;
     }
 
+    const scopeVal0 = document.querySelector('[name=rule-scope]:checked')?.value || 'all';
+    const selectedOutlets = scopeVal0 === 'outlet'
+      ? [...document.querySelectorAll('[name=rule-outlet]:checked')].map(cb => cb.value)
+      : [];
+    if (scopeVal0 === 'outlet' && selectedOutlets.length === 0) {
+      document.getElementById('outlet-error').style.display = 'block';
+      valid = false;
+    }
+
     if (!valid) {
       const btn = document.getElementById('rule-save-btn');
       btn.classList.add('shake');
@@ -871,7 +943,7 @@
 
     const approverVal = selectedCard.dataset.value;
     const isAuto = approverVal === 'auto';
-    const scopeVal = document.querySelector('[name=rule-scope]:checked')?.value || 'all';
+    const scopeVal = scopeVal0;
     const chainVal = document.querySelector('[name=rule-chain]:checked')?.value || 'seq';
 
     // Build range text
@@ -895,8 +967,12 @@
     // Build scope cell HTML
     const scopeMap = { all:{icon:'ti-world',label:'All outlets'}, outlet:{icon:'ti-building-store',label:'Outlet level'}, hq:{icon:'ti-building',label:'HQ level'} };
     const sc = scopeMap[scopeVal];
+    let scopeLabel = sc.label;
+    if (scopeVal === 'outlet' && selectedOutlets.length > 0) {
+      scopeLabel = selectedOutlets.length === OUTLETS.length ? 'All outlets' : `${selectedOutlets.length} outlet${selectedOutlets.length > 1 ? 's' : ''}`;
+    }
     const scopeHTML = isAuto ? '<span style="font-size:12px;color:var(--text-soft);">—</span>'
-      : `<span class="scope-badge"><i class="ti ${sc.icon}"></i>${sc.label}</span>`;
+      : `<span class="scope-badge"><i class="ti ${sc.icon}"></i>${scopeLabel}</span>`;
 
     // Build chain cell HTML
     const chainMap = { seq:{cls:'seq',icon:'ti-arrow-right',label:'Sequential'}, any:{cls:'any',icon:'ti-user-check',label:'Any one approves'}, all:{cls:'all',icon:'ti-users',label:'All must approve'} };
@@ -935,6 +1011,71 @@
 
     saveSection(poCard);
     closeRuleDrawer();
+  }
+
+  /* ── Outlet picker ── */
+  const OUTLETS = [
+    { id:'ck',  name:'Central Kitchen',        meta:'Production · Toa Payoh' },
+    { id:'o01', name:'Outlet 01 — Orchard',    meta:'Dine-in · Central' },
+    { id:'o02', name:'Outlet 02 — Tanjong Pagar', meta:'Dine-in · Central' },
+    { id:'o03', name:'Outlet 03 — Jurong East', meta:'Dine-in · West' },
+    { id:'o04', name:'Outlet 04 — Tampines',   meta:'Dine-in · East' },
+    { id:'o05', name:'Outlet 05 — Woodlands',  meta:'Dine-in · North' },
+    { id:'o06', name:'Outlet 06 — Novena',     meta:'Dine-in · Central' },
+  ];
+
+  let _outletQuery = '';
+
+  function renderOutletList() {
+    const list = document.getElementById('outlet-list');
+    const q = _outletQuery.toLowerCase();
+    const visible = OUTLETS.filter(o => o.name.toLowerCase().includes(q) || o.meta.toLowerCase().includes(q));
+    list.innerHTML = visible.map(o => `
+      <label class="outlet-item">
+        <input type="checkbox" name="rule-outlet" value="${o.id}" onchange="updateOutletFooter()">
+        <div class="outlet-item-body">
+          <div class="outlet-item-name">${o.name}</div>
+          <div class="outlet-item-meta">${o.meta}</div>
+        </div>
+      </label>`).join('');
+    updateOutletFooter();
+  }
+
+  function filterOutlets(q) {
+    _outletQuery = q;
+    renderOutletList();
+  }
+
+  function toggleAllOutlets(checked) {
+    document.querySelectorAll('[name=rule-outlet]').forEach(cb => cb.checked = checked);
+    updateOutletFooter();
+  }
+
+  function updateOutletFooter() {
+    const all  = document.querySelectorAll('[name=rule-outlet]');
+    const checked = [...all].filter(cb => cb.checked);
+    document.getElementById('outlet-footer').innerHTML =
+      checked.length === 0 ? '0 outlets selected'
+      : `<span>${checked.length}</span> of ${OUTLETS.length} outlets selected`;
+    // Update select-all indeterminate state
+    const sa = document.getElementById('outlet-select-all');
+    sa.indeterminate = checked.length > 0 && checked.length < all.length;
+    sa.checked = checked.length === all.length && all.length > 0;
+    document.getElementById('outlet-error').style.display = 'none';
+  }
+
+  function toggleOutletPicker(scopeVal) {
+    const picker = document.getElementById('outlet-picker');
+    const show = scopeVal === 'outlet';
+    if (show) {
+      picker.style.display = '';
+      _outletQuery = '';
+      document.getElementById('outlet-search').value = '';
+      renderOutletList();
+    } else {
+      picker.style.display = 'none';
+    }
+    document.getElementById('outlet-error').style.display = 'none';
   }
 
   function awToast(msg) {
