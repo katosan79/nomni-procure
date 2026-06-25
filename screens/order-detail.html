@@ -738,7 +738,7 @@
         `<div style="overflow-x:auto;"><table class="items-tbl">
           <thead><tr><th>Item</th><th class="num">Qty</th><th>UoM</th><th class="num">Unit price</th>${showRecv?'<th class="num">Received</th><th class="num">Variance</th>':''}<th class="num">Total</th></tr></thead>
           <tbody>${trows}</tbody>
-          <tfoot><tr class="total-row"><td colspan="${showRecv?4:3}" style="color:var(--text-soft);font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Order total</td>${showRecv?'<td class="num"></td><td class="num"></td>':''}<td class="num">$${total.toFixed(2)}</td></tr></tfoot>
+          <tfoot><tr class="total-row"><td colspan="${showRecv?4:4}" style="color:var(--text-soft);font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Order total</td>${showRecv?'<td class="num"></td><td class="num"></td>':''}<td class="num">$${total.toFixed(2)}</td></tr></tfoot>
         </table></div>`);
       el.appendChild(card);
 
