@@ -379,6 +379,7 @@
         id:'PO-5517', supplier:'Harbour Meats', outlet:'Bondi Beach', outletAddr:'56 Campbell Pde, Bondi Beach NSW 2026',
         value:280, expected:'13 Jun', created:'9 Jun 2026, 11:30am', createdBy:'Priya Mendez',
         approval:'auto', status:'opened', sentAt:'9 Jun, 11:30am', openedAt:'10 Jun, 9:14am',
+        standingOrder:'SO-001',
         items:[
           { name:'Chicken Thigh 2kg', supplierItem:'Chicken Thigh MDCL 2kg', supplierSku:'HM-CTH-2KG', cat:'Proteins', uom:'pkg', qty:8, unit:11.50 },
           { name:'Pork Belly 1kg',    supplierItem:'Pork Belly Rindless',    supplierSku:'HM-PBL-1KG', cat:'Proteins', uom:'pkg', qty:5, unit:18.00 },
@@ -389,7 +390,8 @@
             body:'Hi Jake,\n\nPlease find purchase order PO-5517 attached for delivery to Bondi Beach on 13 Jun.\n\nKindly confirm receipt at your earliest convenience.\n\nRegards,\nNomni Procure on behalf of Bondi Beach', attach:'PO-5517.pdf' },
         ],
         activity:[
-          { tone:'neutral', icon:'ti-circle-plus', text:'Order created by <strong>Priya Mendez</strong>', time:'9 Jun, 11:30am' },
+          { tone:'neutral', icon:'ti-repeat',       text:'Auto-generated from standing order <a href="standing-order-detail.html?id=SO-001" style="color:var(--text-accent);font-weight:600;">SO-001</a> · Weekly proteins — Bondi Beach', time:'9 Jun, 11:30am' },
+          { tone:'neutral', icon:'ti-circle-plus', text:'Draft created · reviewed and approved by <strong>Priya Mendez</strong>', time:'9 Jun, 11:30am' },
           { tone:'info',    icon:'ti-send',         text:'PO emailed to Harbour Meats', time:'9 Jun, 11:30am' },
           { tone:'info',    icon:'ti-mail-opened',  text:'Email opened by supplier · <em>implicit read receipt</em>', time:'10 Jun, 9:14am' },
         ],
@@ -1103,6 +1105,15 @@
       document.getElementById('meta-expected').innerHTML = po.status==='delayed'
         ? `<span style="color:var(--status-risk-fg);font-weight:600;">Expected ${po.expected} · overdue</span>`
         : `Expected ${po.expected}`;
+      if (po.standingOrder) {
+        const sep = document.createElement('span'); sep.className = 'meta-sep';
+        const tag = document.createElement('a');
+        tag.href = `standing-order-detail.html?id=${po.standingOrder}`;
+        tag.style.cssText = 'display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--spinach);text-decoration:none;';
+        tag.innerHTML = `<i class="ti ti-repeat" style="font-size:12px;"></i>${po.standingOrder}`;
+        tag.title = 'View standing order';
+        document.getElementById('meta-expected').after(sep, tag);
+      }
       document.getElementById('head-actions').innerHTML = `
         <button class="nb-btn" style="height:40px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding-inline:var(--space-lg);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:var(--space-xs);" onclick="toast('Downloading PO PDF…')"><i class="ti ti-download"></i> Export PDF</button>
         <button class="nb-btn" style="height:40px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding-inline:var(--space-lg);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:var(--space-xs);" onclick="toast('Resending PO email…')"><i class="ti ti-mail-forward"></i> Resend PO</button>`;
