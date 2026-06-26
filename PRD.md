@@ -79,7 +79,7 @@ The persistent left-side shell nav renders the following items:
 | Recipes | `recipes.html`, `recipe-detail.html`, `recipe-detail-finished.html`, `recipe-detail-prep.html`, `recipe-detail-production.html`, `new-recipe.html`, `import-recipes.html`, `outlet-recipes.html` | All roles |
 | POS mapping — Configuration | `pos-mapping.html` | HQ roles |
 | POS mapping — Monitoring | `pos-mapping-monitoring.html` | HQ roles |
-| Reporting | `reporting.html` | HQ Admin, HQ Approver, Finance, Outlet Manager (view) |
+| Reporting | `reporting.html`, `spend-by-supplier.html`, `supplier-spend-detail.html` | HQ Admin, HQ Approver, Finance, Outlet Manager (view) |
 | Outlets | `outlets.html`, `outlet-detail.html`, `outlet-group-detail.html` | HQ Admin |
 | Suppliers | `suppliers.html`, `supplier-detail.html` | HQ Admin |
 | Users | `users.html`, `user-detail.html` | HQ Admin |
@@ -121,6 +121,8 @@ The persistent left-side shell nav renders the following items:
   pos-mapping.html                   ← Configuration (mapping table, drawers, category chart)
   pos-mapping-monitoring.html        ← Monitoring (health bar, attention cards, outlet table + drawer)
   reporting.html
+  spend-by-supplier.html             ← Spend & Procurement → Spend by supplier (drill-through from reporting.html)
+  supplier-spend-detail.html         ← Individual supplier spend detail (routed via ?s=slug)
   outlets.html
   outlet-detail.html
   outlet-group-detail.html
@@ -1041,6 +1043,76 @@ Width 460px, slides in from right. Content varies by outlet state:
 **Data completeness checklist:** Invoice reconciliations (38/42 outlets, 4 pending), Unresolved variances (7), Unmapped POS items (6), POS data sync (Complete), Theoretical consumption (2 outlets pending)
 
 **Outlet drill-down drawer:** Revenue, COGS, Variance KPIs per outlet.
+
+**"Full breakdown →" link:** The Spend by supplier chart card on `reporting.html` links to `spend-by-supplier.html`.
+
+---
+
+### 3.10.1 Spend by Supplier — `spend-by-supplier.html`
+
+**Purpose:** Full supplier spend breakdown under Reporting → Spend & Procurement tab. Linked from the "Spend by supplier" chart card on `reporting.html` via "Full breakdown →".
+
+**Period picker:** Segmented button group — Last 30d / This month / Last quarter / YTD / Custom. Custom reveals two date inputs. Active state uses `--seaweed` fill with `--cream` text. This is a new UI pattern distinct from the dropdown used on `reporting.html`.
+
+**Outlet filter:** Dropdown — "All outlets (124)" by default. Filterable.
+
+**KPI strip (4 tiles):** Total spend ($681k), Avg order value ($1,596), Active suppliers (10), Spend concentration (top 3 = 48%)
+
+**Spend concentration bar:** Full-width stacked bar divided into proportional colored segments per supplier. Each segment is clickable → navigates to `supplier-spend-detail.html?s=slug`. Hover: `filter: brightness(0.88)`. Legend below bar with supplier name + %.
+
+**Supplier table columns:** Supplier (avatar + name + category + primary/secondary badge), Spend ($), Orders, Avg order, vs Prior period (delta chip), On-time delivery (progress bar + %), 6-month trend (SVG sparkline), View link (hover-reveal).
+
+**Supplier data (10 suppliers, $681k total):** Harbour Meats $142k · Fresh Produce Co $107k · Italian Food Co $80k · Dairy Australia $66k · Pacific Seafood $60k · Espresso Union $47k · Green Farmers Market $46k · Veg Fresh $46k · Bakery Direct $44k · Aussie Farms $43k.
+
+**Row click:** Entire row navigates to `supplier-spend-detail.html?s=slug`.
+
+**SVG sparklines:** 80×28px viewBox, per-supplier gradient (unique IDs g1–g10 to prevent bleeding). Line colour: teal for up/flat trends, rose for down.
+
+---
+
+### 3.10.2 Supplier Spend Detail — `supplier-spend-detail.html`
+
+**Purpose:** Individual supplier drill-down. Routed via `?s=slug`; JS resolves slug → supplier name/color/initials from `SUPPLIERS` map. Default: `?s=harbour-meats`.
+
+**Breadcrumb:** Reporting → Spend by supplier → [Supplier name]
+
+**Supplier header:** Large avatar (56×56px, supplier color), name, tags (Primary supplier / category / location / last order date), Export button, Supplier profile button.
+
+**Period picker:** Same segmented pattern as `spend-by-supplier.html`.
+
+**Outlet filter:** Same dropdown as parent page.
+
+**KPI strip (5 tiles):** Spend this period, Prior period (comparison baseline), Orders, Avg order value, On-time delivery. Each shows a delta vs prior context line.
+
+**Tabs:** Overview (active) · Orders (stub) · Items (stub)
+
+**Exception callout:** Rose background banner when price exceptions exist in the period. Shows item name, invoiced price, market list price, variance %. "View in price exceptions →" link.
+
+**Monthly spend chart:** SVG area chart, viewBox `0 0 600 190`. Y-axis `y = 150 - (val/30)*120`. Confirmed months: solid teal polyline + filled dots. Current MTD: dashed teal line + open circle. Value labels above each dot (font-size 10). Axis labels font-size 13. Area gradient: `#17B3A3` 18% → 0% opacity.
+
+**Demo data (Harbour Meats):** Jan $18k · Feb $21k · Mar $24k · Apr $22k · May $27k · Jun MTD $30k.
+
+**Spend by outlet panel:** Bar list — outlet name, proportional bar, spend $. Shows top 6 + "Others (N)".
+
+**Top items by spend panel:** Bar list — item name, proportional bar, spend $. Exception items show an amber "exception" badge.
+
+**Recent orders table:** Columns — Order #, Date, Outlets, Items, Total, Status. Row click → order detail. "View all N →" link in panel header.
+
+**SUPPLIERS map (JS, client-side routing):**
+```js
+const SUPPLIERS = {
+  'harbour-meats':       { name:'Harbour Meats',        initials:'HM', color:'#17B3A3', cat:'Proteins',   primary:true },
+  'fresh-produce-co':    { name:'Fresh Produce Co',      initials:'FP', color:'#129B41', cat:'Produce',    primary:true },
+  'italian-food-co':     { name:'Italian Food Co',       initials:'IF', color:'#B05EC0', cat:'Dry goods',  primary:true },
+  'dairy-australia':     { name:'Dairy Australia',       initials:'DA', color:'#3F8AFB', cat:'Dairy',      primary:true },
+  'pacific-seafood':     { name:'Pacific Seafood',       initials:'PS', color:'#EE4B87', cat:'Proteins',   primary:false },
+  'espresso-union':      { name:'Espresso Union',        initials:'EU', color:'#F5C219', cat:'Beverages',  primary:true },
+  'green-farmers-market':{ name:'Green Farmers Market',  initials:'GF', color:'#076715', cat:'Produce',    primary:false },
+  'veg-fresh':           { name:'Veg Fresh',             initials:'VF', color:'#F5C219', cat:'Produce',    primary:false },
+  'bakery-direct':       { name:'Bakery Direct',         initials:'BD', color:'#F58A19', cat:'Bakery',     primary:true },
+  'aussie-farms':        { name:'Aussie Farms',          initials:'AF', color:'#BCBCBC', cat:'Produce',    primary:false },
+};
+```
 
 ---
 
