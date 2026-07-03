@@ -258,6 +258,31 @@
     .age-badge.old   { background: var(--status-warn-bg); color: var(--status-warn-fg); }
     .age-badge.stale { background: var(--status-risk-bg); color: var(--status-risk-fg); }
 
+    /* ── Variance root-cause split ── */
+    .vsplit-bar { display: flex; height: 34px; border-radius: var(--radius-md); overflow: hidden; gap: 2px; margin-bottom: var(--space-lg); }
+    .vsplit-seg { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; white-space: nowrap; }
+    .vsplit-seg.usage { background: var(--rose); }
+    .vsplit-seg.count { background: #3F8AFB; }
+    .vsplit-seg.price { background: var(--sun); color: #5C4A00; }
+    .vsplit-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg); }
+    @media (max-width: 900px) { .vsplit-cards { grid-template-columns: 1fr; } }
+    .vsplit-card { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-sm); }
+    .vsplit-card-head { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; font-weight: 700; color: var(--text); }
+    .vsplit-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .vsplit-amt { font-size: 22px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; letter-spacing: -0.01em; }
+    .vsplit-amt span { font-size: 13px; font-weight: 600; color: var(--text-soft); }
+    .vsplit-desc { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+    .vsplit-action { font-size: 12px; font-weight: 600; color: var(--text-accent); text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; text-align: left; }
+    .vsplit-action:hover { text-decoration: underline; }
+    /* mini driver bar in table rows */
+    .driver-cell { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .driver-label { font-size: 11px; font-weight: 600; color: var(--text-soft); }
+    .driver-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 1px; }
+    .driver-bar div { height: 100%; }
+    .driver-bar .du { background: var(--rose); }
+    .driver-bar .dc { background: #3F8AFB; }
+    .driver-bar .dp { background: var(--sun); }
+
     /* ── Toast ── */
     .toast-wrap { position: fixed; bottom: var(--space-xl); left: 50%; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: var(--space-sm); align-items: center; pointer-events: none; }
     .toast { display: flex; align-items: center; gap: var(--space-sm); background: var(--surface-deep); color: var(--cream); padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 500; animation: toastin var(--dur-3) var(--ease-emphasized); }
@@ -926,6 +951,41 @@
           <div class="chart-x-labels" id="variance-x-labels"></div>
         </div>
 
+        <!-- Root-cause split -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Where the variance comes from · root-cause split</span>
+            <span style="font-size:12px;color:var(--text-soft)">$19,100 total exposure · Vera's attribution</span>
+          </div>
+          <div style="padding:var(--space-xl);">
+            <div class="vsplit-bar">
+              <div class="vsplit-seg usage" style="width:47%">Usage $8.9k</div>
+              <div class="vsplit-seg count" style="width:37%">Count $7.2k</div>
+              <div class="vsplit-seg price" style="width:16%">Price $3.0k</div>
+            </div>
+            <div class="vsplit-cards">
+              <div class="vsplit-card">
+                <div class="vsplit-card-head"><span class="vsplit-dot" style="background:var(--rose)"></span>Usage variance</div>
+                <div class="vsplit-amt">$8,900 <span>· 47%</span></div>
+                <div class="vsplit-desc">Kitchen used more than theoretical — waste, over-portioning, prep loss. Concentrated in Protein at Surry Hills and St Kilda.</div>
+                <button class="vsplit-action" onclick="repToast('Portion audit request sent to Surry Hills and St Kilda')">Request portion audits →</button>
+              </div>
+              <div class="vsplit-card">
+                <div class="vsplit-card-head"><span class="vsplit-dot" style="background:#3F8AFB"></span>Count variance</div>
+                <div class="vsplit-amt">$7,200 <span>· 38%</span></div>
+                <div class="vsplit-desc">Count errors, timing gaps and receiving discrepancies. Bondi Beach's receiving log and Newtown's short GRN account for most of it.</div>
+                <button class="vsplit-action" onclick="repToast('Recount requested at Bondi Beach · receiving log audit opened')">Request recounts →</button>
+              </div>
+              <div class="vsplit-card">
+                <div class="vsplit-card-head"><span class="vsplit-dot" style="background:var(--sun)"></span>Price variance</div>
+                <div class="vsplit-amt">$3,000 <span>· 16%</span></div>
+                <div class="vsplit-desc">Invoiced above the agreed market list price — not a kitchen problem. 4 open exceptions across 3 suppliers.</div>
+                <button class="vsplit-action" onclick="switchTab('spend');window.scrollTo({top:0,behavior:'smooth'})">View price exceptions →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Outstanding variances -->
         <div class="panel">
           <div class="panel-header">
@@ -933,15 +993,15 @@
             <span style="font-size:12px;color:var(--text-soft)">7 open · $19,100 exposure</span>
           </div>
           <table class="data-table">
-            <thead><tr><th>Outlet</th><th>Category</th><th class="r">Variance %</th><th class="r">Variance $</th><th>Age</th><th>Vera's recommendation</th></tr></thead>
+            <thead><tr><th>Outlet</th><th>Category</th><th class="r">Variance %</th><th class="r">Variance $</th><th>Driver</th><th>Age</th><th>Vera's recommendation</th></tr></thead>
             <tbody>
-              <tr class="clickable" onclick="drillOutlet('Bondi Beach')"><td><strong>Bondi Beach</strong></td><td>Protein</td><td class="r risk" style="font-weight:600">8.1%</td><td class="r risk" style="font-weight:600">$5,900</td><td><span class="age-badge stale">14 days</span></td><td style="font-size:12px;color:var(--text-soft)">Receiving log audit — likely discrepancy</td></tr>
-              <tr class="clickable" onclick="drillOutlet('Surry Hills')"><td><strong>Surry Hills</strong></td><td>Protein</td><td class="r warn" style="font-weight:600">6.3%</td><td class="r warn" style="font-weight:600">$3,400</td><td><span class="age-badge old">5 days</span></td><td style="font-size:12px;color:var(--text-soft)">Avocado waste — portion audit recommended</td></tr>
-              <tr class="clickable" onclick="drillOutlet('St Kilda')"><td><strong>St Kilda</strong></td><td>Produce</td><td class="r warn" style="font-weight:600">4.2%</td><td class="r warn" style="font-weight:600">$2,800</td><td><span class="age-badge old">9 days</span></td><td style="font-size:12px;color:var(--text-soft)">Consistent week-on-week — investigate waste log</td></tr>
-              <tr class="clickable" onclick="repToast('Opening Parramatta outlet…')"><td><strong>Parramatta</strong></td><td>Protein</td><td class="r warn" style="font-weight:600">4.8%</td><td class="r warn" style="font-weight:600">$2,100</td><td><span class="age-badge fresh">2 days</span></td><td style="font-size:12px;color:var(--text-soft)">New outlet — count quality may be off</td></tr>
-              <tr class="clickable" onclick="repToast('Opening Richmond outlet…')"><td><strong>Richmond</strong></td><td>Produce</td><td class="r">3.9%</td><td class="r">$1,800</td><td><span class="age-badge fresh">4 days</span></td><td style="font-size:12px;color:var(--text-soft)">Within tolerance — monitor next count</td></tr>
-              <tr class="clickable" onclick="repToast('Opening Fitzroy outlet…')"><td><strong>Fitzroy</strong></td><td>Produce</td><td class="r">3.7%</td><td class="r">$1,400</td><td><span class="age-badge fresh">1 day</span></td><td style="font-size:12px;color:var(--text-soft)">Fresh — awaiting Vera's analysis</td></tr>
-              <tr class="clickable" onclick="repToast('Opening Newtown outlet…')"><td><strong>Newtown</strong></td><td>Dairy</td><td class="r">3.1%</td><td class="r">$1,700</td><td><span class="age-badge fresh">3 days</span></td><td style="font-size:12px;color:var(--text-soft)">GRN short delivery — under investigation</td></tr>
+              <tr class="clickable" onclick="drillOutlet('Bondi Beach')"><td><strong>Bondi Beach</strong></td><td>Protein</td><td class="r risk" style="font-weight:600">8.1%</td><td class="r risk" style="font-weight:600">$5,900</td><td><div class="driver-cell"><span class="driver-label">Count-driven · 58%</span><div class="driver-bar"><div class="du" style="width:36%"></div><div class="dc" style="width:58%"></div><div class="dp" style="width:6%"></div></div></div></td><td><span class="age-badge stale">14 days</span></td><td style="font-size:12px;color:var(--text-soft)">Receiving log audit — likely discrepancy</td></tr>
+              <tr class="clickable" onclick="drillOutlet('Surry Hills')"><td><strong>Surry Hills</strong></td><td>Protein</td><td class="r warn" style="font-weight:600">6.3%</td><td class="r warn" style="font-weight:600">$3,400</td><td><div class="driver-cell"><span class="driver-label">Usage-driven · 76%</span><div class="driver-bar"><div class="du" style="width:76%"></div><div class="dc" style="width:9%"></div><div class="dp" style="width:15%"></div></div></div></td><td><span class="age-badge old">5 days</span></td><td style="font-size:12px;color:var(--text-soft)">Avocado waste — portion audit recommended</td></tr>
+              <tr class="clickable" onclick="drillOutlet('St Kilda')"><td><strong>St Kilda</strong></td><td>Produce</td><td class="r warn" style="font-weight:600">4.2%</td><td class="r warn" style="font-weight:600">$2,800</td><td><div class="driver-cell"><span class="driver-label">Usage-driven · 68%</span><div class="driver-bar"><div class="du" style="width:68%"></div><div class="dc" style="width:11%"></div><div class="dp" style="width:21%"></div></div></div></td><td><span class="age-badge old">9 days</span></td><td style="font-size:12px;color:var(--text-soft)">Consistent week-on-week — investigate waste log</td></tr>
+              <tr class="clickable" onclick="repToast('Opening Parramatta outlet…')"><td><strong>Parramatta</strong></td><td>Protein</td><td class="r warn" style="font-weight:600">4.8%</td><td class="r warn" style="font-weight:600">$2,100</td><td><div class="driver-cell"><span class="driver-label">Count-driven · 67%</span><div class="driver-bar"><div class="du" style="width:24%"></div><div class="dc" style="width:67%"></div><div class="dp" style="width:9%"></div></div></div></td><td><span class="age-badge fresh">2 days</span></td><td style="font-size:12px;color:var(--text-soft)">New outlet — count quality may be off</td></tr>
+              <tr class="clickable" onclick="repToast('Opening Richmond outlet…')"><td><strong>Richmond</strong></td><td>Produce</td><td class="r">3.9%</td><td class="r">$1,800</td><td><div class="driver-cell"><span class="driver-label">Usage-driven · 56%</span><div class="driver-bar"><div class="du" style="width:56%"></div><div class="dc" style="width:16%"></div><div class="dp" style="width:28%"></div></div></div></td><td><span class="age-badge fresh">4 days</span></td><td style="font-size:12px;color:var(--text-soft)">Within tolerance — monitor next count</td></tr>
+              <tr class="clickable" onclick="repToast('Opening Fitzroy outlet…')"><td><strong>Fitzroy</strong></td><td>Produce</td><td class="r">3.7%</td><td class="r">$1,400</td><td><div class="driver-cell"><span class="driver-label">Mixed · usage 43%</span><div class="driver-bar"><div class="du" style="width:43%"></div><div class="dc" style="width:21%"></div><div class="dp" style="width:36%"></div></div></div></td><td><span class="age-badge fresh">1 day</span></td><td style="font-size:12px;color:var(--text-soft)">Fresh — awaiting Vera's analysis</td></tr>
+              <tr class="clickable" onclick="repToast('Opening Newtown outlet…')"><td><strong>Newtown</strong></td><td>Dairy</td><td class="r">3.1%</td><td class="r">$1,700</td><td><div class="driver-cell"><span class="driver-label">Count-driven · 71%</span><div class="driver-bar"><div class="du" style="width:12%"></div><div class="dc" style="width:71%"></div><div class="dp" style="width:17%"></div></div></div></td><td><span class="age-badge fresh">3 days</span></td><td style="font-size:12px;color:var(--text-soft)">GRN short delivery — under investigation</td></tr>
             </tbody>
           </table>
         </div>

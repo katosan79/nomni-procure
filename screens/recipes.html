@@ -292,6 +292,27 @@
     .fc-good { color: var(--status-ok-fg); font-size: 11px; font-weight: 600; font-feature-settings: 'tnum' 1; }
     .fc-warn { color: var(--status-warn-fg); font-size: 11px; font-weight: 600; font-feature-settings: 'tnum' 1; }
     .fc-bad  { color: var(--status-risk-fg); font-size: 11px; font-weight: 600; font-feature-settings: 'tnum' 1; }
+
+    /* ── Ingredient cost breakdown expander ── */
+    .cost-expand-btn { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--text-link); background: none; border: none; cursor: pointer; padding: 0; margin-top: 3px; font-family: inherit; }
+    .cost-expand-btn:hover { text-decoration: underline; }
+    .cost-expand-btn i { font-size: 12px; transition: transform var(--dur-1); }
+    .cost-expand-btn.open i { transform: rotate(180deg); }
+    .breakdown-row > td { background: var(--surface-soft); padding: var(--space-lg) var(--space-xl) !important; }
+    .breakdown-row:hover > td { background: var(--surface-soft) !important; }
+    .bd-wrap { display: flex; flex-direction: column; gap: var(--space-md); max-width: 680px; }
+    .bd-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
+    .bd-line { display: grid; grid-template-columns: 200px 90px 1fr 70px 48px; align-items: center; gap: var(--space-md); font-size: 13px; }
+    .bd-line .bd-name { font-weight: 600; color: var(--text); }
+    .bd-line .bd-qty { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .bd-share-track { height: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+    .bd-share-fill { height: 100%; background: var(--fern); border-radius: 4px; }
+    .bd-line .bd-cost { text-align: right; font-weight: 600; font-feature-settings: 'tnum' 1; }
+    .bd-line .bd-pct { text-align: right; font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .bd-trend { display: flex; align-items: center; gap: var(--space-sm); font-size: 12px; padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); background: var(--status-warn-bg); color: var(--status-warn-fg); font-weight: 500; margin-top: var(--space-xs); }
+    .bd-trend.up { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .bd-trend.flat { background: var(--surface); border: 1px solid var(--border); color: var(--text-soft); }
+    .bd-trend a { color: inherit; font-weight: 700; text-decoration: underline; white-space: nowrap; }
     .fc-na   { color: var(--text-soft); font-size: 11px; }
 
     .pill {
@@ -1378,12 +1399,110 @@
     }
 
     function syncEmptyState() {
+      document.querySelectorAll('.breakdown-row').forEach(r => r.remove());
+      document.querySelectorAll('.cost-expand-btn.open').forEach(b => b.classList.remove('open'));
       const visible = [...document.querySelectorAll('.data-table tbody tr')].filter(tr => tr.style.display !== 'none').length;
       const es = document.getElementById('recipe-empty-state');
       if (es) es.classList.toggle('show', visible === 0);
       const pag = document.querySelector('.pagination-bar');
       if (pag) pag.style.display = visible === 0 ? 'none' : '';
     }
+
+    /* ── Ingredient cost breakdown ─────────────────────────────────────── */
+    const RECIPE_COSTS = {
+      'avocado toast v3': {
+        ingredients: [
+          { name: 'Avocado',            qty: '1.5 ea',    cost: 1.75 },
+          { name: 'Sourdough',          qty: '2 slices',  cost: 0.90 },
+          { name: 'Feta Cheese',        qty: '40 g',      cost: 0.62 },
+          { name: 'Dukkah & olive oil', qty: '15 g',      cost: 0.48 },
+          { name: 'Cherry Tomatoes',    qty: '50 g',      cost: 0.45 },
+        ],
+        trend: { dir: 'up', text: '▲ Cost +$0.28 vs 30 days ago — Avocado invoiced +16.7% above market list on 12 Jun', linkText: 'View invoice →', href: 'invoice-detail.html?id=INV-00885' }
+      },
+      'classic cheeseburger': {
+        ingredients: [
+          { name: 'Beef patty (Burger Patty Mix)', qty: '150 g', cost: 2.40 },
+          { name: 'Bacon',                 qty: '40 g',     cost: 1.05 },
+          { name: 'Brioche bun',           qty: '1 ea',     cost: 0.95 },
+          { name: 'Cheddar',               qty: '2 slices', cost: 0.80 },
+          { name: 'Lettuce, tomato, onion',qty: '80 g',     cost: 0.60 },
+          { name: 'Fries (side)',          qty: '120 g',    cost: 0.55 },
+          { name: 'Burger sauce',          qty: '30 g',     cost: 0.45 },
+        ],
+        trend: { dir: 'up', text: '▲ Cost +$0.42 vs 30 days ago — bacon +9% more than offset the Beef Mince price drop · FC 30.9% is above the 30% target', linkText: 'View market list →', href: 'market-list-detail.html' }
+      },
+      'caesar salad': {
+        ingredients: [
+          { name: 'Chicken Breast',            qty: '120 g', cost: 1.72 },
+          { name: 'Bacon bits',                qty: '30 g',  cost: 0.75 },
+          { name: 'Cos lettuce',               qty: '1/2 head', cost: 0.75 },
+          { name: 'Parmesan',                  qty: '20 g',  cost: 0.72 },
+          { name: 'Caesar Dressing (prep)',    qty: '60 ml', cost: 0.68 },
+          { name: 'Croutons',                  qty: '40 g',  cost: 0.48 },
+        ],
+        trend: { dir: 'up', text: '▲ Cost +$0.11 vs 30 days ago — Chicken Breast invoiced +6.2% above market list on 9 Jun · dispute open', linkText: 'View invoice →', href: 'invoice-detail.html?id=INV-00889' }
+      },
+      'flat white': {
+        ingredients: [
+          { name: 'Arabica Blend',  qty: '18 g',   cost: 0.76 },
+          { name: 'Whole Milk',     qty: '180 ml', cost: 0.38 },
+          { name: 'Cup & lid',      qty: '1 ea',   cost: 0.06 },
+        ],
+        trend: { dir: 'flat', text: 'Cost +$0.14 vs 30 days ago — Arabica Blend +18.3% accepted and repriced on 2 Jun · FC back within target', linkText: 'View exceptions →', href: 'reporting.html' }
+      },
+    };
+
+    function toggleBreakdown(btn, key) {
+      const tr = btn.closest('tr');
+      const wasOpen = btn.classList.contains('open');
+      document.querySelectorAll('.breakdown-row').forEach(r => r.remove());
+      document.querySelectorAll('.cost-expand-btn.open').forEach(b => b.classList.remove('open'));
+      if (wasOpen) return;
+      const data = RECIPE_COSTS[key];
+      if (!data) return;
+      btn.classList.add('open');
+      const total = data.ingredients.reduce((s, i) => s + i.cost, 0);
+      const maxCost = Math.max(...data.ingredients.map(i => i.cost));
+      const lines = data.ingredients.map(i => {
+        const pct = (i.cost / total) * 100;
+        return `<div class="bd-line">
+          <span class="bd-name">${i.name}</span>
+          <span class="bd-qty">${i.qty}</span>
+          <div class="bd-share-track"><div class="bd-share-fill" style="width:${(i.cost / maxCost) * 100}%"></div></div>
+          <span class="bd-cost">$${i.cost.toFixed(2)}</span>
+          <span class="bd-pct">${pct.toFixed(0)}%</span>
+        </div>`;
+      }).join('');
+      const trendCls = data.trend.dir === 'up' ? 'up' : data.trend.dir === 'flat' ? 'flat' : '';
+      const row = document.createElement('tr');
+      row.className = 'breakdown-row';
+      row.innerHTML = `<td colspan="8">
+        <div class="bd-wrap">
+          <div class="bd-title">Ingredient cost breakdown · $${total.toFixed(2)} per serve</div>
+          ${lines}
+          <div class="bd-trend ${trendCls}"><span>${data.trend.text}</span><a href="${data.trend.href}" onclick="event.stopPropagation()">${data.trend.linkText}</a></div>
+        </div>
+      </td>`;
+      tr.after(row);
+    }
+
+    /* Inject "Breakdown" expander buttons on rows with cost data */
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+        const nameEl = tr.querySelector('.recipe-name');
+        if (!nameEl) return;
+        const key = nameEl.textContent.trim().toLowerCase();
+        if (!RECIPE_COSTS[key]) return;
+        const costCell = tr.querySelector('td.num');
+        if (!costCell) return;
+        const btn = document.createElement('button');
+        btn.className = 'cost-expand-btn';
+        btn.innerHTML = 'Breakdown <i class="ti ti-chevron-down"></i>';
+        btn.onclick = (e) => { e.stopPropagation(); toggleBreakdown(btn, key); };
+        costCell.appendChild(btn);
+      });
+    });
 
     function resetRecipeFilters() {
       document.querySelectorAll('.data-table tbody tr').forEach(tr => tr.style.display = '');
