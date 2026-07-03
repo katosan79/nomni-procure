@@ -519,7 +519,37 @@ Key patterns:
 
 ### 4.5 POS mapping
 
-**Page canvas:** `data-measure="wide"` (1280px) for dense mapping table.
+The POS mapping module has **two screens** with distinct purposes:
+
+#### 4.5.1 Configuration (`pos-mapping.html`)
+
+**Page canvas:** `data-measure="wide"` (1280px).
+
+**Two-column layout** — sticky left panel (320px) + scrollable right column:
+
+```css
+display: grid;
+grid-template-columns: 320px 1fr;
+gap: var(--space-xl);
+align-items: start;
+```
+
+Left panel (sticky): 2×2 KPI strip (Total / Mapped / Unmapped / Stale) + horizontal category coverage bar chart. Category rows are clickable — click filters the right-column table to that category. Active category row uses `color-mix(in srgb, var(--text-accent) 10%, transparent)` background.
+
+Right column: filter tabs (All / Unmapped / Partial / Mapped / Ignored) + table of menu items. Filters are **combined** — category filter AND status filter both apply simultaneously via `applyFilters()`. Status tabs show counts.
+
+**Coverage bar chart** (left panel):
+- One row per category: name + horizontal bar (flex:1) + percentage
+- Colour thresholds: ≥90% = `--text-accent`, 75–89% = `#D97706`, <75% = `#DC2626`
+- Bar shows `fill-opacity` at 30% with full-colour border-left indicator
+
+**Mapping drawer** (opens from any table row):
+- All "Maps to" fields are **controlled dropdowns**, never free-text inputs
+- Three target types: Recipe, Internal Item, Inventory Item — switching type swaps dropdown list
+- Modifier rows also use dropdowns for ingredient/recipe fields
+- Outlet Overrides section uses the same dropdown treatment for consistency
+
+**Data model for mapping drawer:** `MAPPING_DATA` object keyed by item slug; every row in the table must have an entry — non-clickable rows are a UX defect.
 
 Key patterns:
 - Master mapping set: `Table interactions` with sort/filter by outlet, variant, menu category.
@@ -527,6 +557,91 @@ Key patterns:
 - Overwrite warning: `Confirm dialog` (tone = warn) — required before overwriting existing mappings.
 - Outlets cannot modify: outlet view shows read-only `Structured list` + `Notification` ("Managed by HQ — contact your administrator").
 - Variant replication: `Multi-select` to choose which variants to push for outlets with partial menu differences.
+
+#### 4.5.2 Monitoring (`pos-mapping-monitoring.html`)
+
+**Page canvas:** `data-measure="wide"` (1280px).
+
+Three focused sections — in this order, no deviation:
+
+**Section 1 — System Health Bar** (always visible, above everything):
+```html
+<div class="health-bar">  <!-- flex row, single line -->
+  <div class="health-dot ok/warn/risk"></div>
+  <div class="health-text"><strong>N outlets need attention</strong> <span>· X of Y fully synced</span></div>
+  <div class="health-chips">  <!-- pill-style chips, rightmost -->
+    <span class="h-chip risk">N dark</span>
+    <span class="h-chip warn">N mapping gaps</span>
+  </div>
+</div>
+```
+Shows `ok` dot when all clear, `warn` or `risk` with issue counts otherwise. HQ-only — hide in Standalone mode.
+
+**Section 2 — Outlets Requiring Attention** (HQ only, below Sloan agent card if present):
+Attention cards prioritised: dark outlets (🔴) → sync failures (🟠) → mapping gaps (🟡).
+
+Each card uses a 4-column grid: `4px severity bar | 40px icon | 1fr body | auto CTA`
+```css
+.attn-card { display: grid; grid-template-columns: 4px 40px 1fr auto; }
+.attn-severity.risk { background: #DC2626; }  /* full-height left strip */
+```
+Body must include: title (outlet name + issue), detail line, and **COGS impact line** — the implication of the dark/gap state on inventory accuracy. CTA always links to `outlet-detail.html` for POS config or `pos-mapping.html` for mapping gaps.
+
+**Section 3 — All Outlets table** (HQ only):
+Compact 6-column table: Outlet · Group · POS System · Last Sync · Coverage (bar + X/Y) · Status pill. No push buttons, no bulk select checkboxes — this is a read surface.
+
+Every row is clickable → opens **outlet detail drawer** (see §4.7).
+
+**What to remove from Monitoring:** trend sparkline tiles, Active Issues section (consolidate into attention cards), Connection Health section (consolidate into outlet table), push confirm dialog, push buttons.
+
+#### 4.5.3 Outlet detail drawer (from Monitoring table row click)
+
+Width: 460px. Slides in from right, `transform: translateX(100%) → translateX(0)`, `transition: 240ms cubic-bezier(0.32,0,0.15,1)`. Backdrop overlay at z-index 400, drawer at z-index 401. ESC key closes.
+
+Three-part content based on outlet state:
+
+**Connected outlet:**
+1. POS Connection KV list (System, Connection type, Connection ID, Status pill, Last sync, Transactions today)
+2. **14-day transaction bar chart** (SVG inline — see §4.8)
+3. Mapping Coverage section (progress bar + pct + status banner)
+4. Recent Sync History (last 4 entries: dot + monospace timestamp + note)
+
+**Dark outlet (no POS):**
+1. Red banner "No POS configured" with COGS impact explanation
+2. 0% coverage section with red "No mapping data available" banner
+3. No sync history
+
+**Footer always:**
+- Dark outlet: `"POS config is managed in Outlet Settings" + btn-primary "Configure in Outlet Settings →"` linking to `outlet-detail.html`
+- Connected outlet: `btn-secondary "Outlet Settings →"` + `btn-secondary "View mapping →"` linking to respective pages
+
+**Rule:** POS configuration lives in `outlet-detail.html`. The monitoring drawer is read-only for config — never inline editing of POS settings.
+
+#### 4.5.4 Inline SVG transaction chart
+
+Used in the outlet drawer to show 14-day daily transaction volume.
+
+```js
+function renderTxChart(history) {
+  // history: array of 14 daily tx counts (oldest → today)
+  // Returns HTML string with SVG + labels
+  const barW = 20, gap = 5, chartH = 56, labelH = 18;
+  // bars: weekends at 50% opacity, regular days at 28%, today at 100%
+  // overlay: polyline connecting bar tops at 45% stroke opacity
+  // avg line: dashed 1px --border horizontal
+  // today dot: filled circle at 3px radius on the line
+  // x-axis labels: date numbers, today in --text-accent bold
+}
+```
+
+Chart anatomy:
+- **Bars**: `fill="var(--text-accent)"` with `fill-opacity` — full for today, 50% for weekends, 28% for weekdays
+- **Trend line**: `<polyline>` connecting midpoints of bars, `stroke="var(--text-accent)"` at 45% opacity
+- **Average line**: dashed `<line>` at `stroke="var(--border)"` — quiet reference, not a focal element
+- **Today dot**: `<circle r="3">` at line endpoint
+- **Labels**: date numbers below bars; "Today" label in footer via `justify-content: space-between` flex row
+
+`preserveAspectRatio="none"` + `width="100%"` makes the chart fill the drawer width responsively.
 
 ### 4.6 Phase 2 — Reporting dashboard
 

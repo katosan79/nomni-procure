@@ -4,8 +4,9 @@
     {
       "name": "zeemart",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8080"],
-      "port": 8080
+      "runtimeArgs": ["-m", "http.server", "8888"],
+      "port": 8888,
+      "workingDirectory": "/Users/melonrhyme/Documents/Zeemart-2.0"
     }
   ]
 }
