@@ -374,7 +374,29 @@
       display: flex;
       gap: var(--space-sm);
       margin-bottom: var(--space-lg);
+      justify-content: space-between;
+      flex-wrap: wrap;
     }
+    .sessions-actions-left { display: flex; gap: var(--space-sm); }
+    .filter-select {
+      height: var(--control-h);
+      padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+    .outlet-link { font-weight: 500; color: var(--text-link); background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; font-size: 14px; }
+    .outlet-link:hover { text-decoration: underline; }
     .cadence-badge {
       font-size: 10px; font-weight: 600;
       padding: 1px 6px;
@@ -977,8 +999,13 @@
 
         <!-- Actions -->
         <div class="sessions-actions">
-          <a class="btn btn-primary" href="new-count-session.html"><i class="ti ti-clipboard-list"></i>New count session</a>
-          <a class="btn btn-outline" href="spot-count.html"><i class="ti ti-clipboard-plus"></i>Spot count</a>
+          <div class="sessions-actions-left">
+            <a class="btn btn-primary" href="new-count-session.html"><i class="ti ti-clipboard-list"></i>New count session</a>
+            <a class="btn btn-outline" href="spot-count.html"><i class="ti ti-clipboard-plus"></i>Spot count</a>
+          </div>
+          <select class="filter-select" id="sessions-outlet-filter" aria-label="Filter by outlet" onchange="renderSessions()">
+            <option value="">All outlets</option>
+          </select>
         </div>
 
         <!-- Sessions table -->
@@ -997,6 +1024,10 @@
             </thead>
             <tbody id="sessions-tbody"></tbody>
           </table>
+          <div class="empty-state" id="sessions-empty" style="display:none;padding:var(--space-2xl);text-align:center;color:var(--text-soft);">
+            <i class="ti ti-clipboard-off" aria-hidden="true" style="font-size:24px;display:block;margin-bottom:var(--space-sm);"></i>
+            No sessions match this outlet.
+          </div>
         </div>
 
       </div>
@@ -1449,6 +1480,9 @@
     const HEALTH_ICON = { risk: 'alert-triangle', warn: 'alert-circle', pending: 'clock' };
     let _healthView = 'severity';
 
+    function outletSlug(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
+    function goToOutlet(name) { window.location = 'outlet-inventory.html?outlet=' + outletSlug(name); }
+
     function healthTileHTML(o) {
       if (o.status === 'pending') {
         return `<div class="health-review-wrap">
@@ -1459,11 +1493,12 @@
           <div class="health-review-menu" role="menu">
             <button class="health-review-item" role="menuitem" onclick="markOutletReviewed(event,'${o.name}',this)"><i class="ti ti-check" aria-hidden="true"></i>Mark reviewed</button>
             <button class="health-review-item" role="menuitem" onclick="flagOutletIssue(event,'${o.name}',this)"><i class="ti ti-flag" aria-hidden="true"></i>Flag issue</button>
+            <button class="health-review-item" role="menuitem" onclick="goToOutlet('${o.name}')"><i class="ti ti-clipboard-list" aria-hidden="true"></i>View count activity</button>
           </div>
         </div>`;
       }
       const icon = HEALTH_ICON[o.status];
-      return `<button class="health-tile ${o.status}" onclick="invToast('${o.name}: ${o.reason}')">
+      return `<button class="health-tile ${o.status}" onclick="goToOutlet('${o.name}')" title="View ${o.name} count activity">
         <span class="health-tile-name"><i class="ti ti-${icon}" aria-hidden="true"></i>${o.name}</span>
         <span class="health-tile-sub">${o.reason}</span>
       </button>`;
@@ -1514,10 +1549,10 @@
     function markOutletReviewed(e, name, btn) {
       e.stopPropagation();
       const wrap = btn.closest('.health-review-wrap');
-      wrap.outerHTML = `<span class="health-tile ok" style="cursor:default;">
+      wrap.outerHTML = `<button class="health-tile ok" onclick="goToOutlet('${name}')" title="View ${name} count activity">
         <span class="health-tile-name"><i class="ti ti-check" aria-hidden="true"></i>${name}</span>
         <span class="health-tile-sub">Reviewed · on track</span>
-      </span>`;
+      </button>`;
       invToast(name + ' marked reviewed');
       addInvActivity(`${name}'s stock count reviewed and cleared`, 'Keith Tan');
     }
@@ -1525,7 +1560,7 @@
     function flagOutletIssue(e, name, btn) {
       e.stopPropagation();
       const wrap = btn.closest('.health-review-wrap');
-      wrap.outerHTML = `<button class="health-tile warn" onclick="invToast('${name}: flagged for follow-up')">
+      wrap.outerHTML = `<button class="health-tile warn" onclick="goToOutlet('${name}')" title="View ${name} count activity">
         <span class="health-tile-name"><i class="ti ti-alert-circle" aria-hidden="true"></i>${name}</span>
         <span class="health-tile-sub">Flagged for follow-up</span>
       </button>`;
@@ -1867,10 +1902,32 @@
     function fmt(n) { return n==null?'—':'$'+n.toLocaleString(); }
     function fmtPct(p) { return p==null?'—':p.toFixed(1)+'%'; }
 
+    function populateSessionsOutletFilter() {
+      const sel = document.getElementById('sessions-outlet-filter');
+      if (!sel || sel.options.length > 1) return;
+      [...new Set(SESSIONS.map(s => s.outlet))].sort().forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    }
+
     function renderSessions() {
       const tbody = document.getElementById('sessions-tbody');
+      const table = document.getElementById('sessions-table');
+      const empty = document.getElementById('sessions-empty');
       if (!tbody) return;
-      tbody.innerHTML = SESSIONS.map(s => {
+      populateSessionsOutletFilter();
+      const filterVal = document.getElementById('sessions-outlet-filter')?.value || '';
+      const filtered = filterVal ? SESSIONS.filter(s => s.outlet === filterVal) : SESSIONS;
+      if (!filtered.length) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+      table.style.display = '';
+      empty.style.display = 'none';
+      tbody.innerHTML = filtered.map(s => {
         const reqSheets = s.sheets.filter(sh=>sh.required);
         const doneReq   = reqSheets.filter(sh=>sh.status==='submitted'||sh.status==='carried-forward').length;
         const totalReq  = reqSheets.length;
@@ -1902,7 +1959,7 @@
             <div style="font-weight:600;color:var(--text);">${s.period}</div>
             <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-soft);">${s.id}</div>
           </td>
-          <td>${s.outlet}</td>
+          <td onclick="event.stopPropagation()"><button class="outlet-link" onclick="goToOutlet('${s.outlet}')">${s.outlet}</button></td>
           <td>${sheetsCell}</td>
           <td>${statusBadge}</td>
           <td class="num tabular">${fmt(s.actualCogs)}</td>
