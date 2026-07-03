@@ -955,6 +955,70 @@
     /* num column alignment */
     .data-table th.num, .data-table td.num { text-align: right; }
 
+    /* ── Overview tab ── */
+    .ov-value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-lg); }
+    .ov-metric { background: var(--surface-soft); border-radius: var(--radius-md); padding: var(--space-lg); }
+    .ov-metric-label { font-size: 13px; color: var(--text-soft); margin: 0 0 4px; }
+    .ov-metric-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; margin: 0; }
+    .ov-metric-sub { font-size: 12px; color: var(--text-soft); margin: 6px 0 0; }
+    .ov-delta-bar { display: flex; align-items: center; gap: var(--space-sm); border-radius: var(--radius-md); padding: 10px 14px; margin-top: var(--space-md); font-size: 13px; flex-wrap: wrap; }
+    .ov-delta-bar.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .ov-delta-bar.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .ov-delta-bar.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .ov-delta-link { margin-left: auto; font-weight: 700; text-decoration: underline; white-space: nowrap; color: inherit; cursor: pointer; background: none; border: none; font-family: inherit; font-size: 13px; }
+
+    /* Outlet health grid */
+    .health-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-lg); }
+    .health-toggle { display: flex; align-items: center; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 3px; gap: 2px; }
+    .health-toggle-btn { padding: 5px var(--space-md); border-radius: calc(var(--radius-md) - 2px); font-size: 12px; font-weight: 600; color: var(--text-soft); background: none; border: none; cursor: pointer; white-space: nowrap; font-family: inherit; }
+    .health-toggle-btn.active { background: var(--seaweed); color: var(--cream); }
+    .health-group-label { font-size: 12px; color: var(--text-soft); margin: 0 0 6px; font-weight: 600; }
+    .health-tiles { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-bottom: var(--space-lg); }
+    .health-tile { display: flex; flex-direction: column; gap: 4px; border-radius: var(--radius-md); padding: 8px 10px; min-width: 112px; cursor: pointer; border: none; font-family: inherit; text-align: left; }
+    .health-tile-name { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; }
+    .health-tile-sub { font-size: 11px; }
+    .health-tile.ok      { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .health-tile.warn    { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .health-tile.risk    { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .health-tile.pending { background: var(--surface); color: var(--text-soft); border: 1px solid var(--border); }
+    .health-review-wrap { position: relative; display: inline-flex; }
+    .health-review-menu { position: absolute; left: 0; top: 100%; margin-top: var(--space-xs); z-index: 70; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); min-width: 160px; padding: var(--space-xs) 0; display: none; }
+    .health-review-menu.open { display: block; }
+    .health-review-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-lg); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .health-review-item:hover { background: var(--surface-soft); }
+    .health-legend { display: flex; flex-wrap: wrap; gap: var(--space-lg); border-top: 1px solid var(--border); padding-top: var(--space-md); }
+    .health-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-soft); }
+    .health-legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* Weekly pulse strip */
+    .pulse-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-sm); }
+    .pulse-day { display: flex; flex-direction: column; gap: 6px; cursor: pointer; border: none; background: none; font-family: inherit; padding: 6px 4px; border-radius: var(--radius-sm); }
+    .pulse-day:hover { background: var(--surface-soft); }
+    .pulse-day.today { background: var(--surface-soft); border: 1px solid var(--border); }
+    .pulse-day-label { font-size: 11px; color: var(--text-soft); text-align: center; }
+    .pulse-day-label.today { color: var(--text); font-weight: 700; }
+    .pulse-bar-track { height: 6px; border-radius: 3px; overflow: hidden; background: var(--border); }
+    .pulse-bar-fill { display: block; height: 100%; }
+    .pulse-bar-fill.ok { background: var(--fern); }
+    .pulse-bar-fill.risk { background: var(--status-risk-fg); }
+    .pulse-bar-outline { height: 6px; border-radius: 3px; border: 1px dashed var(--border); }
+    .pulse-day-count { font-size: 12px; text-align: center; font-feature-settings: 'tnum' 1; }
+    .pulse-day-count.risk { color: var(--status-risk-fg); font-weight: 700; }
+    .pulse-day-count.muted { color: var(--text-soft); }
+
+    /* Needs-attention pills + trend */
+    .ov-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; }
+    .ov-pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .ov-pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .ov-pill.ok   { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .ov-trend.risk { color: var(--status-risk-fg); font-weight: 600; }
+    .ov-trend.warn { color: var(--status-warn-fg); font-weight: 600; }
+    .ov-trend.flat { color: var(--text-soft); }
+    .ov-trend.down { color: var(--status-ok-fg); }
+
+    @media (max-width: 900px) { .pulse-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 480px) { .pulse-grid { grid-template-columns: repeat(3, 1fr); } }
+
     @media (max-width: 768px) {
       .sessions-kpi { grid-template-columns: repeat(2, 1fr); }
     }
@@ -1189,49 +1253,165 @@
         Inventory items are managed by HQ. You can view them, but adding, editing, and removing items is restricted to HQ.
       </div>
 
-      <!-- Agent strip: Vera (Needs you) first, Otto (Proposed) second -->
-      <div class="agent-strip">
-        <article class="agent-surface" id="vera-card" data-agent-fn="variance">
-          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
-            <div class="agent-card-head">
-              <span class="agent-avatar" data-agent="vera" aria-hidden="true">Ve</span>
-              <span class="agent-id"><span class="agent-name">Vera</span><span class="agent-role">Variance agent</span></span>
-              <span class="agent-card-spacer"></span>
-              <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
-            </div>
-            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">3 outlets above risk threshold — Dry goods at Bondi Beach is 25× the network average</p>
-            <p class="agent-why">Bondi Beach Dry goods (Olive Oil 1L) shows 25.0% A vs T variance — 10 bottles actual vs 6 theoretical. Surry Hills and Newtown also above escalate tier. No waste logs or transfers explain the gap.</p>
-            <div class="agent-actions">
-              <button class="nb-btn primary" onclick="window.location='inventory-analytics.html'"><i class="ti ti-chart-dots" aria-hidden="true"></i>View heat map</button>
-              <button class="nb-btn" onclick="invToast('Dismissed — Vera keeps watching')">Dismiss</button>
-            </div>
-          </div>
-        </article>
-        <article class="agent-surface" id="otto-card" data-agent-fn="ordering">
-          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
-            <div class="agent-card-head">
-              <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
-              <span class="agent-id"><span class="agent-name">Otto</span><span class="agent-role">Ordering agent</span></span>
-              <span class="agent-card-spacer"></span>
-              <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
-            </div>
-            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">8 items below par — drafts ready. Also: 4 par levels are out of step with 4-week sales cadence</p>
-            <p class="agent-why">Replenishment drafts staged for Chicken Breast, Avocado and 6 others. Separately, rolling 4-week usage data suggests 4 items (Chicken Breast, Avocado, Feta Cheese, Mixed Leaf) have par levels that no longer reflect real demand — see Templates → Dynamic Par for recommendations.</p>
-            <div class="agent-actions">
-              <button class="nb-btn primary" onclick="resolveAgent('otto-card','Approved — 8 replenishment drafts sent to outlets')"><i class="ti ti-check" aria-hidden="true"></i>Approve drafts</button>
-              <button class="nb-btn" onclick="window.location='inventory-governance.html'"><i class="ti ti-chart-line" aria-hidden="true"></i>View par suggestions</button>
-            </div>
-          </div>
-        </article>
-      </div>
-
       <!-- Sub-module tabs (IN-6/7/9/10 entry points) -->
       <div class="inv-tabs" role="tablist" aria-label="Inventory modules">
-        <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('counts')"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Stock counts</button>
+        <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('overview')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Overview</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('counts')"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Stock counts</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('transfers')"><i class="ti ti-transfer" aria-hidden="true"></i>Transfers</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('waste')"><i class="ti ti-trash-x" aria-hidden="true"></i>Waste</button>
         <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('production')"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>Production</button>
       </div>
+
+      <!-- ══ Panel: Overview (monitoring — default landing tab) ══ -->
+      <div class="inv-panel active" id="panel-overview">
+
+        <!-- Agent strip: Vera (Needs you) first, Otto (Proposed) second -->
+        <div class="agent-strip">
+          <article class="agent-surface" id="vera-card" data-agent-fn="variance">
+            <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+              <div class="agent-card-head">
+                <span class="agent-avatar" data-agent="vera" aria-hidden="true">Ve</span>
+                <span class="agent-id"><span class="agent-name">Vera</span><span class="agent-role">Variance agent</span></span>
+                <span class="agent-card-spacer"></span>
+                <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
+              </div>
+              <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">3 outlets above risk threshold — Dry goods at Bondi Beach is 25× the network average</p>
+              <p class="agent-why">Bondi Beach Dry goods (Olive Oil 1L) shows 25.0% A vs T variance — 10 bottles actual vs 6 theoretical. Surry Hills and Newtown also above escalate tier. No waste logs or transfers explain the gap.</p>
+              <div class="agent-actions">
+                <button class="nb-btn primary" onclick="window.location='inventory-analytics.html'"><i class="ti ti-chart-dots" aria-hidden="true"></i>View heat map</button>
+                <button class="nb-btn" onclick="invToast('Dismissed — Vera keeps watching')">Dismiss</button>
+              </div>
+            </div>
+          </article>
+          <article class="agent-surface" id="otto-card" data-agent-fn="ordering">
+            <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+              <div class="agent-card-head">
+                <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
+                <span class="agent-id"><span class="agent-name">Otto</span><span class="agent-role">Ordering agent</span></span>
+                <span class="agent-card-spacer"></span>
+                <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+              </div>
+              <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">8 items below par — drafts ready. Also: 4 par levels are out of step with 4-week sales cadence</p>
+              <p class="agent-why">Replenishment drafts staged for Chicken Breast, Avocado and 6 others. Separately, rolling 4-week usage data suggests 4 items (Chicken Breast, Avocado, Feta Cheese, Mixed Leaf) have par levels that no longer reflect real demand — see Templates → Dynamic Par for recommendations.</p>
+              <div class="agent-actions">
+                <button class="nb-btn primary" onclick="resolveAgent('otto-card','Approved — 8 replenishment drafts sent to outlets')"><i class="ti ti-check" aria-hidden="true"></i>Approve drafts</button>
+                <button class="nb-btn" onclick="window.location='inventory-governance.html'"><i class="ti ti-chart-line" aria-hidden="true"></i>View par suggestions</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Stock value -->
+        <div class="sub-card">
+          <div class="sub-card-title">Stock value</div>
+          <div class="ov-value-grid">
+            <div class="ov-metric">
+              <p class="ov-metric-label">Live theoretical</p>
+              <p class="ov-metric-value">$284,600</p>
+              <p class="ov-metric-sub">As of 2:14pm today · last count + purchases − POS-driven usage</p>
+            </div>
+            <div class="ov-metric">
+              <p class="ov-metric-label">Last count (actual)</p>
+              <p class="ov-metric-value">$271,200</p>
+              <p class="ov-metric-sub">Counts completed 18–24 Jun · 109 of 124 outlets</p>
+            </div>
+          </div>
+          <div class="ov-delta-bar risk">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+            <span><strong>$13,400 (4.9%)</strong> gap between live and last count — escalate tier</span>
+            <button class="ov-delta-link" onclick="window.location='inventory-analytics.html'">See drivers →</button>
+          </div>
+        </div>
+
+        <!-- Outlet health grid -->
+        <div class="sub-card">
+          <div class="health-head">
+            <div>
+              <div class="sub-card-title" style="margin-bottom:2px;">Outlet health this cycle</div>
+              <div class="sub-card-sub" style="margin-bottom:0;">109 of 124 counted · overdue is computed against each outlet's count-template cadence</div>
+            </div>
+            <div class="health-toggle" role="tablist" aria-label="Outlet health view">
+              <button class="health-toggle-btn active" onclick="setHealthView('severity', this)">Sort by severity</button>
+              <button class="health-toggle-btn" onclick="setHealthView('group', this)">Group by region</button>
+            </div>
+          </div>
+
+          <div id="health-grid-body"></div>
+
+          <div class="health-legend">
+            <span class="health-legend-item"><span class="health-legend-dot" style="background:var(--status-ok-fg)"></span>On track</span>
+            <span class="health-legend-item"><span class="health-legend-dot" style="background:var(--status-warn-fg)"></span>Needs attention</span>
+            <span class="health-legend-item"><span class="health-legend-dot" style="background:var(--status-risk-fg)"></span>Escalate</span>
+            <span class="health-legend-item"><span class="health-legend-dot" style="background:var(--text-soft)"></span>Awaiting review</span>
+          </div>
+        </div>
+
+        <!-- Weekly pulse strip -->
+        <div class="sub-card">
+          <div class="health-head" style="margin-bottom:var(--space-md);">
+            <div class="sub-card-title" style="margin-bottom:0;">This week</div>
+            <div class="sub-card-sub" style="margin-bottom:0;">From count templates · 22–28 Jun</div>
+          </div>
+          <div class="pulse-grid" id="pulse-grid"></div>
+        </div>
+
+        <!-- Needs attention -->
+        <div class="table-card">
+          <div class="section-header" style="cursor:default;">
+            <div class="section-header-left"><span class="section-title">Needs attention · sorted by days of stock remaining</span></div>
+            <span style="font-size:12px;color:var(--text-soft);">5 of 188 items</span>
+          </div>
+          <table class="data-table" aria-label="Items needing attention">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>On hand / par</th>
+                <th class="num">Days left</th>
+                <th>7-day usage</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-name">Olive Oil 1L</td>
+                <td class="tabular">4 <span style="color:var(--text-soft)">/ 8 btl</span></td>
+                <td class="num tabular" style="color:var(--status-risk-fg);font-weight:700;">1 day</td>
+                <td class="ov-trend risk"><i class="ti ti-arrow-up" aria-hidden="true"></i> up 40%</td>
+                <td><span class="ov-pill risk"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Reorder now</span></td>
+              </tr>
+              <tr>
+                <td class="cell-name">Chicken Breast 500g</td>
+                <td class="tabular">8 <span style="color:var(--text-soft)">/ 10 kg</span></td>
+                <td class="num tabular" style="color:var(--status-risk-fg);font-weight:700;">2 days</td>
+                <td class="ov-trend risk"><i class="ti ti-arrow-up" aria-hidden="true"></i> up 18%</td>
+                <td><span class="ov-pill risk"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Reorder now</span></td>
+              </tr>
+              <tr>
+                <td class="cell-name">Avocado</td>
+                <td class="tabular">22 <span style="color:var(--text-soft)">/ 50 ea</span></td>
+                <td class="num tabular" style="color:var(--status-warn-fg);font-weight:700;">4 days</td>
+                <td class="ov-trend warn"><i class="ti ti-arrow-up" aria-hidden="true"></i> up 9%</td>
+                <td><span class="ov-pill warn"><i class="ti ti-clock" aria-hidden="true"></i>Order soon</span></td>
+              </tr>
+              <tr>
+                <td class="cell-name">Roma Tomatoes</td>
+                <td class="tabular">14 <span style="color:var(--text-soft)">/ 12 kg</span></td>
+                <td class="num tabular" style="color:var(--status-warn-fg);font-weight:700;">5 days</td>
+                <td class="ov-trend flat"><i class="ti ti-arrow-right" aria-hidden="true"></i> flat</td>
+                <td><span class="ov-pill warn"><i class="ti ti-clock" aria-hidden="true"></i>Order soon</span></td>
+              </tr>
+              <tr>
+                <td class="cell-name">Feta Cheese</td>
+                <td class="tabular">9 <span style="color:var(--text-soft)">/ 5 kg</span></td>
+                <td class="num tabular">9 days</td>
+                <td class="ov-trend down"><i class="ti ti-arrow-down" aria-hidden="true"></i> down 12%</td>
+                <td><span class="ov-pill ok"><i class="ti ti-eye" aria-hidden="true"></i>Monitor</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /panel-overview -->
 
       <!-- ══ Panel: Master items — moved to items.html ══ -->
       <div class="inv-panel" id="panel-items">
@@ -1493,7 +1673,7 @@
       </div><!-- /panel-items -->
 
       <!-- ══ Panel: Stock counts (IN-6) ══ -->
-      <div class="inv-panel active" id="panel-counts">
+      <div class="inv-panel" id="panel-counts">
 
         <!-- KPI strip -->
         <div class="sessions-kpi">
@@ -2090,6 +2270,161 @@
       if (hash && document.getElementById('panel-' + hash)) {
         switchTab(hash);
       }
+    });
+
+    /* ══════════════════════════════════════════════════════
+       Overview tab — outlet health grid + weekly pulse strip
+    ══════════════════════════════════════════════════════ */
+
+    // Overdue/health status is computed against each outlet's assigned
+    // count-template cadence (see inventory-governance.html → HQ Count
+    // Templates). NSW Metro runs the weekly template, VIC Metro fortnightly.
+    const OUTLET_GROUPS = [
+      { name: 'NSW Metro', total: 68, onTrack: 64, outlets: [
+        { name: 'Bondi Beach',   status: 'risk', reason: 'Escalate · overdue 14d' },
+        { name: 'Newtown',       status: 'risk', reason: '2 anomalies flagged' },
+        { name: 'Surry Hills',   status: 'warn', reason: '6.3% variance' },
+        { name: 'Parramatta',    status: 'warn', reason: 'New outlet · monitor' },
+      ]},
+      { name: 'VIC Metro', total: 56, onTrack: 53, outlets: [
+        { name: 'Richmond',  status: 'warn',    reason: '3.9% variance' },
+        { name: 'St Kilda',  status: 'warn',    reason: '4.2% variance' },
+        { name: 'Fitzroy',   status: 'pending', reason: 'Counted · awaiting review' },
+      ]},
+    ];
+    const HEALTH_ICON = { risk: 'alert-triangle', warn: 'alert-circle', pending: 'clock' };
+    let _healthView = 'severity';
+
+    function healthTileHTML(o) {
+      if (o.status === 'pending') {
+        return `<div class="health-review-wrap">
+          <button class="health-tile pending" onclick="toggleHealthReview(event,this)">
+            <span class="health-tile-name"><i class="ti ti-clock" aria-hidden="true"></i>${o.name}</span>
+            <span class="health-tile-sub">${o.reason}</span>
+          </button>
+          <div class="health-review-menu" role="menu">
+            <button class="health-review-item" role="menuitem" onclick="markOutletReviewed(event,'${o.name}',this)"><i class="ti ti-check" aria-hidden="true"></i>Mark reviewed</button>
+            <button class="health-review-item" role="menuitem" onclick="flagOutletIssue(event,'${o.name}',this)"><i class="ti ti-flag" aria-hidden="true"></i>Flag issue</button>
+          </div>
+        </div>`;
+      }
+      const icon = HEALTH_ICON[o.status];
+      return `<button class="health-tile ${o.status}" onclick="invToast('${o.name}: ${o.reason}')">
+        <span class="health-tile-name"><i class="ti ti-${icon}" aria-hidden="true"></i>${o.name}</span>
+        <span class="health-tile-sub">${o.reason}</span>
+      </button>`;
+    }
+
+    function onTrackChipHTML(count) {
+      return `<span class="health-tile ok" style="cursor:default;">
+        <span class="health-tile-name"><i class="ti ti-check" aria-hidden="true"></i>+${count} on track</span>
+      </span>`;
+    }
+
+    function renderHealthGrid() {
+      const body = document.getElementById('health-grid-body');
+      if (!body) return;
+      if (_healthView === 'group') {
+        body.innerHTML = OUTLET_GROUPS.map(g => {
+          const tiles = g.outlets.map(healthTileHTML).join('');
+          return `<p class="health-group-label">${g.name} · ${g.total} outlets</p>
+            <div class="health-tiles">${tiles}${onTrackChipHTML(g.onTrack)}</div>`;
+        }).join('');
+      } else {
+        const rank = { risk: 3, warn: 2, pending: 1 };
+        const flagged = OUTLET_GROUPS.flatMap(g => g.outlets).sort((a, b) => rank[b.status] - rank[a.status]);
+        const totalOnTrack = OUTLET_GROUPS.reduce((s, g) => s + g.onTrack, 0);
+        body.innerHTML = `<div class="health-tiles">${flagged.map(healthTileHTML).join('')}${onTrackChipHTML(totalOnTrack)}</div>`;
+      }
+    }
+
+    function setHealthView(mode, btn) {
+      _healthView = mode;
+      document.querySelectorAll('.health-toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderHealthGrid();
+    }
+
+    function toggleHealthReview(e, btn) {
+      e.stopPropagation();
+      const menu = btn.nextElementSibling;
+      document.querySelectorAll('.health-review-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.health-review-wrap')) {
+        document.querySelectorAll('.health-review-menu.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    function markOutletReviewed(e, name, btn) {
+      e.stopPropagation();
+      const wrap = btn.closest('.health-review-wrap');
+      wrap.outerHTML = `<span class="health-tile ok" style="cursor:default;">
+        <span class="health-tile-name"><i class="ti ti-check" aria-hidden="true"></i>${name}</span>
+        <span class="health-tile-sub">Reviewed · on track</span>
+      </span>`;
+      invToast(name + ' marked reviewed');
+      addInvActivity(`${name}'s stock count reviewed and cleared`, 'Keith Tan');
+    }
+
+    function flagOutletIssue(e, name, btn) {
+      e.stopPropagation();
+      const wrap = btn.closest('.health-review-wrap');
+      wrap.outerHTML = `<button class="health-tile warn" onclick="invToast('${name}: flagged for follow-up')">
+        <span class="health-tile-name"><i class="ti ti-alert-circle" aria-hidden="true"></i>${name}</span>
+        <span class="health-tile-sub">Flagged for follow-up</span>
+      </button>`;
+      invToast(name + ' flagged for follow-up');
+      addInvActivity(`${name}'s stock count flagged for follow-up`, 'Keith Tan');
+    }
+
+    // This week's counts — expected due dates come from each outlet's count
+    // template cadence; "done" is filled in as sessions are submitted.
+    const PULSE_WEEK = [
+      { label: 'Mon 22', state: 'done',   total: 12, done: 12 },
+      { label: 'Tue 23', state: 'done',   total: 8,  done: 7  },
+      { label: 'Wed 24', state: 'done',   total: 10, done: 10 },
+      { label: 'Thu 25', state: 'today',  total: 9,  done: 5  },
+      { label: 'Fri 26', state: 'future', total: 11, done: 0  },
+      { label: 'Sat 27', state: 'future', total: 3,  done: 0  },
+      { label: 'Sun 28', state: 'future', total: 0,  done: 0  },
+    ];
+
+    function renderPulseStrip() {
+      const grid = document.getElementById('pulse-grid');
+      if (!grid) return;
+      grid.innerHTML = PULSE_WEEK.map(d => {
+        if (d.state === 'future') {
+          const countText = d.total > 0 ? `${d.total} due` : 'None due';
+          return `<button class="pulse-day" onclick="invToast('${d.label}: ${countText}')">
+            <span class="pulse-day-label">${d.label}</span>
+            <span class="pulse-bar-outline"></span>
+            <span class="pulse-day-count muted">${countText}</span>
+          </button>`;
+        }
+        const isToday = d.state === 'today';
+        const missed = d.total - d.done;
+        const pct = d.total ? Math.round((d.done / d.total) * 100) : 100;
+        const barClass = (!isToday && missed > 0) ? 'risk' : 'ok';
+        const countLabel = isToday ? `${d.done}/${d.total} so far` : `${d.done}/${d.total}`;
+        const countClass = (!isToday && missed > 0) ? 'risk' : '';
+        return `<button class="pulse-day ${isToday ? 'today' : ''}" onclick="goToDayCounts('${d.label}')">
+          <span class="pulse-day-label ${isToday ? 'today' : ''}">${d.label}${isToday ? ' · today' : ''}</span>
+          <span class="pulse-bar-track"><span class="pulse-bar-fill ${barClass}" style="width:${pct}%;"></span></span>
+          <span class="pulse-day-count ${countClass}">${countLabel}</span>
+        </button>`;
+      }).join('');
+    }
+
+    function goToDayCounts(label) {
+      invToast('Opening sessions for ' + label);
+      switchTab('counts');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderHealthGrid();
+      renderPulseStrip();
     });
 
     /* ── Production drawer ── */
