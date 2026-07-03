@@ -67,6 +67,10 @@
     .conc-bar { display: flex; height: 36px; border-radius: var(--radius-md); overflow: hidden; gap: 2px; }
     .conc-seg { height: 100%; cursor: pointer; transition: filter var(--dur-1); flex-shrink: 0; }
     .conc-seg:hover { filter: brightness(0.88); }
+    .conc-wrap { position: relative; }
+    .conc-tooltip { position: absolute; bottom: calc(100% + 8px); left: 0; transform: translateX(-50%); background: var(--surface-deep); color: var(--cream); font-size: 12px; font-weight: 600; padding: var(--space-xs) var(--space-md); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity var(--dur-1) var(--ease-standard); z-index: 20; font-feature-settings: 'tnum' 1; }
+    .conc-tooltip.visible { opacity: 1; }
+    .conc-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--surface-deep); }
     .conc-legend { display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-xl); }
     .conc-item { display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; }
     .conc-item:hover .conc-name { text-decoration: underline; }
@@ -231,6 +235,8 @@
           <span class="panel-meta">$681k total · click a segment to view supplier</span>
         </div>
         <div class="panel-body">
+          <div class="conc-wrap" id="conc-wrap">
+          <div class="conc-tooltip" id="conc-tooltip" role="tooltip" aria-hidden="true"></div>
           <div class="conc-bar" role="list">
             <div class="conc-seg" style="width:20.8%;background:#17B3A3;" title="Harbour Meats · $142k · 20.8%"   onclick="go('harbour-meats')" role="listitem" tabindex="0"></div>
             <div class="conc-seg" style="width:15.7%;background:#129B41;" title="Fresh Produce Co · $107k · 15.7%" onclick="go('fresh-produce-co')" role="listitem" tabindex="0"></div>
@@ -243,6 +249,7 @@
             <div class="conc-seg" style="width:6.5%;background:#F5890A;"  title="Bakery Direct · $44k · 6.5%"     onclick="go('bakery-direct')" role="listitem" tabindex="0"></div>
             <div class="conc-seg" style="width:6.3%;background:#9CA3AF;"  title="Aussie Farms · $43k · 6.3%"      onclick="go('aussie-farms')" role="listitem" tabindex="0"></div>
           </div>
+          </div><!-- /conc-wrap -->
           <div class="conc-legend">
             <div class="conc-item" onclick="go('harbour-meats')"><div class="conc-dot" style="background:#17B3A3;"></div><span class="conc-name">Harbour Meats</span><span class="conc-pct">20.8%</span></div>
             <div class="conc-item" onclick="go('fresh-produce-co')"><div class="conc-dot" style="background:#129B41;"></div><span class="conc-name">Fresh Produce Co</span><span class="conc-pct">15.7%</span></div>
@@ -444,6 +451,30 @@
       const label = sel.value === 'all' ? 'All outlets' : sel.value;
       showToast('Filtered to ' + label);
     }
+
+    /* Concentration bar hover tooltip */
+    (function () {
+      const wrap = document.getElementById('conc-wrap');
+      const tip  = document.getElementById('conc-tooltip');
+      if (!wrap || !tip) return;
+      wrap.querySelectorAll('.conc-seg').forEach(seg => {
+        const show = () => {
+          tip.textContent = seg.getAttribute('title');
+          const x = Math.max(70, Math.min(seg.offsetLeft + seg.offsetWidth / 2, wrap.offsetWidth - 70));
+          tip.style.left = x + 'px';
+          tip.classList.add('visible');
+          tip.setAttribute('aria-hidden', 'false');
+        };
+        const hide = () => {
+          tip.classList.remove('visible');
+          tip.setAttribute('aria-hidden', 'true');
+        };
+        seg.addEventListener('mouseenter', show);
+        seg.addEventListener('mouseleave', hide);
+        seg.addEventListener('focus', show);
+        seg.addEventListener('blur', hide);
+      });
+    })();
 
     let _t;
     function showToast(msg) {

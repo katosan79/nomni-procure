@@ -251,6 +251,25 @@
     .step2-selected-sku { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md); background:var(--surface-soft); border-radius:var(--radius-md); margin-bottom:var(--space-lg); font-size:13px; border:1px solid var(--border); }
     .step2-selected-sku i { color:var(--text-accent); font-size:16px; }
 
+    /* ── Bulk price edit mode ── */
+    .bulk-bar { position:sticky; top:0; z-index:20; display:none; align-items:center; gap:var(--space-md); padding:var(--space-sm) var(--space-lg); background:var(--surface-deep); color:var(--cream); flex-wrap:wrap; border-bottom:1px solid var(--border); }
+    .bulk-bar.active { display:flex; }
+    .bulk-bar-text { font-size:13px; font-weight:600; flex:1; min-width:180px; font-feature-settings:'tnum' 1; }
+    .bulk-pct-group { display:flex; align-items:center; gap:var(--space-xs); }
+    .bulk-pct-input { width:70px; height:32px; padding:0 var(--space-sm); border:1.5px solid color-mix(in srgb,var(--cream) 25%,transparent); border-radius:var(--radius-md); background:transparent; color:var(--cream); font-size:13px; font-weight:600; font-family:inherit; outline:none; font-feature-settings:'tnum' 1; text-align:right; }
+    .bulk-pct-input:focus { border-color:var(--spring); }
+    .bulk-pct-label { font-size:12px; color:var(--cream); opacity:0.75; }
+    .btn-bulk-ghost { background:none; border-color:color-mix(in srgb,var(--cream) 30%,transparent); color:var(--cream); }
+    .btn-bulk-ghost:hover { border-color:var(--cream); color:var(--cream); background:color-mix(in srgb,var(--cream) 10%,transparent); }
+    .bulk-price-input { width:90px; height:32px; padding:0 var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:13px; font-weight:700; font-feature-settings:'tnum' 1; color:var(--text); background:var(--surface-soft); outline:none; font-family:inherit; text-align:right; }
+    .bulk-price-input:focus { border-color:var(--fern); }
+    .bulk-editing .data-table tbody tr { cursor:default; }
+    .bulk-editing .price-edit-btn, .bulk-editing .price-changed-badge { display:none; }
+
+    /* Yield note (drawer) */
+    .yield-note { font-size:12px; color:var(--text-soft); margin-top:var(--space-xs); }
+    .yield-note strong { color:var(--text); font-feature-settings:'tnum' 1; }
+
     /* Toast */
     #toast-wrap { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:var(--space-sm); align-items:center; pointer-events:none; }
   </style>
@@ -324,6 +343,7 @@
         <span class="card-title"><i class="ti ti-list-details"></i>Line items</span>
         <div style="display:flex;align-items:center;gap:var(--space-sm);">
           <span style="font-size:12px;color:var(--text-soft);" id="items-summary">7 items · 1 unlinked</span>
+          <button class="btn btn-outline btn-sm" id="bulk-edit-btn" onclick="toggleBulkEdit()"><i class="ti ti-pencil"></i>Bulk edit prices</button>
         </div>
       </div>
 
@@ -345,6 +365,18 @@
           <button class="filter-pill" onclick="setFilter(this,'unlinked')">Unlinked <span style="background:var(--status-warn-fg);color:#fff;border-radius:9999px;padding:0 5px;font-size:10px;margin-left:3px;">1</span></button>
           <button class="filter-pill" onclick="setFilter(this,'changed')">Price changed</button>
         </div>
+      </div>
+
+      <!-- Bulk edit action bar -->
+      <div class="bulk-bar" id="bulk-bar">
+        <span class="bulk-bar-text" id="bulk-bar-text">Bulk edit mode — 0 prices changed</span>
+        <div class="bulk-pct-group">
+          <input class="bulk-pct-input" id="bulk-pct-input" type="number" step="0.1" placeholder="0" aria-label="Percent adjustment"/>
+          <span class="bulk-pct-label">%</span>
+          <button class="btn btn-sm btn-bulk-ghost" onclick="applyBulkPct()">Apply %</button>
+        </div>
+        <button class="btn btn-sm btn-bulk-ghost" onclick="cancelBulkEdit()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveBulkEdit()"><i class="ti ti-device-floppy"></i>Save all</button>
       </div>
 
       <!-- Table -->
@@ -705,6 +737,7 @@
       linked: true,
       itemMeta: 'Protein · Poultry · Used in 8 recipes',
       costBasis: 47.50,
+      yield: 0.87,
       recipes: [
         { name: 'Chicken Parmigiana',    sell: 26.00, itemCost: 2.05, otherCost: 5.55 },
         { name: 'Chicken Caesar Salad',  sell: 22.00, itemCost: 1.85, otherCost: 4.45 },
@@ -728,6 +761,7 @@
       linked: true,
       itemMeta: 'Protein · Poultry · Used in 4 recipes',
       costBasis: 38.00,
+      yield: 0.82,
       recipes: [
         { name: 'Chicken Souvlaki Plate', sell: 23.00, itemCost: 1.70, otherCost: 4.60 },
         { name: 'Karaage Bao (2pc)',      sell: 16.00, itemCost: 1.10, otherCost: 3.30 },
@@ -750,6 +784,7 @@
       linked: true,
       itemMeta: 'Protein · Beef · Used in 11 recipes',
       costBasis: 22.50,
+      yield: 1.0,
       recipes: [
         { name: 'Beef Ragu Rigatoni',  sell: 24.00, itemCost: 1.90, otherCost: 4.90 },
         { name: 'Smash Burger Double', sell: 21.00, itemCost: 2.30, otherCost: 3.80 },
@@ -772,6 +807,7 @@
       linked: true,
       itemMeta: 'Protein · Beef · Used in 3 recipes',
       costBasis: 52.00,
+      yield: 0.95,
       recipes: [
         { name: 'Steak Frites 200g', sell: 42.00, itemCost: 10.40, otherCost: 3.20 },
         { name: 'Surf & Turf',       sell: 52.00, itemCost: 10.40, otherCost: 6.90 },
@@ -791,6 +827,7 @@
       linked: true,
       itemMeta: 'Protein · Pork · Used in 2 recipes',
       costBasis: 28.00,
+      yield: 1.0,
       recipes: [
         { name: 'Bangers & Mash', sell: 22.00, itemCost: 2.10, otherCost: 4.20 },
         { name: 'Big Breakfast',  sell: 24.00, itemCost: 1.40, otherCost: 5.50 },
@@ -810,6 +847,7 @@
       linked: true,
       itemMeta: 'Protein · Lamb · Used in 2 recipes',
       costBasis: 45.00,
+      yield: 0.78,
       recipes: [
         { name: 'Lamb Rack, Salsa Verde',  sell: 46.00, itemCost: 11.25, otherCost: 1.90 },
         { name: 'Sunday Lamb Share Plate', sell: 68.00, itemCost: 16.90, otherCost: 3.00 },
@@ -874,6 +912,21 @@
     wrap.innerHTML = marginRowsHTML(item, val);
   }
 
+  // ── Yield / effective cost note ───────────────────────────────────────────
+  function yieldNoteHTML(item, price) {
+    const lossPct = Math.round((1 - item.yield) * 100);
+    return `Effective cost after ${lossPct}% trim loss: <strong>$${(price / item.yield).toFixed(2)}</strong> per ${item.uom}`;
+  }
+
+  function updateYieldNote() {
+    const item = ITEMS[_currentItem];
+    const el = document.getElementById('yield-note');
+    if (!item || !el || !((item.yield ?? 1) < 1)) return;
+    const val = parseFloat(document.getElementById('drawer-price-input').value);
+    if (isNaN(val) || val <= 0) return;
+    el.innerHTML = yieldNoteHTML(item, val);
+  }
+
   function countBreaches(item, newPrice) {
     if (!item.recipes) return 0;
     return item.recipes.filter(r =>
@@ -883,6 +936,7 @@
 
   // ── Drawer ────────────────────────────────────────────────────────────────
   function openDrawer(itemId) {
+    if (_bulkMode) return; // row clicks must not open the drawer while bulk editing
     const item = ITEMS[itemId];
     if (!item) return;
     _currentItem = itemId;
@@ -932,13 +986,14 @@
         <div class="drawer-section-label">Outlet price</div>
         <div class="price-edit-field">
           <span class="price-prefix">$</span>
-          <input class="price-input" id="drawer-price-input" type="number" step="0.01" value="${item.outletPrice.toFixed(2)}" oninput="markUnsaved();updateMarginImpact()"/>
+          <input class="price-input" id="drawer-price-input" type="number" step="0.01" value="${item.outletPrice.toFixed(2)}" oninput="markUnsaved();updateMarginImpact();updateYieldNote()"/>
           <span class="price-context">per ${item.uom}</span>
         </div>
         <div class="catalogue-price">
           <span class="badge">Catalogue</span>
           Supplier's catalogue price: <strong style="font-feature-settings:'tnum' 1;">$${item.cataloguePrice.toFixed(2)}</strong>
         </div>
+        ${(item.yield ?? 1) < 1 ? `<div class="yield-note" id="yield-note">${yieldNoteHTML(item, item.outletPrice)}</div>` : ''}
       </div>
       ${marginImpactHTML(item, item.outletPrice)}
       <div>
@@ -958,6 +1013,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
           <div><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">SKU code</div><div style="font-size:13px;font-weight:500;font-family:'IBM Plex Mono',monospace;">${item.sku}</div></div>
           <div><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Pack size</div><div style="font-size:13px;font-weight:500;">${item.pack}</div></div>
+          <div><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Standard yield</div><div style="font-size:13px;font-weight:500;">${Math.round((item.yield ?? 1) * 100)}%${(item.yield ?? 1) < 1 ? ' · trim loss included in recipe costing' : ''}</div></div>
           <div style="grid-column:1/-1;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Description</div><div style="font-size:13px;font-weight:500;color:var(--text-soft);">${item.skuDesc}</div></div>
         </div>
       </div>`;
@@ -995,9 +1051,103 @@
 
   function markUnsaved() { _unsaved = true; }
 
+  // ── Bulk price edit mode ──────────────────────────────────────────────────
+  let _bulkMode = false;
+
+  function bulkInputs() {
+    return Array.from(document.querySelectorAll('#items-tbody .bulk-price-input'));
+  }
+
+  function bulkChangedCount() {
+    return bulkInputs().filter(inp => {
+      const v = parseFloat(inp.value);
+      return !isNaN(v) && Math.abs(v - parseFloat(inp.dataset.original)) >= 0.005;
+    }).length;
+  }
+
+  function updateBulkCount() {
+    const n = bulkChangedCount();
+    document.getElementById('bulk-bar-text').textContent = `Bulk edit mode — ${n} price${n !== 1 ? 's' : ''} changed`;
+  }
+
+  function toggleBulkEdit() {
+    if (_bulkMode) { cancelBulkEdit(); return; }
+    _bulkMode = true;
+    document.getElementById('items-card').classList.add('bulk-editing');
+    document.getElementById('bulk-bar').classList.add('active');
+    document.getElementById('bulk-edit-btn').innerHTML = '<i class="ti ti-x"></i>Exit bulk edit';
+    document.querySelectorAll('#items-tbody tr[data-item]').forEach(tr => {
+      const item = ITEMS[tr.dataset.item];
+      const cell = tr.querySelector('.price-cell');
+      const val = tr.querySelector('.price-val');
+      if (!item || !cell || !val || cell.querySelector('.bulk-price-input')) return;
+      val.style.display = 'none';
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = '0.01';
+      input.min = '0';
+      input.className = 'bulk-price-input';
+      input.value = item.outletPrice.toFixed(2);
+      input.dataset.original = item.outletPrice.toFixed(2);
+      input.addEventListener('input', updateBulkCount);
+      input.addEventListener('click', e => e.stopPropagation());
+      cell.insertBefore(input, val);
+    });
+    updateBulkCount();
+  }
+
+  function applyBulkPct() {
+    const pct = parseFloat(document.getElementById('bulk-pct-input').value);
+    if (isNaN(pct) || pct === 0) { showToast('Enter a % adjustment first.'); return; }
+    bulkInputs().forEach(inp => {
+      const tr = inp.closest('tr');
+      if (tr && tr.style.display === 'none') return; // only visible rows
+      const v = parseFloat(inp.value);
+      if (isNaN(v)) return;
+      inp.value = (Math.round(v * (1 + pct / 100) * 100) / 100).toFixed(2);
+    });
+    updateBulkCount();
+  }
+
+  function exitBulkEdit() {
+    _bulkMode = false;
+    document.getElementById('items-card').classList.remove('bulk-editing');
+    document.getElementById('bulk-bar').classList.remove('active');
+    document.getElementById('bulk-pct-input').value = '';
+    document.getElementById('bulk-edit-btn').innerHTML = '<i class="ti ti-pencil"></i>Bulk edit prices';
+    bulkInputs().forEach(inp => inp.remove());
+    document.querySelectorAll('#items-tbody .price-val').forEach(el => el.style.display = '');
+  }
+
+  function cancelBulkEdit() {
+    exitBulkEdit(); // inputs discarded — originals untouched
+  }
+
+  function saveBulkEdit() {
+    let changed = 0, breachTotal = 0;
+    bulkInputs().forEach(inp => {
+      const tr = inp.closest('tr');
+      const item = tr ? ITEMS[tr.dataset.item] : null;
+      const v = parseFloat(inp.value);
+      if (!item || isNaN(v) || v <= 0) return;
+      if (Math.abs(v - item.outletPrice) >= 0.005) {
+        changed++;
+        breachTotal += countBreaches(item, v); // before writing outletPrice
+        item.outletPrice = v;
+        const priceEl = tr.querySelector('.price-val');
+        if (priceEl) priceEl.textContent = '$' + v.toFixed(2);
+      }
+    });
+    exitBulkEdit();
+    let msg = `${changed} price${changed !== 1 ? 's' : ''} updated`;
+    if (breachTotal > 0) msg += ` · Mara will flag ${breachTotal} recipe${breachTotal !== 1 ? 's' : ''} above the FC target`;
+    showToast(msg);
+  }
+
   // ── Link-to-item modal (for unlinked rows) ───────────────────────────────
   let _linkSku = null;
   function openLinkModal(sku, name, pack) {
+    if (_bulkMode) return; // no modals while bulk editing
     _linkSku = {sku, name, pack};
     document.getElementById('modal-title').textContent = 'Link SKU to item';
     document.getElementById('modal-step-1').style.display = 'none';

@@ -123,6 +123,39 @@
     .panel-action { font-size: 12px; font-weight: 500; color: var(--text-link); text-decoration: none; }
     .panel-action:hover { text-decoration: underline; }
 
+    /* Supplier scorecard */
+    .scorecard-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-lg); }
+    .score-cell { display: flex; flex-direction: column; gap: var(--space-xs); padding: var(--space-lg); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); text-decoration: none; }
+    a.score-cell { cursor: pointer; transition: box-shadow var(--dur-1) var(--ease-standard), border-color var(--dur-1); }
+    a.score-cell:hover { box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--status-risk-fg) 35%, var(--border)); }
+    .score-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .score-value { font-size: 23px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.15; font-feature-settings: 'tnum' 1; display: flex; align-items: baseline; gap: var(--space-sm); flex-wrap: wrap; }
+    .score-value.ok   { color: var(--status-ok-fg); }
+    .score-value.warn { color: var(--status-warn-fg); }
+    .score-value.risk { color: var(--status-risk-fg); }
+    .score-trend { font-size: 12px; font-weight: 600; }
+    .score-trend.ok { color: var(--status-ok-fg); }
+    .score-sub { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    @media (max-width:1100px) { .scorecard-grid { grid-template-columns: 1fr 1fr; } }
+
+    /* Status filter row (Orders tab) */
+    .status-filter { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--border); background: var(--surface); }
+    .status-filter-btn { padding: 4px var(--space-md); border-radius: var(--radius-pill); font-size: 12px; font-weight: 600; color: var(--text-soft); background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-family: inherit; white-space: nowrap; transition: background var(--dur-1), color var(--dur-1), border-color var(--dur-1); }
+    .status-filter-btn:hover { color: var(--text); background: var(--surface-soft); }
+    .status-filter-btn.active { background: var(--seaweed); color: var(--cream); border-color: var(--seaweed); }
+
+    /* Empty state (Orders tab filter) */
+    .empty-state { padding: var(--space-3xl); text-align: center; }
+    .empty-state i { font-size: 32px; color: var(--text-soft); display: block; margin-bottom: var(--space-md); }
+    .empty-state-text { font-size: 13px; color: var(--text-soft); }
+
+    /* Items tab helpers */
+    .price-cell { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-md); }
+    .price-cell svg { display: block; flex-shrink: 0; }
+    .mono-ref { font-family: var(--font-mono, monospace); font-size: 12px; }
+    a.mono-ref { color: var(--text-link); text-decoration: none; }
+    a.mono-ref:hover { text-decoration: underline; }
+
     /* Exception callout */
     .exception-row { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) var(--space-lg); background: var(--status-risk-bg); border-radius: var(--radius-sm); }
     .exception-row i { color: var(--status-risk-fg); font-size: 15px; margin-top: 1px; flex-shrink: 0; }
@@ -408,6 +441,38 @@
 
         </div><!-- /two-col -->
 
+        <!-- Supplier scorecard -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Supplier scorecard</span>
+            <span class="panel-meta">This period · 89 orders</span>
+          </div>
+          <div class="panel-body">
+            <div class="scorecard-grid">
+              <div class="score-cell">
+                <div class="score-label">On-time delivery</div>
+                <div class="score-value ok">94% <span class="score-trend ok">▲ +2pts</span></div>
+                <div class="score-sub">5 late of 89 · avg delay 1.2 days</div>
+              </div>
+              <div class="score-cell">
+                <div class="score-label">Order accuracy</div>
+                <div class="score-value ok">96.6%</div>
+                <div class="score-sub">3 discrepancy GRNs · 89 orders</div>
+              </div>
+              <a class="score-cell" href="invoice-detail.html?id=INV-00889" aria-label="Price vs market list: 2 open exceptions — review INV-00889">
+                <div class="score-label">Price vs market list</div>
+                <div class="score-value risk"><i class="ti ti-alert-triangle" style="font-size:16px;"></i>2 open exceptions</div>
+                <div class="score-sub">$170 in dispute · INV-00889</div>
+              </a>
+              <div class="score-cell">
+                <div class="score-label">Dispute rate</div>
+                <div class="score-value warn">2.2%</div>
+                <div class="score-sub">2 of 89 orders disputed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Recent POs -->
         <div class="panel">
           <div class="panel-header">
@@ -489,19 +554,224 @@
 
       <!-- ── TAB: ORDERS ── -->
       <div class="tab-panel" id="tab-orders">
-        <div class="panel" style="padding:var(--space-3xl);text-align:center;">
-          <i class="ti ti-file-invoice" style="font-size:32px;color:var(--text-soft);display:block;margin-bottom:var(--space-md);"></i>
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:var(--space-xs);">Full orders list</div>
-          <div style="font-size:13px;color:var(--text-soft);">89 orders · filter by outlet, date, status — coming next</div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Orders</span>
+            <span class="panel-meta">89 orders this period · showing latest 10</span>
+          </div>
+          <div class="status-filter" role="group" aria-label="Filter orders by status">
+            <button class="status-filter-btn active" onclick="filterOrders(this,'all')">All</button>
+            <button class="status-filter-btn" onclick="filterOrders(this,'sent')">Sent</button>
+            <button class="status-filter-btn" onclick="filterOrders(this,'confirmed')">Confirmed</button>
+            <button class="status-filter-btn" onclick="filterOrders(this,'received')">Received</button>
+            <button class="status-filter-btn" onclick="filterOrders(this,'discrepancy')">Discrepancy</button>
+          </div>
+          <table class="data-table" id="orders-table">
+            <thead>
+              <tr>
+                <th>PO #</th>
+                <th>Date</th>
+                <th>Outlet</th>
+                <th class="r">Items</th>
+                <th class="r">Total</th>
+                <th>Status</th>
+                <th>Invoice</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr class="clickable" data-status="sent" onclick="location.href='order-detail.html?id=PO-5521'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5521</span></td>
+                <td style="color:var(--text-soft);">24 Jun 2026</td>
+                <td>Surry Hills</td>
+                <td class="r" style="color:var(--text-soft);">8</td>
+                <td class="r" style="font-weight:600;">$1,842</td>
+                <td><span class="pill info"><i class="ti ti-send"></i>Sent</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="confirmed" onclick="location.href='order-detail.html?id=PO-5519'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5519</span></td>
+                <td style="color:var(--text-soft);">23 Jun 2026</td>
+                <td>Bondi Beach</td>
+                <td class="r" style="color:var(--text-soft);">6</td>
+                <td class="r" style="font-weight:600;">$1,315</td>
+                <td><span class="pill soft"><i class="ti ti-circle-check"></i>Confirmed</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="sent" onclick="location.href='order-detail.html?id=PO-5517'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5517</span></td>
+                <td style="color:var(--text-soft);">23 Jun 2026</td>
+                <td>St Kilda</td>
+                <td class="r" style="color:var(--text-soft);">5</td>
+                <td class="r" style="font-weight:600;">$1,088</td>
+                <td><span class="pill info"><i class="ti ti-send"></i>Sent</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5516'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5516</span></td>
+                <td style="color:var(--text-soft);">22 Jun 2026</td>
+                <td>Bondi Beach</td>
+                <td class="r" style="color:var(--text-soft);">5</td>
+                <td class="r" style="font-weight:600;">$1,240</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="discrepancy" onclick="location.href='order-detail.html?id=PO-5514'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5514</span></td>
+                <td style="color:var(--text-soft);">21 Jun 2026</td>
+                <td>Surry Hills</td>
+                <td class="r" style="color:var(--text-soft);">9</td>
+                <td class="r" style="font-weight:600;">$2,104</td>
+                <td><span class="pill risk"><i class="ti ti-alert-triangle"></i>Discrepancy</span></td>
+                <td><a class="mono-ref" href="invoice-detail.html?id=INV-00889" onclick="event.stopPropagation();">INV-00889</a></td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5512'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5512</span></td>
+                <td style="color:var(--text-soft);">20 Jun 2026</td>
+                <td>Newtown</td>
+                <td class="r" style="color:var(--text-soft);">6</td>
+                <td class="r" style="font-weight:600;">$1,580</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td><a class="mono-ref" href="invoice-detail.html?id=INV-00887" onclick="event.stopPropagation();">INV-00887</a></td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5508'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5508</span></td>
+                <td style="color:var(--text-soft);">18 Jun 2026</td>
+                <td>CBD</td>
+                <td class="r" style="color:var(--text-soft);">12</td>
+                <td class="r" style="font-weight:600;">$2,350</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="confirmed" onclick="location.href='order-detail.html?id=PO-5505'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5505</span></td>
+                <td style="color:var(--text-soft);">17 Jun 2026</td>
+                <td>Richmond</td>
+                <td class="r" style="color:var(--text-soft);">3</td>
+                <td class="r" style="font-weight:600;">$705</td>
+                <td><span class="pill soft"><i class="ti ti-circle-check"></i>Confirmed</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5503'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5503</span></td>
+                <td style="color:var(--text-soft);">17 Jun 2026</td>
+                <td>Parramatta</td>
+                <td class="r" style="color:var(--text-soft);">4</td>
+                <td class="r" style="font-weight:600;">$890</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5498'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5498</span></td>
+                <td style="color:var(--text-soft);">15 Jun 2026</td>
+                <td>Richmond</td>
+                <td class="r" style="color:var(--text-soft);">7</td>
+                <td class="r" style="font-weight:600;">$1,720</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="empty-state" id="orders-empty" style="display:none;">
+            <i class="ti ti-filter-off"></i>
+            <div class="empty-state-text">No orders match this filter</div>
+          </div>
         </div>
       </div>
 
       <!-- ── TAB: ITEMS ── -->
       <div class="tab-panel" id="tab-items">
-        <div class="panel" style="padding:var(--space-3xl);text-align:center;">
-          <i class="ti ti-package" style="font-size:32px;color:var(--text-soft);display:block;margin-bottom:var(--space-md);"></i>
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:var(--space-xs);">Items ordered</div>
-          <div style="font-size:13px;color:var(--text-soft);">Price history, volume, market list coverage per item — coming next</div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Top items by spend</span>
+            <span class="panel-meta">Top 8 of 24 items · this period</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th class="r">Volume</th>
+                <th class="r">Spend</th>
+                <th class="r">Avg price · 6-mo trend</th>
+                <th>vs Market list</th>
+                <th>Market list coverage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="td-name">Chicken Breast 500g</div></td>
+                <td style="color:var(--text-soft);">Poultry</td>
+                <td class="r" style="color:var(--text-soft);">4,708 kg</td>
+                <td class="r" style="font-weight:600;">$42k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$8.92/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,18 L16,17 L32,15 L48,14 L64,9 L80,4 L80,24 L0,24Z" fill="url(#ig1)"/><polyline points="0,18 16,17 32,15 48,14 64,9 80,4" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill risk"><i class="ti ti-alert-triangle"></i>+6.2%</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Beef Mince 500g</div></td>
+                <td style="color:var(--text-soft);">Beef</td>
+                <td class="r" style="color:var(--text-soft);">2,214 kg</td>
+                <td class="r" style="font-weight:600;">$31k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$14.00/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,13 L16,12 L32,14 L48,11 L64,12 L80,10 L80,24 L0,24Z" fill="url(#ig2)"/><polyline points="0,13 16,12 32,14 48,11 64,12 80,10" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill ok">On list</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Pork Loin 1kg</div></td>
+                <td style="color:var(--text-soft);">Pork</td>
+                <td class="r" style="color:var(--text-soft);">1,543 kg</td>
+                <td class="r" style="font-weight:600;">$25k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$16.20/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,15 L16,14 L32,12 L48,13 L64,11 L80,12 L80,24 L0,24Z" fill="url(#ig3)"/><polyline points="0,15 16,14 32,12 48,13 64,11 80,12" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill ok">On list</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Lamb Rack</div></td>
+                <td style="color:var(--text-soft);">Lamb</td>
+                <td class="r" style="color:var(--text-soft);">412 kg</td>
+                <td class="r" style="font-weight:600;">$18k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$43.70/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,16 L16,13 L32,14 L48,11 L64,10 L80,8 L80,24 L0,24Z" fill="url(#ig4)"/><polyline points="0,16 16,13 32,14 48,11 64,10 80,8" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill ok">On list</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Salmon Fillet 200g</div></td>
+                <td style="color:var(--text-soft);">Seafood</td>
+                <td class="r" style="color:var(--text-soft);">339 kg</td>
+                <td class="r" style="font-weight:600;">$13k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$38.40/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,19 L16,17 L32,16 L48,12 L64,7 L80,3 L80,24 L0,24Z" fill="url(#ig5)"/><polyline points="0,19 16,17 32,16 48,12 64,7 80,3" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill risk"><i class="ti ti-alert-triangle"></i>+19.3%</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Duck Breast 300g</div></td>
+                <td style="color:var(--text-soft);">Poultry</td>
+                <td class="r" style="color:var(--text-soft);">187 kg</td>
+                <td class="r" style="font-weight:600;">$6.2k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$33.20/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,12 L16,13 L32,11 L48,13 L64,12 L80,11 L80,24 L0,24Z" fill="url(#ig6)"/><polyline points="0,12 16,13 32,11 48,13 64,12 80,11" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill ok">On list</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Chorizo Sausage 250g</div></td>
+                <td style="color:var(--text-soft);">Smallgoods</td>
+                <td class="r" style="color:var(--text-soft);">215 kg</td>
+                <td class="r" style="font-weight:600;">$4.1k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$19.10/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig7" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,14 L16,15 L32,13 L48,14 L64,12 L80,13 L80,24 L0,24Z" fill="url(#ig7)"/><polyline points="0,14 16,15 32,13 48,14 64,12 80,13" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill soft">—</span></td>
+                <td><span class="pill soft">No</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Beef Bones 1kg</div></td>
+                <td style="color:var(--text-soft);">Beef</td>
+                <td class="r" style="color:var(--text-soft);">520 kg</td>
+                <td class="r" style="font-weight:600;">$2.6k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$5.00/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig8" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,13 L16,13 L32,12 L48,13 L64,13 L80,12 L80,24 L0,24Z" fill="url(#ig8)"/><polyline points="0,13 16,13 32,12 48,13 64,13 80,12" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill soft">—</span></td>
+                <td><span class="pill soft">No</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -522,6 +792,19 @@
       document.querySelectorAll('.tab-panel').forEach(p => {
         p.classList.toggle('active', p.id === 'tab-' + id);
       });
+    }
+
+    /* Orders tab — status filter */
+    function filterOrders(btn, status) {
+      document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+      let visible = 0;
+      document.querySelectorAll('#orders-tbody tr').forEach(tr => {
+        const show = status === 'all' || tr.dataset.status === status;
+        tr.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('orders-table').style.display = visible ? '' : 'none';
+      document.getElementById('orders-empty').style.display = visible ? 'none' : 'block';
     }
 
     /* Period picker */

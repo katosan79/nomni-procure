@@ -193,6 +193,14 @@
         </div>
       </div>
 
+      <!-- Draft restore banner -->
+      <div id="draft-banner" style="display:none;align-items:center;gap:var(--space-md);padding:var(--space-md) var(--space-lg);background:var(--mint);border-radius:var(--radius-md);font-size:13px;">
+        <i class="ti ti-file-pencil" style="color:var(--text-accent);font-size:18px;flex-shrink:0;" aria-hidden="true"></i>
+        <span id="draft-banner-text" style="flex:1;font-weight:600;color:var(--text);"></span>
+        <button class="nb-btn primary" style="height:34px;" onclick="resumeDraft()"><i class="ti ti-player-play"></i>Resume draft</button>
+        <button class="nb-btn" style="height:34px;" onclick="discardDraft()">Discard</button>
+      </div>
+
       <!-- Stepper -->
       <div class="stepper" id="stepper" aria-label="Progress">
         <div class="step active" data-step="1"><span class="step-dot">1</span><span class="step-label">Setup</span></div>
@@ -488,8 +496,9 @@
       const existing = basket.find(b => b.name === item.name);
       if (existing) existing.qty += item.qty; else basket.push(item);
       renderBasket();
+      saveDraft();
     }
-    function removeBasket(name) { basket = basket.filter(b => b.name !== name); renderBasket(); }
+    function removeBasket(name) { basket = basket.filter(b => b.name !== name); renderBasket(); saveDraft(); }
     function basketTotal() { return basket.reduce((s,b)=>s+b.qty*b.unit,0); }
 
     function renderBasket() {
@@ -552,6 +561,7 @@
       orderType = t;
       document.getElementById('type-pr').classList.toggle('selected', t==='pr');
       document.getElementById('type-po').classList.toggle('selected', t==='po');
+      saveDraft();
     }
     function srcTab(id) {
       document.querySelectorAll('.src-panel').forEach(p=>p.classList.remove('active'));
@@ -736,6 +746,7 @@
         });
       }
       saveOrders(records);
+      clearDraft(); // order complete — the in-progress draft is no longer needed
     }
 
     /* ── Stepper navigation ── */
@@ -756,6 +767,7 @@
       document.getElementById('wizard-foot').style.display = 'flex';
       window.scrollTo({top:0, behavior:'smooth'});
       updateFootEst();
+      saveDraft();
     }
     function updateFootEst() {
       const e = document.getElementById('foot-est');
@@ -774,7 +786,64 @@
       document.querySelectorAll('.add-btn.added').forEach(b=>{ b.classList.remove('added'); });
       renderMarket();
       goStep(1);
+      clearDraft();
     }
+
+    /* ── Draft persistence (sessionStorage) ── */
+    const DRAFT_KEY = 'nomni_order_draft';
+    function saveDraft() {
+      try {
+        if (!basket.length || step === 4) { sessionStorage.removeItem(DRAFT_KEY); return; }
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+          basket,
+          orderType,
+          role,
+          outlet: document.getElementById('outlet-select').value,
+          step,
+        }));
+      } catch (e) { /* sessionStorage unavailable — non-fatal for the demo */ }
+    }
+    function clearDraft() {
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    }
+    function loadDraft() {
+      try {
+        const d = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
+        return (d && Array.isArray(d.basket) && d.basket.length) ? d : null;
+      } catch (e) { return null; }
+    }
+
+    let _pendingDraft = null;
+    function showDraftBanner() {
+      _pendingDraft = loadDraft();
+      if (!_pendingDraft) return;
+      const est = _pendingDraft.basket.reduce((s,b)=>s+b.qty*b.unit,0);
+      document.getElementById('draft-banner-text').textContent =
+        'Draft in progress — ' + _pendingDraft.basket.length + ' item' + (_pendingDraft.basket.length!==1?'s':'') + ' · est $' + est.toFixed(0);
+      document.getElementById('draft-banner').style.display = 'flex';
+    }
+    function resumeDraft() {
+      const d = _pendingDraft;
+      if (!d) return;
+      document.getElementById('draft-banner').style.display = 'none';
+      if (d.role && d.role !== role) setRole(d.role);
+      basket = d.basket;
+      selectType(d.orderType || 'pr');
+      if (d.outlet) document.getElementById('outlet-select').value = d.outlet;
+      renderBasket();
+      const target = Math.min(Math.max(d.step || 2, 1), 3);
+      if (target === 3) buildReview();
+      goStep(target);
+      _pendingDraft = null;
+      noToast('Draft resumed — ' + basket.length + ' item' + (basket.length!==1?'s':'') + ' restored');
+    }
+    function discardDraft() {
+      clearDraft();
+      _pendingDraft = null;
+      document.getElementById('draft-banner').style.display = 'none';
+      noToast('Draft discarded');
+    }
+    document.getElementById('outlet-select').addEventListener('change', saveDraft);
 
     function noToast(msg) {
       const wrap = document.getElementById('no-toast');
@@ -784,7 +853,7 @@
       wrap.appendChild(t); setTimeout(()=>t.remove(),2600);
     }
 
-    renderOtto(); renderMarket(); renderBasket();
+    renderOtto(); renderMarket(); renderBasket(); showDraftBanner();
   </script>
 </body>
 </html>

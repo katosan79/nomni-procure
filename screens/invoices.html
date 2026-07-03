@@ -806,41 +806,54 @@
       document.getElementById('bulk-export-btn').style.display  = canExport  ? '' : 'none';
     }
 
-    /* ── Approve / Export ── */
+    /* ── Approve / Export — with 8-second undo window ── */
+    // Snapshot the status fields of the affected invoices before mutation,
+    // so Undo can restore them exactly and re-render.
+    function snapshotInvoices(invoices) {
+      return invoices.map(inv => ({ inv, status: inv.status, exportedTo: inv.exportedTo, exportedAt: inv.exportedAt }));
+    }
+    function restoreSnapshot(snap) {
+      snap.forEach(s => { s.inv.status = s.status; s.inv.exportedTo = s.exportedTo; s.inv.exportedAt = s.exportedAt; });
+      renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
     function approveInv(id, btn) {
       const inv = INV_DATA.find(i => i.id===id);
       if (!inv) return;
+      const snap = snapshotInvoices([inv]);
       inv.status = 'approved';
-      toast(id + ' approved · ready for export to Xero');
-      renderTable(); renderKPIs();
+      toastUndo(id + ' approved · ready for export to Xero', () => restoreSnapshot(snap));
+      renderTable(); renderKPIs(); buildCyrusInsights();
     }
 
     function exportInv(id, btn) {
       const inv = INV_DATA.find(i => i.id===id);
       if (!inv) return;
+      const snap = snapshotInvoices([inv]);
       inv.status = 'exported'; inv.exportedTo = 'Xero'; inv.exportedAt = 'Today';
-      toast(id + ' exported to Xero · reference generated');
-      renderTable(); renderKPIs();
+      toastUndo(id + ' exported to Xero', () => restoreSnapshot(snap));
+      renderTable(); renderKPIs(); buildCyrusInsights();
     }
 
     function bulkApprove() {
-      let n=0;
-      _selected.forEach(id => {
-        const inv = INV_DATA.find(i => i.id===id && i.status==='matched');
-        if (inv) { inv.status='approved'; n++; }
-      });
-      toast(n + ' invoice' + (n!==1?'s':'') + ' approved');
-      clearSel(); renderTable(); renderKPIs();
+      const affected = INV_DATA.filter(i => _selected.has(i.id) && i.status==='matched');
+      if (!affected.length) return;
+      const snap = snapshotInvoices(affected);
+      affected.forEach(inv => { inv.status = 'approved'; });
+      const n = affected.length;
+      toastUndo(n + ' invoice' + (n!==1?'s':'') + ' approved', () => restoreSnapshot(snap));
+      clearSel(); renderTable(); renderKPIs(); buildCyrusInsights();
     }
 
     function bulkExport() {
-      let n=0, total=0;
-      _selected.forEach(id => {
-        const inv = INV_DATA.find(i => i.id===id && i.status==='approved');
-        if (inv) { inv.status='exported'; inv.exportedTo='Xero'; n++; total+=inv.amount; }
-      });
-      toast(n + ' invoice' + (n!==1?'s':'') + ' · $' + total.toLocaleString() + ' exported to Xero');
-      clearSel(); renderTable(); renderKPIs();
+      const affected = INV_DATA.filter(i => _selected.has(i.id) && i.status==='approved');
+      if (!affected.length) return;
+      const snap = snapshotInvoices(affected);
+      let total = 0;
+      affected.forEach(inv => { inv.status='exported'; inv.exportedTo='Xero'; total += inv.amount; });
+      const n = affected.length;
+      toastUndo(n + ' invoice' + (n!==1?'s':'') + ' · $' + total.toLocaleString() + ' exported to Xero', () => restoreSnapshot(snap));
+      clearSel(); renderTable(); renderKPIs(); buildCyrusInsights();
     }
 
     /* ── Unlinked invoice actions ── */
@@ -1066,6 +1079,29 @@
       el.textContent = msg;
       document.getElementById('toast-wrap').appendChild(el);
       setTimeout(() => el.remove(), 3500);
+    }
+
+    /* ── Toast with inline Undo link (8-second window) ── */
+    function toastUndo(msg, undoFn) {
+      const el = document.createElement('div');
+      // pointer-events:auto — the wrap is pointer-events:none, but the Undo link must stay clickable
+      el.style.cssText = 'background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.18);pointer-events:auto;white-space:nowrap;max-width:460px;text-align:center;';
+      const txt = document.createElement('span');
+      txt.textContent = msg + ' · ';
+      const undo = document.createElement('a');
+      undo.href = '#';
+      undo.textContent = 'Undo';
+      undo.style.cssText = 'color:#fff;font-weight:700;text-decoration:underline;cursor:pointer;';
+      undo.addEventListener('click', e => {
+        e.preventDefault();
+        clearTimeout(timer);
+        el.remove();
+        undoFn();
+        toast('Undone — invoices restored to their previous status');
+      });
+      el.appendChild(txt); el.appendChild(undo);
+      document.getElementById('toast-wrap').appendChild(el);
+      const timer = setTimeout(() => el.remove(), 8000);
     }
 
     /* ── Cyrus agent insights ── */

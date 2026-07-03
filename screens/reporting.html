@@ -795,66 +795,101 @@
           <div class="chart-x-labels" id="gp-x-labels"></div>
         </div>
 
-        <!-- GP by outlet group + Mara reprice history -->
-        <div class="two-col">
-          <div class="chart-card">
-            <div class="chart-head"><div class="chart-title">GP% by outlet group</div><span style="font-size:12px;color:var(--text-soft)">Target 72%</span></div>
-            <div class="bar-list">
-              <div class="bar-row bar-row-5">
-                <div class="bar-label">NSW Metro</div>
-                <div class="bar-track" style="position:relative;"><div class="bar-fill ok" style="width:91%"></div><div class="target-marker" data-label="72%" style="left:89.5%"></div></div>
-                <div class="bar-value ok">73.2%</div>
-              </div>
-              <div class="bar-row bar-row-5">
-                <div class="bar-label">QLD Coastal</div>
-                <div class="bar-track" style="position:relative;"><div class="bar-fill ok" style="width:90%"></div><div class="target-marker" style="left:89.5%"></div></div>
-                <div class="bar-value ok">72.1%</div>
-              </div>
-              <div class="bar-row bar-row-5">
-                <div class="bar-label">VIC Metro</div>
-                <div class="bar-track" style="position:relative;"><div class="bar-fill warn" style="width:88%"></div><div class="target-marker" style="left:89.5%"></div></div>
-                <div class="bar-value warn">70.8%</div>
-              </div>
-              <div class="bar-row bar-row-5">
-                <div class="bar-label">SA &amp; WA</div>
-                <div class="bar-track" style="position:relative;"><div class="bar-fill risk" style="width:85.5%"></div><div class="target-marker" style="left:89.5%"></div></div>
-                <div class="bar-value risk">68.6%</div>
-              </div>
+        <!-- GP by outlet group -->
+        <div class="chart-card">
+          <div class="chart-head"><div class="chart-title">GP% by outlet group</div><span style="font-size:12px;color:var(--text-soft)">Target 72%</span></div>
+          <div class="bar-list">
+            <div class="bar-row bar-row-5">
+              <div class="bar-label">NSW Metro</div>
+              <div class="bar-track" style="position:relative;"><div class="bar-fill ok" style="width:91%"></div><div class="target-marker" data-label="72%" style="left:89.5%"></div></div>
+              <div class="bar-value ok">73.2%</div>
+            </div>
+            <div class="bar-row bar-row-5">
+              <div class="bar-label">QLD Coastal</div>
+              <div class="bar-track" style="position:relative;"><div class="bar-fill ok" style="width:90%"></div><div class="target-marker" style="left:89.5%"></div></div>
+              <div class="bar-value ok">72.1%</div>
+            </div>
+            <div class="bar-row bar-row-5">
+              <div class="bar-label">VIC Metro</div>
+              <div class="bar-track" style="position:relative;"><div class="bar-fill warn" style="width:88%"></div><div class="target-marker" style="left:89.5%"></div></div>
+              <div class="bar-value warn">70.8%</div>
+            </div>
+            <div class="bar-row bar-row-5">
+              <div class="bar-label">SA &amp; WA</div>
+              <div class="bar-track" style="position:relative;"><div class="bar-fill risk" style="width:85.5%"></div><div class="target-marker" style="left:89.5%"></div></div>
+              <div class="bar-value risk">68.6%</div>
             </div>
           </div>
+        </div>
 
-          <div class="panel">
-            <div class="panel-header"><span class="panel-title">Mara's reprice history</span><span style="font-size:12px;color:var(--text-soft)">$28.4k GP recovered</span></div>
-            <table class="data-table">
-              <thead><tr><th>When</th><th>Change</th><th class="r">Recipes</th><th class="r">GP recovered</th></tr></thead>
-              <tbody>
-                <tr>
-                  <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">Today</td>
-                  <td><div class="td-name">Avocado +$0.40</div><div class="td-sub">Smashed Avo, Avo Toast, Poke Bowl</div></td>
-                  <td class="r">3</td>
-                  <td class="r"><span class="delta up">+$8.4k</span></td>
-                </tr>
-                <tr>
-                  <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">5 days ago</td>
-                  <td><div class="td-name">Salmon +$1.50</div><div class="td-sub">Poke Bowl (salmon), Gravlax Toast</div></td>
-                  <td class="r">2</td>
-                  <td class="r"><span class="delta up">+$9.2k</span></td>
-                </tr>
-                <tr>
-                  <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">12 days ago</td>
-                  <td><div class="td-name">Coffee +$0.30</div><div class="td-sub">Flat white, long black, cappuccino</div></td>
-                  <td class="r">3</td>
-                  <td class="r"><span class="delta up">+$6.2k</span></td>
-                </tr>
-                <tr>
-                  <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">3 weeks ago</td>
-                  <td><div class="td-name">Dairy +$0.50</div><div class="td-sub">Croissant, Danish, Crème Brûlée + 2 more</div></td>
-                  <td class="r">5</td>
-                  <td class="r"><span class="delta up">+$4.6k</span></td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Mara reprice history -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Mara reprice history</span>
+            <span style="font-size:12px;color:var(--text-soft)">11 approved of 14 proposed · $28.4k GP recovered</span>
           </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Recipe</th>
+                <th class="r">Old price → New price</th>
+                <th class="r">GP% before → after</th>
+                <th>Trigger</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">12 Jun 2026</td>
+                <td><div class="td-name">Smashed Avo</div><div class="td-sub">Breakfast · 98 outlets</div></td>
+                <td class="r" style="white-space:nowrap">$22.00 → $22.90</td>
+                <td class="r" style="white-space:nowrap">61.8% → <span style="color:var(--status-ok-fg);font-weight:600;">65.4%</span></td>
+                <td style="font-size:12px;color:var(--text-soft);">Avocado +16.7% price exception · <a href="invoice-detail.html?id=INV-00885" style="font-size:12px;color:var(--text-link);text-decoration:none;">INV-00885 →</a></td>
+                <td><span class="pill warn"><i class="ti ti-loader-2"></i>Pending POS sync</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">12 Jun 2026</td>
+                <td><div class="td-name">Avo Toast</div><div class="td-sub">Breakfast · 86 outlets</div></td>
+                <td class="r" style="white-space:nowrap">$18.00 → $18.40</td>
+                <td class="r" style="white-space:nowrap">63.8% → <span style="color:var(--status-ok-fg);font-weight:600;">65.4%</span></td>
+                <td style="font-size:12px;color:var(--text-soft);">Avocado +16.7% price exception</td>
+                <td><span class="pill warn"><i class="ti ti-clock"></i>Awaiting approval</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">9 Jun 2026</td>
+                <td><div class="td-name">Chicken Caesar</div><div class="td-sub">Lunch · 124 outlets</div></td>
+                <td class="r" style="white-space:nowrap">$21.00 → $21.60</td>
+                <td class="r" style="white-space:nowrap">62.0% → 64.1%</td>
+                <td style="font-size:12px;color:var(--text-soft);">Chicken Breast +6.2% — <a href="invoice-detail.html?id=INV-00889" style="font-size:12px;color:var(--text-link);text-decoration:none;">INV-00889 →</a></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Live at 124 outlets</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">7 Jun 2026</td>
+                <td><div class="td-name">Poke Bowl (Salmon)</div><div class="td-sub">Lunch · 72 outlets</div></td>
+                <td class="r" style="white-space:nowrap">$24.00 → $25.50</td>
+                <td class="r" style="white-space:nowrap">60.0% → <span style="color:var(--status-ok-fg);font-weight:600;">65.8%</span></td>
+                <td style="font-size:12px;color:var(--text-soft);">Salmon Fillet +19.3% price exception</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Live at 72 outlets</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">31 May 2026</td>
+                <td><div class="td-name">Flat White</div><div class="td-sub">Beverages · 124 outlets</div></td>
+                <td class="r" style="white-space:nowrap">$4.50 → $4.80</td>
+                <td class="r" style="white-space:nowrap">63.2% → <span style="color:var(--status-ok-fg);font-weight:600;">66.1%</span></td>
+                <td style="font-size:12px;color:var(--text-soft);">Arabica Blend repriced +18.3%</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Live at 124 outlets</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-soft);font-size:12px;white-space:nowrap">24 May 2026</td>
+                <td><div class="td-name">Croissant</div><div class="td-sub">Bakery · 118 outlets</div></td>
+                <td class="r" style="white-space:nowrap">$6.50 → $6.90</td>
+                <td class="r" style="white-space:nowrap">64.0% → <span style="color:var(--status-ok-fg);font-weight:600;">66.2%</span></td>
+                <td style="font-size:12px;color:var(--text-soft);">Butter +9.1% — market list update</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Live at 118 outlets</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Recipe margin table -->

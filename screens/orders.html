@@ -82,6 +82,14 @@
     }
     .po-filter-count { font-size:11px; color:var(--text-soft); margin-left:auto; }
 
+    /* ── Bulk action bar ── */
+    .bulk-bar { display:none; align-items:center; gap:var(--space-md); padding:var(--space-sm) var(--space-xl); background:var(--mint); border:1px solid rgba(42,200,100,0.4); border-radius:var(--radius-lg); }
+    .bulk-bar.show { display:flex; }
+    .bulk-btn { display:inline-flex; align-items:center; gap:4px; height:34px; padding-inline:var(--space-md); border-radius:var(--radius-md); border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .bulk-btn:hover { border-color:var(--fern); color:var(--text-accent); }
+    .bulk-btn.primary { border:none; background:var(--btn-primary-bg); color:var(--btn-primary-fg); }
+    .bulk-btn.primary:hover { background:var(--btn-primary-hover); color:var(--btn-primary-fg); }
+
     /* Table */
     .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; }
     .data-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
@@ -93,6 +101,15 @@
     .data-table tbody tr { cursor: pointer; }
     .data-table tbody tr:hover td { background: rgba(42,200,100,0.05); }
     .cell-id { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
+    .data-table tbody tr.row-selected td { background: rgba(42,200,100,0.07); }
+    .data-table th.po-check, .data-table td.po-check { width: 36px; padding-right: 0; }
+    .po-check input { cursor: pointer; accent-color: var(--fern); width: 15px; height: 15px; vertical-align: middle; }
+
+    /* ── Table empty state ── */
+    .table-empty { display: none; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-sm); padding: var(--space-2xl); text-align: center; color: var(--text-soft); }
+    .table-empty.show { display: flex; }
+    .table-empty i { font-size: 28px; opacity: 0.7; }
+    .table-empty p { font-size: 13px; color: var(--text-soft); }
     .data-table tbody tr.row-new td { background: color-mix(in srgb, var(--spring) 9%, transparent); }
     .data-table tbody tr.row-new td:first-child { box-shadow: inset 3px 0 0 var(--fern); }
     .cell-name { font-weight: 600; color: var(--text); }
@@ -280,6 +297,10 @@
               </tr>
             </tbody>
           </table>
+          <div class="table-empty" id="pr-empty">
+            <i class="ti ti-clipboard-off" aria-hidden="true"></i>
+            <p>No requisitions here yet — Otto drafts them from par levels, or raise one with New order.</p>
+          </div>
         </div>
       </div>
 
@@ -377,21 +398,31 @@
           <button class="po-filter-btn" onclick="setPOFilter(this,'received')"><i class="ti ti-circle-check-filled" style="font-size:11px;color:var(--status-ok-fg);"></i>Received</button>
           <button class="po-filter-btn" onclick="setPOFilter(this,'delayed')"><i class="ti ti-alert-triangle" style="font-size:11px;color:var(--status-warn-fg);"></i>Delayed</button>
           <button class="po-filter-btn" onclick="setPOFilter(this,'discrepancy')"><i class="ti ti-alert-hexagon" style="font-size:11px;color:var(--status-risk-fg);"></i>Discrepancy</button>
-          <span class="po-filter-count" id="po-filter-count">6 orders</span>
+          <span class="po-filter-count" id="po-filter-count">11 orders</span>
+        </div>
+
+        <!-- Bulk action bar -->
+        <div class="bulk-bar" id="po-bulk-bar">
+          <span id="po-bulk-label" style="font-size:13px;font-weight:700;color:var(--spinach);white-space:nowrap;"></span>
+          <button class="bulk-btn primary" id="po-bulk-approve-btn" onclick="poBulkApprove()" style="display:none;"><i class="ti ti-circle-check"></i> Approve selected</button>
+          <button class="bulk-btn" onclick="poBulkExport()"><i class="ti ti-file-type-pdf"></i> Export PDF</button>
+          <button class="bulk-btn" onclick="poBulkReceive()"><i class="ti ti-package-import"></i> Mark received</button>
+          <button onclick="poClearSel()" aria-label="Clear selection" style="margin-left:auto;background:none;border:none;font-size:18px;color:var(--text-soft);cursor:pointer;line-height:1;"><i class="ti ti-x"></i></button>
         </div>
 
         <div class="table-card">
-          <table class="data-table" aria-label="Purchase orders">
-            <div class="attn-bar role-hq-only" style="margin-bottom:var(--space-md);">
-              <span style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;"><i class="ti ti-eye" style="margin-right:4px;"></i>Needs attention</span>
-              <span class="attn-chip warn" onclick="ordToast('Filtering: awaiting GRN…')"><i class="ti ti-package"></i> 1 awaiting GRN</span>
-              <span class="attn-chip risk" onclick="ordToast('Filtering: invoice on hold…')"><i class="ti ti-receipt-off"></i> 1 invoice on hold</span>
-              <span class="attn-chip info" onclick="ordToast('Filtering: invoice not yet uploaded…')"><i class="ti ti-upload"></i> 1 invoice missing</span>
-              <span class="attn-label">Showing all open orders</span>
-            </div>
-            <thead><tr><th>PO</th><th>Supplier</th><th>Outlet</th><th class="num">Value</th><th>Expected</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+          <div class="attn-bar role-hq-only" style="margin-bottom:var(--space-md);">
+            <span style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;"><i class="ti ti-eye" style="margin-right:4px;"></i>Needs attention</span>
+            <span class="attn-chip warn" onclick="ordToast('Filtering: awaiting GRN…')"><i class="ti ti-package"></i> 1 awaiting GRN</span>
+            <span class="attn-chip risk" onclick="ordToast('Filtering: invoice on hold…')"><i class="ti ti-receipt-off"></i> 1 invoice on hold</span>
+            <span class="attn-chip info" onclick="ordToast('Filtering: invoice not yet uploaded…')"><i class="ti ti-upload"></i> 1 invoice missing</span>
+            <span class="attn-label">Showing all open orders</span>
+          </div>
+          <table class="data-table" aria-label="Purchase orders" id="po-table">
+            <thead><tr><th class="po-check"><input type="checkbox" id="po-sel-all" onchange="poToggleAll(this.checked)" aria-label="Select all visible orders" onclick="event.stopPropagation()"/></th><th>PO</th><th>Supplier</th><th>Outlet</th><th class="num">Value</th><th>Expected</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
             <tbody data-stagger>
               <tr id="po-5521" onclick="location.href='order-detail.html?id=PO-5521'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5521</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$640</td>
                 <td class="cell-sub">14 Jun</td>
@@ -399,6 +430,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5521'">Review</button></td>
               </tr>
               <tr id="po-5513" onclick="location.href='order-detail.html?id=PO-5513'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5513<div style="margin-top:3px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:var(--radius-pill);background:color-mix(in srgb,#17B3A3 10%,transparent);color:#17B3A3;"><i class="ti ti-plus" style="font-size:10px;"></i>Add-on · PO-5521</span></div></td>
                 <td class="cell-name">Harbour Meats</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$185</td>
@@ -407,6 +439,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5513'">Review</button></td>
               </tr>
               <tr id="po-5519" onclick="location.href='order-detail.html?id=PO-5519'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5519</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Newtown</td>
                 <td class="num">$1,180</td>
                 <td class="cell-sub">15 Jun</td>
@@ -414,6 +447,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5519'">Review</button></td>
               </tr>
               <tr id="po-5520" onclick="location.href='order-detail.html?id=PO-5520'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5520</td><td class="cell-name">Fresh Produce Co</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$420</td>
                 <td class="cell-sub">13 Jun</td>
@@ -421,6 +455,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5520'">View</button></td>
               </tr>
               <tr id="po-5514" onclick="location.href='order-detail.html?id=PO-5514'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5514<div style="margin-top:3px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:var(--radius-pill);background:color-mix(in srgb,#17B3A3 10%,transparent);color:#17B3A3;"><i class="ti ti-plus" style="font-size:10px;"></i>Add-on · PO-5520</span></div></td>
                 <td class="cell-name">Fresh Produce Co</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$96</td>
@@ -429,6 +464,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5514'">View</button></td>
               </tr>
               <tr id="po-5517" onclick="location.href='order-detail.html?id=PO-5517'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5517</td><td class="cell-name">Harbour Meats<div style="margin-top:3px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:var(--radius-pill);background:color-mix(in srgb,var(--fern) 10%,transparent);color:var(--spinach);"><i class="ti ti-repeat" style="font-size:10px;"></i>SO-001</span></div></td><td class="cell-sub">Bondi Beach</td>
                 <td class="num">$280</td>
                 <td class="cell-sub">13 Jun</td>
@@ -436,6 +472,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5517'">View</button></td>
               </tr>
               <tr id="po-5518" onclick="location.href='order-detail.html?id=PO-5518'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5518</td><td class="cell-name">Pacific Drinks Wholesale</td><td class="cell-sub">Melbourne CBD</td>
                 <td class="num">$520</td>
                 <td class="cell-sub">14 Jun</td>
@@ -444,6 +481,7 @@
               </tr>
 
               <tr id="po-5515" onclick="location.href='order-detail.html?id=PO-5515&amp;tab=grn'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5515</td><td class="cell-name">Sydney Butchers Co.</td><td class="cell-sub">Bondi Beach</td>
                 <td class="num">$310</td>
                 <td class="cell-sub">12 Jun</td>
@@ -451,6 +489,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5515&amp;tab=grn'">Receive</button></td>
               </tr>
               <tr id="po-5512" onclick="location.href='order-detail.html?id=PO-5512'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5512</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Surry Hills</td>
                 <td class="num">$540</td>
                 <td class="cell-sub" style="color:var(--status-risk-fg);font-weight:600;">10 Jun</td>
@@ -458,6 +497,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="ordToast('Chasing Green Farmers on PO-5512…')">Chase</button> · <button class="link-action" onclick="openReceive('po-5512','Green Farmers Market')">Receive</button></td>
               </tr>
               <tr id="po-5510" onclick="location.href='order-detail.html?id=PO-5510'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5510</td><td class="cell-name">Green Farmers Market</td><td class="cell-sub">Parramatta Table</td>
                 <td class="num">$890</td>
                 <td class="cell-sub">9 Jun</td>
@@ -465,6 +505,7 @@
                 <td onclick="event.stopPropagation()"><button class="link-action" onclick="location.href='order-detail.html?id=PO-5510'">View</button></td>
               </tr>
               <tr id="po-5508" onclick="location.href='order-detail.html?id=PO-5508'">
+                <td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>
                 <td class="cell-id">PO-5508</td><td class="cell-name">Harbour Meats</td><td class="cell-sub">Newtown</td>
                 <td class="num">$470</td>
                 <td class="cell-sub">8 Jun</td>
@@ -473,6 +514,10 @@
               </tr>
             </tbody>
           </table>
+          <div class="table-empty" id="po-empty">
+            <i class="ti ti-clipboard-off" aria-hidden="true"></i>
+            <p>No purchase orders match this filter.</p>
+          </div>
         </div>
       </div>
 
@@ -730,7 +775,8 @@
             : '<button class="link-action" onclick="location.href=\'order-detail.html?id=' + rec.id + '\'">View</button>';
           const tr = document.createElement('tr');
           tr.className = 'row-new';
-          tr.innerHTML = '<td class="cell-id">' + rec.id + '</td>' +
+          tr.innerHTML = '<td class="po-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="poToggleRow(this)" aria-label="Select order"/></td>' +
+            '<td class="cell-id">' + rec.id + '</td>' +
             '<td class="cell-name">' + rec.supplier + '</td>' +
             '<td class="cell-sub">' + rec.outlet + '</td>' +
             '<td class="num">$' + rec.value.toLocaleString() + '</td>' +
@@ -752,8 +798,8 @@
     function approveInjected(btn) {
       const row = btn.closest('tr');
       const cells = row.querySelectorAll('td');
-      cells[5].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
-      cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
+      cells[cells.length - 2].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
+      cells[cells.length - 1].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
       ordToast('Approved and sent to supplier');
     }
 
@@ -811,9 +857,76 @@
       const row = document.getElementById(rowId);
       if (!row) return;
       const cells = row.querySelectorAll('td');
-      cells[5].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
-      cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
+      cells[cells.length - 2].innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
+      cells[cells.length - 1].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
       ordToast('Approved and sent to supplier');
+    }
+
+    /* ── PO bulk selection ── */
+    function poVisibleRows() {
+      return Array.from(document.querySelectorAll('#panel-po .data-table tbody tr')).filter(r => r.style.display !== 'none');
+    }
+    function poSelectedRows() {
+      return Array.from(document.querySelectorAll('#panel-po .data-table tbody tr.row-selected'));
+    }
+    function poToggleRow(cb) {
+      const row = cb.closest('tr');
+      if (row) row.classList.toggle('row-selected', cb.checked);
+      poUpdateBulkBar();
+    }
+    function poToggleAll(checked) {
+      poVisibleRows().forEach(row => {
+        const cb = row.querySelector('.po-check input');
+        if (!cb) return;
+        cb.checked = checked;
+        row.classList.toggle('row-selected', checked);
+      });
+      poUpdateBulkBar();
+    }
+    function poClearSel() {
+      const selAll = document.getElementById('po-sel-all');
+      if (selAll) selAll.checked = false;
+      document.querySelectorAll('#panel-po .data-table tbody tr').forEach(row => {
+        row.classList.remove('row-selected');
+        const cb = row.querySelector('.po-check input');
+        if (cb) cb.checked = false;
+      });
+      poUpdateBulkBar();
+    }
+    function poUpdateBulkBar() {
+      const bar = document.getElementById('po-bulk-bar');
+      if (!bar) return;
+      const rows = poSelectedRows();
+      const n = rows.length;
+      if (!n) { bar.classList.remove('show'); return; }
+      bar.classList.add('show');
+      document.getElementById('po-bulk-label').textContent = n + ' order' + (n !== 1 ? 's' : '') + ' selected';
+      const canApprove = rows.some(r => r.textContent.includes('Needs manager'));
+      document.getElementById('po-bulk-approve-btn').style.display = canApprove ? '' : 'none';
+    }
+    function poBulkApprove() {
+      let n = 0;
+      poSelectedRows().forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const statusCell = cells[cells.length - 2];
+        if (!statusCell.textContent.includes('Needs manager')) return;
+        statusCell.innerHTML = '<span class="nb-pill info"><i class="ti ti-send"></i>Sent</span><div class="cell-sub" style="margin-top:2px;">Awaiting supplier</div>';
+        const btn = cells[cells.length - 1].querySelector('.link-action');
+        if (btn && btn.textContent.trim() === 'Review') btn.textContent = 'View';
+        n++;
+      });
+      ordToast(n ? n + ' order' + (n !== 1 ? 's' : '') + ' approved and sent to suppliers' : 'No selected orders need manager approval');
+      poClearSel();
+    }
+    function poBulkExport() {
+      const n = poSelectedRows().length;
+      ordToast('Preparing PDF export for ' + n + ' order' + (n !== 1 ? 's' : '') + '…');
+      poClearSel();
+    }
+    function poBulkReceive() {
+      const n = poSelectedRows().length;
+      ordToast(n + ' order' + (n !== 1 ? 's' : '') + ' marked as received');
+      poClearSel();
     }
 
     /* ── Receiving (outlet action, PO-5) ── */
@@ -850,26 +963,46 @@
       items.forEach((it,i) => { const v = parseFloat(document.getElementById('recv-'+i)?.value); if (!isNaN(v) && v < it.q) short = true; });
       const damage = document.getElementById('recv-damage')?.checked;
       const discrepancy = short || damage;
-      if (row) {
-        const cells = row.querySelectorAll('td');
-        if (discrepancy) {
-          cells[5].innerHTML = '<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">Flagged on receipt</div>';
-          cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening 3-way match exception…\')">Resolve</button>';
-        } else {
-          cells[5].innerHTML = '<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span><div class="cell-sub" style="margin-top:2px;">Received today</div>';
-          cells[6].innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
-        }
-        row.classList.add('row-new');
-      }
       closeReceive();
-      ordToast(discrepancy ? 'Received with a discrepancy — flagged for review' : 'Goods received and confirmed');
+      if (!row) { ordToast('Goods received and confirmed'); return; }
+
+      const cells = row.querySelectorAll('td');
+      const statusCell = cells[cells.length - 2];
+      const actionCell = cells[cells.length - 1];
+      // Capture previous state so the receipt can be undone
+      const prevStatus = statusCell.innerHTML;
+      const prevAction = actionCell.innerHTML;
+      const hadRowNew = row.classList.contains('row-new');
+      const rec = PO_ROWS.find(r => r.id === receiveRowId);
+      const prevFilterStatus = rec ? rec.status : null;
+      if (rec) rec.status = discrepancy ? 'discrepancy' : 'received';
+
+      if (discrepancy) {
+        statusCell.innerHTML = '<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span><div class="cell-sub" style="margin-top:2px;color:var(--status-risk-fg);">Flagged on receipt</div>';
+        actionCell.innerHTML = '<button class="link-action" onclick="ordToast(\'Opening 3-way match exception…\')">Resolve</button>';
+      } else {
+        statusCell.innerHTML = '<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span><div class="cell-sub" style="margin-top:2px;">Received today</div>';
+        actionCell.innerHTML = '<button class="link-action" onclick="ordToast(\'Opening PO…\')">View</button>';
+      }
+      row.classList.add('row-new');
+
+      const poId = (row.querySelector('.cell-id')?.textContent.match(/PO-\d+/) || ['PO'])[0];
+      ordToastUndo('Receipt confirmed · ' + poId, () => {
+        statusCell.innerHTML = prevStatus;
+        actionCell.innerHTML = prevAction;
+        if (!hadRowNew) row.classList.remove('row-new');
+        if (rec && prevFilterStatus) rec.status = prevFilterStatus;
+        ordToast('Receipt reverted');
+      });
     }
 
     /* PO status filter */
     const PO_ROWS = [
       { id:'po-5521', status:'sent' },
+      { id:'po-5513', status:'sent' },
       { id:'po-5519', status:'sent' },
       { id:'po-5520', status:'sent' },
+      { id:'po-5514', status:'sent' },
       { id:'po-5517', status:'sent' },
       { id:'po-5518', status:'confirmed' },
       { id:'po-5515', status:'confirmed' },
@@ -880,16 +1013,28 @@
     function setPOFilter(btn, status) {
       document.querySelectorAll('.po-filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      let shown = 0;
       PO_ROWS.forEach(r => {
         const row = document.getElementById(r.id);
         if (!row) return;
         const visible = !status || r.status === status;
         row.style.display = visible ? '' : 'none';
-        if (visible) shown++;
+        if (!visible && row.classList.contains('row-selected')) {
+          row.classList.remove('row-selected');
+          const cb = row.querySelector('.po-check input');
+          if (cb) cb.checked = false;
+        }
       });
+      const shown = poVisibleRows().length;
       const countEl = document.getElementById('po-filter-count');
       if (countEl) countEl.textContent = shown + ' order' + (shown !== 1 ? 's' : '');
+      // Empty state when the filter yields zero rows
+      const table = document.getElementById('po-table');
+      const empty = document.getElementById('po-empty');
+      if (table) table.style.display = shown ? '' : 'none';
+      if (empty) empty.classList.toggle('show', !shown);
+      const selAll = document.getElementById('po-sel-all');
+      if (selAll && !shown) selAll.checked = false;
+      poUpdateBulkBar();
     }
 
     function ordToast(msg) {
@@ -899,6 +1044,21 @@
       t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
       wrap.appendChild(t);
       setTimeout(() => t.remove(), 3000);
+    }
+
+    /* Toast with an inline Undo link (8-second window) */
+    function ordToastUndo(msg, onUndo) {
+      const wrap = document.getElementById('ord-toast-wrap');
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      const undo = document.createElement('button');
+      undo.textContent = 'Undo';
+      undo.style.cssText = 'background:none;border:none;padding:0;margin-left:4px;font-family:inherit;font-size:13px;font-weight:700;color:var(--spring);text-decoration:underline;cursor:pointer;';
+      undo.onclick = () => { t.remove(); if (onUndo) onUndo(); };
+      t.appendChild(undo);
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 8000);
     }
 
     function dismissOttoSO() {
