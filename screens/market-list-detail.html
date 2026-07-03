@@ -156,6 +156,21 @@
     .drawer-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin-bottom:var(--space-md); }
     .drawer-foot { padding:var(--space-md) var(--space-2xl); border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:var(--space-sm); flex-shrink:0; }
 
+    /* ── Margin impact preview ── */
+    .margin-note { font-size:12px; color:var(--text-soft); margin-bottom:var(--space-md); line-height:1.5; }
+    .margin-row { display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); padding:var(--space-sm) var(--space-md); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:6px; transition:background var(--dur-1), border-color var(--dur-1); }
+    .margin-row.breach { background:var(--status-risk-bg); border-color:color-mix(in srgb, var(--status-risk-fg) 30%, transparent); }
+    .mr-name { font-size:13px; font-weight:600; color:var(--text); }
+    .mr-sell { font-size:11px; font-weight:500; color:var(--text-soft); margin-left:6px; }
+    .mr-fc { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; font-feature-settings:'tnum' 1; white-space:nowrap; }
+    .mr-fc .fc-before { color:var(--text-soft); font-weight:600; }
+    .mr-fc .fc-arrow { color:var(--text-soft); font-size:11px; }
+    .mr-fc .fc-after.ok { color:var(--status-ok-fg); }
+    .mr-fc .fc-after.risk { color:var(--status-risk-fg); }
+    .mr-breach-pill { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; background:var(--status-risk-fg); color:white; padding:2px 7px; border-radius:var(--radius-pill); }
+    .margin-more { font-size:12px; color:var(--text-soft); margin-top:var(--space-sm); }
+    .margin-more a { color:var(--text-accent); font-weight:600; text-decoration:none; }
+
     /* Drawer: price edit */
     .price-edit-field { display:flex; align-items:center; gap:var(--space-sm); }
     .price-prefix { font-size:14px; font-weight:600; color:var(--text-soft); }
@@ -689,6 +704,13 @@
       changeDelta: +2.50,
       linked: true,
       itemMeta: 'Protein · Poultry · Used in 8 recipes',
+      costBasis: 47.50,
+      recipes: [
+        { name: 'Chicken Parmigiana',    sell: 26.00, itemCost: 2.05, otherCost: 5.55 },
+        { name: 'Chicken Caesar Salad',  sell: 22.00, itemCost: 1.85, otherCost: 4.45 },
+        { name: 'Grilled Chicken Burger',sell: 19.00, itemCost: 1.60, otherCost: 3.90 },
+      ],
+      recipesMore: 5,
       alternatives: [
         { supplier: 'Melbourne Fresh', sku: 'MBF-CHK-001', price: 44.00, preferred: false },
         { supplier: 'Pure Food Group', sku: 'PFG-CHK-330', price: 48.00, preferred: false },
@@ -705,6 +727,12 @@
       priceChanged: false,
       linked: true,
       itemMeta: 'Protein · Poultry · Used in 4 recipes',
+      costBasis: 38.00,
+      recipes: [
+        { name: 'Chicken Souvlaki Plate', sell: 23.00, itemCost: 1.70, otherCost: 4.60 },
+        { name: 'Karaage Bao (2pc)',      sell: 16.00, itemCost: 1.10, otherCost: 3.30 },
+      ],
+      recipesMore: 2,
       alternatives: [
         { supplier: 'Pure Food Group', sku: 'PFG-THI-112', price: 36.50, preferred: false },
       ]
@@ -721,6 +749,13 @@
       changeDelta: -1.50,
       linked: true,
       itemMeta: 'Protein · Beef · Used in 11 recipes',
+      costBasis: 22.50,
+      recipes: [
+        { name: 'Beef Ragu Rigatoni',  sell: 24.00, itemCost: 1.90, otherCost: 4.90 },
+        { name: 'Smash Burger Double', sell: 21.00, itemCost: 2.30, otherCost: 3.80 },
+        { name: 'Kids Bolognese',      sell: 14.00, itemCost: 1.20, otherCost: 2.70 },
+      ],
+      recipesMore: 8,
       alternatives: [
         { supplier: 'Harbour Meats', sku: 'HM-BMN-220', price: 23.50, preferred: false },
       ]
@@ -736,6 +771,12 @@
       priceChanged: false,
       linked: true,
       itemMeta: 'Protein · Beef · Used in 3 recipes',
+      costBasis: 52.00,
+      recipes: [
+        { name: 'Steak Frites 200g', sell: 42.00, itemCost: 10.40, otherCost: 3.20 },
+        { name: 'Surf & Turf',       sell: 52.00, itemCost: 10.40, otherCost: 6.90 },
+      ],
+      recipesMore: 1,
       alternatives: []
     },
     'pork-sausage': {
@@ -749,6 +790,12 @@
       priceChanged: false,
       linked: true,
       itemMeta: 'Protein · Pork · Used in 2 recipes',
+      costBasis: 28.00,
+      recipes: [
+        { name: 'Bangers & Mash', sell: 22.00, itemCost: 2.10, otherCost: 4.20 },
+        { name: 'Big Breakfast',  sell: 24.00, itemCost: 1.40, otherCost: 5.50 },
+      ],
+      recipesMore: 0,
       alternatives: []
     },
     'lamb-rack': {
@@ -762,6 +809,12 @@
       priceChanged: false,
       linked: true,
       itemMeta: 'Protein · Lamb · Used in 2 recipes',
+      costBasis: 45.00,
+      recipes: [
+        { name: 'Lamb Rack, Salsa Verde',  sell: 46.00, itemCost: 11.25, otherCost: 1.90 },
+        { name: 'Sunday Lamb Share Plate', sell: 68.00, itemCost: 16.90, otherCost: 3.00 },
+      ],
+      recipesMore: 0,
       alternatives: [
         { supplier: 'Farm Gate Meats', sku: 'FGM-LMB-008', price: 43.00, preferred: false },
       ]
@@ -770,6 +823,63 @@
 
   let _currentItem = null;
   let _unsaved = false;
+
+  // ── Margin impact preview ─────────────────────────────────────────────────
+  const FC_TARGET = 30; // food cost % target ceiling
+
+  function recipeFC(recipe, item, price) {
+    // Ingredient cost scales linearly with the outlet price vs the cost basis it was authored at
+    const scaled = recipe.itemCost * (price / item.costBasis);
+    return ((scaled + recipe.otherCost) / recipe.sell) * 100;
+  }
+
+  function marginRowsHTML(item, newPrice) {
+    return item.recipes.map(r => {
+      const before = recipeFC(r, item, item.outletPrice);
+      const after  = recipeFC(r, item, newPrice);
+      const breaches = before <= FC_TARGET && after > FC_TARGET;
+      const overAlready = before > FC_TARGET;
+      const afterCls = after > FC_TARGET ? 'risk' : 'ok';
+      const changed = Math.abs(newPrice - item.outletPrice) >= 0.005;
+      const fcCell = changed
+        ? `<span class="fc-before">${before.toFixed(1)}%</span><i class="ti ti-arrow-right fc-arrow"></i><span class="fc-after ${afterCls}">${after.toFixed(1)}%</span>${breaches ? '<span class="mr-breach-pill">Breaches target</span>' : ''}`
+        : `<span class="fc-after ${afterCls}">${before.toFixed(1)}%</span>${overAlready ? '<span class="mr-breach-pill">Above target</span>' : ''}`;
+      return `<div class="margin-row${(breaches || (changed && after > FC_TARGET)) ? ' breach' : ''}">
+        <div class="mr-name">${r.name}<span class="mr-sell">sells $${r.sell.toFixed(2)}</span></div>
+        <div class="mr-fc">${fcCell}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function marginImpactHTML(item, newPrice) {
+    if (!item.recipes || !item.recipes.length) return '';
+    const total = item.recipes.length + (item.recipesMore || 0);
+    const more = item.recipesMore
+      ? `<div class="margin-more">+${item.recipesMore} more recipe${item.recipesMore !== 1 ? 's' : ''} use this item · <a href="recipes.html">view in Recipes →</a></div>`
+      : '';
+    return `<div>
+      <div class="drawer-section-label">Margin impact · ${total} recipe${total !== 1 ? 's' : ''}</div>
+      <div class="margin-note">Live preview — food cost % of recipes using this item at the price above. Target ≤ ${FC_TARGET}%.</div>
+      <div id="margin-rows">${marginRowsHTML(item, newPrice)}</div>
+      ${more}
+    </div>`;
+  }
+
+  function updateMarginImpact() {
+    const item = ITEMS[_currentItem];
+    const wrap = document.getElementById('margin-rows');
+    if (!item || !wrap || !item.recipes) return;
+    const val = parseFloat(document.getElementById('drawer-price-input').value);
+    if (isNaN(val) || val <= 0) return;
+    wrap.innerHTML = marginRowsHTML(item, val);
+  }
+
+  function countBreaches(item, newPrice) {
+    if (!item.recipes) return 0;
+    return item.recipes.filter(r =>
+      recipeFC(r, item, item.outletPrice) <= FC_TARGET && recipeFC(r, item, newPrice) > FC_TARGET
+    ).length;
+  }
 
   // ── Drawer ────────────────────────────────────────────────────────────────
   function openDrawer(itemId) {
@@ -822,7 +932,7 @@
         <div class="drawer-section-label">Outlet price</div>
         <div class="price-edit-field">
           <span class="price-prefix">$</span>
-          <input class="price-input" id="drawer-price-input" type="number" step="0.01" value="${item.outletPrice.toFixed(2)}" onchange="markUnsaved()"/>
+          <input class="price-input" id="drawer-price-input" type="number" step="0.01" value="${item.outletPrice.toFixed(2)}" oninput="markUnsaved();updateMarginImpact()"/>
           <span class="price-context">per ${item.uom}</span>
         </div>
         <div class="catalogue-price">
@@ -830,6 +940,7 @@
           Supplier's catalogue price: <strong style="font-feature-settings:'tnum' 1;">$${item.cataloguePrice.toFixed(2)}</strong>
         </div>
       </div>
+      ${marginImpactHTML(item, item.outletPrice)}
       <div>
         <div class="drawer-section-label">Linked internal item</div>
         <div class="item-link-card linked">
@@ -862,10 +973,14 @@
   }
 
   function saveDrawer() {
+    let breachMsg = '';
     if (_currentItem && ITEMS[_currentItem]) {
+      const item = ITEMS[_currentItem];
       const newPrice = parseFloat(document.getElementById('drawer-price-input').value);
       if (!isNaN(newPrice)) {
-        ITEMS[_currentItem].outletPrice = newPrice;
+        const breaches = countBreaches(item, newPrice);
+        if (breaches) breachMsg = ` · Mara will flag ${breaches} recipe${breaches !== 1 ? 's' : ''} now above the FC target`;
+        item.outletPrice = newPrice;
         // Update table cell
         const tr = document.querySelector(`tr[data-item="${_currentItem}"]`);
         if (tr) {
@@ -875,7 +990,7 @@
       }
     }
     closeDrawer();
-    showToast('Price updated.');
+    showToast('Price updated.' + breachMsg);
   }
 
   function markUnsaved() { _unsaved = true; }

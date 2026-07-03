@@ -695,13 +695,13 @@
           </div>
           <table class="data-table">
             <thead>
-              <tr><th>Supplier</th><th>Item</th><th class="r">Market list price</th><th class="r">Invoice price</th><th class="r">Variance</th><th>Status</th></tr>
+              <tr><th>Supplier</th><th>Item</th><th class="r">Market list price</th><th class="r">Invoice price</th><th class="r">Variance</th><th>Status</th><th>Invoice</th></tr>
             </thead>
             <tbody>
-              <tr><td>Harbour Meats</td><td>Chicken Breast 500g</td><td class="r">$8.40/kg</td><td class="r">$8.92/kg</td><td class="r"><span class="delta down">▲ +$0.52 (+6.2%)</span></td><td><span class="pill risk">Disputed</span></td></tr>
-              <tr><td>Fresh Produce Co</td><td>Avocado (each)</td><td class="r">$2.10/ea</td><td class="r">$2.40/ea</td><td class="r"><span class="delta down">▲ +$0.30 (+14.3%)</span></td><td><span class="pill warn">Under review</span></td></tr>
-              <tr><td>Harbour Meats</td><td>Salmon Fillet 200g</td><td class="r">$32.20/kg</td><td class="r">$38.40/kg</td><td class="r"><span class="delta down">▲ +$6.20 (+19.3%)</span></td><td><span class="pill warn">Under review</span></td></tr>
-              <tr><td>Espresso Union</td><td>Arabica Blend 1kg</td><td class="r">$35.50/kg</td><td class="r">$42.00/kg</td><td class="r"><span class="delta down">▲ +$6.50 (+18.3%)</span></td><td><span class="pill ok">Accepted — repriced</span></td></tr>
+              <tr onclick="location.href='invoice-detail.html?id=INV-00889'" style="cursor:pointer;"><td>Harbour Meats</td><td>Chicken Breast 500g</td><td class="r">$8.40/kg</td><td class="r">$8.92/kg</td><td class="r"><span class="delta down">▲ +$0.52 (+6.2%)</span></td><td><span class="pill risk">Disputed</span></td><td><a href="invoice-detail.html?id=INV-00889" style="font-family:var(--font-mono,monospace);font-size:12px;color:var(--text-link);text-decoration:none;" onclick="event.stopPropagation()">INV-00889 →</a></td></tr>
+              <tr onclick="location.href='invoice-detail.html?id=INV-00885'" style="cursor:pointer;"><td>Green Farmers Market</td><td>Avocado (each)</td><td class="r">$2.40/ea</td><td class="r">$2.80/ea</td><td class="r"><span class="delta down">▲ +$0.40 (+16.7%)</span></td><td><span class="pill warn">Under review</span></td><td><a href="invoice-detail.html?id=INV-00885" style="font-family:var(--font-mono,monospace);font-size:12px;color:var(--text-link);text-decoration:none;" onclick="event.stopPropagation()">INV-00885 →</a></td></tr>
+              <tr onclick="location.href='invoice-detail.html?id=INV-00889'" style="cursor:pointer;"><td>Harbour Meats</td><td>Salmon Fillet 200g</td><td class="r">$32.20/kg</td><td class="r">$38.40/kg</td><td class="r"><span class="delta down">▲ +$6.20 (+19.3%)</span></td><td><span class="pill warn">Under review</span></td><td><a href="invoice-detail.html?id=INV-00889" style="font-family:var(--font-mono,monospace);font-size:12px;color:var(--text-link);text-decoration:none;" onclick="event.stopPropagation()">INV-00889 →</a></td></tr>
+              <tr><td>Espresso Union</td><td>Arabica Blend 1kg</td><td class="r">$35.50/kg</td><td class="r">$42.00/kg</td><td class="r"><span class="delta down">▲ +$6.50 (+18.3%)</span></td><td><span class="pill ok">Accepted — repriced</span></td><td><span style="font-size:12px;color:var(--text-soft);">Resolved</span></td></tr>
             </tbody>
           </table>
         </div>

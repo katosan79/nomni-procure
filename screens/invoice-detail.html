@@ -470,6 +470,17 @@
         ]
       },
       {
+        id:'INV-00889', po:'PO-5509', supplier:'Harbour Meats', outlet:'Bondi Beach',
+        date:'9 Jun 2026', source:'email', amount:1386, status:'failed',
+        failReason:'Chicken Breast invoiced at $8.92/kg vs market list $8.40/kg (+6.2%) and Salmon Fillet at $38.40/kg vs $32.20/kg (+19.3%) · $170 overbilled',
+        agentNote:'Cyrus flagged 2 lines invoiced above the agreed market list rate · no approved price amendment on file for either item — dispute or accept the new price into the market list',
+        lines:[
+          { name:'Chicken Breast 500g', uom:'kg', poQty:40, grnQty:40, invQty:40, poPrice:8.40,  invPrice:8.92  },
+          { name:'Salmon Fillet 200g',  uom:'kg', poQty:24, grnQty:24, invQty:24, poPrice:32.20, invPrice:38.40 },
+          { name:'Pork Belly 1kg',      uom:'kg', poQty:6,  grnQty:6,  invQty:6,  poPrice:18.00, invPrice:18.00 },
+        ]
+      },
+      {
         id:'INV-00887', po:'PO-5508', supplier:'Harbour Meats', outlet:'Newtown',
         date:'8 Jun 2026', source:'email', amount:470, status:'failed',
         failReason:'Supplier invoiced for 12 × Beef Short Rib and 6 × Lamb Rack · GRN confirms only 8 and 4 were received · $106 overbilled',
