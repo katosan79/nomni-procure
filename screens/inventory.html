@@ -494,6 +494,13 @@
       font-size: 12px; color: var(--text-soft);
       padding: 3px 0;
     }
+    .var-item-row-wrap { padding: 3px 0; border-bottom: 1px dashed var(--border); }
+    .var-item-row-wrap:last-child { border-bottom: none; }
+    .var-item-row-wrap .var-item-row { padding: 0; }
+    .waste-match-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 2px; }
+    .waste-match-tag.ok      { color: var(--status-ok-fg); }
+    .waste-match-tag.partial { color: var(--status-warn-fg); }
+    .waste-match-tag.none    { color: var(--status-risk-fg); }
 
     /* KPI tile (reuse existing pattern) */
     .kpi-tile {
@@ -1824,6 +1831,27 @@
 
 
     /* ── Count sessions ── */
+    // Waste log — cross-referenced against variance item rows below so a
+    // usage gap can be told apart from "explained by a logged waste entry"
+    // vs. genuinely unexplained (Supy calls the latter a "black hole").
+    const WASTE_LOG = [
+      { item:'Roma Tomatoes',  outlet:'Surry Hills',   qty:'2.4 kg',    reason:'Spoilage',   cost:8.40,  loggedBy:'Sarah Kim' },
+      { item:'Sourdough Bread',outlet:'Circular Quay', qty:'6 loaf',    reason:'End of day', cost:14.40, loggedBy:'James Nguyen' },
+      { item:'Whole Milk 2L',  outlet:'Newtown',       qty:'3 carton',  reason:'Expired',    cost:11.70, loggedBy:'Marcus Lee' },
+    ];
+    function matchWaste(itemName, outletName) {
+      return WASTE_LOG.find(w => w.item === itemName && w.outlet === outletName) || null;
+    }
+    function wasteMatchTagHTML(it, outletName) {
+      const match = matchWaste(it.name, outletName);
+      if (!match) return `<span class="waste-match-tag none"><i class="ti ti-help-circle" aria-hidden="true"></i>Unexplained</span>`;
+      const explained = Math.min(match.cost, it.varCost);
+      const full = explained >= it.varCost - 0.01;
+      return full
+        ? `<span class="waste-match-tag ok"><i class="ti ti-check" aria-hidden="true"></i>Explained · ${match.reason} logged by ${match.loggedBy}</span>`
+        : `<span class="waste-match-tag partial"><i class="ti ti-alert-circle" aria-hidden="true"></i>Partially explained · $${match.cost.toFixed(2)} ${match.reason.toLowerCase()} logged, $${(it.varCost-explained).toFixed(2)} unexplained</span>`;
+    }
+
     const SESSIONS = [
       {
         id:'CS-003', period:'Week ending 15 Jun 2026', outlet:'Surry Hills', type:'full', status:'in-progress',
@@ -2058,10 +2086,13 @@
           const textColor = c.varPct>8?'color:var(--status-risk-fg);font-weight:700':c.varPct>4?'color:var(--status-warn-fg);font-weight:600':'color:var(--text-soft)';
           const fillColor = c.varPct>8?'background:var(--status-risk-fg)':c.varPct>4?'background:var(--status-warn-fg)':'background:var(--fern)';
           const itemRows  = c.items.length ? c.items.map(it=>`
-            <div class="var-item-row">
-              <span>${it.name}</span>
-              <span class="tabular" style="color:var(--text-soft);">${it.theoretical} → ${it.actual}</span>
-              <span class="tabular" style="color:var(--status-risk-fg);">+$${it.varCost}</span>
+            <div class="var-item-row-wrap">
+              <div class="var-item-row">
+                <span>${it.name}</span>
+                <span class="tabular" style="color:var(--text-soft);">${it.theoretical} → ${it.actual}</span>
+                <span class="tabular" style="color:var(--status-risk-fg);">+$${it.varCost}</span>
+              </div>
+              ${wasteMatchTagHTML(it, s.outlet)}
             </div>`).join('') : `<div style="font-size:12px;color:var(--text-soft);padding:4px 0;">No significant item variance</div>`;
           return `<div class="var-cat-row" ondblclick="toggleVarItems('var-items-${i}')">
             <span style="font-size:13px;font-weight:600;color:var(--text);">${c.cat}</span>
