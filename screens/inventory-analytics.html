@@ -176,10 +176,10 @@
             <div style="font-size:12px;color:var(--text-soft);margin-top:2px;">Formula: Actual = Opening + Purchases − Closing. Theoretical = Σ(recipe portions sold × ingredient qty). This week.</div>
           </div>
           <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;align-items:center;">
-            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-ok-bg);border:1px solid var(--status-ok-fg);"></span>&lt;1% OK</span>
-            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-warn-bg);border:1px solid var(--status-warn-fg);"></span>1–2% Monitor</span>
-            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-risk-bg);border:1px solid var(--status-risk-fg);"></span>2–3% Risk</span>
-            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-risk-fg);"></span>&gt;3% Escalate</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-ok-bg);border:1px solid var(--status-ok-fg);"></span>&lt;2% OK</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-warn-bg);border:1px solid var(--status-warn-fg);"></span>2–4% Monitor</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-risk-bg);border:1px solid var(--status-risk-fg);"></span>4–8% Risk</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--status-risk-fg);"></span>&gt;8% Escalate</span>
           </div>
         </div>
         <div class="table-wrap">
@@ -200,9 +200,9 @@
                 <td class="item-col">Olive Oil 1L</td>
                 <td class="cat-col">Dry goods</td>
                 <td class="num"><span class="var-cell tier-urg"><i class="ti ti-alert-triangle" style="font-size:9px;"></i>25.0%</span></td>
-                <td class="num"><span class="var-cell tier-risk">3.2%</span></td>
+                <td class="num"><span class="var-cell tier-warn">3.2%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.8%</span></td>
-                <td class="num"><span class="var-cell tier-warn">1.4%</span></td>
+                <td class="num"><span class="var-cell tier-ok">1.4%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.6%</span></td>
               </tr>
               <tr>
@@ -211,16 +211,16 @@
                 <td class="num"><span class="var-cell tier-urg"><i class="ti ti-alert-triangle" style="font-size:9px;"></i>10.3%</span></td>
                 <td class="num"><span class="var-cell tier-risk">4.8%</span></td>
                 <td class="num"><span class="var-cell tier-urg"><i class="ti ti-alert-triangle" style="font-size:9px;"></i>8.1%</span></td>
-                <td class="num"><span class="var-cell tier-warn">1.8%</span></td>
+                <td class="num"><span class="var-cell tier-ok">1.8%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.9%</span></td>
               </tr>
               <tr>
                 <td class="item-col">Avocado</td>
                 <td class="cat-col">Produce</td>
-                <td class="num"><span class="var-cell tier-risk">2.1%</span></td>
-                <td class="num"><span class="var-cell tier-warn">1.6%</span></td>
+                <td class="num"><span class="var-cell tier-warn">2.1%</span></td>
+                <td class="num"><span class="var-cell tier-ok">1.6%</span></td>
                 <td class="num"><span class="var-cell tier-urg"><i class="ti ti-alert-triangle" style="font-size:9px;"></i>9.1%</span></td>
-                <td class="num"><span class="var-cell tier-risk">2.4%</span></td>
+                <td class="num"><span class="var-cell tier-warn">2.4%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.4%</span></td>
               </tr>
               <tr>
@@ -230,7 +230,7 @@
                 <td class="num"><span class="var-cell tier-risk">4.4%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.6%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.3%</span></td>
-                <td class="num"><span class="var-cell tier-warn">1.2%</span></td>
+                <td class="num"><span class="var-cell tier-ok">1.2%</span></td>
               </tr>
               <tr>
                 <td class="item-col">Roma Tomatoes</td>
@@ -238,7 +238,7 @@
                 <td class="num"><span class="var-cell tier-ok">0.3%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.7%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.5%</span></td>
-                <td class="num"><span class="var-cell tier-risk">2.8%</span></td>
+                <td class="num"><span class="var-cell tier-warn">2.8%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.2%</span></td>
               </tr>
               <tr>
@@ -246,14 +246,14 @@
                 <td class="cat-col">Dairy</td>
                 <td class="num"><span class="var-cell tier-ok">0.4%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.2%</span></td>
-                <td class="num"><span class="var-cell tier-warn">1.7%</span></td>
+                <td class="num"><span class="var-cell tier-ok">1.7%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.8%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.5%</span></td>
               </tr>
               <tr>
                 <td class="item-col">Sourdough Bread</td>
                 <td class="cat-col">Dry goods</td>
-                <td class="num"><span class="var-cell tier-warn">1.1%</span></td>
+                <td class="num"><span class="var-cell tier-ok">1.1%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.4%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.6%</span></td>
                 <td class="num"><span class="var-cell tier-ok">0.9%</span></td>
@@ -274,7 +274,7 @@
           <div class="var-row"><span class="var-label">Chicken Breast <span style="font-size:11px;color:var(--text-soft)">· Newtown · Proteins</span></span><div class="var-track"><div class="var-fill high" style="width:45%"></div></div><span class="var-val high">+10.3%</span></div>
           <div class="var-row"><span class="var-label">Chicken Breast <span style="font-size:11px;color:var(--text-soft)">· Bondi Beach · Proteins</span></span><div class="var-track"><div class="var-fill high" style="width:41%"></div></div><span class="var-val high">+10.3%</span></div>
           <div class="var-row"><span class="var-label">Avocado <span style="font-size:11px;color:var(--text-soft)">· Newtown · Produce</span></span><div class="var-track"><div class="var-fill high" style="width:36%"></div></div><span class="var-val high">+9.1%</span></div>
-          <div class="var-row"><span class="var-label">Feta Cheese <span style="font-size:11px;color:var(--text-soft)">· Surry Hills · Dairy</span></span><div class="var-track"><div class="var-fill" style="width:18%;background:var(--status-warn-fg)"></div></div><span class="var-val" style="color:var(--status-warn-fg)">+4.4%</span></div>
+          <div class="var-row"><span class="var-label">Feta Cheese <span style="font-size:11px;color:var(--text-soft)">· Surry Hills · Dairy</span></span><div class="var-track"><div class="var-fill high" style="width:18%"></div></div><span class="var-val high">+4.4%</span></div>
         </div>
       </div>
 
@@ -285,7 +285,7 @@
         </div>
         <div class="section-body" style="display:flex;flex-direction:column;gap:var(--space-sm);">
           <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">Vera flagged <strong>Olive Oil 1L at Bondi Beach</strong> — 25% variance, no waste log · <span style="font-size:11px;">Today 6:30am</span></div>
-          <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">Vera flagged <strong>Chicken Breast at Newtown</strong> — 9.1% variance, above escalate threshold · <span style="font-size:11px;">Today 6:30am</span></div>
+          <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">Vera flagged <strong>Avocado at Newtown</strong> — 9.1% variance, above escalate threshold · <span style="font-size:11px;">Today 6:30am</span></div>
           <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">CS-002 (Newtown) locked by HQ — 7.6% total variance · <span style="font-size:11px;">9 Jun, 8:30am</span></div>
           <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;">CS-001 (Bondi Beach) locked by Keith Tan — 6.2% total variance · <span style="font-size:11px;">2 Jun, 10:14am</span></div>
         </div>

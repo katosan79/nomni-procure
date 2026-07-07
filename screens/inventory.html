@@ -497,10 +497,18 @@
     .var-item-row-wrap { padding: 3px 0; border-bottom: 1px dashed var(--border); }
     .var-item-row-wrap:last-child { border-bottom: none; }
     .var-item-row-wrap .var-item-row { padding: 0; }
-    .waste-match-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 2px; }
+    .waste-match-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 2px; background: none; border: none; padding: 0; font-family: inherit; }
     .waste-match-tag.ok      { color: var(--status-ok-fg); }
     .waste-match-tag.partial { color: var(--status-warn-fg); }
-    .waste-match-tag.none    { color: var(--status-risk-fg); }
+    .waste-match-tag.none    { color: var(--status-risk-fg); cursor: pointer; }
+    .waste-match-tag.none:hover { text-decoration: underline; }
+    .waste-match-tag.suspected { color: var(--text-accent); background: var(--surface-soft); border: 1px dashed var(--border); border-radius: var(--radius-pill); padding: 1px 8px; margin-top: 2px; cursor: pointer; }
+    .waste-match-tag.suspected:hover { border-color: var(--fern); }
+    .classify-wrap { position: relative; display: inline-flex; }
+    .classify-menu { position: absolute; left: 0; top: 100%; margin-top: 4px; z-index: 80; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); min-width: 170px; padding: var(--space-xs) 0; display: none; }
+    .classify-menu.open { display: block; }
+    .classify-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-lg); font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .classify-item:hover { background: var(--surface-soft); }
 
     /* KPI tile (reuse existing pattern) */
     .kpi-tile {
@@ -545,6 +553,8 @@
     .health-tile.warn    { background: var(--status-warn-bg); color: var(--status-warn-fg); }
     .health-tile.risk    { background: var(--status-risk-bg); color: var(--status-risk-fg); }
     .health-tile.pending { background: var(--surface); color: var(--text-soft); border: 1px solid var(--border); }
+    .health-tile.streak { box-shadow: 0 0 0 1.5px var(--status-risk-fg); }
+    .health-tile-name i.ti-repeat { font-size: 11px; }
     .health-review-wrap { position: relative; display: inline-flex; }
     .health-review-menu { position: absolute; left: 0; top: 100%; margin-top: var(--space-xs); z-index: 70; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); min-width: 160px; padding: var(--space-xs) 0; display: none; }
     .health-review-menu.open { display: block; }
@@ -1471,20 +1481,29 @@
     // Overdue/health status is computed against each outlet's assigned
     // count-template cadence (see inventory-governance.html → HQ Count
     // Templates). NSW Metro runs the weekly template, VIC Metro fortnightly.
+    // streak = consecutive cycles this outlet has been flagged at this
+    // status or worse. Supy's framing: a one-off spike is noise, but 4-5+
+    // points sustained over multiple cycles is a systemic problem — streak
+    // is what tells the two apart at a glance.
     const OUTLET_GROUPS = [
       { name: 'NSW Metro', total: 68, onTrack: 64, outlets: [
-        { name: 'Bondi Beach',   status: 'risk', reason: 'Escalate · overdue 14d' },
-        { name: 'Newtown',       status: 'risk', reason: '2 anomalies flagged' },
-        { name: 'Surry Hills',   status: 'warn', reason: '6.3% variance' },
-        { name: 'Parramatta',    status: 'warn', reason: 'New outlet · monitor' },
+        { name: 'Bondi Beach',   status: 'risk', reason: 'Escalate · overdue 14d', streak: 3 },
+        { name: 'Newtown',       status: 'risk', reason: '2 anomalies flagged',     streak: 1 },
+        { name: 'Surry Hills',   status: 'warn', reason: '6.3% variance',          streak: 2 },
+        { name: 'Parramatta',    status: 'warn', reason: 'New outlet · monitor',   streak: 1 },
       ]},
       { name: 'VIC Metro', total: 56, onTrack: 53, outlets: [
-        { name: 'Richmond',  status: 'warn',    reason: '3.9% variance' },
-        { name: 'St Kilda',  status: 'warn',    reason: '4.2% variance' },
-        { name: 'Fitzroy',   status: 'pending', reason: 'Counted · awaiting review' },
+        { name: 'Richmond',  status: 'warn',    reason: '3.9% variance',              streak: 1 },
+        { name: 'St Kilda',  status: 'warn',    reason: '4.2% variance',              streak: 2 },
+        { name: 'Fitzroy',   status: 'pending', reason: 'Counted · awaiting review',  streak: 0 },
       ]},
     ];
     const HEALTH_ICON = { risk: 'alert-triangle', warn: 'alert-circle', pending: 'clock' };
+    function streakSuffix(streak) {
+      if (!streak || streak < 2) return '';
+      const ord = streak === 2 ? '2nd' : streak === 3 ? '3rd' : streak + 'th';
+      return ` · ${ord} cycle running`;
+    }
     let _healthView = 'severity';
 
     function outletSlug(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
@@ -1505,9 +1524,10 @@
         </div>`;
       }
       const icon = HEALTH_ICON[o.status];
-      return `<button class="health-tile ${o.status}" onclick="goToOutlet('${o.name}')" title="View ${o.name} count activity">
-        <span class="health-tile-name"><i class="ti ti-${icon}" aria-hidden="true"></i>${o.name}</span>
-        <span class="health-tile-sub">${o.reason}</span>
+      const streakBadge = o.streak >= 3 ? `<i class="ti ti-repeat" title="${o.streak} consecutive cycles" aria-hidden="true"></i>` : '';
+      return `<button class="health-tile ${o.status}${o.streak>=3?' streak':''}" onclick="goToOutlet('${o.name}')" title="View ${o.name} count activity">
+        <span class="health-tile-name">${streakBadge}<i class="ti ti-${icon}" aria-hidden="true"></i>${o.name}</span>
+        <span class="health-tile-sub">${o.reason}${streakSuffix(o.streak)}</span>
       </button>`;
     }
 
@@ -1842,14 +1862,56 @@
     function matchWaste(itemName, outletName) {
       return WASTE_LOG.find(w => w.item === itemName && w.outlet === outletName) || null;
     }
-    function wasteMatchTagHTML(it, outletName) {
+    function wasteMatch(it, outletName) {
       const match = matchWaste(it.name, outletName);
-      if (!match) return `<span class="waste-match-tag none"><i class="ti ti-help-circle" aria-hidden="true"></i>Unexplained</span>`;
+      if (!match) return { match: null, explained: 0, full: false };
       const explained = Math.min(match.cost, it.varCost);
-      const full = explained >= it.varCost - 0.01;
-      return full
-        ? `<span class="waste-match-tag ok"><i class="ti ti-check" aria-hidden="true"></i>Explained · ${match.reason} logged by ${match.loggedBy}</span>`
-        : `<span class="waste-match-tag partial"><i class="ti ti-alert-circle" aria-hidden="true"></i>Partially explained · $${match.cost.toFixed(2)} ${match.reason.toLowerCase()} logged, $${(it.varCost-explained).toFixed(2)} unexplained</span>`;
+      return { match, explained, full: explained >= it.varCost - 0.01 };
+    }
+
+    // Items with no waste-log match get a manual classification affordance
+    // — HQ can tag a suspected cause (over-portion/spoilage/theft/count
+    // error) even without a formal log entry, per Supy's recommendation
+    // that every flagged item should carry a cause, not just a dollar figure.
+    const SUSPECTED = {};
+    function classifyMenuItems(sessionId, itemName) {
+      return ['Over-portion', 'Spoilage (unlogged)', 'Theft', 'Count error'].map(c =>
+        `<button class="classify-item" role="menuitem" onclick="setSuspected(event,'${sessionId}','${itemName.replace(/'/g,"\\'")}','${c}')">${c}</button>`
+      ).join('');
+    }
+    function toggleClassifyMenu(e, btn) {
+      e.stopPropagation();
+      const menu = btn.nextElementSibling;
+      document.querySelectorAll('.classify-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.classify-wrap')) {
+        document.querySelectorAll('.classify-menu.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+    function setSuspected(e, sessionId, itemName, cause) {
+      e.stopPropagation();
+      SUSPECTED[sessionId + '|' + itemName] = cause;
+      invToast(itemName + ' tagged as suspected ' + cause.toLowerCase());
+      addInvActivity(itemName + ' variance tagged as suspected ' + cause, 'Keith Tan');
+      if (activeSession) renderSessionDrawer(activeSession);
+    }
+
+    function wasteMatchTagHTML(it, outletName, sessionId) {
+      const { match, explained, full } = wasteMatch(it, outletName);
+      if (match) {
+        return full
+          ? `<span class="waste-match-tag ok"><i class="ti ti-check" aria-hidden="true"></i>Explained · ${match.reason} logged by ${match.loggedBy}</span>`
+          : `<span class="waste-match-tag partial"><i class="ti ti-alert-circle" aria-hidden="true"></i>Partially explained · $${match.cost.toFixed(2)} ${match.reason.toLowerCase()} logged, $${(it.varCost-explained).toFixed(2)} unexplained</span>`;
+      }
+      const suspected = SUSPECTED[sessionId + '|' + it.name];
+      const label = suspected ? `Suspected: ${suspected}` : 'Unexplained · Classify';
+      const cls = suspected ? 'suspected' : 'none';
+      return `<div class="classify-wrap">
+        <button class="waste-match-tag ${cls}" onclick="toggleClassifyMenu(event,this)"><i class="ti ti-help-circle" aria-hidden="true"></i>${label} <i class="ti ti-chevron-down" aria-hidden="true" style="font-size:9px;"></i></button>
+        <div class="classify-menu" role="menu">${classifyMenuItems(sessionId, it.name)}</div>
+      </div>`;
     }
 
     const SESSIONS = [
@@ -1975,7 +2037,7 @@
                           : `<span class="nb-pill neutral"><i class="ti ti-clock"></i>Open</span>`;
 
         // Variance color
-        const varColor = s.variancePct==null?'':s.variancePct>8?'color:var(--status-risk-fg);font-weight:600':s.variancePct>4?'color:var(--status-warn-fg);font-weight:600':'';
+        const varColor = s.variancePct==null?'':s.variancePct>4?'color:var(--status-risk-fg);font-weight:600':s.variancePct>2?'color:var(--status-warn-fg);font-weight:600':'';
 
         // Action button
         const actionBtn = s.status==='submitted'
@@ -2061,8 +2123,8 @@
       let cogsHtml = '';
       const showCogs = s.actualCogs != null;
       if (showCogs) {
-        const varColor = s.variancePct>8?'color:var(--status-risk-fg)':s.variancePct>4?'color:var(--status-warn-fg)':'color:var(--status-ok-fg)';
-        const varIcon  = s.variancePct>8?'ti-alert-triangle':s.variancePct>4?'ti-alert-circle':'ti-check';
+        const varColor = s.variancePct>4?'color:var(--status-risk-fg)':s.variancePct>2?'color:var(--status-warn-fg)':'color:var(--status-ok-fg)';
+        const varIcon  = s.variancePct>4?'ti-alert-triangle':s.variancePct>2?'ti-alert-circle':'ti-check';
         const cfNote   = s.sheets.some(sh=>sh.status==='carried-forward')?' + 1 carry-forward':'';
         cogsHtml = `
         <div class="drawer-section-label" style="margin-top:var(--space-xl);">COGS summary</div>
@@ -2083,8 +2145,8 @@
         const rows = s.varByCategory.map((c,i) => {
           const maxVar = Math.max(...s.varByCategory.map(x=>x.varPct));
           const barW   = maxVar>0 ? Math.round((c.varPct/maxVar)*100) : 0;
-          const textColor = c.varPct>8?'color:var(--status-risk-fg);font-weight:700':c.varPct>4?'color:var(--status-warn-fg);font-weight:600':'color:var(--text-soft)';
-          const fillColor = c.varPct>8?'background:var(--status-risk-fg)':c.varPct>4?'background:var(--status-warn-fg)':'background:var(--fern)';
+          const textColor = c.varPct>4?'color:var(--status-risk-fg);font-weight:700':c.varPct>2?'color:var(--status-warn-fg);font-weight:600':'color:var(--text-soft)';
+          const fillColor = c.varPct>4?'background:var(--status-risk-fg)':c.varPct>2?'background:var(--status-warn-fg)':'background:var(--fern)';
           const itemRows  = c.items.length ? c.items.map(it=>`
             <div class="var-item-row-wrap">
               <div class="var-item-row">
@@ -2092,7 +2154,7 @@
                 <span class="tabular" style="color:var(--text-soft);">${it.theoretical} → ${it.actual}</span>
                 <span class="tabular" style="color:var(--status-risk-fg);">+$${it.varCost}</span>
               </div>
-              ${wasteMatchTagHTML(it, s.outlet)}
+              ${wasteMatchTagHTML(it, s.outlet, s.id)}
             </div>`).join('') : `<div style="font-size:12px;color:var(--text-soft);padding:4px 0;">No significant item variance</div>`;
           return `<div class="var-cat-row" ondblclick="toggleVarItems('var-items-${i}')">
             <span style="font-size:13px;font-weight:600;color:var(--text);">${c.cat}</span>

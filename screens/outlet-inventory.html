@@ -116,10 +116,18 @@
     .var-item-row-wrap { padding: 3px 0; border-bottom: 1px dashed var(--border); }
     .var-item-row-wrap:last-child { border-bottom: none; }
     .var-item-row-wrap .var-item-row { padding: 0; }
-    .waste-match-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 2px; }
+    .waste-match-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 2px; background: none; border: none; padding: 0; font-family: inherit; }
     .waste-match-tag.ok      { color: var(--status-ok-fg); }
     .waste-match-tag.partial { color: var(--status-warn-fg); }
-    .waste-match-tag.none    { color: var(--status-risk-fg); }
+    .waste-match-tag.none    { color: var(--status-risk-fg); cursor: pointer; }
+    .waste-match-tag.none:hover { text-decoration: underline; }
+    .waste-match-tag.suspected { color: var(--text-accent); background: var(--surface-soft); border: 1px dashed var(--border); border-radius: var(--radius-pill); padding: 1px 8px; margin-top: 2px; cursor: pointer; }
+    .waste-match-tag.suspected:hover { border-color: var(--fern); }
+    .classify-wrap { position: relative; display: inline-flex; }
+    .classify-menu { position: absolute; left: 0; top: 100%; margin-top: 4px; z-index: 80; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); min-width: 170px; padding: var(--space-xs) 0; display: none; }
+    .classify-menu.open { display: block; }
+    .classify-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-lg); font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .classify-item:hover { background: var(--surface-soft); }
     .flag-explain-summary { display: flex; align-items: center; gap: var(--space-sm); font-size: 12px; font-weight: 600; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-sm); background: var(--surface-soft); border: 1px solid var(--border); color: var(--text-soft); }
     .flag-explain-summary i { font-size: 14px; }
     .flag-explain-summary strong { color: var(--text); }
@@ -203,19 +211,26 @@
     document.addEventListener('DOMContentLoaded', () => NomniShell.init('Inventory · Operations'));
 
     /* ── Outlet data ── */
+    // streak = consecutive cycles flagged at this status or worse — tells
+    // a one-off spike apart from a systemic problem (Supy's framing).
     const OUTLETS = {
-      'bondi-beach':    { name: 'Bondi Beach',    group: 'NSW Metro', status: 'risk',    reason: 'Escalate · overdue 14d',        cadence: 'Fortnightly', lastCount: '1 Jun 2026', stockValue: 21400 },
-      'newtown':        { name: 'Newtown',        group: 'NSW Metro', status: 'risk',    reason: '2 anomalies flagged',           cadence: 'Weekly',      lastCount: '8 Jun 2026',  stockValue: 18600 },
-      'surry-hills':    { name: 'Surry Hills',    group: 'NSW Metro', status: 'warn',    reason: '6.3% variance',                 cadence: 'Weekly',      lastCount: '15 Jun 2026 (in progress)', stockValue: 22100 },
-      'parramatta':     { name: 'Parramatta',     group: 'NSW Metro', status: 'warn',    reason: 'New outlet · monitor',          cadence: 'Weekly',      lastCount: '—', stockValue: 9200 },
-      'circular-quay':  { name: 'Circular Quay',  group: 'NSW Metro', status: 'ok',      reason: 'On track',                      cadence: 'Weekly',      lastCount: '—', stockValue: 15800 },
-      'melbourne-cbd':  { name: 'Melbourne CBD',  group: 'VIC Metro', status: 'ok',      reason: 'On track',                      cadence: 'Spot only',   lastCount: '13 Jun 2026', stockValue: 12400 },
-      'richmond':       { name: 'Richmond',       group: 'VIC Metro', status: 'warn',    reason: '3.9% variance',                 cadence: 'Fortnightly', lastCount: '—', stockValue: 14300 },
-      'st-kilda':       { name: 'St Kilda',       group: 'VIC Metro', status: 'warn',    reason: '4.2% variance',                 cadence: 'Fortnightly', lastCount: '—', stockValue: 13100 },
-      'fitzroy':        { name: 'Fitzroy',        group: 'VIC Metro', status: 'pending', reason: 'Counted · awaiting review',     cadence: 'Fortnightly', lastCount: '20 Jun 2026', stockValue: 10700 },
+      'bondi-beach':    { name: 'Bondi Beach',    group: 'NSW Metro', status: 'risk',    reason: 'Escalate · overdue 14d',        cadence: 'Fortnightly', lastCount: '1 Jun 2026', stockValue: 21400, streak: 3 },
+      'newtown':        { name: 'Newtown',        group: 'NSW Metro', status: 'risk',    reason: '2 anomalies flagged',           cadence: 'Weekly',      lastCount: '8 Jun 2026',  stockValue: 18600, streak: 1 },
+      'surry-hills':    { name: 'Surry Hills',    group: 'NSW Metro', status: 'warn',    reason: '6.3% variance',                 cadence: 'Weekly',      lastCount: '15 Jun 2026 (in progress)', stockValue: 22100, streak: 2 },
+      'parramatta':     { name: 'Parramatta',     group: 'NSW Metro', status: 'warn',    reason: 'New outlet · monitor',          cadence: 'Weekly',      lastCount: '—', stockValue: 9200, streak: 1 },
+      'circular-quay':  { name: 'Circular Quay',  group: 'NSW Metro', status: 'ok',      reason: 'On track',                      cadence: 'Weekly',      lastCount: '—', stockValue: 15800, streak: 0 },
+      'melbourne-cbd':  { name: 'Melbourne CBD',  group: 'VIC Metro', status: 'ok',      reason: 'On track',                      cadence: 'Spot only',   lastCount: '13 Jun 2026', stockValue: 12400, streak: 0 },
+      'richmond':       { name: 'Richmond',       group: 'VIC Metro', status: 'warn',    reason: '3.9% variance',                 cadence: 'Fortnightly', lastCount: '—', stockValue: 14300, streak: 1 },
+      'st-kilda':       { name: 'St Kilda',       group: 'VIC Metro', status: 'warn',    reason: '4.2% variance',                 cadence: 'Fortnightly', lastCount: '—', stockValue: 13100, streak: 2 },
+      'fitzroy':        { name: 'Fitzroy',        group: 'VIC Metro', status: 'pending', reason: 'Counted · awaiting review',     cadence: 'Fortnightly', lastCount: '20 Jun 2026', stockValue: 10700, streak: 0 },
     };
     const STATUS_ICON  = { risk: 'alert-triangle', warn: 'alert-circle', pending: 'clock', ok: 'check' };
     const STATUS_LABEL = { risk: 'Escalate', warn: 'Needs attention', pending: 'Awaiting review', ok: 'On track' };
+    function streakSuffix(streak) {
+      if (!streak || streak < 2) return '';
+      const ord = streak === 2 ? '2nd' : streak === 3 ? '3rd' : streak + 'th';
+      return ` · ${ord} cycle running`;
+    }
 
     const slug = new URLSearchParams(location.search).get('outlet') || 'bondi-beach';
     const outlet = OUTLETS[slug] || OUTLETS['bondi-beach'];
@@ -224,8 +239,10 @@
     document.getElementById('bc-outlet').textContent = outlet.name;
     document.getElementById('out-name').textContent = outlet.name;
     document.getElementById('out-logo').textContent = outlet.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    const streakTag = outlet.streak >= 2 ? `<span class="out-tag ${outlet.streak>=3?'risk':'warn'}"><i class="ti ti-repeat" aria-hidden="true"></i>${outlet.streak} cycles running</span>` : '';
     document.getElementById('out-tags').innerHTML = `
       <span class="out-tag ${outlet.status}"><i class="ti ti-${STATUS_ICON[outlet.status]}" aria-hidden="true"></i>${STATUS_LABEL[outlet.status]}</span>
+      ${streakTag}
       <span class="out-tag">${outlet.group}</span>
       <span class="out-tag">${outlet.cadence} counts</span>`;
 
@@ -247,12 +264,47 @@
       const explained = Math.min(match.cost, it.varCost);
       return { match, explained, full: explained >= it.varCost - 0.01 };
     }
-    function wasteMatchTagHTML(it, outletName) {
+    function wasteMatchTagHTML(it, outletName, sessionId) {
       const { match, explained, full } = wasteMatch(it, outletName);
-      if (!match) return `<span class="waste-match-tag none"><i class="ti ti-help-circle" aria-hidden="true"></i>Unexplained</span>`;
-      return full
-        ? `<span class="waste-match-tag ok"><i class="ti ti-check" aria-hidden="true"></i>Explained · ${match.reason} logged by ${match.loggedBy}</span>`
-        : `<span class="waste-match-tag partial"><i class="ti ti-alert-circle" aria-hidden="true"></i>Partially explained · $${match.cost.toFixed(2)} ${match.reason.toLowerCase()} logged, $${(it.varCost-explained).toFixed(2)} unexplained</span>`;
+      if (match) {
+        return full
+          ? `<span class="waste-match-tag ok"><i class="ti ti-check" aria-hidden="true"></i>Explained · ${match.reason} logged by ${match.loggedBy}</span>`
+          : `<span class="waste-match-tag partial"><i class="ti ti-alert-circle" aria-hidden="true"></i>Partially explained · $${match.cost.toFixed(2)} ${match.reason.toLowerCase()} logged, $${(it.varCost-explained).toFixed(2)} unexplained</span>`;
+      }
+      const suspected = SUSPECTED[sessionId + '|' + it.name];
+      const label = suspected ? `Suspected: ${suspected}` : 'Unexplained · Classify';
+      const cls = suspected ? 'suspected' : 'none';
+      return `<div class="classify-wrap">
+        <button class="waste-match-tag ${cls}" onclick="toggleClassifyMenu(event,this)"><i class="ti ti-help-circle" aria-hidden="true"></i>${label} <i class="ti ti-chevron-down" aria-hidden="true" style="font-size:9px;"></i></button>
+        <div class="classify-menu" role="menu">${classifyMenuItems(sessionId, it.name)}</div>
+      </div>`;
+    }
+
+    // Items with no waste-log match get a manual classification affordance
+    // — HQ can tag a suspected cause even without a formal log entry.
+    const SUSPECTED = {};
+    function classifyMenuItems(sessionId, itemName) {
+      return ['Over-portion', 'Spoilage (unlogged)', 'Theft', 'Count error'].map(c =>
+        `<button class="classify-item" role="menuitem" onclick="setSuspected(event,'${sessionId}','${itemName.replace(/'/g,"\\'")}','${c}')">${c}</button>`
+      ).join('');
+    }
+    function toggleClassifyMenu(e, btn) {
+      e.stopPropagation();
+      const menu = btn.nextElementSibling;
+      document.querySelectorAll('.classify-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.classify-wrap')) {
+        document.querySelectorAll('.classify-menu.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+    function setSuspected(e, sessionId, itemName, cause) {
+      e.stopPropagation();
+      SUSPECTED[sessionId + '|' + itemName] = cause;
+      invToast(itemName + ' tagged as suspected ' + cause.toLowerCase());
+      renderFlags();
+      if (activeSession) renderSessionDrawer(activeSession);
     }
 
     const ALL_SESSIONS = [
@@ -338,11 +390,11 @@
     function renderKpis() {
       const latest = SESSIONS.find(s => s.variancePct != null);
       const varCtx = latest
-        ? `<span class="${latest.variancePct>8?'risk':latest.variancePct>4?'warn':'ok'}">${latest.variancePct>4?'▲':'●'} ${latest.period}</span>`
+        ? `<span class="${latest.variancePct>4?'risk':latest.variancePct>2?'warn':'ok'}">${latest.variancePct>2?'▲':'●'} ${latest.period}</span>`
         : `<span>No completed session yet</span>`;
       const reqCadenceNote = outlet.status === 'risk' && outlet.reason.includes('overdue')
-        ? `<span class="risk">${outlet.reason}</span>`
-        : `<span class="${outlet.status==='ok'?'ok':outlet.status==='pending'?'':'warn'}">${outlet.status==='ok' ? 'No open issues' : outlet.reason}</span>`;
+        ? `<span class="risk">${outlet.reason}${streakSuffix(outlet.streak)}</span>`
+        : `<span class="${outlet.status==='ok'?'ok':outlet.status==='pending'?'':'warn'}">${outlet.status==='ok' ? 'No open issues' : outlet.reason + streakSuffix(outlet.streak)}</span>`;
       document.getElementById('kpi-strip').innerHTML = `
         <div class="kpi-tile">
           <div class="kpi-label">Stock value</div>
@@ -399,7 +451,7 @@
       body.innerHTML = summaryHTML + flagged.map(f => {
         const tone = f.cat.varPct > 8 ? 'risk' : 'warn';
         const items = f.cat.items.length
-          ? `<div class="flag-items">${f.cat.items.map(it => `<div class="flag-item-row"><span class="fi-name">${it.name}</span><span>${it.theoretical} → ${it.actual}</span><span class="fi-cost">+$${it.varCost}</span></div><div style="margin:-2px 0 4px;">${wasteMatchTagHTML(it, outlet.name)}</div>`).join('')}</div>`
+          ? `<div class="flag-items">${f.cat.items.map(it => `<div class="flag-item-row"><span class="fi-name">${it.name}</span><span>${it.theoretical} → ${it.actual}</span><span class="fi-cost">+$${it.varCost}</span></div><div style="margin:-2px 0 4px;">${wasteMatchTagHTML(it, outlet.name, f.session.id)}</div>`).join('')}</div>`
           : '';
         return `<div class="flag-row ${tone}">
           <i class="ti ti-${tone==='risk'?'alert-triangle':'alert-circle'}" aria-hidden="true"></i>
@@ -442,7 +494,7 @@
                           : s.status==='complete'       ? `<span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span>`
                           : `<span class="nb-pill neutral"><i class="ti ti-clock"></i>Open</span>`;
 
-        const varColor = s.variancePct==null?'':s.variancePct>8?'color:var(--status-risk-fg);font-weight:600':s.variancePct>4?'color:var(--status-warn-fg);font-weight:600':'';
+        const varColor = s.variancePct==null?'':s.variancePct>4?'color:var(--status-risk-fg);font-weight:600':s.variancePct>2?'color:var(--status-warn-fg);font-weight:600':'';
 
         const actionBtn = s.status==='submitted'
           ? `<button class="btn btn-primary" style="height:32px;font-size:12px;padding-inline:var(--space-md);" onclick="event.stopPropagation();approveSession('${s.id}')"><i class="ti ti-check"></i>Approve</button>`
@@ -521,8 +573,8 @@
       let cogsHtml = '';
       const showCogs = s.actualCogs != null;
       if (showCogs) {
-        const varColor = s.variancePct>8?'color:var(--status-risk-fg)':s.variancePct>4?'color:var(--status-warn-fg)':'color:var(--status-ok-fg)';
-        const varIcon  = s.variancePct>8?'ti-alert-triangle':s.variancePct>4?'ti-alert-circle':'ti-check';
+        const varColor = s.variancePct>4?'color:var(--status-risk-fg)':s.variancePct>2?'color:var(--status-warn-fg)':'color:var(--status-ok-fg)';
+        const varIcon  = s.variancePct>4?'ti-alert-triangle':s.variancePct>2?'ti-alert-circle':'ti-check';
         const cfNote   = s.sheets.some(sh=>sh.status==='carried-forward')?' + 1 carry-forward':'';
         cogsHtml = `
         <div class="drawer-section-label" style="margin-top:var(--space-xl);">COGS summary</div>
@@ -542,8 +594,8 @@
         const rows = s.varByCategory.map((c,i) => {
           const maxVar = Math.max(...s.varByCategory.map(x=>x.varPct));
           const barW   = maxVar>0 ? Math.round((c.varPct/maxVar)*100) : 0;
-          const textColor = c.varPct>8?'color:var(--status-risk-fg);font-weight:700':c.varPct>4?'color:var(--status-warn-fg);font-weight:600':'color:var(--text-soft)';
-          const fillColor = c.varPct>8?'background:var(--status-risk-fg)':c.varPct>4?'background:var(--status-warn-fg)':'background:var(--fern)';
+          const textColor = c.varPct>4?'color:var(--status-risk-fg);font-weight:700':c.varPct>2?'color:var(--status-warn-fg);font-weight:600':'color:var(--text-soft)';
+          const fillColor = c.varPct>4?'background:var(--status-risk-fg)':c.varPct>2?'background:var(--status-warn-fg)':'background:var(--fern)';
           const itemRows  = c.items.length ? c.items.map(it=>`
             <div class="var-item-row-wrap">
               <div class="var-item-row">
@@ -551,7 +603,7 @@
                 <span class="tabular" style="color:var(--text-soft);">${it.theoretical} → ${it.actual}</span>
                 <span class="tabular" style="color:var(--status-risk-fg);">+$${it.varCost}</span>
               </div>
-              ${wasteMatchTagHTML(it, s.outlet)}
+              ${wasteMatchTagHTML(it, s.outlet, s.id)}
             </div>`).join('') : `<div style="font-size:12px;color:var(--text-soft);padding:4px 0;">No significant item variance</div>`;
           return `<div class="var-cat-row" ondblclick="toggleVarItems('var-items-${i}')">
             <span style="font-size:13px;font-weight:600;color:var(--text);">${c.cat}</span>
