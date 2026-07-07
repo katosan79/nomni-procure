@@ -313,10 +313,10 @@
     .bd-trend.up { background: var(--status-risk-bg); color: var(--status-risk-fg); }
     .bd-trend.flat { background: var(--surface); border: 1px solid var(--border); color: var(--text-soft); }
     .bd-trend a { color: inherit; font-weight: 700; text-decoration: underline; white-space: nowrap; }
-    .stale-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--status-warn-fg); background: var(--status-warn-bg); padding: 1px 6px; border-radius: var(--radius-xs); margin-left: 6px; white-space: nowrap; }
-    .bd-freshness { font-size: 12px; color: var(--text-soft); margin-bottom: var(--space-sm); display: flex; align-items: center; gap: 6px; }
-    .bd-freshness.stale { color: var(--status-warn-fg); font-weight: 500; }
-    .bd-freshness i { font-size: 13px; }
+    .pending-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--status-warn-fg); background: var(--status-warn-bg); padding: 1px 6px; border-radius: var(--radius-xs); margin-left: 6px; white-space: nowrap; }
+    .bd-live-note { font-size: 12px; color: var(--text-soft); margin-bottom: var(--space-sm); display: flex; align-items: center; gap: 6px; }
+    .bd-live-note.pending { color: var(--status-warn-fg); font-weight: 500; }
+    .bd-live-note i { font-size: 13px; }
     .fc-na   { color: var(--text-soft); font-size: 11px; }
 
     .pill {
@@ -1413,11 +1413,16 @@
     }
 
     /* ── Ingredient cost breakdown ─────────────────────────────────────── */
-    // lastRecalculated = when this recipe's ingredient cost was last
-    // recomputed. Stale means a relevant ingredient price moved AFTER that
-    // date — Supy's #1 named cause of variance, and until now the one
-    // Nomni tracked reactively (via price exceptions) but never flagged
-    // proactively at the recipe level.
+    // Recipe cost is derived live from the market list price — there's no
+    // such thing as a "stale" cost number, it's always current. What's
+    // actually worth flagging is one of two real situations:
+    //   'dispute' — the triggering invoice is still disputed and hasn't
+    //     been accepted into the market list, so today's cost is correct
+    //     but exposed to a future increase if the dispute resolves upward.
+    //   'breach'  — the price move IS already reflected in a live FC%
+    //     breach, and nobody has made a reprice/resource decision yet.
+    // Resolved recipes (Mara already repriced, like Flat White) get
+    // neither — the live cost speaks for itself.
     const RECIPE_COSTS = {
       'avocado toast v3': {
         ingredients: [
@@ -1428,8 +1433,7 @@
           { name: 'Cherry Tomatoes',    qty: '50 g',      cost: 0.45 },
         ],
         trend: { dir: 'up', text: '▲ Cost +$0.28 vs 30 days ago — Avocado invoiced +16.7% above market list on 12 Jun', linkText: 'View invoice →', href: 'invoice-detail.html?id=INV-00885' },
-        lastRecalculated: '15 May 2026',
-        stale: { days: 42, note: 'Avocado repriced +16.7% on 12 Jun — 4 weeks after this recipe\'s cost was last touched' }
+        pending: { type: 'dispute', days: 19, label: 'Price dispute open', note: 'Avocado invoiced +16.7% above market list on 12 Jun — still disputed. Cost will rise if it resolves in the supplier\'s favor.' }
       },
       'classic cheeseburger': {
         ingredients: [
@@ -1442,8 +1446,7 @@
           { name: 'Burger sauce',          qty: '30 g',     cost: 0.45 },
         ],
         trend: { dir: 'up', text: '▲ Cost +$0.42 vs 30 days ago — bacon +9% more than offset the Beef Mince price drop · FC 30.9% is above the 30% target', linkText: 'View market list →', href: 'market-list-detail.html' },
-        lastRecalculated: '18 May 2026',
-        stale: { days: 39, note: 'Bacon and Beef Mince prices have both moved since this recipe\'s cost was last recalculated' }
+        pending: { type: 'breach', days: 37, label: 'Margin breach unresolved', note: 'FC 30.9% has been above the 30% target since bacon and Beef Mince prices moved — no reprice decision yet.' }
       },
       'caesar salad': {
         ingredients: [
@@ -1455,8 +1458,7 @@
           { name: 'Croutons',                  qty: '40 g',  cost: 0.48 },
         ],
         trend: { dir: 'up', text: '▲ Cost +$0.11 vs 30 days ago — Chicken Breast invoiced +6.2% above market list on 9 Jun · dispute open', linkText: 'View invoice →', href: 'invoice-detail.html?id=INV-00889' },
-        lastRecalculated: '25 May 2026',
-        stale: { days: 15, note: 'Chicken Breast repriced +6.2% on 9 Jun — 2 weeks after this recipe\'s cost was last touched' }
+        pending: { type: 'dispute', days: 17, label: 'Price dispute open', note: 'Chicken Breast invoiced +6.2% above market list on 9 Jun — still disputed. Cost will rise if it resolves in the supplier\'s favor.' }
       },
       'flat white': {
         ingredients: [
@@ -1465,8 +1467,7 @@
           { name: 'Cup & lid',      qty: '1 ea',   cost: 0.06 },
         ],
         trend: { dir: 'flat', text: 'Cost +$0.14 vs 30 days ago — Arabica Blend +18.3% accepted and repriced on 2 Jun · FC back within target', linkText: 'View exceptions →', href: 'reporting.html' },
-        lastRecalculated: '2 Jun 2026',
-        stale: null
+        pending: null
       },
     };
 
@@ -1492,15 +1493,15 @@
         </div>`;
       }).join('');
       const trendCls = data.trend.dir === 'up' ? 'up' : data.trend.dir === 'flat' ? 'flat' : '';
-      const freshnessHTML = data.stale
-        ? `<div class="bd-freshness stale"><i class="ti ti-clock-exclamation" aria-hidden="true"></i>Cost last refreshed ${data.lastRecalculated} — ${data.stale.note}</div>`
-        : `<div class="bd-freshness"><i class="ti ti-check" aria-hidden="true"></i>Cost last refreshed ${data.lastRecalculated} — up to date</div>`;
+      const liveNoteHTML = data.pending
+        ? `<div class="bd-live-note pending"><i class="ti ti-${data.pending.type === 'breach' ? 'trending-up' : 'alert-circle'}" aria-hidden="true"></i>${data.pending.label} · ${data.pending.days}d — ${data.pending.note}</div>`
+        : `<div class="bd-live-note"><i class="ti ti-check" aria-hidden="true"></i>Cost reflects the current market list price — no pending review</div>`;
       const row = document.createElement('tr');
       row.className = 'breakdown-row';
       row.innerHTML = `<td colspan="8">
         <div class="bd-wrap">
           <div class="bd-title">Ingredient cost breakdown · $${total.toFixed(2)} per serve</div>
-          ${freshnessHTML}
+          ${liveNoteHTML}
           ${lines}
           <div class="bd-trend ${trendCls}"><span>${data.trend.text}</span><a href="${data.trend.href}" onclick="event.stopPropagation()">${data.trend.linkText}</a></div>
         </div>
@@ -1518,12 +1519,13 @@
         const costCell = tr.querySelector('td.num');
         if (!costCell) return;
         const data = RECIPE_COSTS[key];
-        if (data.stale) {
+        if (data.pending) {
           const fcEl = costCell.querySelector('.fc-good, .fc-warn, .fc-bad');
           const badge = document.createElement('span');
-          badge.className = 'stale-badge';
-          badge.title = data.stale.note;
-          badge.innerHTML = `<i class="ti ti-clock-exclamation" aria-hidden="true"></i>Cost stale · ${data.stale.days}d`;
+          badge.className = 'pending-badge';
+          badge.title = data.pending.note;
+          const icon = data.pending.type === 'breach' ? 'ti-trending-up' : 'ti-alert-circle';
+          badge.innerHTML = `<i class="ti ${icon}" aria-hidden="true"></i>${data.pending.label} · ${data.pending.days}d`;
           (fcEl || costCell).appendChild(badge);
         }
         const btn = document.createElement('button');
