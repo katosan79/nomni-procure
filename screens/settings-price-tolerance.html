@@ -61,6 +61,8 @@
     .inline-input:focus { outline:none; border-color:var(--fern); }
     .inline-input[value="0"] { color:var(--status-risk-fg); }
     .tol-zero-badge { font-size:11px; font-weight:700; color:var(--status-risk-fg); background:var(--status-risk-bg); padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .tol-zero-note { display:inline-flex; align-items:center; gap:6px; }
+    .tol-zero-note.is-hidden { display:none; }
 
     /* SKU overrides */
     .override-list { display:flex; flex-direction:column; gap:var(--space-sm); }
@@ -142,7 +144,7 @@
 
             <div class="tol-row">
               <div class="tol-cat"><i class="ti ti-bottle" style="color:#B05EC0;"></i>Beverages <span class="tol-count">22 items</span></div>
-              <div class="tol-rule">Allow up to <div class="tol-input-wrap"><input type="number" class="inline-input" value="0" min="0" max="100" onchange="this.classList.toggle('is-zero', this.value==='0'); saveSection(this.closest('.card'))">%</div> movement before flagging <span class="tol-zero-badge">Zero tolerance</span> — contracted pricing, any change should be reviewed.</div>
+              <div class="tol-rule">Allow up to <div class="tol-input-wrap"><input type="number" class="inline-input" value="0" min="0" max="100" oninput="toggleZeroNote(this)" onchange="saveSection(this.closest('.card'))">%</div> movement before flagging<span class="tol-zero-note">&nbsp;<span class="tol-zero-badge">Zero tolerance</span> — contracted pricing, any change should be reviewed.</span></div>
             </div>
 
             <div class="tol-row">
@@ -228,7 +230,15 @@
   document.addEventListener('DOMContentLoaded', () => {
     NomniShell.init('Price movement tolerance');
     NomniShell.initStagger();
+    document.querySelectorAll('.tol-zero-note').forEach(note => {
+      toggleZeroNote(note.closest('.tol-rule').querySelector('.inline-input'));
+    });
   });
+
+  function toggleZeroNote(input) {
+    const note = input.closest('.tol-rule').querySelector('.tol-zero-note');
+    if (note) note.classList.toggle('is-hidden', Number(input.value) !== 0);
+  }
 
   const debounceTimers = new WeakMap();
 
