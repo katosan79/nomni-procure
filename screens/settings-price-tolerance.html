@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Price movement tolerance — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .back-btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:36px; padding-inline:var(--space-md); border-radius:var(--radius-md); border:1.5px solid var(--border); background:var(--surface); font-size:13px; font-weight:600; color:var(--text-soft); cursor:pointer; font-family:inherit; width:fit-content; text-decoration:none; }
+    .back-btn:hover { border-color:var(--fern); color:var(--text-accent); }
+
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+
+    /* Cards */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+    .card-body  { padding:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xl); }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-ghost:hover { color:var(--text-accent); }
+    .btn-danger-ghost { background:none; border:none; color:var(--status-risk-fg); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-danger-ghost:hover { opacity:0.75; }
+
+    /* Toggle switch */
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; gap:var(--space-xl); }
+    .toggle-info { display:flex; flex-direction:column; gap:3px; }
+    .toggle-label { font-size:14px; font-weight:600; color:var(--text); }
+    .toggle-sub   { font-size:13px; color:var(--text-soft); }
+    .toggle-wrap { position:relative; flex-shrink:0; }
+    .toggle-input { position:absolute; opacity:0; width:0; height:0; }
+    .toggle-track { display:block; width:44px; height:24px; border-radius:var(--radius-pill); background:var(--border); cursor:pointer; transition:background var(--dur-2) var(--ease-standard); position:relative; }
+    .toggle-track::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform var(--dur-2) var(--ease-standard); box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+    .toggle-input:checked + .toggle-track { background:var(--fern); }
+    .toggle-input:checked + .toggle-track::after { transform:translateX(20px); }
+
+    /* Category tolerance rows */
+    .tol-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .tol-row { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .tol-cat { font-size:13px; font-weight:700; color:var(--text); flex:1; display:flex; align-items:center; gap:var(--space-sm); }
+    .tol-cat i { font-size:15px; }
+    .tol-count { font-size:12px; font-weight:500; color:var(--text-soft); }
+    .tol-rule { font-size:13px; color:var(--text-soft); flex:1.6; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .tol-input-wrap { display:flex; align-items:center; gap:6px; }
+    .inline-input { height:36px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; font-weight:700; color:var(--text); background:var(--surface); width:60px; text-align:center; font-feature-settings:'tnum' 1; }
+    .inline-input:focus { outline:none; border-color:var(--fern); }
+    .inline-input[value="0"] { color:var(--status-risk-fg); }
+    .tol-zero-badge { font-size:11px; font-weight:700; color:var(--status-risk-fg); background:var(--status-risk-bg); padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+
+    /* SKU overrides */
+    .override-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .override-row { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .override-cat { font-size:13px; font-weight:700; color:var(--text); flex:1; display:flex; flex-direction:column; gap:1px; }
+    .override-cat span { font-size:11px; font-weight:500; color:var(--text-soft); }
+    .override-rule { font-size:13px; color:var(--text-soft); flex:2; }
+    .override-rule strong { color:var(--text); }
+
+    /* Explanation card */
+    .how-list { display:flex; flex-direction:column; gap:var(--space-lg); }
+    .how-row { display:flex; gap:var(--space-md); }
+    .how-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:color-mix(in srgb, var(--fern) 12%, transparent); color:var(--fern); font-size:15px; }
+    .how-body { flex:1; }
+    .how-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; }
+    .how-desc  { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .how-desc a { color:var(--text-accent); text-decoration:none; font-weight:600; }
+    .how-desc a:hover { text-decoration:underline; }
+
+    /* Per-card save indicator */
+    .card-save-status { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; white-space:nowrap; opacity:0; transition:opacity var(--dur-2) var(--ease-standard); }
+    .card-save-status.saving { opacity:1; color:var(--text-soft); }
+    .card-save-status.saved  { opacity:1; color:var(--status-ok-fg); }
+    .card-save-status.fading { opacity:0; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <a class="back-btn" href="settings.html"><i class="ti ti-arrow-left"></i>Settings</a>
+
+      <div>
+        <h1 class="page-title">Price movement tolerance</h1>
+        <p class="page-desc">Set how much a supplier price is allowed to move before it's flagged as an exception — by category, with SKU-level overrides. Agents use these thresholds to auto-clear small movements and escalate the rest.</p>
+      </div>
+
+      <!-- ── Category tolerance rules ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-percentage"></i>Category tolerance rules</div>
+            <div class="card-desc">A price change within tolerance is auto-accepted onto the market list. Anything above it is held for review.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-md);">
+            <div class="toggle-row" style="gap:var(--space-sm);">
+              <span style="font-size:13px;font-weight:600;color:var(--text-soft);">Enforce tolerance rules</span>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="tolerance-on" class="toggle-input" checked onchange="saveSection(this.closest('.card'))">
+                <label for="tolerance-on" class="toggle-track"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="tol-list">
+
+            <div class="tol-row">
+              <div class="tol-cat"><i class="ti ti-leaf" style="color:#17B3A3;"></i>Produce <span class="tol-count">47 items</span></div>
+              <div class="tol-rule">Allow up to <div class="tol-input-wrap"><input type="number" class="inline-input" value="5" min="0" max="100" onchange="saveSection(this.closest('.card'))">%</div> movement before flagging — fresh product pricing shifts week to week.</div>
+            </div>
+
+            <div class="tol-row">
+              <div class="tol-cat"><i class="ti ti-meat" style="color:#EE4B87;"></i>Protein <span class="tol-count">31 items</span></div>
+              <div class="tol-rule">Allow up to <div class="tol-input-wrap"><input type="number" class="inline-input" value="6" min="0" max="100" onchange="saveSection(this.closest('.card'))">%</div> movement before flagging — market-driven, moves with livestock and seafood pricing.</div>
+            </div>
+
+            <div class="tol-row">
+              <div class="tol-cat"><i class="ti ti-droplet" style="color:#3F8AFB;"></i>Dairy <span class="tol-count">18 items</span></div>
+              <div class="tol-rule">Allow up to <div class="tol-input-wrap"><input type="number" class="inline-input" value="4" min="0" max="100" onchange="saveSection(this.closest('.card'))">%</div> movement before flagging.</div>
+            </div>
+
+            <div class="tol-row">
+              <div class="tol-cat"><i class="ti ti-wheat" style="color:#D97706;"></i>Dry goods &amp; Bakery <span class="tol-count">58 items</span></div>
+              <div class="tol-rule">Allow up to <div class="tol-input-wrap"><input type="number" class="inline-input" value="3" min="0" max="100" onchange="saveSection(this.closest('.card'))">%</div> movement before flagging.</div>
+            </div>
+
+            <div class="tol-row">
+              <div class="tol-cat"><i class="ti ti-bottle" style="color:#B05EC0;"></i>Beverages <span class="tol-count">22 items</span></div>
+              <div class="tol-rule">Allow up to <div class="tol-input-wrap"><input type="number" class="inline-input" value="0" min="0" max="100" onchange="this.classList.toggle('is-zero', this.value==='0'); saveSection(this.closest('.card'))">%</div> movement before flagging <span class="tol-zero-badge">Zero tolerance</span> — contracted pricing, any change should be reviewed.</div>
+            </div>
+
+            <div class="tol-row">
+              <div class="tol-cat"><i class="ti ti-spray" style="color:var(--text-soft);"></i>Cleaning &amp; Supplies <span class="tol-count">12 items</span></div>
+              <div class="tol-rule">Allow up to <div class="tol-input-wrap"><input type="number" class="inline-input" value="2" min="0" max="100" onchange="saveSection(this.closest('.card'))">%</div> movement before flagging.</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SKU-level overrides ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-barcode"></i>SKU-level overrides</div>
+            <div class="card-desc">Override the category default for specific items — tighter for contracted SKUs, looser for known-volatile ones.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="ptToast('Add SKU override…')"><i class="ti ti-plus"></i>Add override</button>
+        </div>
+        <div class="card-body">
+          <div class="override-list">
+            <div class="override-row">
+              <div class="override-cat">Avocado <span>Produce · SBC-AVO-010</span></div>
+              <div class="override-rule">Allow up to <strong>15%</strong> movement — historically volatile, overrides the 5% Produce default</div>
+              <button class="btn-ghost btn-sm" onclick="ptToast('Editing Avocado override…')"><i class="ti ti-pencil"></i>Edit</button>
+              <button class="btn-danger-ghost" onclick="const _r=this.closest('.override-row'),_c=this.closest('.card');_r.remove();saveSection(_c)"><i class="ti ti-trash"></i></button>
+            </div>
+            <div class="override-row">
+              <div class="override-cat">Arabica Blend 1kg <span>Beverages · SBC-COF-100</span></div>
+              <div class="override-rule">Allow up to <strong>10%</strong> movement — spot-priced against commodity coffee futures, overrides the 0% Beverages default</div>
+              <button class="btn-ghost btn-sm" onclick="ptToast('Editing Arabica Blend override…')"><i class="ti ti-pencil"></i>Edit</button>
+              <button class="btn-danger-ghost" onclick="const _r=this.closest('.override-row'),_c=this.closest('.card');_r.remove();saveSection(_c)"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── How this is applied ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-info-circle"></i>How this is applied</div>
+            <div class="card-desc">Where these thresholds show up across the product.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="how-list">
+            <div class="how-row">
+              <div class="how-icon"><i class="ti ti-shield-check"></i></div>
+              <div class="how-body">
+                <div class="how-title">Sloan · Governance agent</div>
+                <div class="how-desc">When a supplier price file comes in, Sloan checks each change against the category (or SKU) tolerance before proposing it to the market list — movements within tolerance are pre-cleared, the rest are flagged for review. See it in action on the <a href="market-list-detail.html">market list price change banner</a>.</div>
+              </div>
+            </div>
+            <div class="how-row">
+              <div class="how-icon"><i class="ti ti-file-invoice"></i></div>
+              <div class="how-body">
+                <div class="how-title">Cyrus · Invoice agent</div>
+                <div class="how-desc">During 3-way match, an invoiced unit price above market list is only raised as a price exception once it exceeds the item's tolerance — small, expected movement no longer creates noise in the exceptions queue.</div>
+              </div>
+            </div>
+            <div class="how-row">
+              <div class="how-icon"><i class="ti ti-chart-bar"></i></div>
+              <div class="how-body">
+                <div class="how-title">Reporting &amp; exceptions</div>
+                <div class="how-desc">Price exception tables in <a href="reporting.html">Reporting</a> use these same thresholds, so what counts as "in tolerance" stays consistent between the agents and what HQ reviews.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Toast -->
+<div id="pt-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=7" data-active="settings"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Price movement tolerance');
+    NomniShell.initStagger();
+  });
+
+  const debounceTimers = new WeakMap();
+
+  function saveSection(card, delay) {
+    if (!card) return;
+    if (delay) {
+      clearTimeout(debounceTimers.get(card));
+      debounceTimers.set(card, setTimeout(() => saveSection(card), delay));
+      return;
+    }
+    const head = card.querySelector('.card-head');
+    if (!head) return;
+
+    let ind = head.querySelector('.card-save-status');
+    if (!ind) {
+      ind = document.createElement('span');
+      ind.className = 'card-save-status';
+      head.appendChild(ind);
+    }
+
+    clearTimeout(ind._fadeTimer);
+    clearTimeout(ind._doneTimer);
+
+    ind.className = 'card-save-status saving';
+    ind.innerHTML = '<i class="ti ti-loader-2" style="font-size:13px;animation:spin 600ms linear infinite;"></i>Saving…';
+
+    ind._doneTimer = setTimeout(() => {
+      ind.className = 'card-save-status saved';
+      ind.innerHTML = '<i class="ti ti-circle-check" style="font-size:13px;"></i>Saved';
+
+      ind._fadeTimer = setTimeout(() => {
+        ind.classList.add('fading');
+        setTimeout(() => { ind.className = 'card-save-status'; ind.innerHTML = ''; }, 220);
+      }, 2000);
+    }, 600);
+  }
+
+  function ptToast(msg) {
+    const wrap = document.getElementById('pt-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;white-space:nowrap;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>

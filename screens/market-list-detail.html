@@ -67,6 +67,13 @@
     .price-change-delta { font-weight:700; font-feature-settings:'tnum' 1; white-space:nowrap; }
     .price-change-delta.up { color:var(--status-risk-fg); }
     .price-change-delta.down { color:var(--status-ok-fg); }
+    .price-change-pct { font-weight:600; font-size:12px; }
+    .price-change-pct.up { color:var(--status-risk-fg); }
+    .price-change-pct.down { color:var(--status-ok-fg); }
+    .tol-pill { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 8px; border-radius:var(--radius-pill); white-space:nowrap; flex-shrink:0; }
+    .tol-pill i { font-size:12px; }
+    .tol-pill-ok { color:var(--status-ok-fg); background:var(--status-ok-bg); }
+    .tol-pill-risk { color:var(--status-risk-fg); background:var(--status-risk-bg); }
     .agent-actions { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-xl); border-top:1px solid var(--border); }
 
     /* Card */
@@ -311,7 +318,7 @@
         <div class="agent-text">
           <div class="agent-label">Sloan · Governance agent</div>
           <div class="agent-headline">2 items have new supplier pricing from Sydney Butchers Co.</div>
-          <div class="agent-why">Price file received overnight. I've matched the changes to your market list. Accept to update outlet pricing, or review each change first.</div>
+          <div class="agent-why">Price file received overnight. Chicken Breast's +5.6% move is within the 6% Protein tolerance, so I've already pre-cleared it. Beef Mince's -6.25% move exceeds tolerance and needs your review before it applies. <a href="settings-price-tolerance.html" style="color:inherit;text-decoration:underline;">Edit tolerance rules →</a></div>
         </div>
       </div>
       <div class="price-change-list">
@@ -320,19 +327,21 @@
           <div style="flex:1">
             <div class="price-change-item">Chicken Breast 500g <span class="price-change-sub">· SBC-CHK-500</span></div>
           </div>
-          <div class="price-change-delta up">$45.00 → $47.50</div>
+          <span class="tol-pill tol-pill-ok"><i class="ti ti-circle-check"></i>Within 6% tolerance</span>
+          <div class="price-change-delta up">$45.00 → $47.50<span class="price-change-pct up"> · +5.6%</span></div>
         </div>
         <div class="price-change-row">
           <div class="price-change-icon down"><i class="ti ti-arrow-down"></i></div>
           <div style="flex:1">
             <div class="price-change-item">Beef Mince 80/20 <span class="price-change-sub">· SBC-BEF-220</span></div>
           </div>
-          <div class="price-change-delta down">$24.00 → $22.50</div>
+          <span class="tol-pill tol-pill-risk"><i class="ti ti-alert-triangle"></i>Exceeds 6% tolerance</span>
+          <div class="price-change-delta down">$24.00 → $22.50<span class="price-change-pct down"> · -6.25%</span></div>
         </div>
       </div>
       <div class="agent-actions">
-        <button class="btn btn-primary btn-sm" onclick="acceptPriceChanges()"><i class="ti ti-checks"></i>Accept both changes</button>
-        <button class="btn btn-outline btn-sm" onclick="showToast('Opening change review…')">Review one by one</button>
+        <button class="btn btn-primary btn-sm" onclick="acceptPriceChanges()"><i class="ti ti-check"></i>Accept Chicken Breast — within tolerance</button>
+        <button class="btn btn-outline btn-sm" onclick="showToast('Opening Beef Mince for review…')">Review Beef Mince</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('price-change-banner').style.display='none'">Dismiss</button>
       </div>
     </article>
@@ -1319,10 +1328,12 @@
 
   // ── Price change accept ───────────────────────────────────────────────────
   function acceptPriceChanges() {
-    document.getElementById('price-change-banner').style.display = 'none';
-    document.querySelectorAll('.price-changed-badge').forEach(b => b.remove());
-    document.querySelectorAll('.price-changed').forEach(el => el.style.color = '');
-    showToast('2 price changes accepted and applied.');
+    const rows = document.querySelectorAll('#price-change-banner .price-change-row');
+    if (rows[0]) rows[0].remove();
+    if (!document.querySelector('#price-change-banner .price-change-row')) {
+      document.getElementById('price-change-banner').style.display = 'none';
+    }
+    showToast('Chicken Breast price accepted and applied. Beef Mince is still awaiting review.');
   }
 
   // ── Push modal ────────────────────────────────────────────────────────────
