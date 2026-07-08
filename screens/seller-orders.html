@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Order inbox — Nomni Supply</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-lg); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+
+    .seller-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); padding:4px 10px; border-radius:var(--radius-pill); margin-bottom:var(--space-sm); }
+    .seller-badge i { font-size:14px; }
+
+    /* KPI row */
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); }
+    .kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); }
+    .kpi-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
+    .kpi-value { font-size:26px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; letter-spacing:-0.02em; }
+    .kpi-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .kpi-sub.warn { color:var(--status-warn-fg); font-weight:600; }
+
+    /* Cards */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; flex-shrink:0; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--btn-primary-hover); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-ghost:hover { color:var(--text-accent); }
+
+    /* Orders table */
+    .orders-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .orders-table th { padding:var(--space-sm) var(--space-xl); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .orders-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .orders-table tbody tr:last-child td { border-bottom:none; }
+    .orders-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .po-id { font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; }
+    .po-agent { font-size:11px; color:var(--text-soft); display:flex; align-items:center; gap:4px; margin-top:1px; }
+    .from-outlet { font-weight:600; color:var(--text); }
+    .from-group { font-size:11px; color:var(--text-soft); }
+    .col-num { text-align:right; font-feature-settings:'tnum' 1; font-weight:600; color:var(--text); }
+    .status-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .status-pill.new       { color:var(--status-info-fg); background:var(--status-info-bg); }
+    .status-pill.confirmed { color:var(--status-ok-fg); background:var(--status-ok-bg); }
+    .status-pill.picking   { color:var(--status-warn-fg); background:var(--status-warn-bg); }
+    .status-pill.dispatched{ color:var(--text-soft); background:var(--surface-soft); border:1px solid var(--border); }
+    .status-pill.shortfall { color:var(--status-risk-fg); background:var(--status-risk-bg); }
+    .row-actions { display:flex; gap:var(--space-xs); justify-content:flex-end; }
+    .due-today { font-size:11px; font-weight:700; color:var(--status-warn-fg); }
+
+    /* Agent banner */
+    .agent-surface { border:1.5px solid var(--agent-border, var(--fern)); border-radius:var(--radius-lg); background:var(--surface); box-shadow:0 0 0 4px color-mix(in srgb, var(--fern) 7%, transparent); }
+    .agent-banner { display:flex; gap:var(--space-md); padding:var(--space-lg) var(--space-xl); }
+    .agent-avatar { width:36px; height:36px; border-radius:50%; background:var(--fern); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .agent-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-accent); margin-bottom:2px; }
+    .agent-headline { font-size:14px; font-weight:700; color:var(--text); margin-bottom:var(--space-xs); }
+    .agent-why { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .agent-actions { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-xl); border-top:1px solid var(--border); }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <div class="page-head">
+        <div>
+          <span class="seller-badge"><i class="ti ti-building-warehouse"></i>Sydney Central Kitchen · Seller workspace</span>
+          <h1 class="page-title">Order inbox</h1>
+          <p class="page-desc">Incoming orders from your outlets. Confirm to reserve stock and queue for fulfilment — the outlet's PO and your incoming order are the same record.</p>
+        </div>
+        <button class="btn btn-outline" onclick="soToast('Exporting order list…')"><i class="ti ti-download"></i>Export</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">New orders</div>
+          <div class="kpi-value">3</div>
+          <div class="kpi-sub">arrived since yesterday 5pm</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">To fulfil today</div>
+          <div class="kpi-value">4</div>
+          <div class="kpi-sub warn">1 has a stock shortfall</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Fulfilled this week</div>
+          <div class="kpi-value">14</div>
+          <div class="kpi-sub">across 6 outlets</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Order value MTD</div>
+          <div class="kpi-value">$28,410</div>
+          <div class="kpi-sub">at transfer price</div>
+        </div>
+      </div>
+
+      <!-- Agent banner -->
+      <article class="agent-surface" id="ck-agent-banner" aria-label="Otto order intake summary">
+        <div class="agent-banner">
+          <div class="agent-avatar">Ot</div>
+          <div style="flex:1">
+            <div class="agent-label">Otto · Ordering agent</div>
+            <div class="agent-headline">3 outlet orders arrived overnight — 2 are fully coverable from CK stock, 1 has a shortfall.</div>
+            <div class="agent-why">Bondi Beach and Surry Hills can be confirmed as-is. Parramatta's order includes 12 × Napoli Sauce 5L but only 8 are on hand — tomorrow's production run covers the gap, so I suggest confirming with a split delivery.</div>
+          </div>
+        </div>
+        <div class="agent-actions">
+          <button class="btn btn-primary btn-sm" onclick="confirmCoverable()"><i class="ti ti-checks"></i>Confirm the 2 coverable orders</button>
+          <button class="btn btn-outline btn-sm" onclick="soToast('Opening Parramatta order for split-delivery review…')">Review Parramatta split</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ck-agent-banner').style.display='none'">Dismiss</button>
+        </div>
+      </article>
+
+      <!-- Incoming orders -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-inbox"></i>Incoming orders</div>
+            <div class="card-desc">Orders placed by outlets against your catalog. Confirming reserves stock and moves the order to the fulfilment queue.</div>
+          </div>
+        </div>
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Order</th><th>From</th><th style="text-align:right">Items</th><th>Requested delivery</th><th style="text-align:right">Value</th><th>Status</th><th style="text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="po-id">PO-01247</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
+              <td><div class="from-outlet">Bondi Beach</div><div class="from-group">Beachside</div></td>
+              <td class="col-num">9</td>
+              <td>Tomorrow, 7–9am <span class="due-today">· confirm by 3pm</span></td>
+              <td class="col-num">$1,284.50</td>
+              <td><span class="status-pill new"><i class="ti ti-mail"></i>New</span></td>
+              <td><div class="row-actions"><button class="btn btn-primary btn-sm" onclick="confirmOrder(this)"><i class="ti ti-check"></i>Confirm</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01247…')">View</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="po-id">PO-01248</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
+              <td><div class="from-outlet">Surry Hills</div><div class="from-group">CBD Cluster</div></td>
+              <td class="col-num">6</td>
+              <td>Tomorrow, 7–9am <span class="due-today">· confirm by 3pm</span></td>
+              <td class="col-num">$742.00</td>
+              <td><span class="status-pill new"><i class="ti ti-mail"></i>New</span></td>
+              <td><div class="row-actions"><button class="btn btn-primary btn-sm" onclick="confirmOrder(this)"><i class="ti ti-check"></i>Confirm</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01248…')">View</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="po-id">PO-01249</div></td>
+              <td><div class="from-outlet">Parramatta</div><div class="from-group">CBD Cluster</div></td>
+              <td class="col-num">11</td>
+              <td>Thu, 7–9am</td>
+              <td class="col-num">$1,918.75</td>
+              <td><span class="status-pill shortfall"><i class="ti ti-alert-triangle"></i>Stock shortfall</span></td>
+              <td><div class="row-actions"><button class="btn btn-outline btn-sm" onclick="soToast('Opening split-delivery proposal…')">Resolve</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01249…')">View</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="po-id">PO-01244</div></td>
+              <td><div class="from-outlet">Circular Quay</div><div class="from-group">CBD Cluster</div></td>
+              <td class="col-num">7</td>
+              <td>Today, 2–4pm</td>
+              <td class="col-num">$963.20</td>
+              <td><span class="status-pill picking"><i class="ti ti-basket"></i>Picking</span></td>
+              <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="soToast('Opening fulfilment for PO-01244…')">Fulfilment</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="po-id">PO-01243</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
+              <td><div class="from-outlet">Newtown</div><div class="from-group">Inner West</div></td>
+              <td class="col-num">5</td>
+              <td>Today, 2–4pm</td>
+              <td class="col-num">$518.40</td>
+              <td><span class="status-pill confirmed"><i class="ti ti-circle-check"></i>Confirmed</span></td>
+              <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="soToast('Opening fulfilment for PO-01243…')">Fulfilment</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="po-id">PO-01241</div></td>
+              <td><div class="from-outlet">Manly</div><div class="from-group">Beachside</div></td>
+              <td class="col-num">8</td>
+              <td>Delivered yesterday</td>
+              <td class="col-num">$1,102.00</td>
+              <td><span class="status-pill dispatched"><i class="ti ti-truck"></i>Dispatched · TRF-1041</span></td>
+              <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="soToast('Opening transfer TRF-1041…')">Transfer</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div id="so-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=8" data-active="seller-orders"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Order inbox');
+    NomniShell.initStagger();
+  });
+
+  function confirmOrder(btn) {
+    const row = btn.closest('tr');
+    const pill = row.querySelector('.status-pill');
+    pill.className = 'status-pill confirmed';
+    pill.innerHTML = '<i class="ti ti-circle-check"></i>Confirmed';
+    const actions = row.querySelector('.row-actions');
+    actions.innerHTML = '<button class="btn-ghost btn-sm" onclick="soToast(\'Opening fulfilment…\')">Fulfilment</button>';
+    soToast('Order confirmed — stock reserved and queued for fulfilment.');
+  }
+
+  function confirmCoverable() {
+    document.querySelectorAll('.orders-table tbody tr').forEach(row => {
+      const pill = row.querySelector('.status-pill');
+      if (pill && pill.classList.contains('new')) {
+        pill.className = 'status-pill confirmed';
+        pill.innerHTML = '<i class="ti ti-circle-check"></i>Confirmed';
+        row.querySelector('.row-actions').innerHTML = '<button class="btn-ghost btn-sm" onclick="soToast(\'Opening fulfilment…\')">Fulfilment</button>';
+      }
+    });
+    document.getElementById('ck-agent-banner').style.display = 'none';
+    soToast('2 orders confirmed — stock reserved. Parramatta still needs review.');
+  }
+
+  function soToast(msg) {
+    const wrap = document.getElementById('so-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;white-space:nowrap;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>

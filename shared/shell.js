@@ -27,14 +27,28 @@
     { id: 'brands',      icon: 'ti-tag',                label: 'Brands',       href: 'brands.html' },
   ];
 
-  /* ── Roles (the View-as switcher) ── */
+  /* ── Seller workspace nav (Supplier / Central Kitchen roles) ──
+     Same platform, different workspace: the seller sees the other side of the
+     same objects — a buyer's PO is the seller's incoming order. */
+  const SELLER_NAV = [
+    { id: 'seller-orders',    icon: 'ti-inbox',          label: 'Order inbox',      href: 'seller-orders.html' },
+    { id: 'seller-dispatch',  icon: 'ti-truck-delivery', label: 'Fulfilment',       href: 'seller-dispatch.html' },
+    { id: 'seller-catalog',   icon: 'ti-list-details',   label: 'Catalog & prices', href: 'seller-catalog.html' },
+    { id: 'seller-customers', icon: 'ti-building-store', label: 'Customers',        href: 'seller-customers.html' },
+  ];
+
+  /* ── Roles (the View-as switcher) ──
+     ws decides which workspace the role lands in: 'buyer' (procure) or
+     'seller' (supply). CK Operator and Supplier share the seller workspace —
+     a CK is an internal supplier to its own outlets. */
   const ROLES = [
-    { id: 'hq-admin',    tier: 'hq',       group: 'HQ',       label: 'HQ Administrator', short: 'HQ' },
-    { id: 'hq-approver', tier: 'hq',       group: 'HQ',       label: 'HQ Approver',      short: 'AP' },
-    { id: 'finance',     tier: 'hq',       group: 'HQ',       label: 'Finance User',     short: 'FN' },
-    { id: 'outlet-mgr',  tier: 'outlet',   group: 'Outlet',   label: 'Outlet Manager',   short: 'OM' },
-    { id: 'outlet-user', tier: 'outlet',   group: 'Outlet',   label: 'Outlet Staff',     short: 'OS' },
-    { id: 'supplier',    tier: 'external', group: 'External', label: 'Supplier User',    short: 'SP' },
+    { id: 'hq-admin',    tier: 'hq',       group: 'HQ',              label: 'HQ Administrator', short: 'HQ', ws: 'buyer'  },
+    { id: 'hq-approver', tier: 'hq',       group: 'HQ',              label: 'HQ Approver',      short: 'AP', ws: 'buyer'  },
+    { id: 'finance',     tier: 'hq',       group: 'HQ',              label: 'Finance User',     short: 'FN', ws: 'buyer'  },
+    { id: 'outlet-mgr',  tier: 'outlet',   group: 'Outlet',          label: 'Outlet Manager',   short: 'OM', ws: 'buyer'  },
+    { id: 'outlet-user', tier: 'outlet',   group: 'Outlet',          label: 'Outlet Staff',     short: 'OS', ws: 'buyer'  },
+    { id: 'ck-operator', tier: 'ck',       group: 'Central Kitchen', label: 'CK Operator',      short: 'CK', ws: 'seller' },
+    { id: 'supplier',    tier: 'external', group: 'External',        label: 'Supplier User',    short: 'SP', ws: 'seller' },
   ];
   const ALL = ROLES.map(r => r.id);
   /* Which roles may see each nav section */
@@ -346,6 +360,10 @@
       gap: var(--space-xs);
       flex: 1;
     }
+    .shell-nav-ws {
+      display: flex; flex-direction: column;
+      gap: var(--space-xs);
+    }
     .shell-nav-item {
       display: flex; align-items: center;
       gap: var(--space-sm);
@@ -594,7 +612,7 @@
   function buildShell(pageTitle) {
     const ADMIN_IDS = new Set(['outlets', 'suppliers', 'users']);
     let dividerInserted = false;
-    const navItems = NAV.map(n => {
+    const buildNavItems = items => items.map(n => {
       let prefix = '';
       if (ADMIN_IDS.has(n.id) && !dividerInserted) {
         prefix = '<div class="shell-nav-divider" aria-hidden="true"></div>';
@@ -630,8 +648,10 @@
         <span class="shell-nav-label">${n.label}</span>
       </a>`;
     }).join('');
+    const navItems = buildNavItems(NAV);
+    const sellerNavItems = buildNavItems(SELLER_NAV);
 
-    const roleMenu = ['HQ','Outlet','External'].map(g => {
+    const roleMenu = ['HQ','Outlet','Central Kitchen','External'].map(g => {
       const items = ROLES.filter(r => r.group === g).map(r =>
         `<button class="shell-role-item" role="menuitemradio" data-role="${r.id}" aria-checked="false">
            <span class="ra" aria-hidden="true">${r.short}</span>${r.label}
@@ -657,10 +677,11 @@
               <path d="M20.941 30.552C21.157 29.542 22.148 28.896 23.158 29.111L115.484 48.735C116.494 48.951 117.14 49.942 116.925 50.952L115.362 58.322C114.801 60.941 114.043 63.467 113.107 65.89L132.117 61.849C133.128 61.634 134.12 62.279 134.335 63.289L136.683 74.336C144.849 112.732 119.085 150.482 79.635 156.412C43.253 161.874 9.472 136.152 1.838 100.254L0.042 91.826C-0.173 90.816 0.472 89.824 1.482 89.609L33.14 82.885C21.493 71.015 16.095 53.318 19.763 36.052L20.932 30.562ZM92.068 0.041C93.079-0.174 94.07 0.471 94.285 1.481L94.818 3.97C97.559 16.859 88.916 29.532 75.669 31.524C63.461 33.358 52.112 24.725 49.549 12.668L49.203 11.06C48.988 10.049 49.633 9.058 50.644 8.843Z" fill="#2AC864"/>
             </svg>
           </div>
-          <span class="shell-wordmark-text">nomni <span style="font-weight:400;opacity:0.65;">procure</span></span>
+          <span class="shell-wordmark-text">nomni <span style="font-weight:400;opacity:0.65;" id="shell-wordmark-product">procure</span></span>
         </a>
         <nav class="shell-nav" aria-label="Module navigation">
-          ${navItems}
+          <div class="shell-nav-ws" data-ws="buyer">${navItems}</div>
+          <div class="shell-nav-ws" data-ws="seller" style="display:none">${sellerNavItems}</div>
           <div class="shell-nav-footer">
             <a class="shell-nav-item${typeof activeId !== 'undefined' && activeId === 'settings' ? ' active' : ''}" href="settings.html" data-label="Settings" aria-label="Settings">
               <i class="ti ti-settings" aria-hidden="true"></i>
@@ -765,10 +786,19 @@
         const role = ROLES.find(r => r.id === roleId) || ROLES[0];
         document.documentElement.setAttribute('data-role', role.id);
         document.documentElement.setAttribute('data-tier', role.tier);
+        document.documentElement.setAttribute('data-ws', role.ws);
         try { localStorage.setItem('nomni_role', role.id); } catch (e) {}
 
-        // Filter nav per role
-        document.querySelectorAll('[data-nav]').forEach(a => {
+        // Swap workspace: buyer nav vs seller nav, wordmark follows
+        document.querySelectorAll('.shell-nav-ws').forEach(b =>
+          b.style.display = b.getAttribute('data-ws') === role.ws ? '' : 'none');
+        const wm = document.getElementById('shell-wordmark-product');
+        if (wm) wm.textContent = role.ws === 'seller' ? 'supply' : 'procure';
+        const wmLink = document.querySelector('.shell-wordmark');
+        if (wmLink) wmLink.setAttribute('href', role.ws === 'seller' ? 'seller-orders.html' : 'dashboard.html');
+
+        // Filter buyer nav per role (seller nav is workspace-gated, not role-filtered)
+        document.querySelectorAll('.shell-nav-ws[data-ws="buyer"] [data-nav]').forEach(a => {
           const allowed = NAV_ROLES[a.getAttribute('data-nav')] || ALL;
           a.style.display = allowed.includes(role.id) ? '' : 'none';
         });

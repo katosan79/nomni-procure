@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Customers — Nomni Supply</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-lg); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+    .seller-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); padding:4px 10px; border-radius:var(--radius-pill); margin-bottom:var(--space-sm); }
+    .seller-badge i { font-size:14px; }
+
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-ghost:hover { color:var(--text-accent); }
+
+    .cust-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .cust-table th { padding:var(--space-sm) var(--space-xl); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .cust-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .cust-table tbody tr:last-child td { border-bottom:none; }
+    .cust-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .cust-name { display:flex; align-items:center; gap:var(--space-md); }
+    .cust-avatar { width:32px; height:32px; border-radius:var(--radius-md); background:color-mix(in srgb, var(--fern) 12%, transparent); color:var(--fern); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+    .cust-title { font-weight:600; color:var(--text); }
+    .cust-group { font-size:11px; color:var(--text-soft); }
+    .col-num { text-align:right; font-feature-settings:'tnum' 1; font-weight:600; color:var(--text); }
+    .sched-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--text-soft); background:var(--surface-soft); border:1px solid var(--border); padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .last-delivery { font-size:13px; color:var(--text-soft); }
+    .last-delivery strong { color:var(--text); font-weight:600; }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <div class="page-head">
+        <div>
+          <span class="seller-badge"><i class="ti ti-building-warehouse"></i>Sydney Central Kitchen · Seller workspace</span>
+          <h1 class="page-title">Customers</h1>
+          <p class="page-desc">The outlets you supply. Each sees your catalog on their market list at the published transfer price and orders through their normal ordering flow.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-building-store"></i>Outlets served</div>
+            <div class="card-desc">6 outlets across 3 groups order from this CK.</div>
+          </div>
+        </div>
+        <table class="cust-table">
+          <thead>
+            <tr><th>Outlet</th><th>Delivery schedule</th><th style="text-align:right">Orders MTD</th><th style="text-align:right">Spend MTD</th><th>Last delivery</th><th style="text-align:right">Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="cust-name"><div class="cust-avatar">BB</div><div><div class="cust-title">Bondi Beach</div><div class="cust-group">Beachside</div></div></div></td>
+              <td><span class="sched-pill"><i class="ti ti-calendar"></i>Mon / Wed / Fri · 7–9am</span></td>
+              <td class="col-num">7</td>
+              <td class="col-num">$6,412</td>
+              <td class="last-delivery"><strong>TRF-1043</strong> · in transit</td>
+              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Bondi Beach order history…')">Orders</button></td>
+            </tr>
+            <tr>
+              <td><div class="cust-name"><div class="cust-avatar">PA</div><div><div class="cust-title">Parramatta</div><div class="cust-group">CBD Cluster</div></div></div></td>
+              <td><span class="sched-pill"><i class="ti ti-calendar"></i>Tue / Thu · 7–9am</span></td>
+              <td class="col-num">5</td>
+              <td class="col-num">$5,240</td>
+              <td class="last-delivery"><strong>TRF-1038</strong> · Mon</td>
+              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Parramatta order history…')">Orders</button></td>
+            </tr>
+            <tr>
+              <td><div class="cust-name"><div class="cust-avatar">SH</div><div><div class="cust-title">Surry Hills</div><div class="cust-group">CBD Cluster</div></div></div></td>
+              <td><span class="sched-pill"><i class="ti ti-calendar"></i>Mon / Wed / Fri · 7–9am</span></td>
+              <td class="col-num">6</td>
+              <td class="col-num">$4,873</td>
+              <td class="last-delivery"><strong>TRF-1040</strong> · Mon</td>
+              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Surry Hills order history…')">Orders</button></td>
+            </tr>
+            <tr>
+              <td><div class="cust-name"><div class="cust-avatar">CQ</div><div><div class="cust-title">Circular Quay</div><div class="cust-group">CBD Cluster</div></div></div></td>
+              <td><span class="sched-pill"><i class="ti ti-calendar"></i>Daily · 2–4pm</span></td>
+              <td class="col-num">9</td>
+              <td class="col-num">$7,105</td>
+              <td class="last-delivery"><strong>TRF-1044</strong> · picking</td>
+              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Circular Quay order history…')">Orders</button></td>
+            </tr>
+            <tr>
+              <td><div class="cust-name"><div class="cust-avatar">NT</div><div><div class="cust-title">Newtown</div><div class="cust-group">Inner West</div></div></div></td>
+              <td><span class="sched-pill"><i class="ti ti-calendar"></i>Tue / Fri · 2–4pm</span></td>
+              <td class="col-num">4</td>
+              <td class="col-num">$2,690</td>
+              <td class="last-delivery"><strong>TRF-1045</strong> · ready</td>
+              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Newtown order history…')">Orders</button></td>
+            </tr>
+            <tr>
+              <td><div class="cust-name"><div class="cust-avatar">ML</div><div><div class="cust-title">Manly</div><div class="cust-group">Beachside</div></div></div></td>
+              <td><span class="sched-pill"><i class="ti ti-calendar"></i>Mon / Thu · 7–9am</span></td>
+              <td class="col-num">4</td>
+              <td class="col-num">$2,090</td>
+              <td class="last-delivery"><strong>TRF-1041</strong> · received</td>
+              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Manly order history…')">Orders</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div id="cu-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=8" data-active="seller-customers"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Customers');
+    NomniShell.initStagger();
+  });
+
+  function cuToast(msg) {
+    const wrap = document.getElementById('cu-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;white-space:nowrap;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>
