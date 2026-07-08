@@ -37,6 +37,17 @@
     { id: 'seller-customers', icon: 'ti-building-store', label: 'Customers',        href: 'seller-customers.html' },
   ];
 
+  /* ── CK-only "Purchasing" nav ──
+     A Central Kitchen is a seller to its outlets AND a buyer from real
+     suppliers (raw ingredients for production, bulk stock to redistribute).
+     Shown as an extra section under the seller nav for ck-operator only —
+     an external Supplier User has no reason to raise POs on this platform. */
+  const CK_BUYER_NAV = [
+    { id: 'orders',    icon: 'ti-shopping-cart', label: 'Orders',    href: 'orders.html' },
+    { id: 'invoices',  icon: 'ti-file-invoice',  label: 'Invoices',  href: 'invoices.html' },
+    { id: 'suppliers', icon: 'ti-truck',         label: 'Suppliers', href: 'suppliers.html' },
+  ];
+
   /* ── Roles (the View-as switcher) ──
      ws decides which workspace the role lands in: 'buyer' (procure) or
      'seller' (supply). CK Operator and Supplier share the seller workspace —
@@ -47,7 +58,7 @@
     { id: 'finance',     tier: 'hq',       group: 'HQ',              label: 'Finance User',     short: 'FN', ws: 'buyer'  },
     { id: 'outlet-mgr',  tier: 'outlet',   group: 'Outlet',          label: 'Outlet Manager',   short: 'OM', ws: 'buyer'  },
     { id: 'outlet-user', tier: 'outlet',   group: 'Outlet',          label: 'Outlet Staff',     short: 'OS', ws: 'buyer'  },
-    { id: 'ck-operator', tier: 'ck',       group: 'Central Kitchen', label: 'CK Operator',      short: 'CK', ws: 'seller' },
+    { id: 'ck-operator', tier: 'ck',       group: 'Central Kitchen', label: 'CK Operator',      short: 'CK', ws: 'seller', buys: true },
     { id: 'supplier',    tier: 'external', group: 'External',        label: 'Supplier User',    short: 'SP', ws: 'seller' },
   ];
   const ALL = ROLES.map(r => r.id);
@@ -364,6 +375,15 @@
       display: flex; flex-direction: column;
       gap: var(--space-xs);
     }
+    .shell-nav-ws-sub {
+      display: flex; flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .shell-nav-section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--chrome-fg-soft);
+      padding: var(--space-xs) var(--space-md) 2px;
+    }
     .shell-nav-item {
       display: flex; align-items: center;
       gap: var(--space-sm);
@@ -650,6 +670,7 @@
     }).join('');
     const navItems = buildNavItems(NAV);
     const sellerNavItems = buildNavItems(SELLER_NAV);
+    const ckBuyerNavItems = buildNavItems(CK_BUYER_NAV);
 
     const roleMenu = ['HQ','Outlet','Central Kitchen','External'].map(g => {
       const items = ROLES.filter(r => r.group === g).map(r =>
@@ -681,7 +702,14 @@
         </a>
         <nav class="shell-nav" aria-label="Module navigation">
           <div class="shell-nav-ws" data-ws="buyer">${navItems}</div>
-          <div class="shell-nav-ws" data-ws="seller" style="display:none">${sellerNavItems}</div>
+          <div class="shell-nav-ws" data-ws="seller" style="display:none">
+            ${sellerNavItems}
+            <div class="shell-nav-ws-sub" data-ws-sub="ck-buying" style="display:none">
+              <div class="shell-nav-divider" aria-hidden="true"></div>
+              <div class="shell-nav-section-label">Purchasing</div>
+              ${ckBuyerNavItems}
+            </div>
+          </div>
           <div class="shell-nav-footer">
             <a class="shell-nav-item${typeof activeId !== 'undefined' && activeId === 'settings' ? ' active' : ''}" href="settings.html" data-label="Settings" aria-label="Settings">
               <i class="ti ti-settings" aria-hidden="true"></i>
@@ -792,6 +820,10 @@
         // Swap workspace: buyer nav vs seller nav, wordmark follows
         document.querySelectorAll('.shell-nav-ws').forEach(b =>
           b.style.display = b.getAttribute('data-ws') === role.ws ? '' : 'none');
+        // CK operator also gets a "Purchasing" sub-section under the seller nav —
+        // a CK buys from real suppliers as well as selling to its own outlets.
+        const ckBuying = document.querySelector('[data-ws-sub="ck-buying"]');
+        if (ckBuying) ckBuying.style.display = role.buys ? '' : 'none';
         const wm = document.getElementById('shell-wordmark-product');
         if (wm) wm.textContent = role.ws === 'seller' ? 'supply' : 'procure';
         const wmLink = document.querySelector('.shell-wordmark');
