@@ -642,6 +642,7 @@
             <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-map-pin" style="font-size:12px;"></i><span id="sup-location">Sydney, NSW</span></span>
             <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-tag" style="font-size:12px;"></i><span id="sup-category">Meat &amp; Seafood</span></span>
             <span id="sup-ns-pill" class="ns-supply-pill"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span>
+            <span id="sup-internal-pill" class="ns-supply-pill" style="display:none;background:color-mix(in srgb, #3F8AFB 12%, transparent);color:#3F8AFB;border-color:color-mix(in srgb, #3F8AFB 25%, transparent);"><i class="ti ti-building-warehouse" style="font-size:10px;"></i>Internal · own seller workspace</span>
           </div>
         </div>
       </div>
@@ -1478,6 +1479,14 @@
       category: 'Packaging',
       nsConnected: false,
     },
+    'sydney-central-kitchen': {
+      name: 'Sydney Central Kitchen',
+      initials: 'CK',
+      location: 'Alexandria, Sydney NSW',
+      category: 'Production',
+      nsConnected: false,
+      internal: true,
+    },
   };
 
   const _urlId = new URLSearchParams(window.location.search).get('id') || 'sydney-butchers';
@@ -1983,6 +1992,16 @@
     if (!SUPPLIER.nsConnected) {
       if (nsHeaderPill) nsHeaderPill.style.display = 'none';
       if (nsCard)       nsCard.style.display       = 'none';
+    }
+
+    const internalPill = document.getElementById('sup-internal-pill');
+    if (SUPPLIER.internal) {
+      if (internalPill) internalPill.style.display = '';
+      const rfqBtn = document.getElementById('sup-rfq-btn');
+      if (rfqBtn) {
+        rfqBtn.innerHTML = '<i class="ti ti-list-details"></i>Manage in seller workspace';
+        rfqBtn.onclick = () => { window.location.href = 'seller-catalog.html'; };
+      }
     }
 
     renderAccessTree();
