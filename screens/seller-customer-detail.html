@@ -287,24 +287,6 @@
         { po:'PO-01255', window:'Sun, 7–9am', value:'$670.00', status:'new' },
       ],
     },
-    'Darling Street Bistro': {
-      initials:'DB', group:'CBD Cluster', zone:'City', status:'active', since:'Just added',
-      contactName:'', contactEmail:'', contactPhone:'',
-      ordersMtd:0, spendMtd:'$0', lastDelivery:'No deliveries yet',
-      orders:[],
-    },
-    'Chatswood Bistro': {
-      initials:'CB', group:'North Shore', zone:'City', status:'active', since:'Just added',
-      contactName:'', contactEmail:'', contactPhone:'',
-      ordersMtd:0, spendMtd:'$0', lastDelivery:'No deliveries yet',
-      orders:[],
-    },
-    'Bankstown Diner': {
-      initials:'BD', group:'Western Sydney', zone:'City', status:'active', since:'Just added',
-      contactName:'', contactEmail:'', contactPhone:'',
-      ordersMtd:0, spendMtd:'$0', lastDelivery:'No deliveries yet',
-      orders:[],
-    },
   };
 
   const STATUS_LABEL = { new:'New', confirmed:'Confirmed', picking:'Picking', shortfall:'Stock shortfall', dispatched:'Dispatched' };
@@ -312,12 +294,32 @@
 
   let currentOutlet = null;
 
+  function initialsOf(name) {
+    return name.split(' ').filter(w => w.length > 2).map(w => w[0]).slice(0, 2).join('').toUpperCase() || name.slice(0, 2).toUpperCase();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     NomniShell.init('Customers');
     NomniShell.initStagger();
 
-    currentOutlet = new URLSearchParams(window.location.search).get('outlet') || 'Bondi Beach';
-    const c = CUSTOMERS[currentOutlet] || CUSTOMERS['Bondi Beach'];
+    const params = new URLSearchParams(window.location.search);
+    currentOutlet = params.get('outlet') || 'Bondi Beach';
+
+    // Newly added customers (platform outlet or external) aren't seeded above —
+    // build their record from what the Add-customer drawer passed via the URL,
+    // rather than silently falling back to another outlet's data.
+    const c = CUSTOMERS[currentOutlet] || {
+      initials: initialsOf(currentOutlet),
+      group: params.get('group') || 'External',
+      zone: params.get('zone') || 'City',
+      status: 'active',
+      since: params.get('since') || 'Just added',
+      contactName: params.get('contact') || '',
+      contactEmail: params.get('email') || '',
+      contactPhone: params.get('phone') || '',
+      ordersMtd: 0, spendMtd: '$0', lastDelivery: 'No deliveries yet',
+      orders: [],
+    };
 
     document.title = currentOutlet + ' — Nomni Supply';
     document.getElementById('cust-logo').textContent = c.initials;
