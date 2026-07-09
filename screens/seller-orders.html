@@ -115,13 +115,7 @@
           <h1 class="page-title">Order inbox</h1>
           <p class="page-desc">Incoming orders from your outlets. Confirm to reserve stock and queue for fulfilment — the outlet's PO and your incoming order are the same record.</p>
         </div>
-        <div style="display:flex;align-items:center;gap:var(--space-md);">
-          <div class="view-switch" role="group" aria-label="Order inbox view">
-            <button class="view-btn active" id="view-btn-list" onclick="setView('list')"><i class="ti ti-list"></i>List</button>
-            <button class="view-btn" id="view-btn-cal" onclick="setView('cal')"><i class="ti ti-calendar-week"></i>Calendar</button>
-          </div>
-          <button class="btn btn-outline" onclick="soToast('Exporting order list…')"><i class="ti ti-download"></i>Export</button>
-        </div>
+        <button class="btn btn-outline" onclick="soToast('Exporting order list…')"><i class="ti ti-download"></i>Export</button>
       </div>
 
       <!-- KPIs -->
@@ -171,6 +165,10 @@
           <div class="card-head-left">
             <div class="card-title"><i class="ti ti-inbox"></i>Incoming orders</div>
             <div class="card-desc">Orders placed by outlets against your catalog. Confirming reserves stock and moves the order to the fulfilment queue.</div>
+          </div>
+          <div class="view-switch" role="group" aria-label="Order inbox view">
+            <button class="view-btn" data-view="list" onclick="setView('list')"><i class="ti ti-list"></i>List</button>
+            <button class="view-btn" data-view="cal" onclick="setView('cal')"><i class="ti ti-calendar-week"></i>Calendar</button>
           </div>
         </div>
         <div class="orders-table-wrap">
@@ -247,6 +245,10 @@
             <div class="card-title"><i class="ti ti-calendar-week"></i>Delivery calendar</div>
             <div class="card-desc">Workload across the next 7 days, grouped by delivery run. Click an order to jump to it in the list.</div>
           </div>
+          <div class="view-switch" role="group" aria-label="Order inbox view">
+            <button class="view-btn" data-view="list" onclick="setView('list')"><i class="ti ti-list"></i>List</button>
+            <button class="view-btn" data-view="cal" onclick="setView('cal')"><i class="ti ti-calendar-week"></i>Calendar</button>
+          </div>
         </div>
         <div class="cal-wrap">
           <div class="cal-grid">
@@ -308,13 +310,14 @@
   document.addEventListener('DOMContentLoaded', () => {
     NomniShell.init('Order inbox');
     NomniShell.initStagger();
+    setView('list');
   });
 
   function setView(view) {
     document.getElementById('view-list').style.display = view === 'list' ? '' : 'none';
     document.getElementById('view-cal').style.display  = view === 'cal'  ? '' : 'none';
-    document.getElementById('view-btn-list').classList.toggle('active', view === 'list');
-    document.getElementById('view-btn-cal').classList.toggle('active', view === 'cal');
+    document.querySelectorAll('.view-btn').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.view === view));
   }
 
   function jumpToOrder(poId) {
