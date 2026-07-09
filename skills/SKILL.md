@@ -313,6 +313,16 @@ Nine states cover every interactive element with the same tokens everywhere:
 
 **State precedence** (highest to lowest): error → loading → selected → pressed → focus → hover → disabled → rest
 
+**Segmented toggle / pill switch rollover (non-negotiable):** Any segmented control — a two-or-more-option switch where the active segment gets a solid fill (`--surface-deep`, `--fern`, `--seaweed`, etc.) — must give every *inactive* segment a hover wash. Never ship a toggle where only the active segment has visual feedback.
+
+```css
+.toggle-btn { transition: background var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard); }
+.toggle-btn:not(.active):hover { background: var(--surface-soft); color: var(--text); }
+.toggle-btn.active { background: var(--surface-deep); color: var(--cream); } /* or --fern / --seaweed per surface */
+```
+
+Reference implementation: `spend-by-supplier.html`'s `.period-btn` (also handles `.active:hover` explicitly so the selected segment doesn't visually shift on hover). Applies to `view-switch`/`view-btn` (list/calendar, grid/list toggles), `role-switch`/`role-btn` (acting-as switches), and any fill-style `.tab-btn` variant — not to underline-style tabs, which already carry their own `:hover { color: var(--text) }` convention.
+
 **The focus contract:** Focus visibility is non-negotiable — the product is run on a keyboard at POS and back office. Never `outline: none` without a visible replacement. Both `--focus-ring` and `--border-focus` resolve to spring green.
 
 Agent states are four additional first-class states:
@@ -695,6 +705,7 @@ These rules must hold in every generated screen and snippet:
 | Wrong radius token | `border-radius: 12px` hardcoded | Use `--radius-xl` for drawers/modals, `--radius-lg` for cards |
 | Shadow invented | `box-shadow: 0 4px 10px rgba(0,0,0,0.2)` | Use `--shadow-sm/md/lg` tokens |
 | Agent state unnamed | "the AI suggested..." | Always name the agent: "by Sloan · Undo" |
+| Toggle segment missing rollover | Inactive segment in a view-switch/role-switch/pill-tab has no hover feedback | Add `:not(.active):hover { background: var(--surface-soft); color: var(--text); }` (see §2.6) |
 
 ---
 

@@ -80,7 +80,8 @@
 
     /* View switch */
     .view-switch { display:inline-flex; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; flex-shrink:0; }
-    .view-btn { padding:0 var(--space-md); height:var(--control-h); background:var(--surface); border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-soft); display:inline-flex; align-items:center; gap:6px; }
+    .view-btn { padding:0 var(--space-md); height:var(--control-h); background:var(--surface); border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-soft); display:inline-flex; align-items:center; gap:6px; transition:background var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard); }
+    .view-btn:not(.active):hover { background:var(--surface-soft); color:var(--text); }
     .view-btn.active { background:var(--surface-deep); color:var(--cream); }
     .view-btn i { font-size:15px; }
 
