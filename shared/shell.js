@@ -711,7 +711,7 @@
             </div>
           </div>
           <div class="shell-nav-footer">
-            <a class="shell-nav-item${typeof activeId !== 'undefined' && (activeId === 'settings' || activeId === 'seller-settings') ? ' active' : ''}" href="settings.html" id="shell-settings-link" data-label="Settings" aria-label="Settings">
+            <a class="shell-nav-item${typeof activeId !== 'undefined' && (activeId === 'settings' || activeId === 'seller-settings' || activeId === 'seller-settings-delivery') ? ' active' : ''}" href="settings.html" id="shell-settings-link" data-label="Settings" aria-label="Settings">
               <i class="ti ti-settings" aria-hidden="true"></i>
               <span class="shell-nav-label">Settings</span>
             </a>
