@@ -72,6 +72,56 @@
     .note-strip i { font-size:14px; color:var(--text-accent); flex-shrink:0; margin-top:1px; }
     .note-strip a { color:var(--text-accent); font-weight:600; text-decoration:none; }
     .note-strip a:hover { text-decoration:underline; }
+
+    .sel-checkbox { width:16px; height:16px; accent-color:var(--fern); cursor:pointer; }
+    .sel-checkbox:disabled { cursor:not-allowed; opacity:0.3; }
+    .col-check { width:1%; white-space:nowrap; }
+
+    .bulk-bar { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(0); z-index:70; display:flex; align-items:center; gap:var(--space-lg); background:var(--surface-deep); color:var(--cream); padding:var(--space-md) var(--space-lg); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); }
+    .bulk-bar-count { font-size:13px; font-weight:600; white-space:nowrap; }
+    .bulk-bar .btn-ghost { color:var(--cream); opacity:0.85; }
+    .bulk-bar .btn-ghost:hover { color:#fff; opacity:1; }
+
+    .lists-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .lists-table th { padding:var(--space-sm) var(--space-xl); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .lists-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .lists-table tbody tr:last-child td { border-bottom:none; }
+    .lists-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .list-name { font-weight:600; color:var(--text); }
+    .list-empty { padding:var(--space-2xl); text-align:center; color:var(--text-soft); font-size:13px; }
+    .status-pill.draft { color:var(--text-soft); background:var(--surface-soft); border:1px solid var(--border); }
+    .status-pill.sent  { color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); }
+
+    /* Add-to-list drawer */
+    .drawer-section { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-xl); }
+    .drawer-section:last-child { margin-bottom:0; }
+    .drawer-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin-bottom:2px; }
+    .form-input { height:40px; padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); width:100%; box-sizing:border-box; }
+    .form-input:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .list-pick-item { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; margin-bottom:var(--space-sm); }
+    .list-pick-item:hover { border-color:color-mix(in srgb,var(--fern) 55%,var(--border)); }
+    .list-pick-item.selected { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 5%,transparent); }
+    .list-pick-item input[type=radio] { accent-color:var(--fern); flex-shrink:0; }
+    .list-pick-name { font-size:14px; font-weight:600; color:var(--text); }
+    .list-pick-meta { font-size:12px; color:var(--text-soft); }
+    .picker-empty { font-size:13px; color:var(--text-soft); padding:var(--space-lg); text-align:center; border:1.5px dashed var(--border); border-radius:var(--radius-md); }
+
+    /* List detail drawer */
+    .ld-supplier-group { margin-bottom:var(--space-xl); }
+    .ld-supplier-group:last-child { margin-bottom:0; }
+    .ld-supplier-head { font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-xs); margin-bottom:var(--space-sm); }
+    .ld-line { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-sm) 0; border-bottom:1px solid var(--border); }
+    .ld-line:last-child { border-bottom:none; }
+    .ld-line-name { flex:1; font-size:13px; color:var(--text); font-weight:600; }
+    .ld-line-sku { font-size:11px; color:var(--text-soft); font-weight:400; }
+    .ld-qty-input { width:56px; height:32px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; text-align:right; font-feature-settings:'tnum' 1; }
+    .ld-qty-input:focus { outline:none; border-color:var(--fern); }
+    .ld-line-total { width:70px; text-align:right; font-size:13px; font-weight:600; color:var(--text); font-feature-settings:'tnum' 1; }
+    .ld-line-remove { background:none; border:none; color:var(--text-soft); cursor:pointer; padding:2px; display:flex; }
+    .ld-line-remove:hover { color:var(--status-risk-fg); }
+    .ld-supplier-subtotal { display:flex; justify-content:flex-end; gap:var(--space-md); padding-top:var(--space-sm); font-size:12px; color:var(--text-soft); }
+    .ld-supplier-subtotal strong { color:var(--text); }
+    .ld-grand-total { display:flex; justify-content:space-between; align-items:center; padding-top:var(--space-lg); margin-top:var(--space-lg); border-top:1.5px solid var(--border); font-size:15px; font-weight:700; color:var(--text); }
   </style>
 </head>
 <body>
@@ -126,6 +176,24 @@
         </div>
       </article>
 
+      <!-- Reorder lists -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-list-check"></i>Reorder lists</div>
+            <div class="card-desc">Group items you buy from suppliers into named lists — tick items below, or start one from scratch.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="openListPicker()"><i class="ti ti-plus"></i>New list</button>
+        </div>
+        <table class="lists-table" id="lists-table" style="display:none;">
+          <thead>
+            <tr><th>List</th><th style="text-align:right">Items</th><th>Suppliers</th><th style="text-align:right">Est. cost</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+          </thead>
+          <tbody id="lists-tbody"></tbody>
+        </table>
+        <div class="list-empty" id="lists-empty">No reorder lists yet. Tick items in the tables below and add them to a new list.</div>
+      </div>
+
       <!-- Raw ingredients -->
       <div class="card">
         <div class="card-head">
@@ -137,7 +205,7 @@
         </div>
         <table class="inv-table">
           <thead>
-            <tr><th>Ingredient</th><th>Used in</th><th>Supplier</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+            <tr><th class="col-check"><input type="checkbox" class="sel-checkbox" id="raw-select-all" onchange="toggleSelectAllRaw(this.checked)" aria-label="Select all raw ingredients"/></th><th>Ingredient</th><th>Used in</th><th>Supplier</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
           </thead>
           <tbody id="raw-tbody"></tbody>
         </table>
@@ -154,19 +222,72 @@
         </div>
         <table class="inv-table">
           <thead>
-            <tr><th>Item</th><th>Source</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+            <tr><th class="col-check"></th><th>Item</th><th>Source</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
           </thead>
           <tbody id="fg-tbody"></tbody>
         </table>
         <div class="note-strip">
           <i class="ti ti-info-circle"></i>
-          <span>On-hand quantities here match <a href="seller-catalog.html">Catalog &amp; prices</a> — this view is for stock monitoring, that one's for pricing and publishing to outlets.</span>
+          <span>On-hand quantities here match <a href="seller-catalog.html">Catalog &amp; prices</a> — this view is for stock monitoring, that one's for pricing and publishing to outlets. Only redistributed items (bought from a supplier) can go in a reorder list — produced items are made in-house.</span>
         </div>
       </div>
 
     </div>
   </div>
 </main>
+
+<!-- Bulk selection bar -->
+<div class="bulk-bar" id="bulk-bar" style="display:none;">
+  <span class="bulk-bar-count" id="bulk-bar-count">0 selected</span>
+  <button class="btn-ghost btn-sm" onclick="clearSelection()">Clear</button>
+  <button class="btn btn-primary btn-sm" onclick="openListPicker()"><i class="ti ti-list-check"></i>Add to list</button>
+</div>
+
+<!-- Add-to-list drawer -->
+<div id="list-picker-scrim" class="nb-drawer-scrim" onclick="closeListPicker()"></div>
+<div id="list-picker-drawer" class="nb-drawer" role="dialog" aria-modal="true">
+  <div class="nb-drawer-head">
+    <div class="nb-drawer-title">Add to reorder list</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeListPicker()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body">
+    <p id="list-picker-summary" style="font-size:13px;color:var(--text-soft);margin:0 0 var(--space-lg);"></p>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Existing lists</div>
+      <div id="existing-lists-picker"></div>
+      <div class="picker-empty" id="no-existing-lists" style="display:none;">No lists yet — create one below.</div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Or create a new list</div>
+      <input class="form-input" id="new-list-name" placeholder="e.g. Weekly produce order" oninput="onNewListNameInput()"/>
+    </div>
+  </div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" onclick="closeListPicker()">Cancel</button>
+    <button class="btn btn-primary" onclick="submitListPicker()"><i class="ti ti-plus"></i>Add</button>
+  </div>
+</div>
+
+<!-- List detail drawer -->
+<div id="list-detail-scrim" class="nb-drawer-scrim" onclick="closeListDetail()"></div>
+<div id="list-detail-drawer" class="nb-drawer" role="dialog" aria-modal="true" style="width:min(560px,94vw);">
+  <div class="nb-drawer-head">
+    <div class="nb-drawer-title" id="list-detail-title">List</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeListDetail()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body" id="list-detail-body"></div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" id="list-detail-delete" onclick="deleteCurrentList()"><i class="ti ti-trash"></i>Delete list</button>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" id="list-detail-send" onclick="sendCurrentList()"><i class="ti ti-send"></i>Send to suppliers</button>
+  </div>
+</div>
 
 <div id="inv-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
 
@@ -178,6 +299,7 @@
     renderRaw();
     renderFinished();
     renderKpis();
+    renderLists();
   });
 
   // Raw ingredients — kept in sync by hand with the produced items in seller-catalog.html
@@ -215,6 +337,7 @@
   function renderRaw() {
     document.getElementById('raw-tbody').innerHTML = RAW.map(r => `
       <tr data-sku="${r.sku}">
+        <td class="col-check"><input type="checkbox" class="sel-checkbox row-select" data-key="raw:${r.sku}" onchange="toggleSelect('raw:${r.sku}', this.checked)" ${selected.has('raw:' + r.sku) ? 'checked' : ''} aria-label="Select ${r.name}"/></td>
         <td><div class="item-name">${r.name}</div><div class="item-sku">${r.sku}</div></td>
         <td class="used-in">${r.usedIn}</td>
         <td>${r.supplier}</td>
@@ -228,6 +351,9 @@
   function renderFinished() {
     document.getElementById('fg-tbody').innerHTML = FINISHED.map(f => `
       <tr>
+        <td class="col-check">${f.source === 'redistributed'
+          ? '<input type="checkbox" class="sel-checkbox row-select" data-key="fg:' + f.sku + '" onchange="toggleSelect(\'fg:' + f.sku + '\', this.checked)" ' + (selected.has('fg:' + f.sku) ? 'checked' : '') + ' aria-label="Select ' + f.name + '"/>'
+          : '<input type="checkbox" class="sel-checkbox" disabled title="Produced in-house — not bought from a supplier"/>'}</td>
         <td><div class="item-name">${f.name}</div><div class="item-sku">${f.sku}</div></td>
         <td><span class="src-pill ${f.source}"><i class="ti ${f.source === 'produced' ? 'ti-flask' : 'ti-packages'}"></i>${f.source === 'produced' ? 'Produced' : 'Redistributed'}</span></td>
         <td class="col-num ${f.onHand < f.par ? 'stock-low' : 'stock-ok'}">${f.onHand}</td>
@@ -247,6 +373,236 @@
 
     const value = RAW.reduce((sum, r) => sum + r.onHand * r.cost, 0) + FINISHED.reduce((sum, f) => sum + f.onHand * f.cost, 0);
     document.getElementById('kpi-value').textContent = '$' + Math.round(value).toLocaleString('en-AU');
+  }
+
+  /* ── Item lookup by selection key ── */
+  function itemForKey(key) {
+    const [type, sku] = key.split(':');
+    const item = type === 'raw' ? RAW.find(x => x.sku === sku) : FINISHED.find(x => x.sku === sku);
+    return item ? { type, sku, name: item.name, supplier: item.supplier || 'Nomni Supply (internal)', cost: item.cost, suggestedQty: item.par > item.onHand ? (item.par - item.onHand) : 1 } : null;
+  }
+
+  /* ── Selection state ── */
+  const selected = new Set();
+
+  function toggleSelect(key, checked) {
+    if (checked) selected.add(key); else selected.delete(key);
+    updateBulkBar();
+    document.getElementById('raw-select-all').checked = RAW.every(r => selected.has('raw:' + r.sku));
+  }
+
+  function toggleSelectAllRaw(checked) {
+    RAW.forEach(r => checked ? selected.add('raw:' + r.sku) : selected.delete('raw:' + r.sku));
+    renderRaw();
+    updateBulkBar();
+  }
+
+  function clearSelection() {
+    selected.clear();
+    renderRaw();
+    renderFinished();
+    updateBulkBar();
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulk-bar');
+    if (selected.size === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    document.getElementById('bulk-bar-count').textContent = selected.size + ' item' + (selected.size === 1 ? '' : 's') + ' selected';
+  }
+
+  /* ── Reorder lists ── */
+  let LISTS = [];
+  let nextListId = 1;
+  let currentListId = null;
+
+  function renderLists() {
+    const hasLists = LISTS.length > 0;
+    document.getElementById('lists-table').style.display = hasLists ? '' : 'none';
+    document.getElementById('lists-empty').style.display = hasLists ? 'none' : '';
+    document.getElementById('lists-tbody').innerHTML = LISTS.map(l => {
+      const suppliers = [...new Set(l.items.map(i => i.supplier))];
+      const cost = l.items.reduce((sum, i) => sum + i.qty * i.cost, 0);
+      return `<tr>
+        <td><div class="list-name">${l.name}</div></td>
+        <td class="col-num">${l.items.length}</td>
+        <td style="font-size:12px;color:var(--text-soft);">${suppliers.join(', ') || '—'}</td>
+        <td class="col-num">$${cost.toFixed(2)}</td>
+        <td><span class="status-pill ${l.sent ? 'sent' : 'draft'}"><i class="ti ${l.sent ? 'ti-circle-check' : 'ti-file-text'}"></i>${l.sent ? 'Sent' : 'Draft'}</span></td>
+        <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="openListDetail(${l.id})">View<i class="ti ti-chevron-right"></i></button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openListPicker() {
+    document.getElementById('new-list-name').value = '';
+    document.getElementById('list-picker-summary').textContent = selected.size
+      ? selected.size + ' item' + (selected.size === 1 ? '' : 's') + ' selected — choose a list to add them to.'
+      : 'No items selected — this will create an empty list you can add to later.';
+
+    const wrap = document.getElementById('existing-lists-picker');
+    if (!LISTS.length) {
+      wrap.innerHTML = '';
+      document.getElementById('no-existing-lists').style.display = '';
+    } else {
+      document.getElementById('no-existing-lists').style.display = 'none';
+      wrap.innerHTML = LISTS.map(l => `
+        <label class="list-pick-item" data-id="${l.id}" onclick="selectExistingList(${l.id})">
+          <input type="radio" name="pick-existing-list"/>
+          <div>
+            <div class="list-pick-name">${l.name}</div>
+            <div class="list-pick-meta">${l.items.length} item${l.items.length === 1 ? '' : 's'}</div>
+          </div>
+        </label>`).join('');
+    }
+    pickedExistingListId = null;
+
+    document.getElementById('list-picker-scrim').classList.add('open');
+    document.getElementById('list-picker-drawer').classList.add('open');
+  }
+
+  function closeListPicker() {
+    document.getElementById('list-picker-scrim').classList.remove('open');
+    document.getElementById('list-picker-drawer').classList.remove('open');
+  }
+
+  let pickedExistingListId = null;
+
+  function selectExistingList(id) {
+    pickedExistingListId = id;
+    document.getElementById('new-list-name').value = '';
+    document.querySelectorAll('.list-pick-item').forEach(el => {
+      const match = Number(el.dataset.id) === id;
+      el.classList.toggle('selected', match);
+      el.querySelector('input[type=radio]').checked = match;
+    });
+  }
+
+  function onNewListNameInput() {
+    if (document.getElementById('new-list-name').value.trim()) {
+      pickedExistingListId = null;
+      document.querySelectorAll('.list-pick-item').forEach(el => {
+        el.classList.remove('selected');
+        el.querySelector('input[type=radio]').checked = false;
+      });
+    }
+  }
+
+  function submitListPicker() {
+    const newName = document.getElementById('new-list-name').value.trim();
+    let list;
+
+    if (newName) {
+      list = { id: nextListId++, name: newName, items: [], sent: false };
+      LISTS.push(list);
+    } else if (pickedExistingListId !== null) {
+      list = LISTS.find(l => l.id === pickedExistingListId);
+    } else {
+      invToast('Pick an existing list or name a new one.');
+      return;
+    }
+
+    let added = 0;
+    selected.forEach(key => {
+      if (list.items.some(i => i.key === key)) return;
+      const item = itemForKey(key);
+      if (!item) return;
+      list.items.push({ key, name: item.name, sku: item.sku, supplier: item.supplier, cost: item.cost, qty: item.suggestedQty });
+      added++;
+    });
+
+    selected.clear();
+    renderRaw();
+    renderFinished();
+    updateBulkBar();
+    renderLists();
+    closeListPicker();
+    invToast(added ? added + ' item' + (added === 1 ? '' : 's') + ' added to "' + list.name + '".' : '"' + list.name + '" created.');
+  }
+
+  function openListDetail(id) {
+    const list = LISTS.find(l => l.id === id);
+    if (!list) return;
+    currentListId = id;
+    document.getElementById('list-detail-title').textContent = list.name;
+    document.getElementById('list-detail-send').style.display = list.sent ? 'none' : '';
+    renderListDetailBody(list);
+    document.getElementById('list-detail-scrim').classList.add('open');
+    document.getElementById('list-detail-drawer').classList.add('open');
+  }
+
+  function renderListDetailBody(list) {
+    const body = document.getElementById('list-detail-body');
+    if (!list.items.length) {
+      body.innerHTML = '<div class="picker-empty">No items in this list yet. Close this drawer, tick items in the tables, and use "Add to list".</div>';
+      return;
+    }
+    const bySupplier = {};
+    list.items.forEach(i => { (bySupplier[i.supplier] = bySupplier[i.supplier] || []).push(i); });
+
+    let grandTotal = 0;
+    const groups = Object.keys(bySupplier).map(supplier => {
+      const items = bySupplier[supplier];
+      const subtotal = items.reduce((sum, i) => sum + i.qty * i.cost, 0);
+      grandTotal += subtotal;
+      const lines = items.map(i => `
+        <div class="ld-line">
+          <div class="ld-line-name">${i.name}<span class="ld-line-sku"> · ${i.sku}</span></div>
+          <input class="ld-qty-input" type="number" min="1" value="${i.qty}" ${list.sent ? 'disabled' : ''} onchange="updateListQty(${list.id}, '${i.key}', this.value)"/>
+          <div class="ld-line-total">$${(i.qty * i.cost).toFixed(2)}</div>
+          ${list.sent ? '' : '<button class="ld-line-remove" onclick="removeListItem(' + list.id + ', \'' + i.key + '\')" aria-label="Remove"><i class="ti ti-x"></i></button>'}
+        </div>`).join('');
+      return `<div class="ld-supplier-group">
+        <div class="ld-supplier-head"><i class="ti ti-truck"></i>${supplier}</div>
+        ${lines}
+        <div class="ld-supplier-subtotal">Subtotal <strong>$${subtotal.toFixed(2)}</strong></div>
+      </div>`;
+    }).join('');
+
+    body.innerHTML = groups + `<div class="ld-grand-total"><span>Total</span><span>$${grandTotal.toFixed(2)}</span></div>`;
+  }
+
+  function updateListQty(listId, key, value) {
+    const list = LISTS.find(l => l.id === listId);
+    if (!list) return;
+    const item = list.items.find(i => i.key === key);
+    if (!item) return;
+    item.qty = Math.max(1, parseInt(value, 10) || 1);
+    renderListDetailBody(list);
+    renderLists();
+  }
+
+  function removeListItem(listId, key) {
+    const list = LISTS.find(l => l.id === listId);
+    if (!list) return;
+    list.items = list.items.filter(i => i.key !== key);
+    renderListDetailBody(list);
+    renderLists();
+  }
+
+  function closeListDetail() {
+    document.getElementById('list-detail-scrim').classList.remove('open');
+    document.getElementById('list-detail-drawer').classList.remove('open');
+    currentListId = null;
+  }
+
+  function sendCurrentList() {
+    const list = LISTS.find(l => l.id === currentListId);
+    if (!list || !list.items.length) { invToast('Add at least one item before sending.'); return; }
+    list.sent = true;
+    const suppliers = [...new Set(list.items.map(i => i.supplier))];
+    renderLists();
+    closeListDetail();
+    invToast('"' + list.name + '" sent — draft orders raised with ' + suppliers.join(', ') + '.');
+  }
+
+  function deleteCurrentList() {
+    const list = LISTS.find(l => l.id === currentListId);
+    if (!list) return;
+    LISTS = LISTS.filter(l => l.id !== currentListId);
+    renderLists();
+    closeListDetail();
+    invToast('"' + list.name + '" deleted.');
   }
 
   function reorderRaw(sku) {
