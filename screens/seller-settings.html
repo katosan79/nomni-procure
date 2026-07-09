@@ -36,6 +36,16 @@
     .btn-danger-ghost { background:none; border:none; color:var(--status-risk-fg); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
     .btn-danger-ghost:hover { opacity:0.75; }
 
+    /* Time windows */
+    .window-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .window-row { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-lg); background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .window-row i.ti-clock { font-size:15px; color:var(--text-accent); }
+    .window-time { height:34px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; font-weight:600; color:var(--text); background:var(--surface); }
+    .window-time:focus { outline:none; border-color:var(--fern); }
+    .window-sep { font-size:12px; color:var(--text-soft); }
+    .window-label-badge { font-size:12px; font-weight:700; color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .window-row .btn-danger-ghost { margin-left:auto; }
+
     /* Zones */
     .zone-list { display:flex; flex-direction:column; gap:var(--space-md); }
     .zone-row { border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface-soft); }
@@ -126,6 +136,40 @@
         <span class="seller-badge"><i class="ti ti-building-warehouse"></i>Sydney Central Kitchen · Seller workspace</span>
         <h1 class="page-title">Settings</h1>
         <p class="page-desc">Configure how outlets order from and receive deliveries from this Central Kitchen.</p>
+      </div>
+
+      <!-- Time windows -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-clock"></i>Time windows</div>
+            <div class="card-desc">The delivery time slots zones can be set to. Editing a window's times updates every zone using it.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="addWindowRow()"><i class="ti ti-plus"></i>Add window</button>
+        </div>
+        <div class="card-body">
+          <div class="window-list" id="window-list">
+
+            <div class="window-row" data-committed-label="7–9am">
+              <i class="ti ti-clock"></i>
+              <input type="time" class="window-time" value="07:00" onchange="updateWindowLabel(this.closest('.window-row'))"/>
+              <span class="window-sep">to</span>
+              <input type="time" class="window-time" value="09:00" onchange="updateWindowLabel(this.closest('.window-row'))"/>
+              <span class="window-label-badge">7–9am</span>
+              <button class="btn-danger-ghost" onclick="deleteWindow(this)"><i class="ti ti-trash"></i></button>
+            </div>
+
+            <div class="window-row" data-committed-label="2–4pm">
+              <i class="ti ti-clock"></i>
+              <input type="time" class="window-time" value="14:00" onchange="updateWindowLabel(this.closest('.window-row'))"/>
+              <span class="window-sep">to</span>
+              <input type="time" class="window-time" value="16:00" onchange="updateWindowLabel(this.closest('.window-row'))"/>
+              <span class="window-label-badge">2–4pm</span>
+              <button class="btn-danger-ghost" onclick="deleteWindow(this)"><i class="ti ti-trash"></i></button>
+            </div>
+
+          </div>
+        </div>
       </div>
 
       <!-- Delivery zones -->
@@ -367,11 +411,18 @@
         <div class="card-head">
           <div class="card-head-left">
             <div class="card-title"><i class="ti ti-info-circle"></i>How this is applied</div>
-            <div class="card-desc">Where these zones show up across the product.</div>
+            <div class="card-desc">Where these windows and zones show up across the product.</div>
           </div>
         </div>
         <div class="card-body">
           <div class="how-list">
+            <div class="how-row">
+              <div class="how-icon"><i class="ti ti-clock"></i></div>
+              <div class="how-body">
+                <div class="how-title">Time windows</div>
+                <div class="how-desc">Every zone's "Window" field is chosen from this list. Adding a window makes it selectable everywhere; editing one's start/end time updates every zone using it immediately, without needing to re-pick it.</div>
+              </div>
+            </div>
             <div class="how-row">
               <div class="how-icon"><i class="ti ti-shopping-cart"></i></div>
               <div class="how-body">
@@ -543,6 +594,98 @@
     if (zoneRow) refreshOutletsInZone(zoneName(zoneRow));
   }
 
+  /* ── Time windows ── */
+  function formatWindowRange(start24, end24) {
+    const parse = t => {
+      const [h, m] = t.split(':').map(Number);
+      return { period: h >= 12 ? 'pm' : 'am', h12: h % 12 === 0 ? 12 : h % 12, m };
+    };
+    const s = parse(start24), e = parse(end24);
+    const fmt = p => p.m ? p.h12 + ':' + String(p.m).padStart(2, '0') : String(p.h12);
+    return s.period === e.period
+      ? fmt(s) + '–' + fmt(e) + e.period
+      : fmt(s) + s.period + '–' + fmt(e) + e.period;
+  }
+
+  function addWindowOptionToZones(label) {
+    document.querySelectorAll('.zone-row').forEach(zoneRow => {
+      const windowSelect = zoneRow.querySelectorAll('.zone-select')[0];
+      if (windowSelect && ![...windowSelect.options].some(o => o.textContent === label)) {
+        const opt = document.createElement('option');
+        opt.textContent = label;
+        windowSelect.appendChild(opt);
+      }
+    });
+  }
+
+  function renameWindowOption(oldLabel, newLabel) {
+    document.querySelectorAll('.zone-row').forEach(zoneRow => {
+      const windowSelect = zoneRow.querySelectorAll('.zone-select')[0];
+      const opt = windowSelect && [...windowSelect.options].find(o => o.textContent === oldLabel);
+      if (opt) opt.textContent = newLabel;
+    });
+    document.querySelectorAll('.zone-row').forEach(zoneRow => {
+      const windowSelect = zoneRow.querySelectorAll('.zone-select')[0];
+      if (windowSelect && windowSelect.value === newLabel) refreshOutletsInZone(zoneName(zoneRow));
+    });
+  }
+
+  function removeWindowOption(label) {
+    document.querySelectorAll('.zone-row').forEach(zoneRow => {
+      const windowSelect = zoneRow.querySelectorAll('.zone-select')[0];
+      if (!windowSelect) return;
+      const wasSelected = windowSelect.value === label;
+      const opt = [...windowSelect.options].find(o => o.textContent === label);
+      if (opt) opt.remove();
+      if (wasSelected) refreshOutletsInZone(zoneName(zoneRow));
+    });
+  }
+
+  function addWindowRow() {
+    const row = document.createElement('div');
+    row.className = 'window-row';
+    const label = formatWindowRange('09:00', '11:00');
+    row.dataset.committedLabel = label;
+    row.innerHTML = `
+      <i class="ti ti-clock"></i>
+      <input type="time" class="window-time" value="09:00" onchange="updateWindowLabel(this.closest('.window-row'))"/>
+      <span class="window-sep">to</span>
+      <input type="time" class="window-time" value="11:00" onchange="updateWindowLabel(this.closest('.window-row'))"/>
+      <span class="window-label-badge">${label}</span>
+      <button class="btn-danger-ghost" onclick="deleteWindow(this)"><i class="ti ti-trash"></i></button>`;
+    document.getElementById('window-list').appendChild(row);
+    addWindowOptionToZones(label);
+    ssToast('Window "' + label + '" added — available on every zone.');
+  }
+
+  function updateWindowLabel(row) {
+    const times = row.querySelectorAll('.window-time');
+    const newLabel = formatWindowRange(times[0].value, times[1].value);
+    const oldLabel = row.dataset.committedLabel;
+    row.querySelector('.window-label-badge').textContent = newLabel;
+    if (newLabel !== oldLabel) {
+      renameWindowOption(oldLabel, newLabel);
+      row.dataset.committedLabel = newLabel;
+      ssToast('Window updated to ' + newLabel + ' — zones using it were refreshed.');
+    }
+  }
+
+  function deleteWindow(btn) {
+    if (document.querySelectorAll('.window-row').length <= 1) {
+      ssToast('At least one time window is required.');
+      return;
+    }
+    const row = btn.closest('.window-row');
+    const label = row.dataset.committedLabel;
+    const affected = [...document.querySelectorAll('.zone-row')].filter(zoneRow => {
+      const windowSelect = zoneRow.querySelectorAll('.zone-select')[0];
+      return windowSelect && windowSelect.value === label;
+    });
+    row.remove();
+    removeWindowOption(label);
+    ssToast('Removed ' + label + (affected.length ? ' — ' + affected.length + ' zone' + (affected.length === 1 ? '' : 's') + ' moved to another window' : '') + '.');
+  }
+
   /* ── Zone schedule engine — reads live DOM state, no hardcoded maps ── */
   function zoneName(zoneRow) { return zoneRow.querySelector('.zone-name').value.trim(); }
 
@@ -631,7 +774,9 @@
     document.getElementById('new-zone-name').classList.remove('has-error');
     document.getElementById('zone-name-error').classList.remove('show-error');
     document.getElementById('zone-days-error').classList.remove('show-error');
-    document.getElementById('new-zone-window').value = '7–9am';
+    const windowSelect = document.getElementById('new-zone-window');
+    const windowLabels = [...document.querySelectorAll('.window-row')].map(r => r.dataset.committedLabel);
+    windowSelect.innerHTML = windowLabels.map(l => '<option>' + l + '</option>').join('');
     document.getElementById('new-zone-cutoff').value = '15:00';
     document.getElementById('new-zone-relative').value = 'Prior day';
     document.querySelectorAll('#new-zone-days .day-chip').forEach(chip =>
