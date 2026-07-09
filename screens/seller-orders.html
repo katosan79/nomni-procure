@@ -73,6 +73,31 @@
     .agent-headline { font-size:14px; font-weight:700; color:var(--text); margin-bottom:var(--space-xs); }
     .agent-why { font-size:13px; color:var(--text-soft); line-height:1.5; }
     .agent-actions { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-xl); border-top:1px solid var(--border); }
+
+    /* View switch */
+    .view-switch { display:inline-flex; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; flex-shrink:0; }
+    .view-btn { padding:0 var(--space-md); height:var(--control-h); background:var(--surface); border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-soft); display:inline-flex; align-items:center; gap:6px; }
+    .view-btn.active { background:var(--surface-deep); color:var(--cream); }
+    .view-btn i { font-size:15px; }
+
+    /* Delivery calendar */
+    .cal-wrap { padding:var(--space-xl); overflow-x:auto; }
+    .cal-grid { display:grid; grid-template-columns:90px repeat(7,minmax(110px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .cal-head { background:var(--surface-soft); padding:var(--space-sm) var(--space-xs); font-size:12px; text-align:center; color:var(--text-soft); }
+    .cal-head.today, .cal-head.tomorrow { font-weight:700; color:var(--text); }
+    .cal-row-label { background:var(--surface-soft); padding:var(--space-sm) var(--space-md); font-size:11px; color:var(--text-soft); display:flex; align-items:center; white-space:nowrap; }
+    .cal-cell { background:var(--surface); padding:6px; display:flex; flex-direction:column; gap:4px; min-height:58px; }
+    .cal-chip { display:flex; flex-direction:column; gap:1px; padding:5px 7px; border-radius:var(--radius-sm); font-size:11px; font-weight:700; cursor:pointer; border:none; text-align:left; font-family:inherit; }
+    .cal-chip-status { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.02em; opacity:.85; }
+    .cal-chip.new        { background:var(--status-info-bg); color:var(--status-info-fg); }
+    .cal-chip.confirmed  { background:var(--status-ok-bg); color:var(--status-ok-fg); }
+    .cal-chip.picking    { background:var(--status-warn-bg); color:var(--status-warn-fg); }
+    .cal-chip.shortfall  { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .cal-chip.dispatched { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); opacity:.75; }
+    .cal-legend { display:flex; gap:var(--space-lg); flex-wrap:wrap; padding:0 var(--space-xl) var(--space-xl); font-size:12px; color:var(--text-soft); }
+    .cal-legend-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
+    .row-flash { animation: row-flash 1.6s ease-out; }
+    @keyframes row-flash { 0% { background: color-mix(in srgb, var(--fern) 16%, transparent); } 100% { background: transparent; } }
   </style>
 </head>
 <body>
@@ -86,7 +111,13 @@
           <h1 class="page-title">Order inbox</h1>
           <p class="page-desc">Incoming orders from your outlets. Confirm to reserve stock and queue for fulfilment — the outlet's PO and your incoming order are the same record.</p>
         </div>
-        <button class="btn btn-outline" onclick="soToast('Exporting order list…')"><i class="ti ti-download"></i>Export</button>
+        <div style="display:flex;align-items:center;gap:var(--space-md);">
+          <div class="view-switch" role="group" aria-label="Order inbox view">
+            <button class="view-btn active" id="view-btn-list" onclick="setView('list')"><i class="ti ti-list"></i>List</button>
+            <button class="view-btn" id="view-btn-cal" onclick="setView('cal')"><i class="ti ti-calendar-week"></i>Calendar</button>
+          </div>
+          <button class="btn btn-outline" onclick="soToast('Exporting order list…')"><i class="ti ti-download"></i>Export</button>
+        </div>
       </div>
 
       <!-- KPIs -->
@@ -130,8 +161,8 @@
         </div>
       </article>
 
-      <!-- Incoming orders -->
-      <div class="card">
+      <!-- Incoming orders — List view -->
+      <div class="card" id="view-list">
         <div class="card-head">
           <div class="card-head-left">
             <div class="card-title"><i class="ti ti-inbox"></i>Incoming orders</div>
@@ -145,7 +176,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr data-po="PO-01247">
               <td><div class="po-id">PO-01247</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
               <td><div class="from-outlet">Bondi Beach</div><div class="from-group">Beachside</div></td>
               <td class="col-num">9</td>
@@ -154,7 +185,7 @@
               <td><span class="status-pill new"><i class="ti ti-mail"></i>New</span></td>
               <td><div class="row-actions"><button class="btn btn-primary btn-sm" onclick="confirmOrder(this)"><i class="ti ti-check"></i>Confirm</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01247…')">View</button></div></td>
             </tr>
-            <tr>
+            <tr data-po="PO-01248">
               <td><div class="po-id">PO-01248</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
               <td><div class="from-outlet">Surry Hills</div><div class="from-group">CBD Cluster</div></td>
               <td class="col-num">6</td>
@@ -163,7 +194,7 @@
               <td><span class="status-pill new"><i class="ti ti-mail"></i>New</span></td>
               <td><div class="row-actions"><button class="btn btn-primary btn-sm" onclick="confirmOrder(this)"><i class="ti ti-check"></i>Confirm</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01248…')">View</button></div></td>
             </tr>
-            <tr>
+            <tr data-po="PO-01249">
               <td><div class="po-id">PO-01249</div></td>
               <td><div class="from-outlet">Parramatta</div><div class="from-group">CBD Cluster</div></td>
               <td class="col-num">11</td>
@@ -172,7 +203,7 @@
               <td><span class="status-pill shortfall"><i class="ti ti-alert-triangle"></i>Stock shortfall</span></td>
               <td><div class="row-actions"><button class="btn btn-outline btn-sm" onclick="soToast('Opening split-delivery proposal…')">Resolve</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01249…')">View</button></div></td>
             </tr>
-            <tr>
+            <tr data-po="PO-01244">
               <td><div class="po-id">PO-01244</div></td>
               <td><div class="from-outlet">Circular Quay</div><div class="from-group">CBD Cluster</div></td>
               <td class="col-num">7</td>
@@ -181,7 +212,7 @@
               <td><span class="status-pill picking"><i class="ti ti-basket"></i>Picking</span></td>
               <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="soToast('Opening fulfilment for PO-01244…')">Fulfilment</button></div></td>
             </tr>
-            <tr>
+            <tr data-po="PO-01243">
               <td><div class="po-id">PO-01243</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
               <td><div class="from-outlet">Newtown</div><div class="from-group">Inner West</div></td>
               <td class="col-num">5</td>
@@ -190,7 +221,7 @@
               <td><span class="status-pill confirmed"><i class="ti ti-circle-check"></i>Confirmed</span></td>
               <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="soToast('Opening fulfilment for PO-01243…')">Fulfilment</button></div></td>
             </tr>
-            <tr>
+            <tr data-po="PO-01241">
               <td><div class="po-id">PO-01241</div></td>
               <td><div class="from-outlet">Manly</div><div class="from-group">Beachside</div></td>
               <td class="col-num">8</td>
@@ -201,6 +232,63 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Delivery calendar view -->
+      <div class="card" id="view-cal" style="display:none">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-calendar-week"></i>Delivery calendar</div>
+            <div class="card-desc">Workload across the next 7 days, grouped by delivery run. Click an order to jump to it in the list.</div>
+          </div>
+        </div>
+        <div class="cal-wrap">
+          <div class="cal-grid">
+            <div class="cal-head"></div>
+            <div class="cal-head">Yesterday</div>
+            <div class="cal-head today">Today</div>
+            <div class="cal-head tomorrow">Tomorrow</div>
+            <div class="cal-head">Thu</div>
+            <div class="cal-head">Fri</div>
+            <div class="cal-head">Sat</div>
+            <div class="cal-head">Sun</div>
+
+            <div class="cal-row-label">7–9am</div>
+            <div class="cal-cell">
+              <button class="cal-chip dispatched" onclick="jumpToOrder('PO-01241')">Manly<span class="cal-chip-status">Dispatched</span></button>
+            </div>
+            <div class="cal-cell"></div>
+            <div class="cal-cell">
+              <button class="cal-chip new" onclick="jumpToOrder('PO-01247')">Bondi Beach<span class="cal-chip-status">New</span></button>
+              <button class="cal-chip new" onclick="jumpToOrder('PO-01248')">Surry Hills<span class="cal-chip-status">New</span></button>
+            </div>
+            <div class="cal-cell">
+              <button class="cal-chip shortfall" onclick="jumpToOrder('PO-01249')">Parramatta<span class="cal-chip-status">Shortfall</span></button>
+            </div>
+            <div class="cal-cell"></div>
+            <div class="cal-cell"></div>
+            <div class="cal-cell"></div>
+
+            <div class="cal-row-label">2–4pm</div>
+            <div class="cal-cell"></div>
+            <div class="cal-cell">
+              <button class="cal-chip picking" onclick="jumpToOrder('PO-01244')">Circular Quay<span class="cal-chip-status">Picking</span></button>
+              <button class="cal-chip confirmed" onclick="jumpToOrder('PO-01243')">Newtown<span class="cal-chip-status">Confirmed</span></button>
+            </div>
+            <div class="cal-cell"></div>
+            <div class="cal-cell"></div>
+            <div class="cal-cell"></div>
+            <div class="cal-cell"></div>
+            <div class="cal-cell"></div>
+          </div>
+        </div>
+        <div class="cal-legend">
+          <span><span class="cal-legend-dot" style="background:var(--status-info-fg)"></span>New</span>
+          <span><span class="cal-legend-dot" style="background:var(--status-ok-fg)"></span>Confirmed</span>
+          <span><span class="cal-legend-dot" style="background:var(--status-warn-fg)"></span>Picking</span>
+          <span><span class="cal-legend-dot" style="background:var(--status-risk-fg)"></span>Shortfall</span>
+          <span><span class="cal-legend-dot" style="background:var(--text-soft)"></span>Dispatched</span>
+        </div>
       </div>
 
     </div>
@@ -215,6 +303,22 @@
     NomniShell.init('Order inbox');
     NomniShell.initStagger();
   });
+
+  function setView(view) {
+    document.getElementById('view-list').style.display = view === 'list' ? '' : 'none';
+    document.getElementById('view-cal').style.display  = view === 'cal'  ? '' : 'none';
+    document.getElementById('view-btn-list').classList.toggle('active', view === 'list');
+    document.getElementById('view-btn-cal').classList.toggle('active', view === 'cal');
+  }
+
+  function jumpToOrder(poId) {
+    setView('list');
+    const row = document.querySelector('tr[data-po="' + poId + '"]');
+    if (!row) return;
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.classList.remove('row-flash');
+    requestAnimationFrame(() => row.classList.add('row-flash'));
+  }
 
   function confirmOrder(btn) {
     const row = btn.closest('tr');
