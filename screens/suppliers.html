@@ -426,9 +426,9 @@
     <!-- Page header -->
     <div class="page-header">
       <div class="page-header-left">
-        <span class="page-eyebrow">Administration</span>
+        <span class="page-eyebrow" id="sup-eyebrow">Administration</span>
         <h1 class="page-title">Suppliers</h1>
-        <p class="page-desc">Manage the suppliers your outlets procure from, their categories, and approval status.</p>
+        <p class="page-desc" id="sup-desc">Manage the suppliers your outlets procure from, their categories, and approval status.</p>
       </div>
       <div class="page-actions">
         <a href="#" class="btn btn-outline" onclick="supToast('Preparing XLSX export…'); return false;"><i class="ti ti-table-export"></i>Export XLSX</a>
@@ -442,18 +442,18 @@
     <div class="kpi-strip">
       <div class="kpi-tile">
         <span class="kpi-label">Total suppliers</span>
-        <span class="kpi-value">38</span>
-        <span class="kpi-sub">Across all outlets</span>
+        <span class="kpi-value" id="kpi-total">38</span>
+        <span class="kpi-sub" id="kpi-total-sub">Across all outlets</span>
       </div>
       <div class="kpi-tile">
         <span class="kpi-label">Active</span>
-        <span class="kpi-value">31</span>
+        <span class="kpi-value" id="kpi-active">31</span>
         <span class="kpi-sub">Currently supplying · <span style="color:var(--status-warn-fg);font-weight:600;">4 pending</span></span>
       </div>
       <div class="kpi-tile">
         <span class="kpi-label">Spend YTD</span>
-        <span class="kpi-value">$324k</span>
-        <span class="kpi-sub"><span class="kpi-delta up"><i class="ti ti-trending-up" style="font-size:11px;"></i>+12%</span> vs same period last year</span>
+        <span class="kpi-value" id="kpi-spend">$324k</span>
+        <span class="kpi-sub" id="kpi-spend-sub"><span class="kpi-delta up"><i class="ti ti-trending-up" style="font-size:11px;"></i>+12%</span> vs same period last year</span>
       </div>
       <div class="kpi-tile">
         <span class="kpi-label">Avg order frequency</span>
@@ -495,7 +495,7 @@
             <tr>
               <th>Supplier</th>
               <th>Categories</th>
-              <th>Outlets</th>
+              <th class="col-outlets">Outlets</th>
               <th>Order activity</th>
               <th style="text-align:right;">Spend YTD</th>
               <th>Status</th>
@@ -514,7 +514,7 @@
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Meat &amp; Seafood</span></div></td>
-              <td>8 outlets</td>
+              <td class="col-outlets">8 outlets</td>
               <td>
                 <div class="cell-activity">
                   <div class="activity-last"><i class="ti ti-clock"></i>2 days ago</div>
@@ -544,7 +544,7 @@
                 </div>
               </td>
             </tr>
-            <tr>
+            <tr data-ck-internal="true">
               <td>
                 <div class="cell-supplier">
                   <div class="supplier-avatar">CK</div>
@@ -555,7 +555,7 @@
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Production</span></div></td>
-              <td>6 outlets</td>
+              <td class="col-outlets">6 outlets</td>
               <td>
                 <div class="cell-activity">
                   <div class="activity-last"><i class="ti ti-clock"></i>Today</div>
@@ -594,7 +594,7 @@
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Produce</span><span class="cat-pill">Dairy</span></div></td>
-              <td>12 outlets</td>
+              <td class="col-outlets">12 outlets</td>
               <td>
                 <div class="cell-activity">
                   <div class="activity-last"><i class="ti ti-clock"></i>Yesterday</div>
@@ -635,7 +635,7 @@
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Bakery</span><span class="cat-pill">Dry Goods</span></div></td>
-              <td>5 outlets</td>
+              <td class="col-outlets">5 outlets</td>
               <td>
                 <div class="cell-activity">
                   <div class="activity-last"><i class="ti ti-clock"></i>5 days ago</div>
@@ -676,7 +676,7 @@
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Beverages</span></div></td>
-              <td>12 outlets</td>
+              <td class="col-outlets">12 outlets</td>
               <td>
                 <div class="cell-activity">
                   <div class="activity-last"><i class="ti ti-clock"></i>8 days ago</div>
@@ -717,7 +717,7 @@
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Meat &amp; Seafood</span></div></td>
-              <td>3 outlets</td>
+              <td class="col-outlets">3 outlets</td>
               <td>
                 <div class="cell-activity">
                   <div class="activity-last" style="color:var(--text-soft);"><i class="ti ti-clock"></i>No orders yet</div>
@@ -757,7 +757,7 @@
                 </div>
               </td>
               <td><div class="cat-list"><span class="cat-pill">Packaging</span><span class="cat-pill">Cleaning</span></div></td>
-              <td>12 outlets</td>
+              <td class="col-outlets">12 outlets</td>
               <td>
                 <div class="cell-activity">
                   <div class="activity-last"><i class="ti ti-clock"></i>11 days ago</div>
@@ -984,9 +984,38 @@
 
 <div id="sup-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
 
-<script src="../shared/shell.js?v=11" data-active="suppliers"></script>
+<script src="../shared/shell.js?v=12" data-active="suppliers"></script>
 <script>
   NomniShell.init('Suppliers');
+  applySuppliersScope();
+
+  /* A Central Kitchen viewing its own Purchasing > Suppliers sees the
+     suppliers IT buys raw ingredients from — not the HQ-wide, all-outlets
+     framing this page defaults to. Re-scope in place rather than fork a
+     separate file, since the table/drawer markup is otherwise identical. */
+  function applySuppliersScope() {
+    if (document.documentElement.getAttribute('data-role') !== 'ck-operator') return;
+
+    document.getElementById('sup-eyebrow').textContent = 'Purchasing';
+    document.getElementById('sup-desc').textContent = 'Suppliers Sydney Central Kitchen buys raw ingredients and stock from, their categories, and approval status.';
+    document.querySelectorAll('.col-outlets').forEach(el => el.style.display = 'none');
+
+    const ckRow = document.querySelector('tr[data-ck-internal="true"]');
+    if (ckRow) ckRow.remove();
+
+    const rows = [...document.querySelectorAll('.data-table tbody tr')];
+    document.getElementById('kpi-total').textContent = rows.length;
+    document.getElementById('kpi-total-sub').textContent = 'Suppliers to this CK';
+    document.getElementById('kpi-active').textContent = rows.filter(r => r.querySelector('.status-pill.active')).length;
+
+    const spend = rows.reduce((sum, r) => {
+      const val = r.querySelector('.spend-val');
+      const n = val ? parseFloat(val.textContent.replace(/[^0-9.]/g, '')) : 0;
+      return sum + (isNaN(n) ? 0 : n);
+    }, 0);
+    document.getElementById('kpi-spend').textContent = '$' + Math.round(spend).toLocaleString('en-AU');
+    document.getElementById('kpi-spend-sub').textContent = 'Jan–Jun 2026, this CK only';
+  }
 
   /* Supplier detail drawer with Supplier SKU Links + preferred link */
   function openSupplier(btn) {

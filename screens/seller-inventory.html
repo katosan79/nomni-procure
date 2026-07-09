@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Inventory — Nomni Supply</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-lg); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+    .seller-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); padding:4px 10px; border-radius:var(--radius-pill); margin-bottom:var(--space-sm); }
+    .seller-badge i { font-size:14px; }
+
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); }
+    .kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); }
+    .kpi-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
+    .kpi-value { font-size:26px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; letter-spacing:-0.02em; }
+    .kpi-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .kpi-sub.warn { color:var(--status-warn-fg); font-weight:600; }
+
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; flex-shrink:0; text-decoration:none; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--btn-primary-hover); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; text-decoration:none; }
+    .btn-ghost:hover { color:var(--text-accent); }
+
+    .inv-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .inv-table th { padding:var(--space-sm) var(--space-xl); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .inv-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .inv-table tbody tr:last-child td { border-bottom:none; }
+    .inv-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .item-name { font-weight:600; color:var(--text); }
+    .item-sku { font-size:11px; color:var(--text-soft); font-feature-settings:'tnum' 1; margin-top:1px; }
+    .used-in { font-size:12px; color:var(--text-soft); }
+    .col-num { text-align:right; font-feature-settings:'tnum' 1; font-weight:600; color:var(--text); }
+    .stock-low { color:var(--status-risk-fg); font-weight:700; }
+    .stock-ok { color:var(--text); }
+    .status-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .status-pill.ok  { color:var(--status-ok-fg); background:var(--status-ok-bg); }
+    .status-pill.low { color:var(--status-risk-fg); background:var(--status-risk-bg); }
+    .src-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .src-pill.produced      { color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); }
+    .src-pill.redistributed { color:#B05EC0; background:color-mix(in srgb, #B05EC0 10%, transparent); }
+    .row-actions { display:flex; gap:var(--space-xs); justify-content:flex-end; }
+
+    .agent-surface { border:1.5px solid var(--agent-border, var(--fern)); border-radius:var(--radius-lg); background:var(--surface); box-shadow:0 0 0 4px color-mix(in srgb, var(--fern) 7%, transparent); }
+    .agent-banner { display:flex; gap:var(--space-md); padding:var(--space-lg) var(--space-xl); }
+    .agent-avatar { width:36px; height:36px; border-radius:50%; background:var(--fern); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .agent-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-accent); margin-bottom:2px; }
+    .agent-headline { font-size:14px; font-weight:700; color:var(--text); margin-bottom:var(--space-xs); }
+    .agent-why { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .agent-actions { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-xl); border-top:1px solid var(--border); }
+
+    .note-strip { display:flex; gap:var(--space-sm); align-items:flex-start; padding:var(--space-md) var(--space-xl); background:var(--surface-soft); border-top:1px solid var(--border); font-size:12px; color:var(--text-soft); line-height:1.5; border-radius:0 0 var(--radius-lg) var(--radius-lg); }
+    .note-strip i { font-size:14px; color:var(--text-accent); flex-shrink:0; margin-top:1px; }
+    .note-strip a { color:var(--text-accent); font-weight:600; text-decoration:none; }
+    .note-strip a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <div class="page-head">
+        <div>
+          <span class="seller-badge"><i class="ti ti-building-warehouse"></i>Sydney Central Kitchen · Seller workspace</span>
+          <h1 class="page-title">Inventory</h1>
+          <p class="page-desc">Raw ingredients bought from suppliers and consumed in production, plus on-hand stock of what you sell to outlets.</p>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Raw ingredients low</div>
+          <div class="kpi-value" id="kpi-raw-low">–</div>
+          <div class="kpi-sub" id="kpi-raw-low-sub">–</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Finished goods low</div>
+          <div class="kpi-value" id="kpi-fg-low">–</div>
+          <div class="kpi-sub" id="kpi-fg-low-sub">–</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Inventory value</div>
+          <div class="kpi-value" id="kpi-value">–</div>
+          <div class="kpi-sub">Raw ingredients + finished goods, at cost</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Next production run</div>
+          <div class="kpi-value" style="font-size:20px;">Tomorrow</div>
+          <div class="kpi-sub">Batch PB-0613 · Napoli Sauce &amp; Skewers</div>
+        </div>
+      </div>
+
+      <!-- Agent banner -->
+      <article class="agent-surface" id="ck-inv-agent-banner" aria-label="Vera stock summary">
+        <div class="agent-banner">
+          <div class="agent-avatar">Ve</div>
+          <div style="flex:1">
+            <div class="agent-label">Vera · Variance agent</div>
+            <div class="agent-headline">2 raw ingredients are short of par ahead of tomorrow's production run.</div>
+            <div class="agent-why">Crushed Tomatoes (14 on hand, par 20) and Chicken Thigh (3 on hand, par 6) won't fully cover tomorrow's Napoli Sauce and Skewers batch. Reorder today to land before the run.</div>
+          </div>
+        </div>
+        <div class="agent-actions">
+          <button class="btn btn-primary btn-sm" onclick="reorderAllLow()"><i class="ti ti-shopping-cart-plus"></i>Reorder both</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ck-inv-agent-banner').style.display='none'">Dismiss</button>
+        </div>
+      </article>
+
+      <!-- Raw ingredients -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-carrot"></i>Raw ingredients</div>
+            <div class="card-desc">Bought from your suppliers and consumed by production recipes. Par levels set the reorder point.</div>
+          </div>
+          <a class="btn btn-outline btn-sm" href="suppliers.html"><i class="ti ti-truck"></i>Suppliers</a>
+        </div>
+        <table class="inv-table">
+          <thead>
+            <tr><th>Ingredient</th><th>Used in</th><th>Supplier</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+          </thead>
+          <tbody id="raw-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Finished goods -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-box"></i>Finished goods</div>
+            <div class="card-desc">What's ready to sell to outlets right now — produced in-house or bulk-bought and redistributed.</div>
+          </div>
+          <a class="btn btn-outline btn-sm" href="seller-catalog.html"><i class="ti ti-list-details"></i>Catalog &amp; prices</a>
+        </div>
+        <table class="inv-table">
+          <thead>
+            <tr><th>Item</th><th>Source</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+          </thead>
+          <tbody id="fg-tbody"></tbody>
+        </table>
+        <div class="note-strip">
+          <i class="ti ti-info-circle"></i>
+          <span>On-hand quantities here match <a href="seller-catalog.html">Catalog &amp; prices</a> — this view is for stock monitoring, that one's for pricing and publishing to outlets.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div id="inv-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=12" data-active="seller-inventory"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Inventory');
+    NomniShell.initStagger();
+    renderRaw();
+    renderFinished();
+    renderKpis();
+  });
+
+  // Raw ingredients — kept in sync by hand with the produced items in seller-catalog.html
+  // and the suppliers listed in suppliers.html (this prototype has no shared runtime).
+  const RAW = [
+    { name:'Crushed Tomatoes 3kg',    sku:'RAW-TOM-3KG', usedIn:'Napoli Sauce 5L',                    supplier:'Green Farmers Market',     onHand:14, par:20, cost:6.20  },
+    { name:'Brown Onions 5kg',        sku:'RAW-ONI-5KG', usedIn:'Napoli Sauce 5L, Demi-glace 2L',     supplier:'Green Farmers Market',     onHand:10, par:6,  cost:8.50  },
+    { name:'Garlic, Peeled 1kg',      sku:'RAW-GAR-1KG', usedIn:'Napoli Sauce 5L',                    supplier:'Green Farmers Market',     onHand:6,  par:4,  cost:9.80  },
+    { name:'Basil, Fresh (bunch)',    sku:'RAW-BAS-BCH', usedIn:'Napoli Sauce 5L',                    supplier:'Green Farmers Market',     onHand:18, par:10, cost:2.40  },
+    { name:'Beef Mince 80/20 5kg',    sku:'RAW-BMC-5KG', usedIn:'Beef Burger Patties 48pk',           supplier:'Sydney Butchers Co.',      onHand:9,  par:6,  cost:54.00 },
+    { name:'Breadcrumbs, Panko 2kg',  sku:'RAW-BRC-2KG', usedIn:'Beef Burger Patties 48pk',           supplier:'Artisan Bakehouse',        onHand:12, par:6,  cost:11.50 },
+    { name:'Chicken Thigh, Boneless 5kg', sku:'RAW-CTH-5KG', usedIn:'Marinated Chicken Skewers 50pk', supplier:'Harbour Meats',             onHand:3,  par:6,  cost:42.50 },
+    { name:'Bamboo Skewers 500pk',    sku:'RAW-SKW-500', usedIn:'Marinated Chicken Skewers 50pk',     supplier:'Clean Pack Solutions',     onHand:4,  par:3,  cost:14.90 },
+    { name:'Beef Stock Concentrate 5L', sku:'RAW-STK-5L', usedIn:'Demi-glace 2L',                     supplier:'Sydney Butchers Co.',      onHand:5,  par:4,  cost:28.00 },
+    { name:'Red Wine, Cooking 2L',    sku:'RAW-WIN-2L',  usedIn:'Demi-glace 2L',                      supplier:'Pacific Drinks Wholesale',  onHand:7,  par:4,  cost:16.20 },
+  ];
+
+  // Finished goods — mirrors seller-catalog.html's produced + redistributed tables.
+  const FINISHED = [
+    { name:'Napoli Sauce 5L',                sku:'CK-NAP-005', source:'produced',      onHand:8,  par:12, cost:14.20 },
+    { name:'Beef Burger Patties 48pk',       sku:'CK-PAT-048', source:'produced',      onHand:22, par:15, cost:61.90 },
+    { name:'Marinated Chicken Skewers 50pk', sku:'CK-SKW-050', source:'produced',      onHand:15, par:12, cost:48.75 },
+    { name:'Demi-glace 2L',                  sku:'CK-DEM-002', source:'produced',      onHand:11, par:8,  cost:22.40 },
+    { name:'Arabica Blend 1kg',              sku:'CK-COF-100', source:'redistributed', onHand:36, par:20, cost:32.50 },
+    { name:'Olive Oil 4L',                   sku:'CK-OIL-004', source:'redistributed', onHand:18, par:15, cost:41.00 },
+    { name:'Plain Flour 12.5kg',             sku:'CK-FLR-125', source:'redistributed', onHand:24, par:15, cost:18.60 },
+  ];
+
+  function statusHtml(onHand, par) {
+    return onHand < par
+      ? '<span class="status-pill low"><i class="ti ti-alert-triangle"></i>Low</span>'
+      : '<span class="status-pill ok"><i class="ti ti-circle-check"></i>OK</span>';
+  }
+
+  function renderRaw() {
+    document.getElementById('raw-tbody').innerHTML = RAW.map(r => `
+      <tr data-sku="${r.sku}">
+        <td><div class="item-name">${r.name}</div><div class="item-sku">${r.sku}</div></td>
+        <td class="used-in">${r.usedIn}</td>
+        <td>${r.supplier}</td>
+        <td class="col-num ${r.onHand < r.par ? 'stock-low' : 'stock-ok'}">${r.onHand}</td>
+        <td class="col-num">${r.par}</td>
+        <td>${statusHtml(r.onHand, r.par)}</td>
+        <td><div class="row-actions">${r.onHand < r.par ? '<button class="btn btn-outline btn-sm" onclick="reorderRaw(\'' + r.sku + '\')"><i class="ti ti-shopping-cart-plus"></i>Reorder</button>' : '<span style="font-size:12px;color:var(--text-soft);">—</span>'}</div></td>
+      </tr>`).join('');
+  }
+
+  function renderFinished() {
+    document.getElementById('fg-tbody').innerHTML = FINISHED.map(f => `
+      <tr>
+        <td><div class="item-name">${f.name}</div><div class="item-sku">${f.sku}</div></td>
+        <td><span class="src-pill ${f.source}"><i class="ti ${f.source === 'produced' ? 'ti-flask' : 'ti-packages'}"></i>${f.source === 'produced' ? 'Produced' : 'Redistributed'}</span></td>
+        <td class="col-num ${f.onHand < f.par ? 'stock-low' : 'stock-ok'}">${f.onHand}</td>
+        <td class="col-num">${f.par}</td>
+        <td>${statusHtml(f.onHand, f.par)}</td>
+        <td><div class="row-actions"><a class="btn-ghost btn-sm" href="seller-catalog.html">Manage<i class="ti ti-chevron-right"></i></a></div></td>
+      </tr>`).join('');
+  }
+
+  function renderKpis() {
+    const rawLow = RAW.filter(r => r.onHand < r.par);
+    const fgLow = FINISHED.filter(f => f.onHand < f.par);
+    document.getElementById('kpi-raw-low').textContent = rawLow.length;
+    document.getElementById('kpi-raw-low-sub').textContent = rawLow.length ? rawLow.map(r => r.name.split(',')[0]).join(', ') : 'All above par';
+    document.getElementById('kpi-fg-low').textContent = fgLow.length;
+    document.getElementById('kpi-fg-low-sub').textContent = fgLow.length ? fgLow.map(f => f.name).join(', ') : 'All above par';
+
+    const value = RAW.reduce((sum, r) => sum + r.onHand * r.cost, 0) + FINISHED.reduce((sum, f) => sum + f.onHand * f.cost, 0);
+    document.getElementById('kpi-value').textContent = '$' + Math.round(value).toLocaleString('en-AU');
+  }
+
+  function reorderRaw(sku) {
+    const r = RAW.find(x => x.sku === sku);
+    if (!r) return;
+    invToast('Draft reorder for ' + r.name + ' sent to ' + r.supplier + '.');
+  }
+
+  function reorderAllLow() {
+    RAW.filter(r => r.onHand < r.par).forEach(r => invToast('Draft reorder for ' + r.name + ' sent to ' + r.supplier + '.'));
+    document.getElementById('ck-inv-agent-banner').style.display = 'none';
+  }
+
+  function invToast(msg) {
+    const wrap = document.getElementById('inv-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;max-width:420px;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;flex-shrink:0;"></i><span>' + msg + '</span>';
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3200);
+  }
+</script>
+</body>
+</html>

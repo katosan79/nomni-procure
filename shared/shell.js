@@ -34,6 +34,7 @@
     { id: 'seller-orders',    icon: 'ti-inbox',          label: 'Order inbox',      href: 'seller-orders.html' },
     { id: 'seller-dispatch',  icon: 'ti-truck-delivery', label: 'Fulfilment',       href: 'seller-dispatch.html' },
     { id: 'seller-catalog',   icon: 'ti-list-details',   label: 'Catalog & prices', href: 'seller-catalog.html' },
+    { id: 'seller-inventory', icon: 'ti-package',        label: 'Inventory',        href: 'seller-inventory.html' },
     { id: 'seller-customers', icon: 'ti-building-store', label: 'Customers',        href: 'seller-customers.html' },
   ];
 
