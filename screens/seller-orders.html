@@ -102,6 +102,29 @@
     .cal-legend-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
     .row-flash { animation: row-flash 1.6s ease-out; }
     @keyframes row-flash { 0% { background: color-mix(in srgb, var(--fern) 16%, transparent); } 100% { background: transparent; } }
+
+    /* Filter bar */
+    .filter-bar { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .search-wrap { position:relative; flex:1; min-width:200px; }
+    .search-wrap i { position:absolute; left:var(--space-md); top:50%; transform:translateY(-50%); color:var(--text-soft); font-size:15px; pointer-events:none; }
+    .search-input { width:100%; height:var(--control-h); padding-inline:var(--space-3xl) var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; }
+    .search-input:focus { border-color:var(--fern); }
+    .filter-select { height:var(--control-h); padding-inline:var(--space-md) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); cursor:pointer; outline:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; }
+    .filter-select:focus { border-color:var(--fern); }
+
+    /* Pagination */
+    .pagination-bar { display:flex; align-items:center; justify-content:space-between; padding:var(--space-lg) var(--space-xl); border-top:1px solid var(--border); }
+    .pagination-info { font-size:13px; color:var(--text-soft); }
+    .pagination-controls { display:flex; align-items:center; gap:var(--space-sm); }
+    .page-btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:32px; padding-inline:var(--space-md); border-radius:var(--radius-sm); font-size:13px; font-weight:500; cursor:pointer; background:none; border:1px solid var(--border); color:var(--text); font-family:inherit; transition:background 0.1s; }
+    .page-btn:hover:not(:disabled) { background:var(--surface-soft); }
+    .page-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .page-btn i { font-size:14px; }
+
+    /* Calendar overflow chip */
+    .cal-chip-more { font-size:11px; font-weight:600; color:var(--text-accent); background:none; border:1px dashed var(--border); border-radius:var(--radius-sm); padding:4px 7px; cursor:pointer; font-family:inherit; text-align:left; }
+    .cal-chip-more:hover { border-color:var(--fern); }
+    .empty-row td { padding:var(--space-2xl) var(--space-xl) !important; text-align:center; color:var(--text-soft); }
   </style>
 </head>
 <body>
@@ -122,13 +145,13 @@
       <div class="kpi-row">
         <div class="kpi">
           <div class="kpi-label">New orders</div>
-          <div class="kpi-value">3</div>
-          <div class="kpi-sub">arrived since yesterday 5pm</div>
+          <div class="kpi-value" id="kpi-new">–</div>
+          <div class="kpi-sub">awaiting confirmation</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">To fulfil today</div>
-          <div class="kpi-value">4</div>
-          <div class="kpi-sub warn">1 has a stock shortfall</div>
+          <div class="kpi-value" id="kpi-today">–</div>
+          <div class="kpi-sub" id="kpi-today-sub">–</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">Fulfilled this week</div>
@@ -171,6 +194,20 @@
             <button class="view-btn" data-view="cal" onclick="setView('cal')"><i class="ti ti-calendar-week"></i>Calendar</button>
           </div>
         </div>
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <i class="ti ti-search" aria-hidden="true"></i>
+            <input class="search-input" type="search" id="filter-search" placeholder="Search by order or outlet…" oninput="setFilterSearch(this.value)"/>
+          </div>
+          <select class="filter-select" id="filter-status" aria-label="Filter by status" onchange="setFilterStatus(this.value)">
+            <option value="all">All statuses</option>
+            <option value="new">New</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="picking">Picking</option>
+            <option value="shortfall">Stock shortfall</option>
+            <option value="dispatched">Dispatched</option>
+          </select>
+        </div>
         <div class="orders-table-wrap">
         <table class="orders-table">
           <thead>
@@ -178,63 +215,15 @@
               <th>Order</th><th>From</th><th style="text-align:right">Items</th><th>Requested delivery</th><th style="text-align:right">Value</th><th>Status</th><th style="text-align:right">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr data-po="PO-01247">
-              <td><div class="po-id">PO-01247</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
-              <td><div class="from-outlet">Bondi Beach</div><div class="from-group">Beachside</div></td>
-              <td class="col-num">9</td>
-              <td>Tomorrow, 7–9am <span class="due-today">· confirm by 3pm</span></td>
-              <td class="col-num">$1,284.50</td>
-              <td><span class="status-pill new"><i class="ti ti-mail"></i>New</span></td>
-              <td><div class="row-actions"><button class="btn btn-primary btn-sm" onclick="confirmOrder(this)"><i class="ti ti-check"></i>Confirm</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01247…')">View</button></div></td>
-            </tr>
-            <tr data-po="PO-01248">
-              <td><div class="po-id">PO-01248</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
-              <td><div class="from-outlet">Surry Hills</div><div class="from-group">CBD Cluster</div></td>
-              <td class="col-num">6</td>
-              <td>Tomorrow, 7–9am <span class="due-today">· confirm by 3pm</span></td>
-              <td class="col-num">$742.00</td>
-              <td><span class="status-pill new"><i class="ti ti-mail"></i>New</span></td>
-              <td><div class="row-actions"><button class="btn btn-primary btn-sm" onclick="confirmOrder(this)"><i class="ti ti-check"></i>Confirm</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01248…')">View</button></div></td>
-            </tr>
-            <tr data-po="PO-01249">
-              <td><div class="po-id">PO-01249</div></td>
-              <td><div class="from-outlet">Parramatta</div><div class="from-group">CBD Cluster</div></td>
-              <td class="col-num">11</td>
-              <td>Thu, 7–9am</td>
-              <td class="col-num">$1,918.75</td>
-              <td><span class="status-pill shortfall"><i class="ti ti-alert-triangle"></i>Stock shortfall</span></td>
-              <td><div class="row-actions"><button class="btn btn-outline btn-sm" onclick="soToast('Opening split-delivery proposal…')">Resolve</button><button class="btn-ghost btn-sm" onclick="soToast('Opening PO-01249…')">View</button></div></td>
-            </tr>
-            <tr data-po="PO-01244">
-              <td><div class="po-id">PO-01244</div></td>
-              <td><div class="from-outlet">Circular Quay</div><div class="from-group">CBD Cluster</div></td>
-              <td class="col-num">7</td>
-              <td>Today, 2–4pm</td>
-              <td class="col-num">$963.20</td>
-              <td><span class="status-pill picking"><i class="ti ti-basket"></i>Picking</span></td>
-              <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="soToast('Opening fulfilment for PO-01244…')">Fulfilment</button></div></td>
-            </tr>
-            <tr data-po="PO-01243">
-              <td><div class="po-id">PO-01243</div><div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div></td>
-              <td><div class="from-outlet">Newtown</div><div class="from-group">Inner West</div></td>
-              <td class="col-num">5</td>
-              <td>Today, 2–4pm</td>
-              <td class="col-num">$518.40</td>
-              <td><span class="status-pill confirmed"><i class="ti ti-circle-check"></i>Confirmed</span></td>
-              <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="soToast('Opening fulfilment for PO-01243…')">Fulfilment</button></div></td>
-            </tr>
-            <tr data-po="PO-01241">
-              <td><div class="po-id">PO-01241</div></td>
-              <td><div class="from-outlet">Manly</div><div class="from-group">Beachside</div></td>
-              <td class="col-num">8</td>
-              <td>Delivered yesterday</td>
-              <td class="col-num">$1,102.00</td>
-              <td><span class="status-pill dispatched"><i class="ti ti-truck"></i>Dispatched · TRF-1041</span></td>
-              <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="soToast('Opening transfer TRF-1041…')">Transfer</button></div></td>
-            </tr>
-          </tbody>
+          <tbody id="orders-tbody"></tbody>
         </table>
+        </div>
+        <div class="pagination-bar">
+          <p class="pagination-info" id="pg-info"></p>
+          <div class="pagination-controls">
+            <button class="page-btn" id="pg-prev" onclick="pgPrev()" aria-label="Previous page"><i class="ti ti-chevron-left" aria-hidden="true"></i>Prev</button>
+            <button class="page-btn" id="pg-next" onclick="pgNext()" aria-label="Next page">Next<i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+          </div>
         </div>
       </div>
 
@@ -251,44 +240,7 @@
           </div>
         </div>
         <div class="cal-wrap">
-          <div class="cal-grid">
-            <div class="cal-head"></div>
-            <div class="cal-head">Yesterday</div>
-            <div class="cal-head today">Today</div>
-            <div class="cal-head tomorrow">Tomorrow</div>
-            <div class="cal-head">Thu</div>
-            <div class="cal-head">Fri</div>
-            <div class="cal-head">Sat</div>
-            <div class="cal-head">Sun</div>
-
-            <div class="cal-row-label">7–9am</div>
-            <div class="cal-cell">
-              <button class="cal-chip dispatched" onclick="jumpToOrder('PO-01241')">Manly<span class="cal-chip-status">Dispatched</span></button>
-            </div>
-            <div class="cal-cell"></div>
-            <div class="cal-cell">
-              <button class="cal-chip new" onclick="jumpToOrder('PO-01247')">Bondi Beach<span class="cal-chip-status">New</span></button>
-              <button class="cal-chip new" onclick="jumpToOrder('PO-01248')">Surry Hills<span class="cal-chip-status">New</span></button>
-            </div>
-            <div class="cal-cell">
-              <button class="cal-chip shortfall" onclick="jumpToOrder('PO-01249')">Parramatta<span class="cal-chip-status">Shortfall</span></button>
-            </div>
-            <div class="cal-cell"></div>
-            <div class="cal-cell"></div>
-            <div class="cal-cell"></div>
-
-            <div class="cal-row-label">2–4pm</div>
-            <div class="cal-cell"></div>
-            <div class="cal-cell">
-              <button class="cal-chip picking" onclick="jumpToOrder('PO-01244')">Circular Quay<span class="cal-chip-status">Picking</span></button>
-              <button class="cal-chip confirmed" onclick="jumpToOrder('PO-01243')">Newtown<span class="cal-chip-status">Confirmed</span></button>
-            </div>
-            <div class="cal-cell"></div>
-            <div class="cal-cell"></div>
-            <div class="cal-cell"></div>
-            <div class="cal-cell"></div>
-            <div class="cal-cell"></div>
-          </div>
+          <div class="cal-grid" id="cal-grid"></div>
         </div>
         <div class="cal-legend">
           <span><span class="cal-legend-dot" style="background:var(--status-info-fg)"></span>New</span>
@@ -307,12 +259,48 @@
 
 <script src="../shared/shell.js?v=9" data-active="seller-orders"></script>
 <script>
+  /* ── Data ── */
+  const DAYS = ['yesterday','today','tomorrow','thu','fri','sat','sun'];
+  const DAY_LABELS = { yesterday:'Yesterday', today:'Today', tomorrow:'Tomorrow', thu:'Thu', fri:'Fri', sat:'Sat', sun:'Sun' };
+  const WINDOWS = ['7-9am','2-4pm'];
+  const STATUS_LABEL = { new:'New', confirmed:'Confirmed', picking:'Picking', shortfall:'Shortfall', dispatched:'Dispatched' };
+  const CAL_CAP = 2;
+  const PAGE_SIZE = 5;
+
+  const ORDERS = [
+    { po:'PO-01247', agent:true,  outlet:'Bondi Beach',   group:'Beachside',   items:9,  day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:1284.50, status:'new' },
+    { po:'PO-01248', agent:true,  outlet:'Surry Hills',   group:'CBD Cluster', items:6,  day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:742.00,  status:'new' },
+    { po:'PO-01249', agent:false, outlet:'Parramatta',    group:'CBD Cluster', items:11, day:'thu',      window:'7-9am', deliveryText:'Thu, 7–9am',                             value:1918.75, status:'shortfall' },
+    { po:'PO-01244', agent:false, outlet:'Circular Quay', group:'CBD Cluster', items:7,  day:'today',    window:'2-4pm', deliveryText:'Today, 2–4pm',                           value:963.20,  status:'picking' },
+    { po:'PO-01243', agent:true,  outlet:'Newtown',       group:'Inner West',  items:5,  day:'today',    window:'2-4pm', deliveryText:'Today, 2–4pm',                           value:518.40,  status:'confirmed' },
+    { po:'PO-01241', agent:false, outlet:'Manly',         group:'Beachside',   items:8,  day:'yesterday',window:'7-9am', deliveryText:'Delivered yesterday',                    value:1102.00, status:'dispatched', transferRef:'TRF-1041' },
+    { po:'PO-01256', agent:false, outlet:'Parramatta',    group:'CBD Cluster', items:5,  day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am',                        value:720.00,  status:'new' },
+    { po:'PO-01238', agent:false, outlet:'Newtown',       group:'Inner West',  items:7,  day:'today',    window:'7-9am', deliveryText:'Today, 7–9am',                           value:990.00,  status:'confirmed' },
+    { po:'PO-01239', agent:false, outlet:'Surry Hills',   group:'CBD Cluster', items:5,  day:'today',    window:'7-9am', deliveryText:'Today, 7–9am',                           value:650.00,  status:'picking' },
+    { po:'PO-01242', agent:false, outlet:'Bondi Beach',   group:'Beachside',   items:6,  day:'yesterday',window:'2-4pm', deliveryText:'Delivered yesterday',                    value:845.00,  status:'dispatched', transferRef:'TRF-1040' },
+    { po:'PO-01250', agent:true,  outlet:'Bondi Beach',   group:'Beachside',   items:4,  day:'fri',      window:'7-9am', deliveryText:'Fri, 7–9am',                             value:410.00,  status:'new' },
+    { po:'PO-01251', agent:false, outlet:'Surry Hills',   group:'CBD Cluster', items:10, day:'fri',      window:'7-9am', deliveryText:'Fri, 7–9am',                             value:1560.00, status:'new' },
+    { po:'PO-01252', agent:true,  outlet:'Circular Quay', group:'CBD Cluster', items:6,  day:'fri',      window:'2-4pm', deliveryText:'Fri, 2–4pm',                             value:780.00,  status:'new' },
+    { po:'PO-01253', agent:false, outlet:'Newtown',       group:'Inner West',  items:3,  day:'sat',      window:'2-4pm', deliveryText:'Sat, 2–4pm',                             value:295.00,  status:'new' },
+    { po:'PO-01254', agent:true,  outlet:'Parramatta',    group:'CBD Cluster', items:9,  day:'sat',      window:'7-9am', deliveryText:'Sat, 7–9am',                             value:1340.00, status:'new' },
+    { po:'PO-01255', agent:false, outlet:'Manly',         group:'Beachside',   items:5,  day:'sun',      window:'7-9am', deliveryText:'Sun, 7–9am',                             value:670.00,  status:'new' },
+  ];
+
+  let filterStatus = 'all';
+  let filterSearch = '';
+  let currentPage = 1;
+  const calExpanded = new Set();
+
   document.addEventListener('DOMContentLoaded', () => {
     NomniShell.init('Order inbox');
     NomniShell.initStagger();
     setView('list');
+    renderKpis();
+    renderList();
+    renderCalendar();
   });
 
+  /* ── View switch ── */
   function setView(view) {
     document.getElementById('view-list').style.display = view === 'list' ? '' : 'none';
     document.getElementById('view-cal').style.display  = view === 'cal'  ? '' : 'none';
@@ -320,34 +308,149 @@
       btn.classList.toggle('active', btn.dataset.view === view));
   }
 
-  function jumpToOrder(poId) {
-    setView('list');
-    const row = document.querySelector('tr[data-po="' + poId + '"]');
-    if (!row) return;
-    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    row.classList.remove('row-flash');
-    requestAnimationFrame(() => row.classList.add('row-flash'));
+  /* ── KPIs ── */
+  function renderKpis() {
+    const newCount = ORDERS.filter(o => o.status === 'new').length;
+    const todayOrders = ORDERS.filter(o => o.day === 'today');
+    const todayShortfalls = todayOrders.filter(o => o.status === 'shortfall').length;
+    document.getElementById('kpi-new').textContent = newCount;
+    document.getElementById('kpi-today').textContent = todayOrders.length;
+    const sub = document.getElementById('kpi-today-sub');
+    if (todayShortfalls > 0) {
+      sub.textContent = todayShortfalls + ' has a stock shortfall';
+      sub.classList.add('warn');
+    } else {
+      sub.textContent = 'on track for today\'s runs';
+      sub.classList.remove('warn');
+    }
   }
 
-  function confirmOrder(btn) {
-    const row = btn.closest('tr');
-    const pill = row.querySelector('.status-pill');
-    pill.className = 'status-pill confirmed';
-    pill.innerHTML = '<i class="ti ti-circle-check"></i>Confirmed';
-    const actions = row.querySelector('.row-actions');
-    actions.innerHTML = '<button class="btn-ghost btn-sm" onclick="soToast(\'Opening fulfilment…\')">Fulfilment</button>';
+  /* ── List view ── */
+  function filteredOrders() {
+    return ORDERS.filter(o => {
+      if (filterStatus !== 'all' && o.status !== filterStatus) return false;
+      if (filterSearch) {
+        const q = filterSearch.toLowerCase();
+        if (!o.po.toLowerCase().includes(q) && !o.outlet.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function statusPillHtml(o) {
+    if (o.status === 'dispatched') return '<span class="status-pill dispatched"><i class="ti ti-truck"></i>Dispatched' + (o.transferRef ? ' · ' + o.transferRef : '') + '</span>';
+    if (o.status === 'shortfall') return '<span class="status-pill shortfall"><i class="ti ti-alert-triangle"></i>Stock shortfall</span>';
+    if (o.status === 'picking')   return '<span class="status-pill picking"><i class="ti ti-basket"></i>Picking</span>';
+    if (o.status === 'confirmed') return '<span class="status-pill confirmed"><i class="ti ti-circle-check"></i>Confirmed</span>';
+    return '<span class="status-pill new"><i class="ti ti-mail"></i>New</span>';
+  }
+
+  function actionsHtml(o) {
+    if (o.status === 'new')       return '<button class="btn btn-primary btn-sm" onclick="confirmOrder(\'' + o.po + '\')"><i class="ti ti-check"></i>Confirm</button><button class="btn-ghost btn-sm" onclick="soToast(\'Opening ' + o.po + '…\')">View</button>';
+    if (o.status === 'shortfall') return '<button class="btn btn-outline btn-sm" onclick="soToast(\'Opening split-delivery proposal…\')">Resolve</button><button class="btn-ghost btn-sm" onclick="soToast(\'Opening ' + o.po + '…\')">View</button>';
+    if (o.status === 'dispatched')return '<button class="btn-ghost btn-sm" onclick="soToast(\'Opening transfer ' + (o.transferRef || '') + '…\')">Transfer</button>';
+    return '<button class="btn-ghost btn-sm" onclick="soToast(\'Opening fulfilment for ' + o.po + '…\')">Fulfilment</button>';
+  }
+
+  function renderList() {
+    const rows = filteredOrders();
+    const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    currentPage = Math.min(Math.max(1, currentPage), totalPages);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageRows = rows.slice(start, start + PAGE_SIZE);
+
+    const tbody = document.getElementById('orders-tbody');
+    tbody.innerHTML = pageRows.length ? pageRows.map(o => `
+      <tr data-po="${o.po}">
+        <td><div class="po-id">${o.po}</div>${o.agent ? '<div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div>' : ''}</td>
+        <td><div class="from-outlet">${o.outlet}</div><div class="from-group">${o.group}</div></td>
+        <td class="col-num">${o.items}</td>
+        <td>${o.deliveryText}${o.note ? ' <span class="due-today">· ' + o.note + '</span>' : ''}</td>
+        <td class="col-num">$${o.value.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td>${statusPillHtml(o)}</td>
+        <td><div class="row-actions">${actionsHtml(o)}</div></td>
+      </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="7">No orders match your filters.</td></tr>';
+
+    document.getElementById('pg-info').innerHTML = rows.length
+      ? 'Showing <strong>' + (start + 1) + '–' + (start + pageRows.length) + '</strong> of <strong>' + rows.length + '</strong> orders'
+      : 'No orders found';
+    document.getElementById('pg-prev').disabled = currentPage <= 1;
+    document.getElementById('pg-next').disabled = currentPage >= totalPages;
+  }
+
+  function setFilterSearch(v) { filterSearch = v; currentPage = 1; renderList(); }
+  function setFilterStatus(v) { filterStatus = v; currentPage = 1; renderList(); }
+  function pgPrev() { if (currentPage > 1) { currentPage--; renderList(); } }
+  function pgNext() {
+    const totalPages = Math.max(1, Math.ceil(filteredOrders().length / PAGE_SIZE));
+    if (currentPage < totalPages) { currentPage++; renderList(); }
+  }
+
+  function jumpToOrder(poId) {
+    setView('list');
+    filterStatus = 'all'; filterSearch = '';
+    document.getElementById('filter-status').value = 'all';
+    document.getElementById('filter-search').value = '';
+    const idx = filteredOrders().findIndex(o => o.po === poId);
+    if (idx < 0) return;
+    currentPage = Math.floor(idx / PAGE_SIZE) + 1;
+    renderList();
+    requestAnimationFrame(() => {
+      const row = document.querySelector('tr[data-po="' + poId + '"]');
+      if (!row) return;
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.remove('row-flash');
+      requestAnimationFrame(() => row.classList.add('row-flash'));
+    });
+  }
+
+  /* ── Calendar view ── */
+  function renderCalendar() {
+    let html = '<div class="cal-head"></div>' + DAYS.map(d =>
+      '<div class="cal-head' + (d === 'today' || d === 'tomorrow' ? ' ' + d : '') + '">' + DAY_LABELS[d] + '</div>').join('');
+
+    WINDOWS.forEach(win => {
+      html += '<div class="cal-row-label">' + win.replace('-', '–') + '</div>';
+      DAYS.forEach(day => {
+        const key = day + '|' + win;
+        const cellOrders = ORDERS.filter(o => o.day === day && o.window === win);
+        const expanded = calExpanded.has(key);
+        const visible = expanded ? cellOrders : cellOrders.slice(0, CAL_CAP);
+        const hidden = cellOrders.length - visible.length;
+        let cellHtml = visible.map(o =>
+          '<button class="cal-chip ' + o.status + '" onclick="jumpToOrder(\'' + o.po + '\')">' + o.outlet + '<span class="cal-chip-status">' + STATUS_LABEL[o.status] + '</span></button>').join('');
+        if (hidden > 0) {
+          cellHtml += '<button class="cal-chip-more" onclick="toggleCalExpand(\'' + key + '\')">+' + hidden + ' more</button>';
+        } else if (expanded && cellOrders.length > CAL_CAP) {
+          cellHtml += '<button class="cal-chip-more" onclick="toggleCalExpand(\'' + key + '\')">Show less</button>';
+        }
+        html += '<div class="cal-cell">' + cellHtml + '</div>';
+      });
+    });
+    document.getElementById('cal-grid').innerHTML = html;
+  }
+
+  function toggleCalExpand(key) {
+    if (calExpanded.has(key)) calExpanded.delete(key); else calExpanded.add(key);
+    renderCalendar();
+  }
+
+  /* ── Actions ── */
+  function confirmOrder(poId) {
+    const order = ORDERS.find(o => o.po === poId);
+    if (!order) return;
+    order.status = 'confirmed';
+    renderKpis(); renderList(); renderCalendar();
     soToast('Order confirmed — stock reserved and queued for fulfilment.');
   }
 
   function confirmCoverable() {
-    document.querySelectorAll('.orders-table tbody tr').forEach(row => {
-      const pill = row.querySelector('.status-pill');
-      if (pill && pill.classList.contains('new')) {
-        pill.className = 'status-pill confirmed';
-        pill.innerHTML = '<i class="ti ti-circle-check"></i>Confirmed';
-        row.querySelector('.row-actions').innerHTML = '<button class="btn-ghost btn-sm" onclick="soToast(\'Opening fulfilment…\')">Fulfilment</button>';
-      }
+    ['PO-01247', 'PO-01248'].forEach(po => {
+      const o = ORDERS.find(x => x.po === po);
+      if (o) o.status = 'confirmed';
     });
+    renderKpis(); renderList(); renderCalendar();
     document.getElementById('ck-agent-banner').style.display = 'none';
     soToast('2 orders confirmed — stock reserved. Parramatta still needs review.');
   }
