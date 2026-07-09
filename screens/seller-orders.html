@@ -57,6 +57,8 @@
     .orders-table td:first-child { white-space:nowrap; }
     .po-id { font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; white-space:nowrap; }
     .po-agent { font-size:11px; color:var(--text-soft); display:flex; align-items:center; gap:4px; margin-top:1px; white-space:nowrap; }
+    .po-id-link { text-decoration:none; }
+    .po-id-link:hover .po-id { color:var(--text-accent); }
     .from-outlet { font-weight:600; color:var(--text); white-space:nowrap; }
     .from-group { font-size:11px; color:var(--text-soft); white-space:nowrap; }
     .col-num { text-align:right; font-feature-settings:'tnum' 1; font-weight:600; color:var(--text); }
@@ -178,7 +180,7 @@
         </div>
         <div class="agent-actions">
           <button class="btn btn-primary btn-sm" onclick="confirmCoverable()"><i class="ti ti-checks"></i>Confirm the 2 coverable orders</button>
-          <button class="btn btn-outline btn-sm" onclick="soToast('Opening Parramatta order for split-delivery review…')">Review Parramatta split</button>
+          <a class="btn btn-outline btn-sm" href="seller-order-detail.html?po=PO-01249">Review Parramatta split</a>
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ck-agent-banner').style.display='none'">Dismiss</button>
         </div>
       </article>
@@ -213,7 +215,7 @@
         <table class="orders-table">
           <thead>
             <tr>
-              <th>Order</th><th>From</th><th style="text-align:right">Items</th><th>Requested delivery</th><th style="text-align:right">Value</th><th>Status</th><th style="text-align:right">Actions</th>
+              <th>Order</th><th>From</th><th style="text-align:right">Lines</th><th>Requested delivery</th><th style="text-align:right">Value</th><th>Status</th><th style="text-align:right">Actions</th>
             </tr>
           </thead>
           <tbody id="orders-tbody"></tbody>
@@ -269,22 +271,22 @@
   const PAGE_SIZE = 5;
 
   const ORDERS = [
-    { po:'PO-01247', agent:true,  outlet:'Bondi Beach',   group:'Beachside',   items:9,  day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:1284.50, status:'new' },
-    { po:'PO-01248', agent:true,  outlet:'Surry Hills',   group:'CBD Cluster', items:6,  day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:742.00,  status:'new' },
-    { po:'PO-01249', agent:false, outlet:'Parramatta',    group:'CBD Cluster', items:11, day:'thu',      window:'7-9am', deliveryText:'Thu, 7–9am',                             value:1918.75, status:'shortfall' },
-    { po:'PO-01244', agent:false, outlet:'Circular Quay', group:'CBD Cluster', items:7,  day:'today',    window:'2-4pm', deliveryText:'Today, 2–4pm',                           value:963.20,  status:'picking' },
-    { po:'PO-01243', agent:true,  outlet:'Newtown',       group:'Inner West',  items:5,  day:'today',    window:'2-4pm', deliveryText:'Today, 2–4pm',                           value:518.40,  status:'confirmed' },
-    { po:'PO-01241', agent:false, outlet:'Manly',         group:'Beachside',   items:8,  day:'yesterday',window:'7-9am', deliveryText:'Delivered yesterday',                    value:1102.00, status:'dispatched', transferRef:'TRF-1041' },
-    { po:'PO-01256', agent:false, outlet:'Parramatta',    group:'CBD Cluster', items:5,  day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am',                        value:720.00,  status:'new' },
-    { po:'PO-01238', agent:false, outlet:'Newtown',       group:'Inner West',  items:7,  day:'today',    window:'7-9am', deliveryText:'Today, 7–9am',                           value:990.00,  status:'confirmed' },
-    { po:'PO-01239', agent:false, outlet:'Surry Hills',   group:'CBD Cluster', items:5,  day:'today',    window:'7-9am', deliveryText:'Today, 7–9am',                           value:650.00,  status:'picking' },
-    { po:'PO-01242', agent:false, outlet:'Bondi Beach',   group:'Beachside',   items:6,  day:'yesterday',window:'2-4pm', deliveryText:'Delivered yesterday',                    value:845.00,  status:'dispatched', transferRef:'TRF-1040' },
-    { po:'PO-01250', agent:true,  outlet:'Bondi Beach',   group:'Beachside',   items:4,  day:'fri',      window:'7-9am', deliveryText:'Fri, 7–9am',                             value:410.00,  status:'new' },
-    { po:'PO-01251', agent:false, outlet:'Surry Hills',   group:'CBD Cluster', items:10, day:'fri',      window:'7-9am', deliveryText:'Fri, 7–9am',                             value:1560.00, status:'new' },
-    { po:'PO-01252', agent:true,  outlet:'Circular Quay', group:'CBD Cluster', items:6,  day:'fri',      window:'2-4pm', deliveryText:'Fri, 2–4pm',                             value:780.00,  status:'new' },
-    { po:'PO-01253', agent:false, outlet:'Newtown',       group:'Inner West',  items:3,  day:'sat',      window:'2-4pm', deliveryText:'Sat, 2–4pm',                             value:295.00,  status:'new' },
-    { po:'PO-01254', agent:true,  outlet:'Parramatta',    group:'CBD Cluster', items:9,  day:'sat',      window:'7-9am', deliveryText:'Sat, 7–9am',                             value:1340.00, status:'new' },
-    { po:'PO-01255', agent:false, outlet:'Manly',         group:'Beachside',   items:5,  day:'sun',      window:'7-9am', deliveryText:'Sun, 7–9am',                             value:670.00,  status:'new' },
+    { po:'PO-01247', agent:true,  outlet:'Bondi Beach',   group:'Beachside',   items:3, day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:1284.50, status:'new' },
+    { po:'PO-01248', agent:true,  outlet:'Surry Hills',   group:'CBD Cluster', items:3, day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:742.00,  status:'new' },
+    { po:'PO-01249', agent:false, outlet:'Parramatta',    group:'CBD Cluster', items:4, day:'thu',      window:'7-9am', deliveryText:'Thu, 7–9am',                             value:1918.75, status:'shortfall' },
+    { po:'PO-01244', agent:false, outlet:'Circular Quay', group:'CBD Cluster', items:3, day:'today',    window:'2-4pm', deliveryText:'Today, 2–4pm',                           value:963.20,  status:'picking' },
+    { po:'PO-01243', agent:true,  outlet:'Newtown',       group:'Inner West',  items:2, day:'today',    window:'2-4pm', deliveryText:'Today, 2–4pm',                           value:518.40,  status:'confirmed' },
+    { po:'PO-01241', agent:false, outlet:'Manly',         group:'Beachside',   items:3, day:'yesterday',window:'7-9am', deliveryText:'Delivered yesterday',                    value:1102.00, status:'dispatched', transferRef:'TRF-1041' },
+    { po:'PO-01256', agent:false, outlet:'Parramatta',    group:'CBD Cluster', items:2, day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am',                        value:720.00,  status:'new' },
+    { po:'PO-01238', agent:false, outlet:'Newtown',       group:'Inner West',  items:3, day:'today',    window:'7-9am', deliveryText:'Today, 7–9am',                           value:990.00,  status:'confirmed' },
+    { po:'PO-01239', agent:false, outlet:'Surry Hills',   group:'CBD Cluster', items:3, day:'today',    window:'7-9am', deliveryText:'Today, 7–9am',                           value:650.00,  status:'picking' },
+    { po:'PO-01242', agent:false, outlet:'Bondi Beach',   group:'Beachside',   items:3, day:'yesterday',window:'2-4pm', deliveryText:'Delivered yesterday',                    value:845.00,  status:'dispatched', transferRef:'TRF-1040' },
+    { po:'PO-01250', agent:true,  outlet:'Bondi Beach',   group:'Beachside',   items:2, day:'fri',      window:'7-9am', deliveryText:'Fri, 7–9am',                             value:410.00,  status:'new' },
+    { po:'PO-01251', agent:false, outlet:'Surry Hills',   group:'CBD Cluster', items:3, day:'fri',      window:'7-9am', deliveryText:'Fri, 7–9am',                             value:1560.00, status:'new' },
+    { po:'PO-01252', agent:true,  outlet:'Circular Quay', group:'CBD Cluster', items:2, day:'fri',      window:'2-4pm', deliveryText:'Fri, 2–4pm',                             value:780.00,  status:'new' },
+    { po:'PO-01253', agent:false, outlet:'Newtown',       group:'Inner West',  items:2, day:'sat',      window:'2-4pm', deliveryText:'Sat, 2–4pm',                             value:295.00,  status:'new' },
+    { po:'PO-01254', agent:true,  outlet:'Parramatta',    group:'CBD Cluster', items:3, day:'sat',      window:'7-9am', deliveryText:'Sat, 7–9am',                             value:1340.00, status:'new' },
+    { po:'PO-01255', agent:false, outlet:'Manly',         group:'Beachside',   items:2, day:'sun',      window:'7-9am', deliveryText:'Sun, 7–9am',                             value:670.00,  status:'new' },
   ];
 
   let filterStatus = 'all';
@@ -347,10 +349,10 @@
   }
 
   function actionsHtml(o) {
-    if (o.status === 'new')       return '<button class="btn btn-primary btn-sm" onclick="confirmOrder(\'' + o.po + '\')"><i class="ti ti-check"></i>Confirm</button><button class="btn-ghost btn-sm" onclick="soToast(\'Opening ' + o.po + '…\')">View</button>';
-    if (o.status === 'shortfall') return '<button class="btn btn-outline btn-sm" onclick="soToast(\'Opening split-delivery proposal…\')">Resolve</button><button class="btn-ghost btn-sm" onclick="soToast(\'Opening ' + o.po + '…\')">View</button>';
-    if (o.status === 'dispatched')return '<button class="btn-ghost btn-sm" onclick="soToast(\'Opening transfer ' + (o.transferRef || '') + '…\')">Transfer</button>';
-    return '<button class="btn-ghost btn-sm" onclick="soToast(\'Opening fulfilment for ' + o.po + '…\')">Fulfilment</button>';
+    if (o.status === 'new')       return '<button class="btn btn-primary btn-sm" onclick="confirmOrder(\'' + o.po + '\')"><i class="ti ti-check"></i>Confirm</button><a class="btn-ghost btn-sm" href="seller-order-detail.html?po=' + o.po + '">View</a>';
+    if (o.status === 'shortfall') return '<a class="btn btn-outline btn-sm" href="seller-order-detail.html?po=' + o.po + '">Resolve</a>';
+    if (o.status === 'dispatched')return '<a class="btn-ghost btn-sm" href="seller-dispatch.html">Transfer</a>';
+    return '<a class="btn-ghost btn-sm" href="seller-dispatch.html">Fulfilment</a>';
   }
 
   function renderList() {
@@ -363,7 +365,7 @@
     const tbody = document.getElementById('orders-tbody');
     tbody.innerHTML = pageRows.length ? pageRows.map(o => `
       <tr data-po="${o.po}">
-        <td><div class="po-id">${o.po}</div>${o.agent ? '<div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div>' : ''}</td>
+        <td><a class="po-id-link" href="seller-order-detail.html?po=${o.po}"><div class="po-id">${o.po}</div></a>${o.agent ? '<div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div>' : ''}</td>
         <td><div class="from-outlet">${o.outlet}</div><div class="from-group">${o.group}</div></td>
         <td class="col-num">${o.items}</td>
         <td>${o.deliveryText}${o.note ? ' <span class="due-today">· ' + o.note + '</span>' : ''}</td>

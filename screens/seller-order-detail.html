@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Order detail — Nomni Supply</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { padding-block: var(--space-2xl) var(--space-5xl); }
+
+    /* ── Breadcrumb + prev/next ── */
+    .breadcrumb-row { display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); margin-bottom:var(--space-xl); }
+    .breadcrumb { display:flex; align-items:center; gap:var(--space-xs); font-size:13px; color:var(--text-soft); }
+    .breadcrumb a { color:var(--text-link); text-decoration:none; }
+    .breadcrumb a:hover { text-decoration:underline; }
+    .order-nav { display:flex; align-items:center; gap:var(--space-xs); }
+    .order-nav-btn { display:flex; align-items:center; gap:4px; padding:5px 10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); font-size:12px; font-weight:600; color:var(--text-soft); text-decoration:none; white-space:nowrap; }
+    .order-nav-btn:hover { color:var(--text); border-color:var(--fern); background:var(--surface-soft); }
+    .order-nav-btn.disabled { opacity:.35; pointer-events:none; }
+    .order-nav-count { font-size:12px; color:var(--text-soft); padding:0 var(--space-sm); }
+
+    /* ── Page header ── */
+    .order-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; margin-bottom:var(--space-xl); }
+    .seller-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); padding:4px 10px; border-radius:var(--radius-pill); margin-bottom:var(--space-sm); }
+    .seller-badge i { font-size:14px; }
+    .order-eyebrow { display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-xs); flex-wrap:wrap; }
+    .page-eyebrow { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); }
+    .order-id { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .order-meta-line { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; font-size:13px; color:var(--text-soft); margin-top:var(--space-sm); }
+    .meta-sep { width:1px; height:12px; background:var(--border); }
+    .head-actions { display:flex; gap:var(--space-sm); align-items:center; flex-shrink:0; padding-top:4px; }
+
+    /* ── Buttons ── */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; flex-shrink:0; text-decoration:none; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--btn-primary-hover); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; text-decoration:none; }
+    .btn-ghost:hover { color:var(--text-accent); }
+
+    /* ── Lifecycle ── */
+    .lifecycle { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl) var(--space-md); margin-bottom:var(--space-lg); }
+    .lc-row { display:flex; align-items:flex-start; }
+    .lc-step { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; position:relative; }
+    .lc-connector { flex:1; display:flex; flex-direction:column; align-items:stretch; padding-top:14px; }
+    .lc-line { height:2px; background:var(--border); border-radius:1px; }
+    .lc-line.done { background:var(--status-ok-fg); }
+    .lc-dot { width:28px; height:28px; border-radius:var(--radius-pill); border:2px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text-soft); flex-shrink:0; }
+    .lc-label { font-size:11px; font-weight:600; color:var(--text-soft); text-align:center; white-space:nowrap; }
+    .lc-step.done .lc-dot  { background:var(--status-ok-bg); border-color:var(--status-ok-fg); color:var(--status-ok-fg); }
+    .lc-step.done .lc-label { color:var(--text); }
+    .lc-step.active .lc-dot { background:var(--btn-primary-bg); border-color:var(--btn-primary-bg); color:#fff; box-shadow:0 0 0 4px rgba(18,155,65,0.18); }
+    .lc-step.active .lc-label { color:var(--text); font-weight:700; }
+    .lc-step.risk .lc-dot  { background:var(--status-risk-bg); border-color:var(--status-risk-fg); color:var(--status-risk-fg); box-shadow:0 0 0 4px rgba(238,75,135,0.15); }
+    .lc-step.risk .lc-label { color:var(--status-risk-fg); font-weight:700; }
+
+    /* ── Action banner ── */
+    .action-banner { display:flex; align-items:center; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-radius:var(--radius-lg); border:1px solid var(--border); margin-bottom:var(--space-lg); flex-wrap:wrap; }
+    .action-banner.info { background:var(--status-info-bg); border-color:rgba(63,195,251,0.35); }
+    .action-banner.risk { background:var(--status-risk-bg); border-color:rgba(238,75,135,0.35); }
+    .action-banner.ok   { background:var(--status-ok-bg);   border-color:rgba(42,200,100,0.35); }
+    .action-banner.warn { background:var(--status-warn-bg); border-color:rgba(245,194,25,0.5); }
+    .banner-icon { width:42px; height:42px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:21px; flex-shrink:0; }
+    .banner-icon.info { background:rgba(63,195,251,0.22); color:var(--status-info-fg); }
+    .banner-icon.risk { background:rgba(238,75,135,0.22); color:var(--status-risk-fg); }
+    .banner-icon.ok   { background:rgba(42,200,100,0.18); color:var(--status-ok-fg); }
+    .banner-icon.warn { background:rgba(245,194,25,0.22); color:#7A5000; }
+    .banner-body { flex:1; min-width:220px; }
+    .banner-title { font-size:14px; font-weight:700; color:var(--text); }
+    .banner-sub   { font-size:13px; color:var(--text-soft); margin-top:2px; line-height:1.4; }
+    .banner-actions { display:flex; gap:var(--space-sm); flex-shrink:0; flex-wrap:wrap; }
+
+    /* ── Grid ── */
+    .detail-grid { display:grid; grid-template-columns:1fr 308px; gap:var(--space-lg); align-items:start; }
+    @media (max-width:960px) { .detail-grid { grid-template-columns:1fr; } }
+    .detail-main { display:flex; flex-direction:column; gap:var(--space-lg); }
+    .detail-aside { display:flex; flex-direction:column; gap:var(--space-lg); }
+
+    /* ── Cards ── */
+    .detail-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+    .detail-card.agent-surface { border-color:var(--agent-border, var(--fern)); box-shadow:0 0 0 1px var(--agent-border, var(--fern)), var(--shadow-sm); }
+    .card-head { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); }
+    .card-head-title { font-size:14px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .agent-avatar { width:28px; height:28px; border-radius:50%; background:var(--fern); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+
+    /* ── Items table ── */
+    .items-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+    .items-tbl th { padding:var(--space-sm) var(--space-lg); text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); background:var(--surface-soft); white-space:nowrap; }
+    .items-tbl th.num, .items-tbl td.num { text-align:right; font-feature-settings:'tnum' 1; }
+    .items-tbl td { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .items-tbl tr:last-child td { border-bottom:none; }
+    .item-name { font-weight:600; color:var(--text); }
+    .item-sku  { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-soft); margin-top:2px; }
+    .total-row td { background:var(--surface-soft); font-weight:700; font-size:14px; color:var(--text); font-feature-settings:'tnum' 1; padding:var(--space-md) var(--space-lg); border-top:1.5px solid var(--border); }
+    .stock-ok    { color:var(--status-ok-fg); font-weight:600; }
+    .stock-short { color:var(--status-risk-fg); font-weight:700; }
+    .short-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); background:var(--status-risk-bg); color:var(--status-risk-fg); white-space:nowrap; }
+
+    /* ── KV list ── */
+    .kv-list { display:flex; flex-direction:column; }
+    .kv-row  { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); font-size:13px; padding:var(--space-sm) 0; border-bottom:1px solid var(--border); }
+    .kv-row:last-child { border-bottom:none; }
+    .kv-label { color:var(--text-soft); flex-shrink:0; }
+    .kv-value { color:var(--text); font-weight:600; text-align:right; }
+
+    /* ── Outlet card ── */
+    .out-avatar { width:44px; height:44px; border-radius:var(--radius-md); background:color-mix(in srgb, var(--fern) 12%, transparent); color:var(--fern); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex-shrink:0; }
+    .out-head { display:flex; align-items:center; gap:var(--space-md); }
+    .out-name { font-weight:700; color:var(--text); font-size:14px; }
+    .out-group { font-size:12px; color:var(--text-soft); }
+
+    /* ── Activity feed ── */
+    .act-feed { display:flex; flex-direction:column; }
+    .act-item { display:flex; gap:var(--space-md); padding:var(--space-md) var(--space-xl); position:relative; }
+    .act-item:not(:last-child)::before { content:''; position:absolute; left:calc(var(--space-xl) + 10px); top:calc(var(--space-md) + 22px); bottom:0; width:1.5px; background:var(--border); }
+    .act-dot { width:20px; height:20px; border-radius:var(--radius-pill); display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; margin-top:2px; z-index:1; }
+    .act-dot.ok      { background:var(--status-ok-bg);   color:var(--status-ok-fg); }
+    .act-dot.info    { background:var(--status-info-bg); color:var(--status-info-fg); }
+    .act-dot.risk    { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .act-dot.neutral { background:var(--surface-soft); color:var(--text-soft); border:1.5px solid var(--border); }
+    .act-dot.agent   { background:var(--mint); color:var(--spinach); }
+    .act-body { flex:1; min-width:0; }
+    .act-text { font-size:13px; color:var(--text); line-height:1.4; }
+    .act-time { font-size:11px; color:var(--text-soft); margin-top:2px; }
+
+    /* ── Status pill (matches inbox) ── */
+    .status-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .status-pill.new       { color:var(--status-info-fg); background:var(--status-info-bg); }
+    .status-pill.confirmed { color:var(--status-ok-fg); background:var(--status-ok-bg); }
+    .status-pill.picking   { color:var(--status-warn-fg); background:var(--status-warn-bg); }
+    .status-pill.dispatched{ color:var(--text-soft); background:var(--surface-soft); border:1px solid var(--border); }
+    .status-pill.shortfall { color:var(--status-risk-fg); background:var(--status-risk-bg); }
+  </style>
+</head>
+<body>
+<script src="../shared/shell.js?v=11" data-active="seller-orders"></script>
+
+<div class="page-body">
+  <div class="napp-canvas" data-measure="content">
+
+    <div class="breadcrumb-row">
+      <nav class="breadcrumb">
+        <a href="seller-orders.html">Order inbox</a>
+        <i class="ti ti-chevron-right"></i>
+        <span id="bc-id" aria-current="page">—</span>
+      </nav>
+      <div class="order-nav" id="order-nav"></div>
+    </div>
+
+    <div class="order-head">
+      <div>
+        <span class="seller-badge"><i class="ti ti-building-warehouse"></i>Sydney Central Kitchen · Seller workspace</span>
+        <div class="order-eyebrow">
+          <span class="page-eyebrow">Incoming order</span>
+          <span id="status-pill"></span>
+        </div>
+        <h1 class="order-id" id="order-id">—</h1>
+        <div class="order-meta-line">
+          <span id="meta-outlet"></span><span class="meta-sep"></span>
+          <span id="meta-delivery"></span><span class="meta-sep"></span>
+          <span id="meta-value" style="font-feature-settings:'tnum' 1;font-weight:600;color:var(--text);"></span>
+        </div>
+      </div>
+      <div class="head-actions" id="head-actions"></div>
+    </div>
+
+    <div class="lifecycle"><div class="lc-row" id="lc-row"></div></div>
+
+    <div id="action-banner"></div>
+
+    <div class="detail-grid">
+      <div class="detail-main" id="detail-main"></div>
+      <div class="detail-aside">
+        <div class="detail-card">
+          <div class="card-head"><span class="card-head-title"><i class="ti ti-info-circle"></i> Order info</span></div>
+          <div style="padding:0 var(--space-xl) var(--space-sm);"><div class="kv-list" id="order-meta-kv"></div></div>
+        </div>
+        <div class="detail-card">
+          <div class="card-head"><span class="card-head-title"><i class="ti ti-building-store"></i> Outlet</span></div>
+          <div style="padding:var(--space-lg) var(--space-xl);" id="outlet-card-body"></div>
+        </div>
+        <div class="detail-card" id="agent-card" style="display:none;">
+          <div class="card-head"><span class="card-head-title"><i class="ti ti-sparkles"></i> Drafted by Otto</span></div>
+          <div style="padding:var(--space-lg) var(--space-xl);font-size:13px;color:var(--text-soft);line-height:1.5;">This order was drafted automatically by <strong>Otto</strong>, the outlet's ordering agent, based on their par levels and recent sales — the outlet reviewed and sent it without manual re-entry.</div>
+        </div>
+        <div class="detail-card">
+          <div class="card-head"><span class="card-head-title"><i class="ti ti-timeline"></i> Activity</span></div>
+          <div class="act-feed" id="activity-feed"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="od-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => { NomniShell.init('Order inbox'); NomniShell.initStagger(); load(); });
+
+  /* ── Catalog (mirrors seller-catalog.html) ── */
+  const CATALOG = {
+    'Napoli Sauce 5L':                { sku:'CK-NAP-005', price:14.20, stock:8,  min:12 },
+    'Beef Burger Patties 48pk':       { sku:'CK-PAT-048', price:61.90, stock:22 },
+    'Marinated Chicken Skewers 50pk': { sku:'CK-SKW-050', price:48.75, stock:15 },
+    'Demi-glace 2L':                  { sku:'CK-DEM-002', price:22.40, stock:11 },
+    'Arabica Blend 1kg':              { sku:'CK-COF-100', price:35.10, stock:36 },
+    'Olive Oil 4L':                   { sku:'CK-OIL-004', price:44.28, stock:18 },
+    'Plain Flour 12.5kg':             { sku:'CK-FLR-125', price:20.09, stock:24 },
+  };
+
+  /* ── Outlet contacts (mirrors seller-customers.html) ── */
+  const OUTLET_CONTACTS = {
+    'Bondi Beach':   { group:'Beachside',   contact:'Priya Nair',       phone:'0412 555 021' },
+    'Parramatta':    { group:'CBD Cluster', contact:'Ben Wu',           phone:'0416 881 452' },
+    'Surry Hills':   { group:'CBD Cluster', contact:'Tom Reilly',       phone:'0413 220 884' },
+    'Circular Quay': { group:'CBD Cluster', contact:'Marco Deluca',     phone:'0414 903 217' },
+    'Newtown':       { group:'Inner West',  contact:'Aisha Karim',      phone:'0415 667 130' },
+    'Manly':         { group:'Beachside',   contact:"Grace O'Sullivan", phone:'0417 334 908' },
+  };
+
+  /* ── Orders — mirrors the ORDERS array in seller-orders.html ── */
+  const ORDERS = [
+    { po:'PO-01247', agent:true,  outlet:'Bondi Beach',   items:9,  deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:1284.50, status:'new',
+      lines:[{item:'Beef Burger Patties 48pk',qty:12},{item:'Marinated Chicken Skewers 50pk',qty:6},{item:'Demi-glace 2L',qty:11}] },
+    { po:'PO-01248', agent:true,  outlet:'Surry Hills',   items:6,  deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:742.00,  status:'new',
+      lines:[{item:'Marinated Chicken Skewers 50pk',qty:8},{item:'Demi-glace 2L',qty:8},{item:'Arabica Blend 1kg',qty:5}] },
+    { po:'PO-01249', agent:false, outlet:'Parramatta',    items:11, deliveryText:'Thu, 7–9am',                             value:1918.75, status:'shortfall',
+      lines:[{item:'Beef Burger Patties 48pk',qty:18},{item:'Marinated Chicken Skewers 50pk',qty:8},{item:'Napoli Sauce 5L',qty:12},{item:'Demi-glace 2L',qty:11}] },
+    { po:'PO-01244', agent:false, outlet:'Circular Quay', items:7,  deliveryText:'Today, 2–4pm',                           value:963.20,  status:'picking',
+      lines:[{item:'Marinated Chicken Skewers 50pk',qty:12},{item:'Demi-glace 2L',qty:8},{item:'Arabica Blend 1kg',qty:6}] },
+    { po:'PO-01243', agent:true,  outlet:'Newtown',       items:5,  deliveryText:'Today, 2–4pm',                           value:518.40,  status:'confirmed',
+      lines:[{item:'Demi-glace 2L',qty:9},{item:'Arabica Blend 1kg',qty:9}] },
+    { po:'PO-01241', agent:false, outlet:'Manly',         items:8,  deliveryText:'Delivered yesterday',                    value:1102.00, status:'dispatched', transferRef:'TRF-1041',
+      lines:[{item:'Beef Burger Patties 48pk',qty:10},{item:'Marinated Chicken Skewers 50pk',qty:8},{item:'Demi-glace 2L',qty:4}] },
+    { po:'PO-01256', agent:false, outlet:'Parramatta',    items:5,  deliveryText:'Tomorrow, 7–9am',                        value:720.00,  status:'new',
+      lines:[{item:'Marinated Chicken Skewers 50pk',qty:10},{item:'Demi-glace 2L',qty:10}] },
+    { po:'PO-01238', agent:false, outlet:'Newtown',       items:7,  deliveryText:'Today, 7–9am',                           value:990.00,  status:'confirmed',
+      lines:[{item:'Beef Burger Patties 48pk',qty:9},{item:'Marinated Chicken Skewers 50pk',qty:6},{item:'Demi-glace 2L',qty:6}] },
+    { po:'PO-01239', agent:false, outlet:'Surry Hills',   items:5,  deliveryText:'Today, 7–9am',                           value:650.00,  status:'picking',
+      lines:[{item:'Marinated Chicken Skewers 50pk',qty:8},{item:'Demi-glace 2L',qty:8},{item:'Plain Flour 12.5kg',qty:4}] },
+    { po:'PO-01242', agent:false, outlet:'Bondi Beach',   items:6,  deliveryText:'Delivered yesterday',                    value:845.00,  status:'dispatched', transferRef:'TRF-1040',
+      lines:[{item:'Beef Burger Patties 48pk',qty:6},{item:'Marinated Chicken Skewers 50pk',qty:6},{item:'Demi-glace 2L',qty:8}] },
+    { po:'PO-01250', agent:true,  outlet:'Bondi Beach',   items:4,  deliveryText:'Fri, 7–9am',                             value:410.00,  status:'new',
+      lines:[{item:'Demi-glace 2L',qty:10},{item:'Plain Flour 12.5kg',qty:9}] },
+    { po:'PO-01251', agent:false, outlet:'Surry Hills',   items:10, deliveryText:'Fri, 7–9am',                             value:1560.00, status:'new',
+      lines:[{item:'Beef Burger Patties 48pk',qty:16},{item:'Marinated Chicken Skewers 50pk',qty:8},{item:'Demi-glace 2L',qty:8}] },
+    { po:'PO-01252', agent:true,  outlet:'Circular Quay', items:6,  deliveryText:'Fri, 2–4pm',                             value:780.00,  status:'new',
+      lines:[{item:'Marinated Chicken Skewers 50pk',qty:14},{item:'Demi-glace 2L',qty:4}] },
+    { po:'PO-01253', agent:false, outlet:'Newtown',       items:3,  deliveryText:'Sat, 2–4pm',                             value:295.00,  status:'new',
+      lines:[{item:'Demi-glace 2L',qty:5},{item:'Plain Flour 12.5kg',qty:9}] },
+    { po:'PO-01254', agent:true,  outlet:'Parramatta',    items:9,  deliveryText:'Sat, 7–9am',                             value:1340.00, status:'new',
+      lines:[{item:'Beef Burger Patties 48pk',qty:14},{item:'Marinated Chicken Skewers 50pk',qty:8},{item:'Demi-glace 2L',qty:4}] },
+    { po:'PO-01255', agent:false, outlet:'Manly',         items:5,  deliveryText:'Sun, 7–9am',                             value:670.00,  status:'new',
+      lines:[{item:'Marinated Chicken Skewers 50pk',qty:10},{item:'Demi-glace 2L',qty:8}] },
+  ];
+
+  const STATUS_PILL = {
+    new:        '<span class="status-pill new"><i class="ti ti-mail"></i>New</span>',
+    confirmed:  '<span class="status-pill confirmed"><i class="ti ti-circle-check"></i>Confirmed</span>',
+    picking:    '<span class="status-pill picking"><i class="ti ti-basket"></i>Picking</span>',
+    shortfall:  '<span class="status-pill shortfall"><i class="ti ti-alert-triangle"></i>Stock shortfall</span>',
+    dispatched: '<span class="status-pill dispatched"><i class="ti ti-truck"></i>Dispatched</span>',
+  };
+
+  const LC_NODES = ['New','Confirmed','Picking','Dispatched','Delivered'];
+  const LC_STATE = {
+    new:        { active:'New',       done:[] },
+    shortfall:  { active:'Confirmed', done:['New'], risk:true },
+    confirmed:  { active:'Confirmed', done:['New'] },
+    picking:    { active:'Picking',   done:['New','Confirmed'] },
+    dispatched: { active:'Delivered', done:['New','Confirmed','Picking','Dispatched'] },
+  };
+
+  function initialsOf(name) {
+    return name.split(' ').filter(w => w.length > 2).map(w => w[0]).slice(0, 2).join('').toUpperCase() || name.slice(0, 2).toUpperCase();
+  }
+
+  let currentPO = null;
+
+  function load() {
+    const poId = new URLSearchParams(window.location.search).get('po');
+    const idx = ORDERS.findIndex(o => o.po === poId);
+    currentPO = idx >= 0 ? ORDERS[idx] : ORDERS[0];
+    renderAll(idx >= 0 ? idx : 0);
+  }
+
+  function renderAll(idx) {
+    const o = currentPO;
+    document.title = o.po + ' — Nomni Supply';
+    document.getElementById('bc-id').textContent = o.po;
+    document.getElementById('order-id').textContent = o.po;
+    document.getElementById('status-pill').innerHTML = STATUS_PILL[o.status];
+    document.getElementById('meta-outlet').innerHTML = 'From <strong style="color:var(--text)">' + o.outlet + '</strong>';
+    document.getElementById('meta-delivery').textContent = o.deliveryText + (o.note ? ' · ' + o.note : '');
+    document.getElementById('meta-value').textContent = '$' + o.value.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    renderOrderNav(idx);
+    renderHeadActions(o);
+    renderLifecycle(o);
+    renderActionBanner(o);
+    renderLineItems(o);
+    renderOrderInfo(o);
+    renderOutletCard(o);
+    document.getElementById('agent-card').style.display = o.agent ? '' : 'none';
+    renderActivity(o);
+  }
+
+  function renderOrderNav(idx) {
+    const prev = idx > 0 ? ORDERS[idx - 1] : null;
+    const next = idx < ORDERS.length - 1 ? ORDERS[idx + 1] : null;
+    document.getElementById('order-nav').innerHTML = `
+      <a class="order-nav-btn${prev ? '' : ' disabled'}" href="${prev ? 'seller-order-detail.html?po=' + prev.po : '#'}"><i class="ti ti-chevron-left"></i>Prev</a>
+      <span class="order-nav-count">${idx + 1} of ${ORDERS.length}</span>
+      <a class="order-nav-btn${next ? '' : ' disabled'}" href="${next ? 'seller-order-detail.html?po=' + next.po : '#'}">Next<i class="ti ti-chevron-right"></i></a>`;
+  }
+
+  function renderHeadActions(o) {
+    let html = '<a class="btn-ghost" href="seller-orders.html"><i class="ti ti-arrow-left"></i>Order inbox</a>';
+    if (o.status === 'new') {
+      html += '<button class="btn btn-primary" onclick="confirmOrder()"><i class="ti ti-check"></i>Confirm order</button>';
+    } else if (o.status === 'shortfall') {
+      html += '<button class="btn btn-primary" onclick="confirmSplitDelivery()"><i class="ti ti-truck"></i>Confirm with split delivery</button>';
+    } else if (o.status === 'confirmed' || o.status === 'picking') {
+      html += '<a class="btn btn-outline" href="seller-dispatch.html"><i class="ti ti-truck-delivery"></i>Open in Fulfilment</a>';
+    } else if (o.status === 'dispatched') {
+      html += '<a class="btn btn-outline" href="seller-dispatch.html"><i class="ti ti-truck-delivery"></i>View transfer' + (o.transferRef ? ' · ' + o.transferRef : '') + '</a>';
+    }
+    document.getElementById('head-actions').innerHTML = html;
+  }
+
+  function renderLifecycle(o) {
+    const lcs = LC_STATE[o.status] || LC_STATE.new;
+    let html = '';
+    LC_NODES.forEach((label, i) => {
+      const isDone = lcs.done.includes(label);
+      const isRisk = lcs.risk && label === lcs.active;
+      const isActive = !isRisk && label === lcs.active;
+      const cls = isRisk ? 'risk' : isDone ? 'done' : isActive ? 'active' : '';
+      const icon = isDone ? '<i class="ti ti-check"></i>' : isRisk ? '<i class="ti ti-alert-triangle"></i>' : (i + 1);
+      html += `<div class="lc-step ${cls}"><div class="lc-dot">${icon}</div><div class="lc-label">${label}</div></div>`;
+      if (i < LC_NODES.length - 1) html += `<div class="lc-connector"><div class="lc-line${isDone ? ' done' : ''}"></div></div>`;
+    });
+    document.getElementById('lc-row').innerHTML = html;
+  }
+
+  function renderActionBanner(o) {
+    const wrap = document.getElementById('action-banner');
+    let html = '';
+    if (o.status === 'new') {
+      html = `<div class="action-banner info">
+        <div class="banner-icon info"><i class="ti ti-clock"></i></div>
+        <div class="banner-body"><div class="banner-title">Awaiting your confirmation</div><div class="banner-sub">Confirming reserves stock against this order and moves it to the fulfilment queue.${o.note ? ' Please ' + o.note + '.' : ''}</div></div>
+        <div class="banner-actions"><button class="btn btn-primary btn-sm" onclick="confirmOrder()"><i class="ti ti-check"></i>Confirm</button></div>
+      </div>`;
+    } else if (o.status === 'shortfall') {
+      const short = shortfallLine(o);
+      html = `<div class="action-banner risk">
+        <div class="banner-icon risk"><i class="ti ti-alert-triangle"></i></div>
+        <div class="banner-body"><div class="banner-title">Can't fully cover from current stock</div><div class="banner-sub">${short ? short.item + ' — ' + short.qty + ' ordered, only ' + short.stock + ' on hand (short ' + (short.qty - short.stock) + ').' : ''} Tomorrow's production run covers the gap.</div></div>
+        <div class="banner-actions">
+          <button class="btn btn-primary btn-sm" onclick="confirmSplitDelivery()"><i class="ti ti-truck"></i>Confirm with split delivery</button>
+          <a class="btn btn-outline btn-sm" href="seller-catalog.html">View stock</a>
+        </div>
+      </div>`;
+    } else if (o.status === 'confirmed') {
+      html = `<div class="action-banner ok">
+        <div class="banner-icon ok"><i class="ti ti-circle-check"></i></div>
+        <div class="banner-body"><div class="banner-title">Confirmed — ready for picking</div><div class="banner-sub">Stock is reserved. Move to Fulfilment when you're ready to pick and dispatch.</div></div>
+        <div class="banner-actions"><a class="btn btn-outline btn-sm" href="seller-dispatch.html">Open in Fulfilment</a></div>
+      </div>`;
+    } else if (o.status === 'picking') {
+      html = `<div class="action-banner warn">
+        <div class="banner-icon warn"><i class="ti ti-basket"></i></div>
+        <div class="banner-body"><div class="banner-title">Being picked</div><div class="banner-sub">This order is in the dispatch queue for its delivery run.</div></div>
+        <div class="banner-actions"><a class="btn btn-outline btn-sm" href="seller-dispatch.html">Open in Fulfilment</a></div>
+      </div>`;
+    } else if (o.status === 'dispatched') {
+      html = `<div class="action-banner ok">
+        <div class="banner-icon ok"><i class="ti ti-truck"></i></div>
+        <div class="banner-body"><div class="banner-title">Delivered</div><div class="banner-sub">Transfer ${o.transferRef || '—'} was received by ${o.outlet}.</div></div>
+        <div class="banner-actions"><a class="btn btn-outline btn-sm" href="seller-dispatch.html">View transfer</a></div>
+      </div>`;
+    }
+    wrap.innerHTML = html;
+  }
+
+  function shortfallLine(o) {
+    for (const l of o.lines) {
+      const c = CATALOG[l.item];
+      if (c && l.qty > c.stock) return { item: l.item, qty: l.qty, stock: c.stock };
+    }
+    return null;
+  }
+
+  function renderLineItems(o) {
+    let total = 0;
+    const rows = o.lines.map(l => {
+      const c = CATALOG[l.item] || { sku:'—', price:0, stock:0 };
+      const lineTotal = l.qty * c.price;
+      total += lineTotal;
+      const short = l.qty > c.stock;
+      return `<tr${short ? ' style="background:rgba(238,75,135,0.04)"' : ''}>
+        <td><div class="item-name">${l.item}</div><div class="item-sku">${c.sku}</div></td>
+        <td class="num">${l.qty}</td>
+        <td class="num">$${c.price.toFixed(2)}</td>
+        <td class="num">$${lineTotal.toFixed(2)}</td>
+        <td class="num">${short ? '<span class="stock-short">' + c.stock + '</span>' : '<span class="stock-ok">' + c.stock + '</span>'}</td>
+        <td>${short ? '<span class="short-badge"><i class="ti ti-alert-triangle"></i>Short ' + (l.qty - c.stock) + '</span>' : '<span class="stock-ok" style="font-size:12px;"><i class="ti ti-check"></i> Covered</span>'}</td>
+      </tr>`;
+    }).join('');
+
+    const card = document.createElement('div');
+    card.className = 'detail-card';
+    card.innerHTML = `
+      <div class="card-head"><span class="card-head-title"><i class="ti ti-list-details"></i> Line items</span><span style="font-size:12px;color:var(--text-soft);">${o.lines.length} line${o.lines.length !== 1 ? 's' : ''}</span></div>
+      <div style="overflow-x:auto;"><table class="items-tbl">
+        <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Total</th><th class="num">On hand</th><th>Coverage</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr class="total-row"><td colspan="3" style="color:var(--text-soft);font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Order total</td><td class="num">$${total.toFixed(2)}</td><td colspan="2"></td></tr></tfoot>
+      </table></div>`;
+
+    const main = document.getElementById('detail-main');
+    main.innerHTML = '';
+    main.appendChild(card);
+  }
+
+  function kv(label, value) {
+    return `<div class="kv-row"><span class="kv-label">${label}</span><span class="kv-value">${value}</span></div>`;
+  }
+
+  function renderOrderInfo(o) {
+    document.getElementById('order-meta-kv').innerHTML =
+      kv('Order', o.po) +
+      kv('Requested delivery', o.deliveryText) +
+      (o.note ? kv('Cutoff', o.note) : '') +
+      kv('Order value', '$' + o.value.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) +
+      (o.transferRef ? kv('Transfer', o.transferRef) : '');
+  }
+
+  function renderOutletCard(o) {
+    const c = OUTLET_CONTACTS[o.outlet] || { group:'—', contact:'', phone:'' };
+    const enc = encodeURIComponent(o.outlet);
+    document.getElementById('outlet-card-body').innerHTML = `
+      <div class="out-head">
+        <div class="out-avatar">${initialsOf(o.outlet)}</div>
+        <div>
+          <div class="out-name">${o.outlet}</div>
+          <div class="out-group">${c.group}</div>
+        </div>
+      </div>
+      <div class="kv-list" style="margin-top:var(--space-md);">
+        ${c.contact ? kv('Contact', c.contact) : ''}
+        ${c.phone ? kv('Phone', c.phone) : ''}
+      </div>
+      <a class="btn btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:var(--space-md);" href="seller-customer-detail.html?outlet=${enc}"><i class="ti ti-address-book"></i>Manage customer</a>`;
+  }
+
+  function renderActivity(o) {
+    const items = [{ tone:'neutral', icon:'ti-circle-plus', text:'Order placed by <strong>' + o.outlet + '</strong>' + (o.agent ? ' · drafted by <strong>Otto</strong>' : ''), time:o.deliveryText.startsWith('Delivered') ? '' : 'Just now' }];
+    if (o.status === 'shortfall') {
+      items.push({ tone:'risk', icon:'ti-alert-triangle', text:'Flagged — insufficient stock to cover in full', time:'' });
+    } else if (o.status !== 'new') {
+      items.push({ tone:'ok', icon:'ti-circle-check', text:'Confirmed — stock reserved', time:'' });
+    }
+    if (o.status === 'picking') items.push({ tone:'info', icon:'ti-basket', text:'Sent to Fulfilment for picking', time:'' });
+    if (o.status === 'dispatched') {
+      items.push({ tone:'info', icon:'ti-truck', text:'Dispatched as <strong>' + (o.transferRef || 'transfer') + '</strong>', time:'' });
+      items.push({ tone:'ok', icon:'ti-circle-check-filled', text:'Received by ' + o.outlet, time:'' });
+    }
+    document.getElementById('activity-feed').innerHTML = items.map(a => `
+      <div class="act-item">
+        <div class="act-dot ${a.tone}"><i class="ti ${a.icon}"></i></div>
+        <div class="act-body"><div class="act-text">${a.text}</div>${a.time ? '<div class="act-time">' + a.time + '</div>' : ''}</div>
+      </div>`).join('');
+  }
+
+  function confirmOrder() {
+    currentPO.status = 'confirmed';
+    renderAll(ORDERS.indexOf(currentPO));
+    odToast('Order confirmed — stock reserved and queued for fulfilment.');
+  }
+
+  function confirmSplitDelivery() {
+    currentPO.status = 'confirmed';
+    renderAll(ORDERS.indexOf(currentPO));
+    odToast('Confirmed with split delivery — the shortfall quantity follows after the next production run.');
+  }
+
+  function odToast(msg) {
+    const wrap = document.getElementById('od-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;max-width:420px;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;flex-shrink:0;"></i><span>' + msg + '</span>';
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3200);
+  }
+</script>
+</body>
+</html>
