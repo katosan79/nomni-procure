@@ -32,10 +32,38 @@
     .cust-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
     .cust-table tbody tr:last-child td { border-bottom:none; }
     .cust-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
-    .cust-name { display:flex; align-items:center; gap:var(--space-md); }
+    .cust-name { display:flex; align-items:center; gap:var(--space-md); text-decoration:none; }
     .cust-avatar { width:32px; height:32px; border-radius:var(--radius-md); background:color-mix(in srgb, var(--fern) 12%, transparent); color:var(--fern); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
     .cust-title { font-weight:600; color:var(--text); }
+    a.cust-name:hover .cust-title { color:var(--text-accent); }
     .cust-group { font-size:11px; color:var(--text-soft); }
+
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; flex-shrink:0; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--btn-primary-hover); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+
+    /* Add-customer drawer */
+    .drawer-section { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-xl); }
+    .drawer-section:last-child { margin-bottom:0; }
+    .drawer-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin-bottom:2px; }
+    .drawer-error { font-size:12px; color:var(--status-risk-fg); display:none; margin-top:3px; }
+    .drawer-error.show-error { display:block; }
+    .form-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .form-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .form-select { height:40px; padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; }
+    .form-select:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .outlet-picker-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .outlet-pick-item { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; transition:border-color 0.14s, background 0.14s; }
+    .outlet-pick-item:hover { border-color:color-mix(in srgb,var(--fern) 55%,var(--border)); }
+    .outlet-pick-item.selected { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 5%,transparent); }
+    .outlet-pick-item input[type=radio] { accent-color:var(--fern); flex-shrink:0; }
+    .outlet-pick-name { font-size:14px; font-weight:600; color:var(--text); }
+    .outlet-pick-meta { font-size:12px; color:var(--text-soft); }
+    .outlet-picker-empty { font-size:13px; color:var(--text-soft); padding:var(--space-lg); text-align:center; border:1.5px dashed var(--border); border-radius:var(--radius-md); }
     .col-num { text-align:right; font-feature-settings:'tnum' 1; font-weight:600; color:var(--text); }
     .last-delivery { font-size:13px; color:var(--text-soft); }
     .last-delivery strong { color:var(--text); font-weight:600; }
@@ -63,8 +91,9 @@
         <div class="card-head">
           <div class="card-head-left">
             <div class="card-title"><i class="ti ti-building-store"></i>Outlets served</div>
-            <div class="card-desc">6 outlets across 3 groups order from this CK. Zones and time windows are defined in <a href="seller-settings-delivery.html" style="color:var(--text-accent);font-weight:600;text-decoration:none;">Settings &gt; Delivery</a> — assign each outlet to one below.</div>
+            <div class="card-desc" id="cust-count-desc">6 outlets across 3 groups order from this CK. Zones and time windows are defined in <a href="seller-settings-delivery.html" style="color:var(--text-accent);font-weight:600;text-decoration:none;">Settings &gt; Delivery</a> — assign each outlet to one below.</div>
           </div>
+          <button class="btn btn-outline btn-sm" onclick="openAddCustomerDrawer()"><i class="ti ti-plus"></i>Add customer</button>
         </div>
         <table class="cust-table">
           <thead>
@@ -72,7 +101,7 @@
           </thead>
           <tbody>
             <tr data-outlet="Bondi Beach">
-              <td><div class="cust-name"><div class="cust-avatar">BB</div><div><div class="cust-title">Bondi Beach</div><div class="cust-group">Beachside</div></div></div></td>
+              <td><a class="cust-name" href="seller-customer-detail.html?outlet=Bondi%20Beach"><div class="cust-avatar">BB</div><div><div class="cust-title">Bondi Beach</div><div class="cust-group">Beachside</div></div></a></td>
               <td>
                 <select class="zone-select" onchange="reassignZone(this)">
                   <option>City</option>
@@ -84,10 +113,10 @@
               <td class="col-num">7</td>
               <td class="col-num">$6,412</td>
               <td class="last-delivery"><strong>TRF-1043</strong> · in transit</td>
-              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Bondi Beach order history…')">Orders</button></td>
+              <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Bondi%20Beach">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
             <tr data-outlet="Parramatta">
-              <td><div class="cust-name"><div class="cust-avatar">PA</div><div><div class="cust-title">Parramatta</div><div class="cust-group">CBD Cluster</div></div></div></td>
+              <td><a class="cust-name" href="seller-customer-detail.html?outlet=Parramatta"><div class="cust-avatar">PA</div><div><div class="cust-title">Parramatta</div><div class="cust-group">CBD Cluster</div></div></a></td>
               <td>
                 <select class="zone-select" onchange="reassignZone(this)">
                   <option>City</option>
@@ -99,10 +128,10 @@
               <td class="col-num">5</td>
               <td class="col-num">$5,240</td>
               <td class="last-delivery"><strong>TRF-1038</strong> · Mon</td>
-              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Parramatta order history…')">Orders</button></td>
+              <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Parramatta">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
             <tr data-outlet="Surry Hills">
-              <td><div class="cust-name"><div class="cust-avatar">SH</div><div><div class="cust-title">Surry Hills</div><div class="cust-group">CBD Cluster</div></div></div></td>
+              <td><a class="cust-name" href="seller-customer-detail.html?outlet=Surry%20Hills"><div class="cust-avatar">SH</div><div><div class="cust-title">Surry Hills</div><div class="cust-group">CBD Cluster</div></div></a></td>
               <td>
                 <select class="zone-select" onchange="reassignZone(this)">
                   <option selected>City</option>
@@ -114,10 +143,10 @@
               <td class="col-num">6</td>
               <td class="col-num">$4,873</td>
               <td class="last-delivery"><strong>TRF-1040</strong> · Mon</td>
-              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Surry Hills order history…')">Orders</button></td>
+              <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Surry%20Hills">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
             <tr data-outlet="Circular Quay">
-              <td><div class="cust-name"><div class="cust-avatar">CQ</div><div><div class="cust-title">Circular Quay</div><div class="cust-group">CBD Cluster</div></div></div></td>
+              <td><a class="cust-name" href="seller-customer-detail.html?outlet=Circular%20Quay"><div class="cust-avatar">CQ</div><div><div class="cust-title">Circular Quay</div><div class="cust-group">CBD Cluster</div></div></a></td>
               <td>
                 <select class="zone-select" onchange="reassignZone(this)">
                   <option selected>City</option>
@@ -129,10 +158,10 @@
               <td class="col-num">9</td>
               <td class="col-num">$7,105</td>
               <td class="last-delivery"><strong>TRF-1044</strong> · picking</td>
-              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Circular Quay order history…')">Orders</button></td>
+              <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Circular%20Quay">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
             <tr data-outlet="Newtown">
-              <td><div class="cust-name"><div class="cust-avatar">NT</div><div><div class="cust-title">Newtown</div><div class="cust-group">Inner West</div></div></div></td>
+              <td><a class="cust-name" href="seller-customer-detail.html?outlet=Newtown"><div class="cust-avatar">NT</div><div><div class="cust-title">Newtown</div><div class="cust-group">Inner West</div></div></a></td>
               <td>
                 <select class="zone-select" onchange="reassignZone(this)">
                   <option>City</option>
@@ -144,10 +173,10 @@
               <td class="col-num">4</td>
               <td class="col-num">$2,690</td>
               <td class="last-delivery"><strong>TRF-1045</strong> · ready</td>
-              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Newtown order history…')">Orders</button></td>
+              <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Newtown">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
             <tr data-outlet="Manly">
-              <td><div class="cust-name"><div class="cust-avatar">ML</div><div><div class="cust-title">Manly</div><div class="cust-group">Beachside</div></div></div></td>
+              <td><a class="cust-name" href="seller-customer-detail.html?outlet=Manly"><div class="cust-avatar">ML</div><div><div class="cust-title">Manly</div><div class="cust-group">Beachside</div></div></a></td>
               <td>
                 <select class="zone-select" onchange="reassignZone(this)">
                   <option>City</option>
@@ -159,7 +188,7 @@
               <td class="col-num">4</td>
               <td class="col-num">$2,090</td>
               <td class="last-delivery"><strong>TRF-1041</strong> · received</td>
-              <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="cuToast('Opening Manly order history…')">Orders</button></td>
+              <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Manly">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
           </tbody>
         </table>
@@ -169,10 +198,53 @@
   </div>
 </main>
 
+<!-- Add customer drawer -->
+<div id="add-cust-scrim" class="nb-drawer-scrim" onclick="closeAddCustomerDrawer()"></div>
+<div id="add-cust-drawer" class="nb-drawer" role="dialog" aria-modal="true">
+  <div class="nb-drawer-head">
+    <div class="nb-drawer-title">Add customer</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeAddCustomerDrawer()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body">
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Outlet</div>
+      <div class="outlet-picker-list" id="available-outlet-list"></div>
+      <span class="drawer-error" id="outlet-pick-error">Select an outlet to add</span>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Delivery zone</div>
+      <div class="form-group">
+        <select class="form-select" id="add-cust-zone">
+          <option>City</option>
+          <option>East suburbs</option>
+          <option>Inner West &amp; West</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" onclick="closeAddCustomerDrawer()">Cancel</button>
+    <button class="btn btn-primary" onclick="submitAddCustomer()"><i class="ti ti-plus"></i>Add customer</button>
+  </div>
+</div>
+
 <div id="cu-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
 
 <script src="../shared/shell.js?v=11" data-active="seller-customers"></script>
 <script>
+  // Real outlets on this platform (outlets.html OUTLET_PINS) not yet ordering from this CK.
+  let AVAILABLE_OUTLETS = [
+    { name: 'Darling Street Bistro', group: 'CBD Cluster' },
+    { name: 'Chatswood Bistro',      group: 'North Shore' },
+    { name: 'Bankstown Diner',       group: 'Western Sydney' },
+  ];
+  let selectedNewOutlet = null;
+
   document.addEventListener('DOMContentLoaded', () => {
     NomniShell.init('Customers');
     NomniShell.initStagger();
@@ -191,6 +263,90 @@
     const zone = select.value;
     row.querySelector('.assign-schedule').innerHTML = ZONES[zone] || 'Unknown zone — check Settings > Delivery';
     cuToast('Moved to ' + zone + ' — new schedule applied.');
+  }
+
+  function updateCustCountDesc() {
+    const count = document.querySelectorAll('.cust-table tbody tr').length;
+    const groups = new Set([...document.querySelectorAll('.cust-group')].map(el => el.textContent)).size;
+    document.getElementById('cust-count-desc').innerHTML =
+      count + ' outlet' + (count === 1 ? '' : 's') + ' across ' + groups + ' group' + (groups === 1 ? '' : 's') +
+      ' order from this CK. Zones and time windows are defined in <a href="seller-settings-delivery.html" style="color:var(--text-accent);font-weight:600;text-decoration:none;">Settings &gt; Delivery</a> — assign each outlet to one below.';
+  }
+
+  function initialsOf(name) {
+    return name.split(' ').filter(w => w.length > 2).map(w => w[0]).slice(0, 2).join('').toUpperCase() || name.slice(0, 2).toUpperCase();
+  }
+
+  function openAddCustomerDrawer() {
+    selectedNewOutlet = null;
+    document.getElementById('outlet-pick-error').classList.remove('show-error');
+    document.getElementById('add-cust-zone').value = 'City';
+
+    const list = document.getElementById('available-outlet-list');
+    if (!AVAILABLE_OUTLETS.length) {
+      list.innerHTML = '<div class="outlet-picker-empty">Every outlet on the platform already orders from this CK.</div>';
+    } else {
+      list.innerHTML = AVAILABLE_OUTLETS.map((o, i) => `
+        <label class="outlet-pick-item" data-index="${i}" onclick="selectAvailableOutlet(${i})">
+          <input type="radio" name="new-cust-outlet"/>
+          <div>
+            <div class="outlet-pick-name">${o.name}</div>
+            <div class="outlet-pick-meta">${o.group}</div>
+          </div>
+        </label>`).join('');
+    }
+
+    document.getElementById('add-cust-scrim').classList.add('open');
+    document.getElementById('add-cust-drawer').classList.add('open');
+  }
+
+  function closeAddCustomerDrawer() {
+    document.getElementById('add-cust-scrim').classList.remove('open');
+    document.getElementById('add-cust-drawer').classList.remove('open');
+  }
+
+  function selectAvailableOutlet(index) {
+    selectedNewOutlet = AVAILABLE_OUTLETS[index];
+    document.querySelectorAll('.outlet-pick-item').forEach((el, i) => {
+      el.classList.toggle('selected', i === index);
+      el.querySelector('input[type=radio]').checked = i === index;
+    });
+    document.getElementById('outlet-pick-error').classList.remove('show-error');
+  }
+
+  function submitAddCustomer() {
+    if (!selectedNewOutlet) {
+      document.getElementById('outlet-pick-error').classList.add('show-error');
+      return;
+    }
+    const zone = document.getElementById('add-cust-zone').value;
+    const name = selectedNewOutlet.name;
+    const group = selectedNewOutlet.group;
+    const initials = initialsOf(name);
+    const enc = encodeURIComponent(name);
+
+    const row = document.createElement('tr');
+    row.dataset.outlet = name;
+    row.innerHTML = `
+      <td><a class="cust-name" href="seller-customer-detail.html?outlet=${enc}"><div class="cust-avatar">${initials}</div><div><div class="cust-title">${name}</div><div class="cust-group">${group}</div></div></a></td>
+      <td>
+        <select class="zone-select" onchange="reassignZone(this)">
+          <option${zone === 'City' ? ' selected' : ''}>City</option>
+          <option${zone === 'East suburbs' ? ' selected' : ''}>East suburbs</option>
+          <option${zone === 'Inner West & West' ? ' selected' : ''}>Inner West &amp; West</option>
+        </select>
+      </td>
+      <td class="assign-schedule">${ZONES[zone]}</td>
+      <td class="col-num">0</td>
+      <td class="col-num">$0</td>
+      <td class="last-delivery">No deliveries yet</td>
+      <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=${enc}">Manage<i class="ti ti-chevron-right"></i></a></td>`;
+    document.querySelector('.cust-table tbody').appendChild(row);
+
+    AVAILABLE_OUTLETS = AVAILABLE_OUTLETS.filter(o => o.name !== name);
+    updateCustCountDesc();
+    closeAddCustomerDrawer();
+    cuToast(name + ' added as a customer on ' + zone + '.');
   }
 
   function cuToast(msg) {
