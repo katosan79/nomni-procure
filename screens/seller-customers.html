@@ -32,6 +32,7 @@
     .cust-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
     .cust-table tbody tr:last-child td { border-bottom:none; }
     .cust-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .cust-table tbody tr.row-clickable { cursor:pointer; }
     .cust-name { display:flex; align-items:center; gap:var(--space-md); text-decoration:none; }
     .cust-avatar { width:32px; height:32px; border-radius:var(--radius-md); background:color-mix(in srgb, var(--fern) 12%, transparent); color:var(--fern); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
     .cust-title { font-weight:600; color:var(--text); }
@@ -109,7 +110,7 @@
             <tr><th>Outlet</th><th>Ordering contact</th><th style="text-align:right">Orders MTD</th><th style="text-align:right">Spend MTD</th><th>Zone</th><th style="text-align:right">Actions</th></tr>
           </thead>
           <tbody>
-            <tr data-outlet="Bondi Beach">
+            <tr data-outlet="Bondi Beach" class="row-clickable" onclick="goToCustomerRow(event,'seller-customer-detail.html?outlet=Bondi%20Beach')">
               <td><a class="cust-name" href="seller-customer-detail.html?outlet=Bondi%20Beach"><div class="cust-avatar">BB</div><div><div class="cust-title">Bondi Beach</div><div class="cust-group">Beachside</div></div></a></td>
               <td><div class="cust-contact-name">Priya Nair</div><div class="cust-contact-meta">0412 555 021</div></td>
               <td class="col-num">7</td>
@@ -123,7 +124,7 @@
               </td>
               <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Bondi%20Beach">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
-            <tr data-outlet="Parramatta">
+            <tr data-outlet="Parramatta" class="row-clickable" onclick="goToCustomerRow(event,'seller-customer-detail.html?outlet=Parramatta')">
               <td><a class="cust-name" href="seller-customer-detail.html?outlet=Parramatta"><div class="cust-avatar">PA</div><div><div class="cust-title">Parramatta</div><div class="cust-group">CBD Cluster</div></div></a></td>
               <td><div class="cust-contact-name">Ben Wu</div><div class="cust-contact-meta">0416 881 452</div></td>
               <td class="col-num">5</td>
@@ -137,7 +138,7 @@
               </td>
               <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Parramatta">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
-            <tr data-outlet="Surry Hills">
+            <tr data-outlet="Surry Hills" class="row-clickable" onclick="goToCustomerRow(event,'seller-customer-detail.html?outlet=Surry%20Hills')">
               <td><a class="cust-name" href="seller-customer-detail.html?outlet=Surry%20Hills"><div class="cust-avatar">SH</div><div><div class="cust-title">Surry Hills</div><div class="cust-group">CBD Cluster</div></div></a></td>
               <td><div class="cust-contact-name">Tom Reilly</div><div class="cust-contact-meta">0413 220 884</div></td>
               <td class="col-num">6</td>
@@ -151,7 +152,7 @@
               </td>
               <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Surry%20Hills">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
-            <tr data-outlet="Circular Quay">
+            <tr data-outlet="Circular Quay" class="row-clickable" onclick="goToCustomerRow(event,'seller-customer-detail.html?outlet=Circular%20Quay')">
               <td><a class="cust-name" href="seller-customer-detail.html?outlet=Circular%20Quay"><div class="cust-avatar">CQ</div><div><div class="cust-title">Circular Quay</div><div class="cust-group">CBD Cluster</div></div></a></td>
               <td><div class="cust-contact-name">Marco Deluca</div><div class="cust-contact-meta">0414 903 217</div></td>
               <td class="col-num">9</td>
@@ -165,7 +166,7 @@
               </td>
               <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Circular%20Quay">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
-            <tr data-outlet="Newtown">
+            <tr data-outlet="Newtown" class="row-clickable" onclick="goToCustomerRow(event,'seller-customer-detail.html?outlet=Newtown')">
               <td><a class="cust-name" href="seller-customer-detail.html?outlet=Newtown"><div class="cust-avatar">NT</div><div><div class="cust-title">Newtown</div><div class="cust-group">Inner West</div></div></a></td>
               <td><div class="cust-contact-name">Aisha Karim</div><div class="cust-contact-meta">0415 667 130</div></td>
               <td class="col-num">4</td>
@@ -179,7 +180,7 @@
               </td>
               <td style="text-align:right"><a class="btn-ghost btn-sm" href="seller-customer-detail.html?outlet=Newtown">Manage<i class="ti ti-chevron-right"></i></a></td>
             </tr>
-            <tr data-outlet="Manly">
+            <tr data-outlet="Manly" class="row-clickable" onclick="goToCustomerRow(event,'seller-customer-detail.html?outlet=Manly')">
               <td><a class="cust-name" href="seller-customer-detail.html?outlet=Manly"><div class="cust-avatar">ML</div><div><div class="cust-title">Manly</div><div class="cust-group">Beachside</div></div></a></td>
               <td><div class="cust-contact-name">Grace O'Sullivan</div><div class="cust-contact-meta">0417 334 908</div></td>
               <td class="col-num">4</td>
@@ -290,6 +291,11 @@
     NomniShell.initStagger();
   });
 
+  function goToCustomerRow(e, url) {
+    if (e.target.closest('a,button,select,input')) return;
+    window.location.href = url;
+  }
+
   function reassignZone(select) {
     const zone = select.value;
     cuToast('Moved to ' + zone + ' — schedule updates on their detail page.');
@@ -397,6 +403,8 @@
 
     const row = document.createElement('tr');
     row.dataset.outlet = name;
+    row.className = 'row-clickable';
+    row.setAttribute('onclick', "goToCustomerRow(event,'" + detailUrl + "')");
     row.innerHTML = `
       <td><a class="cust-name" href="${detailUrl}"><div class="cust-avatar">${initials}</div><div><div class="cust-title">${name}</div><div class="cust-group">${group}</div></div></a></td>
       <td>${contactName ? `<div class="cust-contact-name">${contactName}</div><div class="cust-contact-meta">${contactPhone || contactEmail || ''}</div>` : '<span class="cust-contact-empty">No contact yet</span>'}</td>

@@ -54,6 +54,7 @@
     .orders-table th:last-child, .orders-table td:last-child { padding-right:var(--space-xl); }
     .orders-table tbody tr:last-child td { border-bottom:none; }
     .orders-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .orders-table tbody tr.row-clickable { cursor:pointer; }
     .orders-table td:first-child { white-space:nowrap; }
     .po-id { font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; white-space:nowrap; }
     .po-agent { font-size:11px; color:var(--text-soft); display:flex; align-items:center; gap:4px; margin-top:1px; white-space:nowrap; }
@@ -364,7 +365,7 @@
 
     const tbody = document.getElementById('orders-tbody');
     tbody.innerHTML = pageRows.length ? pageRows.map(o => `
-      <tr data-po="${o.po}">
+      <tr data-po="${o.po}" class="row-clickable" onclick="goToOrderRow(event,'${o.po}')">
         <td><a class="po-id-link" href="seller-order-detail.html?po=${o.po}"><div class="po-id">${o.po}</div></a>${o.agent ? '<div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div>' : ''}</td>
         <td><div class="from-outlet">${o.outlet}</div><div class="from-group">${o.group}</div></td>
         <td class="col-num">${o.items}</td>
@@ -380,6 +381,11 @@
       : 'No orders found';
     document.getElementById('pg-prev').disabled = currentPage <= 1;
     document.getElementById('pg-next').disabled = currentPage >= totalPages;
+  }
+
+  function goToOrderRow(e, po) {
+    if (e.target.closest('a,button,select,input')) return;
+    window.location.href = 'seller-order-detail.html?po=' + po;
   }
 
   function setFilterSearch(v) { filterSearch = v; currentPage = 1; renderList(); }
