@@ -85,6 +85,36 @@
     .card-save-status.saved  { opacity:1; color:var(--status-ok-fg); }
     .card-save-status.fading { opacity:0; }
     @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Drawer form */
+    .drawer-section { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-xl); }
+    .drawer-section:last-child { margin-bottom:0; }
+    .drawer-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin-bottom:2px; }
+    .drawer-error { font-size:12px; color:var(--status-risk-fg); display:none; margin-top:3px; }
+    .drawer-error.show-error { display:block; }
+    .has-error { border-color:var(--status-risk-fg) !important; }
+
+    .form-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .form-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .form-select, .form-input { height:40px; padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; }
+    .form-input { background-image:none; }
+    .form-select:focus, .form-input:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .form-row { display:grid; gap:var(--space-lg); }
+    .form-row.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+
+    .outlet-picker { border:1.5px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .outlet-select-all { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) var(--space-md); border-bottom:1px solid var(--border); font-size:12px; font-weight:700; color:var(--text-soft); cursor:pointer; background:var(--surface-soft); }
+    .outlet-select-all input { accent-color:var(--fern); }
+    .outlet-list { max-height:240px; overflow-y:auto; }
+    .outlet-item { display:flex; align-items:center; gap:var(--space-md); padding:9px var(--space-md); border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.1s; }
+    .outlet-item:last-child { border-bottom:none; }
+    .outlet-item:hover { background:color-mix(in srgb,var(--fern) 4%,transparent); }
+    .outlet-item input[type=checkbox] { accent-color:var(--fern); flex-shrink:0; }
+    .outlet-item-body { flex:1; }
+    .outlet-item-name { font-size:13px; font-weight:600; color:var(--text); }
+    .outlet-item-meta { font-size:11px; color:var(--text-soft); }
+    .outlet-picker-footer { padding:var(--space-sm) var(--space-md); border-top:1px solid var(--border); font-size:12px; color:var(--text-soft); background:var(--surface-soft); }
+    .outlet-picker-footer span { font-weight:600; color:var(--text-accent); }
   </style>
 </head>
 <body>
@@ -105,7 +135,7 @@
             <div class="card-title"><i class="ti ti-map-2"></i>Delivery zones</div>
             <div class="card-desc">Group outlets by delivery run. Each zone has its own days, time window, and order cutoff.</div>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="ssToast('Add delivery zone…')"><i class="ti ti-plus"></i>Add zone</button>
+          <button class="btn btn-outline btn-sm" onclick="openZoneDrawer()"><i class="ti ti-plus"></i>Add zone</button>
         </div>
         <div class="card-body">
           <div class="zone-list" id="zone-list">
@@ -114,7 +144,7 @@
               <div class="zone-head">
                 <div class="zone-name-wrap">
                   <i class="ti ti-map-pin"></i>
-                  <input class="zone-name" value="City" onchange="saveSection(this.closest('.card'))"/>
+                  <input class="zone-name" value="City" data-prev="City" onchange="renameZone(this)"/>
                 </div>
                 <span class="zone-outlet-count">2 outlets</span>
                 <div class="zone-actions">
@@ -124,30 +154,30 @@
               <div class="zone-body">
                 <div class="zone-field">
                   <span class="zone-field-label">Days</span>
-                  <div class="day-picker" data-days="Mon,Tue,Wed,Thu,Fri">
-                    <button class="day-chip on" onclick="toggleDay(this)">M</button>
-                    <button class="day-chip on" onclick="toggleDay(this)">T</button>
-                    <button class="day-chip on" onclick="toggleDay(this)">W</button>
-                    <button class="day-chip on" onclick="toggleDay(this)">T</button>
-                    <button class="day-chip on" onclick="toggleDay(this)">F</button>
-                    <button class="day-chip" onclick="toggleDay(this)">S</button>
-                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                  <div class="day-picker">
+                    <button class="day-chip on" data-day="Mon" onclick="toggleDay(this)">M</button>
+                    <button class="day-chip on" data-day="Tue" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip on" data-day="Wed" onclick="toggleDay(this)">W</button>
+                    <button class="day-chip on" data-day="Thu" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip on" data-day="Fri" onclick="toggleDay(this)">F</button>
+                    <button class="day-chip" data-day="Sat" onclick="toggleDay(this)">S</button>
+                    <button class="day-chip" data-day="Sun" onclick="toggleDay(this)">S</button>
                   </div>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Window</span>
-                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))">
                     <option selected>7–9am</option>
                     <option>2–4pm</option>
                   </select>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Order cutoff</span>
-                  <input class="zone-time" type="time" value="15:00" onchange="saveSection(this.closest('.card'))"/>
+                  <input class="zone-time" type="time" value="15:00" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))"/>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Relative to</span>
-                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))">
                     <option selected>Prior day</option>
                     <option>Same day</option>
                   </select>
@@ -159,7 +189,7 @@
               <div class="zone-head">
                 <div class="zone-name-wrap">
                   <i class="ti ti-map-pin"></i>
-                  <input class="zone-name" value="East suburbs" onchange="saveSection(this.closest('.card'))"/>
+                  <input class="zone-name" value="East suburbs" data-prev="East suburbs" onchange="renameZone(this)"/>
                 </div>
                 <span class="zone-outlet-count">2 outlets</span>
                 <div class="zone-actions">
@@ -169,30 +199,30 @@
               <div class="zone-body">
                 <div class="zone-field">
                   <span class="zone-field-label">Days</span>
-                  <div class="day-picker" data-days="Mon,Wed">
-                    <button class="day-chip on" onclick="toggleDay(this)">M</button>
-                    <button class="day-chip" onclick="toggleDay(this)">T</button>
-                    <button class="day-chip on" onclick="toggleDay(this)">W</button>
-                    <button class="day-chip" onclick="toggleDay(this)">T</button>
-                    <button class="day-chip" onclick="toggleDay(this)">F</button>
-                    <button class="day-chip" onclick="toggleDay(this)">S</button>
-                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                  <div class="day-picker">
+                    <button class="day-chip on" data-day="Mon" onclick="toggleDay(this)">M</button>
+                    <button class="day-chip" data-day="Tue" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip on" data-day="Wed" onclick="toggleDay(this)">W</button>
+                    <button class="day-chip" data-day="Thu" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip" data-day="Fri" onclick="toggleDay(this)">F</button>
+                    <button class="day-chip" data-day="Sat" onclick="toggleDay(this)">S</button>
+                    <button class="day-chip" data-day="Sun" onclick="toggleDay(this)">S</button>
                   </div>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Window</span>
-                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))">
                     <option selected>7–9am</option>
                     <option>2–4pm</option>
                   </select>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Order cutoff</span>
-                  <input class="zone-time" type="time" value="13:00" onchange="saveSection(this.closest('.card'))"/>
+                  <input class="zone-time" type="time" value="13:00" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))"/>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Relative to</span>
-                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))">
                     <option selected>Prior day</option>
                     <option>Same day</option>
                   </select>
@@ -204,7 +234,7 @@
               <div class="zone-head">
                 <div class="zone-name-wrap">
                   <i class="ti ti-map-pin"></i>
-                  <input class="zone-name" value="Inner West &amp; West" onchange="saveSection(this.closest('.card'))"/>
+                  <input class="zone-name" value="Inner West &amp; West" data-prev="Inner West &amp; West" onchange="renameZone(this)"/>
                 </div>
                 <span class="zone-outlet-count">2 outlets</span>
                 <div class="zone-actions">
@@ -214,30 +244,30 @@
               <div class="zone-body">
                 <div class="zone-field">
                   <span class="zone-field-label">Days</span>
-                  <div class="day-picker" data-days="Tue,Thu">
-                    <button class="day-chip" onclick="toggleDay(this)">M</button>
-                    <button class="day-chip on" onclick="toggleDay(this)">T</button>
-                    <button class="day-chip" onclick="toggleDay(this)">W</button>
-                    <button class="day-chip on" onclick="toggleDay(this)">T</button>
-                    <button class="day-chip" onclick="toggleDay(this)">F</button>
-                    <button class="day-chip" onclick="toggleDay(this)">S</button>
-                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                  <div class="day-picker">
+                    <button class="day-chip" data-day="Mon" onclick="toggleDay(this)">M</button>
+                    <button class="day-chip on" data-day="Tue" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip" data-day="Wed" onclick="toggleDay(this)">W</button>
+                    <button class="day-chip on" data-day="Thu" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip" data-day="Fri" onclick="toggleDay(this)">F</button>
+                    <button class="day-chip" data-day="Sat" onclick="toggleDay(this)">S</button>
+                    <button class="day-chip" data-day="Sun" onclick="toggleDay(this)">S</button>
                   </div>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Window</span>
-                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))">
                     <option>7–9am</option>
                     <option selected>2–4pm</option>
                   </select>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Order cutoff</span>
-                  <input class="zone-time" type="time" value="12:00" onchange="saveSection(this.closest('.card'))"/>
+                  <input class="zone-time" type="time" value="12:00" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))"/>
                 </div>
                 <div class="zone-field">
                   <span class="zone-field-label">Relative to</span>
-                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))">
                     <option selected>Prior day</option>
                     <option>Same day</option>
                   </select>
@@ -262,7 +292,7 @@
             <tr><th>Outlet</th><th>Zone</th><th>Resulting schedule</th></tr>
           </thead>
           <tbody>
-            <tr>
+            <tr data-outlet="Surry Hills">
               <td><div class="assign-outlet">Surry Hills</div><div class="assign-group">CBD Cluster</div></td>
               <td>
                 <select class="zone-select" onchange="reassignOutlet(this)">
@@ -273,7 +303,7 @@
               </td>
               <td class="assign-schedule">Mon–Fri · <strong>7–9am</strong> · cutoff 3pm prior day</td>
             </tr>
-            <tr>
+            <tr data-outlet="Circular Quay">
               <td><div class="assign-outlet">Circular Quay</div><div class="assign-group">CBD Cluster</div></td>
               <td>
                 <select class="zone-select" onchange="reassignOutlet(this)">
@@ -284,7 +314,7 @@
               </td>
               <td class="assign-schedule">Mon–Fri · <strong>7–9am</strong> · cutoff 3pm prior day</td>
             </tr>
-            <tr>
+            <tr data-outlet="Bondi Beach">
               <td><div class="assign-outlet">Bondi Beach</div><div class="assign-group">Beachside</div></td>
               <td>
                 <select class="zone-select" onchange="reassignOutlet(this)">
@@ -295,7 +325,7 @@
               </td>
               <td class="assign-schedule">Mon / Wed · <strong>7–9am</strong> · cutoff 1pm prior day</td>
             </tr>
-            <tr>
+            <tr data-outlet="Manly">
               <td><div class="assign-outlet">Manly</div><div class="assign-group">Beachside</div></td>
               <td>
                 <select class="zone-select" onchange="reassignOutlet(this)">
@@ -306,7 +336,7 @@
               </td>
               <td class="assign-schedule">Mon / Wed · <strong>7–9am</strong> · cutoff 1pm prior day</td>
             </tr>
-            <tr>
+            <tr data-outlet="Newtown">
               <td><div class="assign-outlet">Newtown</div><div class="assign-group">Inner West</div></td>
               <td>
                 <select class="zone-select" onchange="reassignOutlet(this)">
@@ -317,7 +347,7 @@
               </td>
               <td class="assign-schedule">Tue / Thu · <strong>2–4pm</strong> · cutoff 12pm prior day</td>
             </tr>
-            <tr>
+            <tr data-outlet="Parramatta">
               <td><div class="assign-outlet">Parramatta</div><div class="assign-group">CBD Cluster</div></td>
               <td>
                 <select class="zone-select" onchange="reassignOutlet(this)">
@@ -371,13 +401,102 @@
   </div>
 </main>
 
+<!-- New zone drawer -->
+<div id="zone-drawer-scrim" class="nb-drawer-scrim" onclick="closeZoneDrawer()"></div>
+<div id="zone-drawer" class="nb-drawer" role="dialog" aria-modal="true">
+  <div class="nb-drawer-head">
+    <div class="nb-drawer-title">New delivery zone</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeZoneDrawer()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body">
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Zone name</div>
+      <div class="form-group">
+        <input id="new-zone-name" class="form-input" type="text" placeholder="e.g. North shore"/>
+      </div>
+      <span class="drawer-error" id="zone-name-error">Enter a name for this zone</span>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Days</div>
+      <div class="day-picker" id="new-zone-days">
+        <button class="day-chip on" data-day="Mon" onclick="toggleDay(this)">M</button>
+        <button class="day-chip on" data-day="Tue" onclick="toggleDay(this)">T</button>
+        <button class="day-chip on" data-day="Wed" onclick="toggleDay(this)">W</button>
+        <button class="day-chip on" data-day="Thu" onclick="toggleDay(this)">T</button>
+        <button class="day-chip on" data-day="Fri" onclick="toggleDay(this)">F</button>
+        <button class="day-chip" data-day="Sat" onclick="toggleDay(this)">S</button>
+        <button class="day-chip" data-day="Sun" onclick="toggleDay(this)">S</button>
+      </div>
+      <span class="drawer-error" id="zone-days-error">Select at least one day</span>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Delivery window &amp; cutoff</div>
+      <div class="form-row cols-3">
+        <div class="form-group">
+          <label class="form-label" for="new-zone-window">Window</label>
+          <select id="new-zone-window" class="form-select">
+            <option>7–9am</option>
+            <option>2–4pm</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="new-zone-cutoff">Order cutoff</label>
+          <input id="new-zone-cutoff" class="form-input" type="time" value="15:00"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="new-zone-relative">Relative to</label>
+          <select id="new-zone-relative" class="form-select">
+            <option>Prior day</option>
+            <option>Same day</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Assign outlets (optional)</div>
+      <div class="outlet-picker">
+        <label class="outlet-select-all">
+          <input type="checkbox" id="zone-outlet-select-all" onchange="toggleAllZoneOutlets(this.checked)"/>
+          Select all
+        </label>
+        <div class="outlet-list" id="zone-outlet-list"></div>
+        <div class="outlet-picker-footer" id="zone-outlet-footer">0 outlets selected</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" onclick="closeZoneDrawer()">Cancel</button>
+    <button class="btn btn-primary" onclick="submitZone()"><i class="ti ti-plus"></i>Add zone</button>
+  </div>
+</div>
+
 <div id="ss-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
 
 <script src="../shared/shell.js?v=10" data-active="seller-settings"></script>
 <script>
+  const OUTLETS = [
+    { name:'Surry Hills',   group:'CBD Cluster' },
+    { name:'Circular Quay', group:'CBD Cluster' },
+    { name:'Bondi Beach',   group:'Beachside' },
+    { name:'Manly',         group:'Beachside' },
+    { name:'Newtown',       group:'Inner West' },
+    { name:'Parramatta',    group:'CBD Cluster' },
+  ];
+  const DAY_ORDER = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
   document.addEventListener('DOMContentLoaded', () => {
     NomniShell.init('Settings');
     NomniShell.initStagger();
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && document.getElementById('zone-drawer').classList.contains('open')) closeZoneDrawer();
+    });
   });
 
   const debounceTimers = new WeakMap();
@@ -418,19 +537,237 @@
 
   function toggleDay(btn) {
     btn.classList.toggle('on');
-    saveSection(btn.closest('.card'));
+    const card = btn.closest('.card');
+    if (card) saveSection(card);
+    const zoneRow = btn.closest('.zone-row');
+    if (zoneRow) refreshOutletsInZone(zoneName(zoneRow));
+  }
+
+  /* ── Zone schedule engine — reads live DOM state, no hardcoded maps ── */
+  function zoneName(zoneRow) { return zoneRow.querySelector('.zone-name').value.trim(); }
+
+  function findZoneRow(name) {
+    return [...document.querySelectorAll('.zone-row')].find(r => zoneName(r) === name);
+  }
+
+  function formatDaysLabel(days) {
+    if (!days.length) return 'No days set';
+    if (days.length === 5 && ['Mon','Tue','Wed','Thu','Fri'].every(d => days.includes(d))) return 'Mon–Fri';
+    if (days.length === 7) return 'Daily';
+    return days.join(' / ');
+  }
+
+  function formatCutoffLabel(time24, relative) {
+    if (!time24) return '—';
+    const [h, m] = time24.split(':').map(Number);
+    const period = h >= 12 ? 'pm' : 'am';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    const label = m ? (h12 + ':' + String(m).padStart(2, '0') + period) : (h12 + period);
+    return 'cutoff ' + label + ' ' + relative.toLowerCase();
+  }
+
+  function getZoneSchedule(zoneRow) {
+    const days = [...zoneRow.querySelectorAll('.day-chip.on')]
+      .map(chip => chip.dataset.day)
+      .sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+    const window = zoneRow.querySelector('.zone-select').value;
+    const cutoffTime = zoneRow.querySelector('.zone-time').value;
+    const relative = zoneRow.querySelectorAll('.zone-select')[1].value;
+    return formatDaysLabel(days) + ' · <strong>' + window + '</strong> · ' + formatCutoffLabel(cutoffTime, relative);
+  }
+
+  function refreshOutletsInZone(zoneNameStr) {
+    const zoneRow = findZoneRow(zoneNameStr);
+    if (!zoneRow) return;
+    const scheduleHtml = getZoneSchedule(zoneRow);
+    document.querySelectorAll('.assign-table tbody tr').forEach(row => {
+      const select = row.querySelector('.zone-select');
+      if (select && select.value === zoneNameStr) {
+        row.querySelector('.assign-schedule').innerHTML = scheduleHtml;
+      }
+    });
+  }
+
+  function recomputeZoneCounts() {
+    document.querySelectorAll('.zone-row').forEach(zoneRow => {
+      const name = zoneName(zoneRow);
+      const count = [...document.querySelectorAll('.assign-table .zone-select')].filter(s => s.value === name).length;
+      zoneRow.querySelector('.zone-outlet-count').textContent = count + (count === 1 ? ' outlet' : ' outlets');
+    });
+  }
+
+  function renameZone(input) {
+    const oldName = input.dataset.prev;
+    const newName = input.value.trim();
+    if (!newName) { input.value = oldName; return; }
+    if (newName === oldName) return;
+    if (findZoneRow(newName) && findZoneRow(newName) !== input.closest('.zone-row')) {
+      ssToast('A zone named "' + newName + '" already exists.');
+      input.value = oldName;
+      return;
+    }
+    document.querySelectorAll('.assign-table .zone-select').forEach(select => {
+      const opt = [...select.options].find(o => o.textContent === oldName);
+      if (opt) opt.textContent = newName;
+    });
+    input.dataset.prev = newName;
+    saveSection(input.closest('.card'));
+    recomputeZoneCounts();
+    ssToast('Zone renamed to "' + newName + '".');
   }
 
   function reassignOutlet(select) {
     const row = select.closest('tr');
     const zone = select.value;
-    const schedules = {
-      'City': 'Mon–Fri · <strong>7–9am</strong> · cutoff 3pm prior day',
-      'East suburbs': 'Mon / Wed · <strong>7–9am</strong> · cutoff 1pm prior day',
-      'Inner West & West': 'Tue / Thu · <strong>2–4pm</strong> · cutoff 12pm prior day',
-    };
-    row.querySelector('.assign-schedule').innerHTML = schedules[zone] || '—';
+    const zoneRow = findZoneRow(zone);
+    row.querySelector('.assign-schedule').innerHTML = zoneRow ? getZoneSchedule(zoneRow) : '—';
+    recomputeZoneCounts();
     ssToast('Moved to ' + zone + ' — new schedule applied.');
+  }
+
+  /* ── New zone drawer ── */
+  function openZoneDrawer() {
+    document.getElementById('new-zone-name').value = '';
+    document.getElementById('new-zone-name').classList.remove('has-error');
+    document.getElementById('zone-name-error').classList.remove('show-error');
+    document.getElementById('zone-days-error').classList.remove('show-error');
+    document.getElementById('new-zone-window').value = '7–9am';
+    document.getElementById('new-zone-cutoff').value = '15:00';
+    document.getElementById('new-zone-relative').value = 'Prior day';
+    document.querySelectorAll('#new-zone-days .day-chip').forEach(chip =>
+      chip.classList.toggle('on', ['Mon','Tue','Wed','Thu','Fri'].includes(chip.dataset.day)));
+
+    const list = document.getElementById('zone-outlet-list');
+    list.innerHTML = OUTLETS.map(o => `
+      <label class="outlet-item">
+        <input type="checkbox" value="${o.name}" onchange="updateZoneOutletFooter()">
+        <div class="outlet-item-body">
+          <div class="outlet-item-name">${o.name}</div>
+          <div class="outlet-item-meta">${o.group}</div>
+        </div>
+      </label>`).join('');
+    document.getElementById('zone-outlet-select-all').checked = false;
+    updateZoneOutletFooter();
+
+    document.getElementById('zone-drawer-scrim').classList.add('open');
+    document.getElementById('zone-drawer').classList.add('open');
+  }
+
+  function closeZoneDrawer() {
+    document.getElementById('zone-drawer-scrim').classList.remove('open');
+    document.getElementById('zone-drawer').classList.remove('open');
+  }
+
+  function toggleAllZoneOutlets(checked) {
+    document.querySelectorAll('#zone-outlet-list input[type=checkbox]').forEach(cb => cb.checked = checked);
+    updateZoneOutletFooter();
+  }
+
+  function updateZoneOutletFooter() {
+    const all = document.querySelectorAll('#zone-outlet-list input[type=checkbox]');
+    const checked = [...all].filter(cb => cb.checked);
+    document.getElementById('zone-outlet-footer').innerHTML =
+      checked.length === 0 ? '0 outlets selected' : '<span>' + checked.length + '</span> of ' + all.length + ' outlets selected';
+    const sa = document.getElementById('zone-outlet-select-all');
+    sa.indeterminate = checked.length > 0 && checked.length < all.length;
+    sa.checked = checked.length === all.length;
+  }
+
+  function submitZone() {
+    const nameInput = document.getElementById('new-zone-name');
+    const name = nameInput.value.trim();
+    const days = [...document.querySelectorAll('#new-zone-days .day-chip.on')];
+
+    let valid = true;
+    if (!name) { nameInput.classList.add('has-error'); document.getElementById('zone-name-error').classList.add('show-error'); valid = false; }
+    else { nameInput.classList.remove('has-error'); document.getElementById('zone-name-error').classList.remove('show-error'); }
+    if (!days.length) { document.getElementById('zone-days-error').classList.add('show-error'); valid = false; }
+    else { document.getElementById('zone-days-error').classList.remove('show-error'); }
+    if (!valid) return;
+
+    if (findZoneRow(name)) { ssToast('A zone named "' + name + '" already exists.'); return; }
+
+    const window = document.getElementById('new-zone-window').value;
+    const cutoff = document.getElementById('new-zone-cutoff').value;
+    const relative = document.getElementById('new-zone-relative').value;
+    const dayChipsHtml = DAY_ORDER.map(d => {
+      const on = days.some(chip => chip.dataset.day === d);
+      return '<button class="day-chip' + (on ? ' on' : '') + '" data-day="' + d + '" onclick="toggleDay(this)">' + d[0] + '</button>';
+    }).join('');
+
+    const zoneRow = document.createElement('div');
+    zoneRow.className = 'zone-row';
+    zoneRow.innerHTML = `
+      <div class="zone-head">
+        <div class="zone-name-wrap">
+          <i class="ti ti-map-pin"></i>
+          <input class="zone-name" value="${name}" data-prev="${name}" onchange="renameZone(this)"/>
+        </div>
+        <span class="zone-outlet-count">0 outlets</span>
+        <div class="zone-actions">
+          <button class="btn-danger-ghost" onclick="deleteZone(this)"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+      <div class="zone-body">
+        <div class="zone-field">
+          <span class="zone-field-label">Days</span>
+          <div class="day-picker">${dayChipsHtml}</div>
+        </div>
+        <div class="zone-field">
+          <span class="zone-field-label">Window</span>
+          <select class="zone-select" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))">
+            <option${window === '7–9am' ? ' selected' : ''}>7–9am</option>
+            <option${window === '2–4pm' ? ' selected' : ''}>2–4pm</option>
+          </select>
+        </div>
+        <div class="zone-field">
+          <span class="zone-field-label">Order cutoff</span>
+          <input class="zone-time" type="time" value="${cutoff}" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))"/>
+        </div>
+        <div class="zone-field">
+          <span class="zone-field-label">Relative to</span>
+          <select class="zone-select" onchange="saveSection(this.closest('.card'));refreshOutletsInZone(zoneName(this.closest('.zone-row')))">
+            <option${relative === 'Prior day' ? ' selected' : ''}>Prior day</option>
+            <option${relative === 'Same day' ? ' selected' : ''}>Same day</option>
+          </select>
+        </div>
+      </div>`;
+    document.getElementById('zone-list').appendChild(zoneRow);
+
+    document.querySelectorAll('.assign-table .zone-select').forEach(select => {
+      const opt = document.createElement('option');
+      opt.textContent = name;
+      select.appendChild(opt);
+    });
+
+    const selectedOutlets = [...document.querySelectorAll('#zone-outlet-list input:checked')].map(cb => cb.value);
+    selectedOutlets.forEach(outletName => {
+      const row = document.querySelector('.assign-table tr[data-outlet="' + outletName + '"]');
+      if (!row) return;
+      row.querySelector('.zone-select').value = name;
+      row.querySelector('.assign-schedule').innerHTML = getZoneSchedule(zoneRow);
+    });
+    recomputeZoneCounts();
+
+    closeZoneDrawer();
+    saveSection(zoneRow.closest('.card') || document.querySelector('#zone-list').closest('.card'));
+    ssToast('Zone "' + name + '" added' + (selectedOutlets.length ? ' — ' + selectedOutlets.length + ' outlet' + (selectedOutlets.length === 1 ? '' : 's') + ' moved in' : '') + '.');
+  }
+
+  function deleteZone(btn) {
+    const zoneRow = btn.closest('.zone-row');
+    const name = zoneName(zoneRow);
+    const affected = [...document.querySelectorAll('.assign-table .zone-select')].filter(s => s.value === name);
+    zoneRow.remove();
+    document.querySelectorAll('.assign-table .zone-select').forEach(select => {
+      const opt = [...select.options].find(o => o.textContent === name);
+      if (opt) opt.remove();
+    });
+    affected.forEach(select => {
+      select.value = '';
+      select.closest('tr').querySelector('.assign-schedule').textContent = 'Unassigned — pick a zone';
+    });
+    ssToast('Removed ' + name + (affected.length ? ' — ' + affected.length + ' outlet' + (affected.length === 1 ? '' : 's') + ' now unassigned' : '') + '.');
   }
 
   function ssToast(msg) {
