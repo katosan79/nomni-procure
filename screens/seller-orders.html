@@ -51,10 +51,11 @@
     .orders-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
     .orders-table tbody tr:last-child td { border-bottom:none; }
     .orders-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
-    .po-id { font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; }
-    .po-agent { font-size:11px; color:var(--text-soft); display:flex; align-items:center; gap:4px; margin-top:1px; }
-    .from-outlet { font-weight:600; color:var(--text); }
-    .from-group { font-size:11px; color:var(--text-soft); }
+    .orders-table td:first-child { white-space:nowrap; }
+    .po-id { font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; white-space:nowrap; }
+    .po-agent { font-size:11px; color:var(--text-soft); display:flex; align-items:center; gap:4px; margin-top:1px; white-space:nowrap; }
+    .from-outlet { font-weight:600; color:var(--text); white-space:nowrap; }
+    .from-group { font-size:11px; color:var(--text-soft); white-space:nowrap; }
     .col-num { text-align:right; font-feature-settings:'tnum' 1; font-weight:600; color:var(--text); }
     .status-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
     .status-pill.new       { color:var(--status-info-fg); background:var(--status-info-bg); }
