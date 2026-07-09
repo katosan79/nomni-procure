@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Settings — Nomni Supply</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .seller-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); padding:4px 10px; border-radius:var(--radius-pill); margin-bottom:var(--space-sm); }
+    .seller-badge i { font-size:14px; }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+
+    /* Cards */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+    .card-body  { padding:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xl); }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; flex-shrink:0; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-ghost:hover { color:var(--text-accent); }
+    .btn-danger-ghost { background:none; border:none; color:var(--status-risk-fg); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-danger-ghost:hover { opacity:0.75; }
+
+    /* Zones */
+    .zone-list { display:flex; flex-direction:column; gap:var(--space-md); }
+    .zone-row { border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface-soft); }
+    .zone-head { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); }
+    .zone-name-wrap { display:flex; align-items:center; gap:var(--space-sm); flex:1; }
+    .zone-name-wrap i { font-size:16px; color:var(--text-accent); }
+    .zone-name { font-size:14px; font-weight:700; color:var(--text); background:none; border:none; font-family:inherit; padding:0; min-width:0; }
+    .zone-name:focus { outline:none; border-bottom:1.5px solid var(--fern); }
+    .zone-outlet-count { font-size:12px; font-weight:600; color:var(--text-soft); background:var(--surface); border:1px solid var(--border); padding:2px 9px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .zone-body { display:flex; align-items:center; gap:var(--space-xl); flex-wrap:wrap; padding:0 var(--space-lg) var(--space-lg); }
+
+    .day-picker { display:flex; gap:4px; }
+    .day-chip { width:30px; height:30px; border-radius:50%; border:1.5px solid var(--border); background:var(--surface); font-size:11px; font-weight:700; color:var(--text-soft); cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; transition:background var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard); }
+    .day-chip:hover { border-color:var(--fern); }
+    .day-chip.on { background:var(--fern); color:#fff; border-color:var(--fern); }
+
+    .zone-field { display:flex; flex-direction:column; gap:4px; }
+    .zone-field-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .zone-select, .zone-time { height:34px; padding-inline:var(--space-sm) var(--space-xl); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; font-weight:600; color:var(--text); background:var(--surface); cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 6px center; }
+    .zone-time { padding-inline:var(--space-sm); background-image:none; cursor:text; }
+    .zone-select:focus, .zone-time:focus { outline:none; border-color:var(--fern); }
+    .zone-actions { display:flex; gap:2px; margin-left:auto; }
+
+    /* Assignment table */
+    .assign-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .assign-table th { padding:var(--space-sm) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .assign-table td { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .assign-table tbody tr:last-child td { border-bottom:none; }
+    .assign-outlet { font-weight:600; color:var(--text); }
+    .assign-group { font-size:11px; color:var(--text-soft); }
+    .assign-schedule { font-size:12px; color:var(--text-soft); }
+    .assign-schedule strong { color:var(--text); }
+
+    /* How this is applied */
+    .how-list { display:flex; flex-direction:column; gap:var(--space-lg); }
+    .how-row { display:flex; gap:var(--space-md); }
+    .how-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:color-mix(in srgb, var(--fern) 12%, transparent); color:var(--fern); font-size:15px; }
+    .how-body { flex:1; }
+    .how-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; }
+    .how-desc  { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .how-desc a { color:var(--text-accent); text-decoration:none; font-weight:600; }
+    .how-desc a:hover { text-decoration:underline; }
+
+    /* Save indicator */
+    .card-save-status { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; white-space:nowrap; opacity:0; transition:opacity var(--dur-2) var(--ease-standard); }
+    .card-save-status.saving { opacity:1; color:var(--text-soft); }
+    .card-save-status.saved  { opacity:1; color:var(--status-ok-fg); }
+    .card-save-status.fading { opacity:0; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <div>
+        <span class="seller-badge"><i class="ti ti-building-warehouse"></i>Sydney Central Kitchen · Seller workspace</span>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-desc">Configure how outlets order from and receive deliveries from this Central Kitchen.</p>
+      </div>
+
+      <!-- Delivery zones -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-map-2"></i>Delivery zones</div>
+            <div class="card-desc">Group outlets by delivery run. Each zone has its own days, time window, and order cutoff.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="ssToast('Add delivery zone…')"><i class="ti ti-plus"></i>Add zone</button>
+        </div>
+        <div class="card-body">
+          <div class="zone-list" id="zone-list">
+
+            <div class="zone-row" data-zone="city">
+              <div class="zone-head">
+                <div class="zone-name-wrap">
+                  <i class="ti ti-map-pin"></i>
+                  <input class="zone-name" value="City" onchange="saveSection(this.closest('.card'))"/>
+                </div>
+                <span class="zone-outlet-count">2 outlets</span>
+                <div class="zone-actions">
+                  <button class="btn-danger-ghost" onclick="ssToast('Removing City zone…')"><i class="ti ti-trash"></i></button>
+                </div>
+              </div>
+              <div class="zone-body">
+                <div class="zone-field">
+                  <span class="zone-field-label">Days</span>
+                  <div class="day-picker" data-days="Mon,Tue,Wed,Thu,Fri">
+                    <button class="day-chip on" onclick="toggleDay(this)">M</button>
+                    <button class="day-chip on" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip on" onclick="toggleDay(this)">W</button>
+                    <button class="day-chip on" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip on" onclick="toggleDay(this)">F</button>
+                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                  </div>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Window</span>
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                    <option selected>7–9am</option>
+                    <option>2–4pm</option>
+                  </select>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Order cutoff</span>
+                  <input class="zone-time" type="time" value="15:00" onchange="saveSection(this.closest('.card'))"/>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Relative to</span>
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                    <option selected>Prior day</option>
+                    <option>Same day</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="zone-row" data-zone="east">
+              <div class="zone-head">
+                <div class="zone-name-wrap">
+                  <i class="ti ti-map-pin"></i>
+                  <input class="zone-name" value="East suburbs" onchange="saveSection(this.closest('.card'))"/>
+                </div>
+                <span class="zone-outlet-count">2 outlets</span>
+                <div class="zone-actions">
+                  <button class="btn-danger-ghost" onclick="ssToast('Removing East suburbs zone…')"><i class="ti ti-trash"></i></button>
+                </div>
+              </div>
+              <div class="zone-body">
+                <div class="zone-field">
+                  <span class="zone-field-label">Days</span>
+                  <div class="day-picker" data-days="Mon,Wed">
+                    <button class="day-chip on" onclick="toggleDay(this)">M</button>
+                    <button class="day-chip" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip on" onclick="toggleDay(this)">W</button>
+                    <button class="day-chip" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip" onclick="toggleDay(this)">F</button>
+                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                  </div>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Window</span>
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                    <option selected>7–9am</option>
+                    <option>2–4pm</option>
+                  </select>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Order cutoff</span>
+                  <input class="zone-time" type="time" value="13:00" onchange="saveSection(this.closest('.card'))"/>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Relative to</span>
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                    <option selected>Prior day</option>
+                    <option>Same day</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="zone-row" data-zone="west">
+              <div class="zone-head">
+                <div class="zone-name-wrap">
+                  <i class="ti ti-map-pin"></i>
+                  <input class="zone-name" value="Inner West &amp; West" onchange="saveSection(this.closest('.card'))"/>
+                </div>
+                <span class="zone-outlet-count">2 outlets</span>
+                <div class="zone-actions">
+                  <button class="btn-danger-ghost" onclick="ssToast('Removing Inner West &amp; West zone…')"><i class="ti ti-trash"></i></button>
+                </div>
+              </div>
+              <div class="zone-body">
+                <div class="zone-field">
+                  <span class="zone-field-label">Days</span>
+                  <div class="day-picker" data-days="Tue,Thu">
+                    <button class="day-chip" onclick="toggleDay(this)">M</button>
+                    <button class="day-chip on" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip" onclick="toggleDay(this)">W</button>
+                    <button class="day-chip on" onclick="toggleDay(this)">T</button>
+                    <button class="day-chip" onclick="toggleDay(this)">F</button>
+                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                    <button class="day-chip" onclick="toggleDay(this)">S</button>
+                  </div>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Window</span>
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                    <option>7–9am</option>
+                    <option selected>2–4pm</option>
+                  </select>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Order cutoff</span>
+                  <input class="zone-time" type="time" value="12:00" onchange="saveSection(this.closest('.card'))"/>
+                </div>
+                <div class="zone-field">
+                  <span class="zone-field-label">Relative to</span>
+                  <select class="zone-select" onchange="saveSection(this.closest('.card'))">
+                    <option selected>Prior day</option>
+                    <option>Same day</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Outlet assignment -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-building-store"></i>Outlet assignment</div>
+            <div class="card-desc">Which zone each outlet belongs to. Moving an outlet to a new zone changes its delivery schedule immediately.</div>
+          </div>
+        </div>
+        <table class="assign-table">
+          <thead>
+            <tr><th>Outlet</th><th>Zone</th><th>Resulting schedule</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="assign-outlet">Surry Hills</div><div class="assign-group">CBD Cluster</div></td>
+              <td>
+                <select class="zone-select" onchange="reassignOutlet(this)">
+                  <option selected>City</option>
+                  <option>East suburbs</option>
+                  <option>Inner West &amp; West</option>
+                </select>
+              </td>
+              <td class="assign-schedule">Mon–Fri · <strong>7–9am</strong> · cutoff 3pm prior day</td>
+            </tr>
+            <tr>
+              <td><div class="assign-outlet">Circular Quay</div><div class="assign-group">CBD Cluster</div></td>
+              <td>
+                <select class="zone-select" onchange="reassignOutlet(this)">
+                  <option selected>City</option>
+                  <option>East suburbs</option>
+                  <option>Inner West &amp; West</option>
+                </select>
+              </td>
+              <td class="assign-schedule">Mon–Fri · <strong>7–9am</strong> · cutoff 3pm prior day</td>
+            </tr>
+            <tr>
+              <td><div class="assign-outlet">Bondi Beach</div><div class="assign-group">Beachside</div></td>
+              <td>
+                <select class="zone-select" onchange="reassignOutlet(this)">
+                  <option>City</option>
+                  <option selected>East suburbs</option>
+                  <option>Inner West &amp; West</option>
+                </select>
+              </td>
+              <td class="assign-schedule">Mon / Wed · <strong>7–9am</strong> · cutoff 1pm prior day</td>
+            </tr>
+            <tr>
+              <td><div class="assign-outlet">Manly</div><div class="assign-group">Beachside</div></td>
+              <td>
+                <select class="zone-select" onchange="reassignOutlet(this)">
+                  <option>City</option>
+                  <option selected>East suburbs</option>
+                  <option>Inner West &amp; West</option>
+                </select>
+              </td>
+              <td class="assign-schedule">Mon / Wed · <strong>7–9am</strong> · cutoff 1pm prior day</td>
+            </tr>
+            <tr>
+              <td><div class="assign-outlet">Newtown</div><div class="assign-group">Inner West</div></td>
+              <td>
+                <select class="zone-select" onchange="reassignOutlet(this)">
+                  <option>City</option>
+                  <option>East suburbs</option>
+                  <option selected>Inner West &amp; West</option>
+                </select>
+              </td>
+              <td class="assign-schedule">Tue / Thu · <strong>2–4pm</strong> · cutoff 12pm prior day</td>
+            </tr>
+            <tr>
+              <td><div class="assign-outlet">Parramatta</div><div class="assign-group">CBD Cluster</div></td>
+              <td>
+                <select class="zone-select" onchange="reassignOutlet(this)">
+                  <option>City</option>
+                  <option>East suburbs</option>
+                  <option selected>Inner West &amp; West</option>
+                </select>
+              </td>
+              <td class="assign-schedule">Tue / Thu · <strong>2–4pm</strong> · cutoff 12pm prior day</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- How this is applied -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-info-circle"></i>How this is applied</div>
+            <div class="card-desc">Where these zones show up across the product.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="how-list">
+            <div class="how-row">
+              <div class="how-icon"><i class="ti ti-shopping-cart"></i></div>
+              <div class="how-body">
+                <div class="how-title">New order</div>
+                <div class="how-desc">When an outlet orders from this Central Kitchen, the next available delivery date is computed from its zone's days and cutoff — the same way an external supplier's delivery schedule works today.</div>
+              </div>
+            </div>
+            <div class="how-row">
+              <div class="how-icon"><i class="ti ti-building-store"></i></div>
+              <div class="how-body">
+                <div class="how-title">Customers</div>
+                <div class="how-desc">The delivery schedule shown on each outlet in <a href="seller-customers.html">Customers</a> reflects its current zone assignment.</div>
+              </div>
+            </div>
+            <div class="how-row">
+              <div class="how-icon"><i class="ti ti-truck-delivery"></i></div>
+              <div class="how-body">
+                <div class="how-title">Fulfilment</div>
+                <div class="how-desc">Dispatch runs in <a href="seller-dispatch.html">Fulfilment</a> are grouped by the same time windows defined here, so a zone change reshapes tomorrow's picking runs immediately.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div id="ss-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=10" data-active="seller-settings"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Settings');
+    NomniShell.initStagger();
+  });
+
+  const debounceTimers = new WeakMap();
+
+  function saveSection(card, delay) {
+    if (!card) return;
+    if (delay) {
+      clearTimeout(debounceTimers.get(card));
+      debounceTimers.set(card, setTimeout(() => saveSection(card), delay));
+      return;
+    }
+    const head = card.querySelector('.card-head');
+    if (!head) return;
+
+    let ind = head.querySelector('.card-save-status');
+    if (!ind) {
+      ind = document.createElement('span');
+      ind.className = 'card-save-status';
+      head.appendChild(ind);
+    }
+
+    clearTimeout(ind._fadeTimer);
+    clearTimeout(ind._doneTimer);
+
+    ind.className = 'card-save-status saving';
+    ind.innerHTML = '<i class="ti ti-loader-2" style="font-size:13px;animation:spin 600ms linear infinite;"></i>Saving…';
+
+    ind._doneTimer = setTimeout(() => {
+      ind.className = 'card-save-status saved';
+      ind.innerHTML = '<i class="ti ti-circle-check" style="font-size:13px;"></i>Saved';
+
+      ind._fadeTimer = setTimeout(() => {
+        ind.classList.add('fading');
+        setTimeout(() => { ind.className = 'card-save-status'; ind.innerHTML = ''; }, 220);
+      }, 2000);
+    }, 600);
+  }
+
+  function toggleDay(btn) {
+    btn.classList.toggle('on');
+    saveSection(btn.closest('.card'));
+  }
+
+  function reassignOutlet(select) {
+    const row = select.closest('tr');
+    const zone = select.value;
+    const schedules = {
+      'City': 'Mon–Fri · <strong>7–9am</strong> · cutoff 3pm prior day',
+      'East suburbs': 'Mon / Wed · <strong>7–9am</strong> · cutoff 1pm prior day',
+      'Inner West & West': 'Tue / Thu · <strong>2–4pm</strong> · cutoff 12pm prior day',
+    };
+    row.querySelector('.assign-schedule').innerHTML = schedules[zone] || '—';
+    ssToast('Moved to ' + zone + ' — new schedule applied.');
+  }
+
+  function ssToast(msg) {
+    const wrap = document.getElementById('ss-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;white-space:nowrap;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>

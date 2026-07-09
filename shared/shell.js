@@ -711,7 +711,7 @@
             </div>
           </div>
           <div class="shell-nav-footer">
-            <a class="shell-nav-item${typeof activeId !== 'undefined' && activeId === 'settings' ? ' active' : ''}" href="settings.html" data-label="Settings" aria-label="Settings">
+            <a class="shell-nav-item${typeof activeId !== 'undefined' && (activeId === 'settings' || activeId === 'seller-settings') ? ' active' : ''}" href="settings.html" id="shell-settings-link" data-label="Settings" aria-label="Settings">
               <i class="ti ti-settings" aria-hidden="true"></i>
               <span class="shell-nav-label">Settings</span>
             </a>
@@ -828,6 +828,8 @@
         if (wm) wm.textContent = role.ws === 'seller' ? 'supply' : 'procure';
         const wmLink = document.querySelector('.shell-wordmark');
         if (wmLink) wmLink.setAttribute('href', role.ws === 'seller' ? 'seller-orders.html' : 'dashboard.html');
+        const settingsLink = document.getElementById('shell-settings-link');
+        if (settingsLink) settingsLink.setAttribute('href', role.ws === 'seller' ? 'seller-settings.html' : 'settings.html');
 
         // Filter buyer nav per role (seller nav is workspace-gated, not role-filtered)
         document.querySelectorAll('.shell-nav-ws[data-ws="buyer"] [data-nav]').forEach(a => {
