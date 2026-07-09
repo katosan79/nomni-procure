@@ -46,9 +46,12 @@
     .btn-ghost:hover { color:var(--text-accent); }
 
     /* Orders table */
+    .orders-table-wrap { overflow-x:auto; }
     .orders-table { width:100%; border-collapse:collapse; font-size:14px; }
-    .orders-table th { padding:var(--space-sm) var(--space-xl); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
-    .orders-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .orders-table th { padding:var(--space-sm) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .orders-table td { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .orders-table th:first-child, .orders-table td:first-child { padding-left:var(--space-xl); }
+    .orders-table th:last-child, .orders-table td:last-child { padding-right:var(--space-xl); }
     .orders-table tbody tr:last-child td { border-bottom:none; }
     .orders-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
     .orders-table td:first-child { white-space:nowrap; }
@@ -170,6 +173,7 @@
             <div class="card-desc">Orders placed by outlets against your catalog. Confirming reserves stock and moves the order to the fulfilment queue.</div>
           </div>
         </div>
+        <div class="orders-table-wrap">
         <table class="orders-table">
           <thead>
             <tr>
@@ -233,6 +237,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <!-- Delivery calendar view -->
