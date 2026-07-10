@@ -122,6 +122,22 @@
     .ld-supplier-subtotal { display:flex; justify-content:flex-end; gap:var(--space-md); padding-top:var(--space-sm); font-size:12px; color:var(--text-soft); }
     .ld-supplier-subtotal strong { color:var(--text); }
     .ld-grand-total { display:flex; justify-content:space-between; align-items:center; padding-top:var(--space-lg); margin-top:var(--space-lg); border-top:1.5px solid var(--border); font-size:15px; font-weight:700; color:var(--text); }
+
+    /* Adjust-stock drawer */
+    .form-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .form-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .form-select { height:40px; padding-inline:var(--space-md) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; width:100%; box-sizing:border-box; }
+    .form-select:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .form-textarea { min-height:64px; padding:var(--space-sm) var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); width:100%; box-sizing:border-box; resize:vertical; }
+    .form-textarea:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .adjust-item-name { font-size:15px; font-weight:700; color:var(--text); }
+    .adjust-item-current { font-size:13px; color:var(--text-soft); margin-top:2px; }
+    .adj-delta { font-weight:700; }
+    .adj-delta.up   { color:var(--status-ok-fg); }
+    .adj-delta.down { color:var(--status-risk-fg); }
+    .adj-reason-pill { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:2px 8px; border-radius:var(--radius-pill); background:var(--surface-soft); border:1px solid var(--border); color:var(--text-soft); white-space:nowrap; }
+    .adj-note { font-size:12px; color:var(--text-soft); }
+    .adj-time { font-size:12px; color:var(--text-soft); white-space:nowrap; }
   </style>
 </head>
 <body>
@@ -172,7 +188,7 @@
         </div>
         <div class="agent-actions">
           <button class="btn btn-primary btn-sm" onclick="reorderAllLow()"><i class="ti ti-shopping-cart-plus"></i>Reorder both</button>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ck-inv-agent-banner').style.display='none'">Dismiss</button>
+          <button class="btn btn-ghost btn-sm" onclick="dismissAgentBanner()">Dismiss</button>
         </div>
       </article>
 
@@ -209,6 +225,23 @@
           </thead>
           <tbody id="raw-tbody"></tbody>
         </table>
+      </div>
+
+      <!-- Recent stock adjustments -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-history"></i>Recent stock adjustments</div>
+            <div class="card-desc">Manual on-hand changes to raw ingredients, each with a reason.</div>
+          </div>
+        </div>
+        <table class="inv-table" id="adjustments-table" style="display:none;">
+          <thead>
+            <tr><th>Ingredient</th><th>Change</th><th>Reason</th><th>Note</th><th style="text-align:right">When</th></tr>
+          </thead>
+          <tbody id="adjustments-tbody"></tbody>
+        </table>
+        <div class="list-empty" id="adjustments-empty">No adjustments logged yet — use "Adjust" on a raw ingredient row above.</div>
       </div>
 
       <!-- Finished goods -->
@@ -289,6 +322,52 @@
   </div>
 </div>
 
+<!-- Adjust stock drawer -->
+<div id="adjust-scrim" class="nb-drawer-scrim" onclick="closeAdjustDrawer()"></div>
+<div id="adjust-drawer" class="nb-drawer" role="dialog" aria-modal="true">
+  <div class="nb-drawer-head">
+    <div class="nb-drawer-title">Adjust stock</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeAdjustDrawer()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body">
+    <div class="drawer-section">
+      <div class="drawer-section-label">Ingredient</div>
+      <div class="adjust-item-name" id="adjust-item-name"></div>
+      <div class="adjust-item-current" id="adjust-item-current"></div>
+    </div>
+    <div class="drawer-section">
+      <div class="form-group">
+        <label class="form-label">Reason</label>
+        <select class="form-select" id="adjust-reason">
+          <option value="Stock take">Stock take / count correction</option>
+          <option value="Delivery received">Delivery received</option>
+          <option value="Waste">Waste / spoilage</option>
+          <option value="Production use">Used in production</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="form-group">
+        <label class="form-label">New on-hand quantity</label>
+        <input class="form-input" type="number" min="0" id="adjust-new-qty"/>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="form-group">
+        <label class="form-label">Note <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+        <textarea class="form-textarea" id="adjust-note" placeholder="e.g. Delivery arrived short by 2 units"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" onclick="closeAdjustDrawer()">Cancel</button>
+    <button class="btn btn-primary" onclick="submitAdjustment()"><i class="ti ti-check"></i>Save</button>
+  </div>
+</div>
+
 <div id="inv-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
 
 <script src="../shared/shell.js?v=12" data-active="seller-inventory"></script>
@@ -300,6 +379,8 @@
     renderFinished();
     renderKpis();
     renderLists();
+    renderAgentBanner();
+    renderAdjustments();
   });
 
   // Raw ingredients — kept in sync by hand with the produced items in seller-catalog.html
@@ -344,7 +425,7 @@
         <td class="col-num ${r.onHand < r.par ? 'stock-low' : 'stock-ok'}">${r.onHand}</td>
         <td class="col-num">${r.par}</td>
         <td>${statusHtml(r.onHand, r.par)}</td>
-        <td><div class="row-actions">${r.onHand < r.par ? '<button class="btn btn-outline btn-sm" onclick="reorderRaw(\'' + r.sku + '\')"><i class="ti ti-shopping-cart-plus"></i>Reorder</button>' : '<span style="font-size:12px;color:var(--text-soft);">—</span>'}</div></td>
+        <td><div class="row-actions">${r.onHand < r.par ? '<button class="btn btn-outline btn-sm" onclick="reorderRaw(\'' + r.sku + '\')"><i class="ti ti-shopping-cart-plus"></i>Reorder</button>' : ''}<button class="btn-ghost btn-sm" onclick="openAdjustDrawer('${r.sku}')"><i class="ti ti-adjustments"></i>Adjust</button></div></td>
       </tr>`).join('');
   }
 
@@ -373,6 +454,26 @@
 
     const value = RAW.reduce((sum, r) => sum + r.onHand * r.cost, 0) + FINISHED.reduce((sum, f) => sum + f.onHand * f.cost, 0);
     document.getElementById('kpi-value').textContent = '$' + Math.round(value).toLocaleString('en-AU');
+  }
+
+  /* ── Agent banner (recomputed so it never goes stale after an adjustment) ── */
+  let agentBannerDismissed = false;
+
+  function renderAgentBanner() {
+    const banner = document.getElementById('ck-inv-agent-banner');
+    const low = RAW.filter(r => r.onHand < r.par);
+    if (agentBannerDismissed || !low.length) { banner.style.display = 'none'; return; }
+    banner.style.display = '';
+    banner.querySelector('.agent-headline').textContent =
+      low.length + ' raw ingredient' + (low.length === 1 ? ' is' : 's are') + ' short of par ahead of tomorrow\'s production run.';
+    banner.querySelector('.agent-why').textContent =
+      low.map(r => r.name.split(',')[0] + ' (' + r.onHand + ' on hand, par ' + r.par + ')').join(' and ') +
+      ' won\'t fully cover tomorrow\'s production batch. Reorder today to land before the run.';
+  }
+
+  function dismissAgentBanner() {
+    agentBannerDismissed = true;
+    document.getElementById('ck-inv-agent-banner').style.display = 'none';
   }
 
   /* ── Item lookup by selection key ── */
@@ -603,6 +704,68 @@
     renderLists();
     closeListDetail();
     invToast('"' + list.name + '" deleted.');
+  }
+
+  /* ── Adjust stock ── */
+  const ADJUSTMENTS = [];
+  let adjustSku = null;
+
+  function openAdjustDrawer(sku) {
+    const r = RAW.find(x => x.sku === sku);
+    if (!r) return;
+    adjustSku = sku;
+    document.getElementById('adjust-item-name').textContent = r.name;
+    document.getElementById('adjust-item-current').textContent = 'Currently ' + r.onHand + ' on hand · par ' + r.par;
+    document.getElementById('adjust-reason').value = 'Stock take';
+    document.getElementById('adjust-new-qty').value = r.onHand;
+    document.getElementById('adjust-note').value = '';
+    document.getElementById('adjust-scrim').classList.add('open');
+    document.getElementById('adjust-drawer').classList.add('open');
+  }
+
+  function closeAdjustDrawer() {
+    document.getElementById('adjust-scrim').classList.remove('open');
+    document.getElementById('adjust-drawer').classList.remove('open');
+    adjustSku = null;
+  }
+
+  function submitAdjustment() {
+    const r = RAW.find(x => x.sku === adjustSku);
+    if (!r) return;
+    const newQty = Math.max(0, parseInt(document.getElementById('adjust-new-qty').value, 10));
+    if (isNaN(newQty)) { invToast('Enter a valid quantity.'); return; }
+    const reason = document.getElementById('adjust-reason').value;
+    const note = document.getElementById('adjust-note').value.trim();
+    const previousQty = r.onHand;
+
+    r.onHand = newQty;
+    ADJUSTMENTS.unshift({ name: r.name, from: previousQty, to: newQty, reason, note, at: new Date() });
+
+    renderRaw();
+    renderKpis();
+    renderAgentBanner();
+    renderAdjustments();
+    closeAdjustDrawer();
+    invToast(r.name + ' updated to ' + newQty + ' on hand (' + reason + ').');
+  }
+
+  function renderAdjustments() {
+    const hasAny = ADJUSTMENTS.length > 0;
+    document.getElementById('adjustments-table').style.display = hasAny ? '' : 'none';
+    document.getElementById('adjustments-empty').style.display = hasAny ? 'none' : '';
+    document.getElementById('adjustments-tbody').innerHTML = ADJUSTMENTS.slice(0, 8).map(a => {
+      const delta = a.to - a.from;
+      const deltaHtml = delta === 0
+        ? '<span style="color:var(--text-soft);">No change</span>'
+        : '<span class="adj-delta ' + (delta > 0 ? 'up' : 'down') + '">' + a.from + ' → ' + a.to + ' (' + (delta > 0 ? '+' : '') + delta + ')</span>';
+      return `<tr>
+        <td><div class="item-name">${a.name}</div></td>
+        <td>${deltaHtml}</td>
+        <td><span class="adj-reason-pill">${a.reason}</span></td>
+        <td class="adj-note">${a.note || '—'}</td>
+        <td class="adj-time" style="text-align:right">${a.at.toLocaleTimeString('en-AU', { hour:'numeric', minute:'2-digit' })}</td>
+      </tr>`;
+    }).join('');
   }
 
   function reorderRaw(sku) {
