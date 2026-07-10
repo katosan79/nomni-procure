@@ -74,7 +74,6 @@
     .note-strip a:hover { text-decoration:underline; }
 
     .sel-checkbox { width:16px; height:16px; accent-color:var(--fern); cursor:pointer; }
-    .sel-checkbox:disabled { cursor:not-allowed; opacity:0.3; }
     .col-check { width:1%; white-space:nowrap; }
 
     .bulk-bar { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(0); z-index:70; display:flex; align-items:center; gap:var(--space-lg); background:var(--surface-deep); color:var(--cream); padding:var(--space-md) var(--space-lg); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); }
@@ -89,47 +88,45 @@
     .lists-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
     .list-name { font-weight:600; color:var(--text); }
     .list-empty { padding:var(--space-2xl); text-align:center; color:var(--text-soft); font-size:13px; }
-    .status-pill.draft { color:var(--text-soft); background:var(--surface-soft); border:1px solid var(--border); }
-    .status-pill.sent  { color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); }
 
-    /* Add-to-list drawer */
+    /* Drawers (shared form styling) */
     .drawer-section { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-xl); }
     .drawer-section:last-child { margin-bottom:0; }
     .drawer-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin-bottom:2px; }
+    .form-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .form-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
     .form-input { height:40px; padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); width:100%; box-sizing:border-box; }
     .form-input:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .form-select { height:40px; padding-inline:var(--space-md) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; width:100%; box-sizing:border-box; }
+    .form-select:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .form-textarea { min-height:64px; padding:var(--space-sm) var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); width:100%; box-sizing:border-box; resize:vertical; }
+    .form-textarea:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .picker-empty { font-size:13px; color:var(--text-soft); padding:var(--space-lg); text-align:center; border:1.5px dashed var(--border); border-radius:var(--radius-md); }
+
     .list-pick-item { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; margin-bottom:var(--space-sm); }
     .list-pick-item:hover { border-color:color-mix(in srgb,var(--fern) 55%,var(--border)); }
     .list-pick-item.selected { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 5%,transparent); }
     .list-pick-item input[type=radio] { accent-color:var(--fern); flex-shrink:0; }
     .list-pick-name { font-size:14px; font-weight:600; color:var(--text); }
     .list-pick-meta { font-size:12px; color:var(--text-soft); }
-    .picker-empty { font-size:13px; color:var(--text-soft); padding:var(--space-lg); text-align:center; border:1.5px dashed var(--border); border-radius:var(--radius-md); }
 
     /* List detail drawer */
-    .ld-supplier-group { margin-bottom:var(--space-xl); }
-    .ld-supplier-group:last-child { margin-bottom:0; }
-    .ld-supplier-head { font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-xs); margin-bottom:var(--space-sm); }
-    .ld-line { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-sm) 0; border-bottom:1px solid var(--border); }
-    .ld-line:last-child { border-bottom:none; }
-    .ld-line-name { flex:1; font-size:13px; color:var(--text); font-weight:600; }
-    .ld-line-sku { font-size:11px; color:var(--text-soft); font-weight:400; }
-    .ld-qty-input { width:56px; height:32px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; text-align:right; font-feature-settings:'tnum' 1; }
-    .ld-qty-input:focus { outline:none; border-color:var(--fern); }
-    .ld-line-total { width:70px; text-align:right; font-size:13px; font-weight:600; color:var(--text); font-feature-settings:'tnum' 1; }
-    .ld-line-remove { background:none; border:none; color:var(--text-soft); cursor:pointer; padding:2px; display:flex; }
-    .ld-line-remove:hover { color:var(--status-risk-fg); }
-    .ld-supplier-subtotal { display:flex; justify-content:flex-end; gap:var(--space-md); padding-top:var(--space-sm); font-size:12px; color:var(--text-soft); }
-    .ld-supplier-subtotal strong { color:var(--text); }
-    .ld-grand-total { display:flex; justify-content:space-between; align-items:center; padding-top:var(--space-lg); margin-top:var(--space-lg); border-top:1.5px solid var(--border); font-size:15px; font-weight:700; color:var(--text); }
+    .list-item-row { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-sm) 0; border-bottom:1px solid var(--border); }
+    .list-item-row:last-child { border-bottom:none; }
+    .list-item-name { flex:1; font-size:13px; color:var(--text); font-weight:600; min-width:0; }
+    .list-item-sku { font-size:11px; color:var(--text-soft); font-weight:400; }
+    .list-item-kind { width:90px; flex-shrink:0; font-size:12px; color:var(--text-soft); }
+    .list-item-onhand { width:80px; flex-shrink:0; text-align:right; font-size:12px; color:var(--text-soft); font-feature-settings:'tnum' 1; }
+    .list-item-remove { background:none; border:none; color:var(--text-soft); cursor:pointer; padding:2px; display:flex; flex-shrink:0; }
+    .list-item-remove:hover { color:var(--status-risk-fg); }
+    .count-input { width:64px; flex-shrink:0; height:32px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; text-align:right; font-feature-settings:'tnum' 1; }
+    .count-input:focus { outline:none; border-color:var(--fern); }
+    .count-variance { width:56px; flex-shrink:0; text-align:right; font-size:12px; font-weight:600; font-feature-settings:'tnum' 1; }
+    .count-variance.match { color:var(--status-ok-fg); }
+    .count-variance.diff  { color:var(--status-risk-fg); }
+    .count-hint { font-size:12px; color:var(--text-soft); margin-bottom:var(--space-lg); line-height:1.5; }
 
     /* Adjust-stock drawer */
-    .form-group { display:flex; flex-direction:column; gap:var(--space-xs); }
-    .form-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
-    .form-select { height:40px; padding-inline:var(--space-md) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; width:100%; box-sizing:border-box; }
-    .form-select:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
-    .form-textarea { min-height:64px; padding:var(--space-sm) var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); width:100%; box-sizing:border-box; resize:vertical; }
-    .form-textarea:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
     .adjust-item-name { font-size:15px; font-weight:700; color:var(--text); }
     .adjust-item-current { font-size:13px; color:var(--text-soft); margin-top:2px; }
     .adj-delta { font-weight:700; }
@@ -183,31 +180,31 @@
           <div style="flex:1">
             <div class="agent-label">Vera · Variance agent</div>
             <div class="agent-headline">2 raw ingredients are short of par ahead of tomorrow's production run.</div>
-            <div class="agent-why">Crushed Tomatoes (14 on hand, par 20) and Chicken Thigh (3 on hand, par 6) won't fully cover tomorrow's Napoli Sauce and Skewers batch. Reorder today to land before the run.</div>
+            <div class="agent-why">Crushed Tomatoes (14 on hand, par 20) and Chicken Thigh (3 on hand, par 6) won't fully cover tomorrow's Napoli Sauce and Skewers batch.</div>
           </div>
         </div>
         <div class="agent-actions">
-          <button class="btn btn-primary btn-sm" onclick="reorderAllLow()"><i class="ti ti-shopping-cart-plus"></i>Reorder both</button>
+          <a class="btn btn-primary btn-sm" href="orders.html"><i class="ti ti-shopping-cart"></i>Create purchase order</a>
           <button class="btn btn-ghost btn-sm" onclick="dismissAgentBanner()">Dismiss</button>
         </div>
       </article>
 
-      <!-- Reorder lists -->
+      <!-- SKU lists -->
       <div class="card">
         <div class="card-head">
           <div class="card-head-left">
-            <div class="card-title"><i class="ti ti-list-check"></i>Reorder lists</div>
-            <div class="card-desc">Group items you buy from suppliers into named lists — tick items below, or start one from scratch.</div>
+            <div class="card-title"><i class="ti ti-list-check"></i>SKU lists</div>
+            <div class="card-desc">Group raw ingredients and finished goods by storage area or category — tick items below, or start a list from scratch. Use a list as a count sheet when it's time to do a stock count.</div>
           </div>
           <button class="btn btn-outline btn-sm" onclick="openListPicker()"><i class="ti ti-plus"></i>New list</button>
         </div>
         <table class="lists-table" id="lists-table" style="display:none;">
           <thead>
-            <tr><th>List</th><th style="text-align:right">Items</th><th>Suppliers</th><th style="text-align:right">Est. cost</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+            <tr><th>List</th><th style="text-align:right">Items</th><th>Mix</th><th>Last counted</th><th style="text-align:right">Actions</th></tr>
           </thead>
           <tbody id="lists-tbody"></tbody>
         </table>
-        <div class="list-empty" id="lists-empty">No reorder lists yet. Tick items in the tables below and add them to a new list.</div>
+        <div class="list-empty" id="lists-empty">No lists yet. Tick items in the tables below and add them to a new list.</div>
       </div>
 
       <!-- Raw ingredients -->
@@ -215,7 +212,7 @@
         <div class="card-head">
           <div class="card-head-left">
             <div class="card-title"><i class="ti ti-carrot"></i>Raw ingredients</div>
-            <div class="card-desc">Bought from your suppliers and consumed by production recipes. Par levels set the reorder point.</div>
+            <div class="card-desc">Bought from your suppliers and consumed by production recipes. Par levels flag when it's time to reorder from Purchasing &gt; Orders.</div>
           </div>
           <a class="btn btn-outline btn-sm" href="suppliers.html"><i class="ti ti-truck"></i>Suppliers</a>
         </div>
@@ -232,7 +229,7 @@
         <div class="card-head">
           <div class="card-head-left">
             <div class="card-title"><i class="ti ti-history"></i>Recent stock adjustments</div>
-            <div class="card-desc">Manual on-hand changes to raw ingredients, each with a reason.</div>
+            <div class="card-desc">Manual on-hand changes to raw ingredients — one-off corrections and stock-count updates — each with a reason.</div>
           </div>
         </div>
         <table class="inv-table" id="adjustments-table" style="display:none;">
@@ -241,7 +238,7 @@
           </thead>
           <tbody id="adjustments-tbody"></tbody>
         </table>
-        <div class="list-empty" id="adjustments-empty">No adjustments logged yet — use "Adjust" on a raw ingredient row above.</div>
+        <div class="list-empty" id="adjustments-empty">No adjustments logged yet — use "Adjust" on a raw ingredient row above, or run a stock count from a list.</div>
       </div>
 
       <!-- Finished goods -->
@@ -255,13 +252,13 @@
         </div>
         <table class="inv-table">
           <thead>
-            <tr><th class="col-check"></th><th>Item</th><th>Source</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+            <tr><th class="col-check"><input type="checkbox" class="sel-checkbox" id="fg-select-all" onchange="toggleSelectAllFinished(this.checked)" aria-label="Select all finished goods"/></th><th>Item</th><th>Source</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
           </thead>
           <tbody id="fg-tbody"></tbody>
         </table>
         <div class="note-strip">
           <i class="ti ti-info-circle"></i>
-          <span>On-hand quantities here match <a href="seller-catalog.html">Catalog &amp; prices</a> — this view is for stock monitoring, that one's for pricing and publishing to outlets. Only redistributed items (bought from a supplier) can go in a reorder list — produced items are made in-house.</span>
+          <span>On-hand quantities here match <a href="seller-catalog.html">Catalog &amp; prices</a> — this view is for stock monitoring, that one's for pricing and publishing to outlets. Tick items above to add them to a list.</span>
         </div>
       </div>
 
@@ -280,7 +277,7 @@
 <div id="list-picker-scrim" class="nb-drawer-scrim" onclick="closeListPicker()"></div>
 <div id="list-picker-drawer" class="nb-drawer" role="dialog" aria-modal="true">
   <div class="nb-drawer-head">
-    <div class="nb-drawer-title">Add to reorder list</div>
+    <div class="nb-drawer-title">Add to list</div>
     <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeListPicker()" aria-label="Close">
       <i class="ti ti-x" style="font-size:16px;"></i>
     </button>
@@ -296,7 +293,7 @@
 
     <div class="drawer-section">
       <div class="drawer-section-label">Or create a new list</div>
-      <input class="form-input" id="new-list-name" placeholder="e.g. Weekly produce order" oninput="onNewListNameInput()"/>
+      <input class="form-input" id="new-list-name" placeholder="e.g. Walk-in fridge" oninput="onNewListNameInput()"/>
     </div>
   </div>
   <div class="nb-drawer-foot">
@@ -305,7 +302,7 @@
   </div>
 </div>
 
-<!-- List detail drawer -->
+<!-- List detail / stock count drawer -->
 <div id="list-detail-scrim" class="nb-drawer-scrim" onclick="closeListDetail()"></div>
 <div id="list-detail-drawer" class="nb-drawer" role="dialog" aria-modal="true" style="width:min(560px,94vw);">
   <div class="nb-drawer-head">
@@ -316,9 +313,9 @@
   </div>
   <div class="nb-drawer-body" id="list-detail-body"></div>
   <div class="nb-drawer-foot">
-    <button class="btn btn-outline" id="list-detail-delete" onclick="deleteCurrentList()"><i class="ti ti-trash"></i>Delete list</button>
+    <button class="btn btn-outline" id="list-detail-secondary"></button>
     <div style="flex:1"></div>
-    <button class="btn btn-primary" id="list-detail-send" onclick="sendCurrentList()"><i class="ti ti-send"></i>Send to suppliers</button>
+    <button class="btn btn-primary" id="list-detail-primary"></button>
   </div>
 </div>
 
@@ -425,16 +422,14 @@
         <td class="col-num ${r.onHand < r.par ? 'stock-low' : 'stock-ok'}">${r.onHand}</td>
         <td class="col-num">${r.par}</td>
         <td>${statusHtml(r.onHand, r.par)}</td>
-        <td><div class="row-actions">${r.onHand < r.par ? '<button class="btn btn-outline btn-sm" onclick="reorderRaw(\'' + r.sku + '\')"><i class="ti ti-shopping-cart-plus"></i>Reorder</button>' : ''}<button class="btn-ghost btn-sm" onclick="openAdjustDrawer('${r.sku}')"><i class="ti ti-adjustments"></i>Adjust</button></div></td>
+        <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="openAdjustDrawer('${r.sku}')"><i class="ti ti-adjustments"></i>Adjust</button></div></td>
       </tr>`).join('');
   }
 
   function renderFinished() {
     document.getElementById('fg-tbody').innerHTML = FINISHED.map(f => `
       <tr>
-        <td class="col-check">${f.source === 'redistributed'
-          ? '<input type="checkbox" class="sel-checkbox row-select" data-key="fg:' + f.sku + '" onchange="toggleSelect(\'fg:' + f.sku + '\', this.checked)" ' + (selected.has('fg:' + f.sku) ? 'checked' : '') + ' aria-label="Select ' + f.name + '"/>'
-          : '<input type="checkbox" class="sel-checkbox" disabled title="Produced in-house — not bought from a supplier"/>'}</td>
+        <td class="col-check"><input type="checkbox" class="sel-checkbox row-select" data-key="fg:${f.sku}" onchange="toggleSelect('fg:${f.sku}', this.checked)" ${selected.has('fg:' + f.sku) ? 'checked' : ''} aria-label="Select ${f.name}"/></td>
         <td><div class="item-name">${f.name}</div><div class="item-sku">${f.sku}</div></td>
         <td><span class="src-pill ${f.source}"><i class="ti ${f.source === 'produced' ? 'ti-flask' : 'ti-packages'}"></i>${f.source === 'produced' ? 'Produced' : 'Redistributed'}</span></td>
         <td class="col-num ${f.onHand < f.par ? 'stock-low' : 'stock-ok'}">${f.onHand}</td>
@@ -468,7 +463,7 @@
       low.length + ' raw ingredient' + (low.length === 1 ? ' is' : 's are') + ' short of par ahead of tomorrow\'s production run.';
     banner.querySelector('.agent-why').textContent =
       low.map(r => r.name.split(',')[0] + ' (' + r.onHand + ' on hand, par ' + r.par + ')').join(' and ') +
-      ' won\'t fully cover tomorrow\'s production batch. Reorder today to land before the run.';
+      ' won\'t fully cover tomorrow\'s production batch.';
   }
 
   function dismissAgentBanner() {
@@ -479,8 +474,12 @@
   /* ── Item lookup by selection key ── */
   function itemForKey(key) {
     const [type, sku] = key.split(':');
-    const item = type === 'raw' ? RAW.find(x => x.sku === sku) : FINISHED.find(x => x.sku === sku);
-    return item ? { type, sku, name: item.name, supplier: item.supplier || 'Nomni Supply (internal)', cost: item.cost, suggestedQty: item.par > item.onHand ? (item.par - item.onHand) : 1 } : null;
+    if (type === 'raw') {
+      const r = RAW.find(x => x.sku === sku);
+      return r ? { key, sku, name: r.name, kind: 'Raw', onHand: r.onHand, par: r.par } : null;
+    }
+    const f = FINISHED.find(x => x.sku === sku);
+    return f ? { key, sku, name: f.name, kind: f.source === 'produced' ? 'Produced' : 'Redistributed', onHand: f.onHand, par: f.par } : null;
   }
 
   /* ── Selection state ── */
@@ -489,12 +488,19 @@
   function toggleSelect(key, checked) {
     if (checked) selected.add(key); else selected.delete(key);
     updateBulkBar();
-    document.getElementById('raw-select-all').checked = RAW.every(r => selected.has('raw:' + r.sku));
+    document.getElementById('raw-select-all').checked = RAW.length > 0 && RAW.every(r => selected.has('raw:' + r.sku));
+    document.getElementById('fg-select-all').checked = FINISHED.length > 0 && FINISHED.every(f => selected.has('fg:' + f.sku));
   }
 
   function toggleSelectAllRaw(checked) {
     RAW.forEach(r => checked ? selected.add('raw:' + r.sku) : selected.delete('raw:' + r.sku));
     renderRaw();
+    updateBulkBar();
+  }
+
+  function toggleSelectAllFinished(checked) {
+    FINISHED.forEach(f => checked ? selected.add('fg:' + f.sku) : selected.delete('fg:' + f.sku));
+    renderFinished();
     updateBulkBar();
   }
 
@@ -512,24 +518,26 @@
     document.getElementById('bulk-bar-count').textContent = selected.size + ' item' + (selected.size === 1 ? '' : 's') + ' selected';
   }
 
-  /* ── Reorder lists ── */
+  /* ── SKU lists ── */
   let LISTS = [];
   let nextListId = 1;
   let currentListId = null;
+  let countMode = false;
+  let pickedExistingListId = null;
 
   function renderLists() {
     const hasLists = LISTS.length > 0;
     document.getElementById('lists-table').style.display = hasLists ? '' : 'none';
     document.getElementById('lists-empty').style.display = hasLists ? 'none' : '';
     document.getElementById('lists-tbody').innerHTML = LISTS.map(l => {
-      const suppliers = [...new Set(l.items.map(i => i.supplier))];
-      const cost = l.items.reduce((sum, i) => sum + i.qty * i.cost, 0);
+      const items = l.itemKeys.map(itemForKey).filter(Boolean);
+      const rawCount = items.filter(i => i.kind === 'Raw').length;
+      const fgCount = items.length - rawCount;
       return `<tr>
         <td><div class="list-name">${l.name}</div></td>
-        <td class="col-num">${l.items.length}</td>
-        <td style="font-size:12px;color:var(--text-soft);">${suppliers.join(', ') || '—'}</td>
-        <td class="col-num">$${cost.toFixed(2)}</td>
-        <td><span class="status-pill ${l.sent ? 'sent' : 'draft'}"><i class="ti ${l.sent ? 'ti-circle-check' : 'ti-file-text'}"></i>${l.sent ? 'Sent' : 'Draft'}</span></td>
+        <td class="col-num">${items.length}</td>
+        <td style="font-size:12px;color:var(--text-soft);">${rawCount} raw, ${fgCount} finished</td>
+        <td style="font-size:12px;color:var(--text-soft);">${l.lastCounted ? l.lastCounted.toLocaleDateString('en-AU') : 'Never counted'}</td>
         <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="openListDetail(${l.id})">View<i class="ti ti-chevron-right"></i></button></td>
       </tr>`;
     }).join('');
@@ -552,7 +560,7 @@
           <input type="radio" name="pick-existing-list"/>
           <div>
             <div class="list-pick-name">${l.name}</div>
-            <div class="list-pick-meta">${l.items.length} item${l.items.length === 1 ? '' : 's'}</div>
+            <div class="list-pick-meta">${l.itemKeys.length} item${l.itemKeys.length === 1 ? '' : 's'}</div>
           </div>
         </label>`).join('');
     }
@@ -566,8 +574,6 @@
     document.getElementById('list-picker-scrim').classList.remove('open');
     document.getElementById('list-picker-drawer').classList.remove('open');
   }
-
-  let pickedExistingListId = null;
 
   function selectExistingList(id) {
     pickedExistingListId = id;
@@ -594,7 +600,7 @@
     let list;
 
     if (newName) {
-      list = { id: nextListId++, name: newName, items: [], sent: false };
+      list = { id: nextListId++, name: newName, itemKeys: [], lastCounted: null };
       LISTS.push(list);
     } else if (pickedExistingListId !== null) {
       list = LISTS.find(l => l.id === pickedExistingListId);
@@ -605,10 +611,8 @@
 
     let added = 0;
     selected.forEach(key => {
-      if (list.items.some(i => i.key === key)) return;
-      const item = itemForKey(key);
-      if (!item) return;
-      list.items.push({ key, name: item.name, sku: item.sku, supplier: item.supplier, cost: item.cost, qty: item.suggestedQty });
+      if (list.itemKeys.includes(key)) return;
+      list.itemKeys.push(key);
       added++;
     });
 
@@ -625,58 +629,112 @@
     const list = LISTS.find(l => l.id === id);
     if (!list) return;
     currentListId = id;
+    countMode = false;
     document.getElementById('list-detail-title').textContent = list.name;
-    document.getElementById('list-detail-send').style.display = list.sent ? 'none' : '';
     renderListDetailBody(list);
+    renderListDetailFooter(list);
     document.getElementById('list-detail-scrim').classList.add('open');
     document.getElementById('list-detail-drawer').classList.add('open');
   }
 
+  function renderListDetailFooter(list) {
+    const secondary = document.getElementById('list-detail-secondary');
+    const primary = document.getElementById('list-detail-primary');
+    if (countMode) {
+      secondary.innerHTML = 'Cancel';
+      secondary.onclick = () => { countMode = false; renderListDetailBody(list); renderListDetailFooter(list); };
+      primary.innerHTML = '<i class="ti ti-check"></i>Save count';
+      primary.onclick = () => saveCount(list.id);
+    } else {
+      secondary.innerHTML = '<i class="ti ti-trash"></i>Delete list';
+      secondary.onclick = deleteCurrentList;
+      primary.innerHTML = '<i class="ti ti-clipboard-check"></i>Start count';
+      primary.onclick = () => { countMode = true; renderListDetailBody(list); renderListDetailFooter(list); };
+    }
+  }
+
   function renderListDetailBody(list) {
     const body = document.getElementById('list-detail-body');
-    if (!list.items.length) {
+    const items = list.itemKeys.map(itemForKey).filter(Boolean);
+    if (!items.length) {
       body.innerHTML = '<div class="picker-empty">No items in this list yet. Close this drawer, tick items in the tables, and use "Add to list".</div>';
       return;
     }
-    const bySupplier = {};
-    list.items.forEach(i => { (bySupplier[i.supplier] = bySupplier[i.supplier] || []).push(i); });
-
-    let grandTotal = 0;
-    const groups = Object.keys(bySupplier).map(supplier => {
-      const items = bySupplier[supplier];
-      const subtotal = items.reduce((sum, i) => sum + i.qty * i.cost, 0);
-      grandTotal += subtotal;
-      const lines = items.map(i => `
-        <div class="ld-line">
-          <div class="ld-line-name">${i.name}<span class="ld-line-sku"> · ${i.sku}</span></div>
-          <input class="ld-qty-input" type="number" min="1" value="${i.qty}" ${list.sent ? 'disabled' : ''} onchange="updateListQty(${list.id}, '${i.key}', this.value)"/>
-          <div class="ld-line-total">$${(i.qty * i.cost).toFixed(2)}</div>
-          ${list.sent ? '' : '<button class="ld-line-remove" onclick="removeListItem(' + list.id + ', \'' + i.key + '\')" aria-label="Remove"><i class="ti ti-x"></i></button>'}
-        </div>`).join('');
-      return `<div class="ld-supplier-group">
-        <div class="ld-supplier-head"><i class="ti ti-truck"></i>${supplier}</div>
-        ${lines}
-        <div class="ld-supplier-subtotal">Subtotal <strong>$${subtotal.toFixed(2)}</strong></div>
+    const hint = countMode ? '<div class="count-hint">Enter the counted quantity for each item. Leave blank to skip. Saving updates on-hand to match and logs the change below.</div>' : '';
+    const rows = items.map(i => {
+      if (countMode) {
+        return `<div class="list-item-row" data-key="${i.key}">
+          <div class="list-item-name">${i.name}<span class="list-item-sku"> · ${i.sku}</span></div>
+          <div class="list-item-onhand">sys ${i.onHand}</div>
+          <input class="count-input" type="number" min="0" placeholder="${i.onHand}" data-onhand="${i.onHand}" oninput="onCountInput(this)"/>
+          <div class="count-variance" data-variance></div>
+        </div>`;
+      }
+      return `<div class="list-item-row" data-key="${i.key}">
+        <div class="list-item-name">${i.name}<span class="list-item-sku"> · ${i.sku}</span></div>
+        <div class="list-item-kind">${i.kind}</div>
+        <div class="list-item-onhand">${i.onHand} / par ${i.par}</div>
+        <button class="list-item-remove" onclick="removeFromList(${list.id}, '${i.key}')" aria-label="Remove"><i class="ti ti-x"></i></button>
       </div>`;
     }).join('');
-
-    body.innerHTML = groups + `<div class="ld-grand-total"><span>Total</span><span>$${grandTotal.toFixed(2)}</span></div>`;
+    body.innerHTML = hint + rows;
   }
 
-  function updateListQty(listId, key, value) {
+  function onCountInput(input) {
+    const onHand = Number(input.dataset.onhand);
+    const varianceEl = input.closest('.list-item-row').querySelector('[data-variance]');
+    if (input.value === '') { varianceEl.textContent = ''; varianceEl.className = 'count-variance'; return; }
+    const variance = parseInt(input.value, 10) - onHand;
+    varianceEl.textContent = (variance > 0 ? '+' : '') + variance;
+    varianceEl.className = 'count-variance ' + (variance === 0 ? 'match' : 'diff');
+  }
+
+  function saveCount(listId) {
     const list = LISTS.find(l => l.id === listId);
     if (!list) return;
-    const item = list.items.find(i => i.key === key);
-    if (!item) return;
-    item.qty = Math.max(1, parseInt(value, 10) || 1);
-    renderListDetailBody(list);
+    const rows = document.querySelectorAll('#list-detail-body .list-item-row');
+    let updated = 0, unchanged = 0;
+    rows.forEach(row => {
+      const input = row.querySelector('.count-input');
+      if (!input || input.value === '') return;
+      const counted = parseInt(input.value, 10);
+      if (isNaN(counted)) return;
+      const item = itemForKey(row.dataset.key);
+      if (!item) return;
+      if (counted === item.onHand) { unchanged++; return; }
+      applyCount(row.dataset.key, counted, list.name);
+      updated++;
+    });
+    list.lastCounted = new Date();
+    countMode = false;
+
+    renderRaw();
+    renderFinished();
+    renderKpis();
+    renderAgentBanner();
+    renderAdjustments();
     renderLists();
+    renderListDetailBody(list);
+    renderListDetailFooter(list);
+    invToast('Count saved for "' + list.name + '" — ' + updated + ' updated, ' + unchanged + ' matched.');
   }
 
-  function removeListItem(listId, key) {
+  function applyCount(key, counted, listName) {
+    const [type, sku] = key.split(':');
+    const source = type === 'raw' ? RAW : FINISHED;
+    const record = source.find(x => x.sku === sku);
+    if (!record) return;
+    const previous = record.onHand;
+    record.onHand = counted;
+    if (type === 'raw') {
+      ADJUSTMENTS.unshift({ name: record.name, from: previous, to: counted, reason: 'Stock count · ' + listName, note: '', at: new Date() });
+    }
+  }
+
+  function removeFromList(listId, key) {
     const list = LISTS.find(l => l.id === listId);
     if (!list) return;
-    list.items = list.items.filter(i => i.key !== key);
+    list.itemKeys = list.itemKeys.filter(k => k !== key);
     renderListDetailBody(list);
     renderLists();
   }
@@ -685,16 +743,7 @@
     document.getElementById('list-detail-scrim').classList.remove('open');
     document.getElementById('list-detail-drawer').classList.remove('open');
     currentListId = null;
-  }
-
-  function sendCurrentList() {
-    const list = LISTS.find(l => l.id === currentListId);
-    if (!list || !list.items.length) { invToast('Add at least one item before sending.'); return; }
-    list.sent = true;
-    const suppliers = [...new Set(list.items.map(i => i.supplier))];
-    renderLists();
-    closeListDetail();
-    invToast('"' + list.name + '" sent — draft orders raised with ' + suppliers.join(', ') + '.');
+    countMode = false;
   }
 
   function deleteCurrentList() {
@@ -706,7 +755,7 @@
     invToast('"' + list.name + '" deleted.');
   }
 
-  /* ── Adjust stock ── */
+  /* ── Adjust stock (single-item, raw ingredients only) ── */
   const ADJUSTMENTS = [];
   let adjustSku = null;
 
@@ -766,17 +815,6 @@
         <td class="adj-time" style="text-align:right">${a.at.toLocaleTimeString('en-AU', { hour:'numeric', minute:'2-digit' })}</td>
       </tr>`;
     }).join('');
-  }
-
-  function reorderRaw(sku) {
-    const r = RAW.find(x => x.sku === sku);
-    if (!r) return;
-    invToast('Draft reorder for ' + r.name + ' sent to ' + r.supplier + '.');
-  }
-
-  function reorderAllLow() {
-    RAW.filter(r => r.onHand < r.par).forEach(r => invToast('Draft reorder for ' + r.name + ' sent to ' + r.supplier + '.'));
-    document.getElementById('ck-inv-agent-banner').style.display = 'none';
   }
 
   function invToast(msg) {
