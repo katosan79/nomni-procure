@@ -171,8 +171,6 @@
     .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
     .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
     .status-pill.active::before { background: var(--status-ok-fg); }
-    .status-pill.pending { background: var(--status-warn-bg); color: var(--status-warn-fg); }
-    .status-pill.pending::before { background: var(--status-warn-fg); }
     .status-pill.inactive { background: var(--surface-soft); color: var(--text-soft); }
     .status-pill.inactive::before { background: var(--text-soft); }
 
@@ -447,8 +445,8 @@
       </div>
       <div class="kpi-tile">
         <span class="kpi-label">Active</span>
-        <span class="kpi-value" id="kpi-active">31</span>
-        <span class="kpi-sub">Currently supplying · <span style="color:var(--status-warn-fg);font-weight:600;">4 pending</span></span>
+        <span class="kpi-value" id="kpi-active">32</span>
+        <span class="kpi-sub">Currently supplying</span>
       </div>
       <div class="kpi-tile">
         <span class="kpi-label">Spend YTD</span>
@@ -485,7 +483,6 @@
         <select class="filter-select" aria-label="Filter by status">
           <option value="">All status</option>
           <option>Active</option>
-          <option>Pending</option>
           <option>Inactive</option>
         </select>
       </div>
@@ -720,27 +717,28 @@
               <td class="col-outlets">3 outlets</td>
               <td>
                 <div class="cell-activity">
-                  <div class="activity-last" style="color:var(--text-soft);"><i class="ti ti-clock"></i>No orders yet</div>
-                  <span class="freq-badge none">Pending approval</span>
+                  <div class="activity-last"><i class="ti ti-clock"></i>6 days ago</div>
+                  <span class="freq-badge low"><i class="ti ti-repeat" style="font-size:10px;"></i>Monthly</span>
                 </div>
               </td>
               <td>
                 <div class="cell-spend">
-                  <div class="spend-val" style="color:var(--text-soft);">—</div>
-                  <div class="spend-sub">Not yet active</div>
+                  <div class="spend-val">$9,450</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
                 </div>
               </td>
-              <td><span class="status-pill pending">Pending</span></td>
+              <td><span class="status-pill active">Active</span></td>
               <td class="overflow-cell">
                 <div class="row-actions">
-                  <a class="link-action" href="supplier-detail.html?id=nsw-seafood">Review</a>
+                  <a class="link-action" href="supplier-detail.html?id=nsw-seafood">View</a>
                   <div class="overflow-wrap">
                     <button class="overflow-btn" aria-label="More actions for NSW Seafood Direct" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
                     <div class="overflow-menu" role="menu">
-                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-check"></i>Approve</button>
                       <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Outlet assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
                       <div class="overflow-menu-divider"></div>
-                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-x"></i>Reject</button>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
                     </div>
                   </div>
                 </div>
