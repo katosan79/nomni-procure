@@ -96,6 +96,14 @@
     .allergen-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:var(--space-md); }
     .allergen-item { display:flex; align-items:center; gap:var(--space-sm); font-size:13px; color:var(--text); cursor:pointer; user-select:none; }
 
+    /* Tags */
+    .tag-input-wrap { display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:100%; min-height:var(--control-h); padding:6px var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); box-sizing:border-box; cursor:text; }
+    .tag-input-wrap:focus-within { border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 12%,transparent); }
+    .tag-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px 2px 10px; border-radius:var(--radius-pill); font-size:12px; font-weight:600; background:color-mix(in srgb,var(--fern) 12%,transparent); color:var(--spinach); white-space:nowrap; }
+    .tag-chip .tag-rm { cursor:pointer; opacity:0.6; display:flex; align-items:center; font-size:11px; }
+    .tag-chip .tag-rm:hover { opacity:1; }
+    .tag-input { flex:1; min-width:120px; border:none; outline:none; background:transparent; font-family:inherit; font-size:14px; color:var(--text); }
+
     /* Type-conditional fields */
     .type-fields { display:none; }
     .type-fields.show { display:contents; }
@@ -348,6 +356,13 @@
               <div class="field-group">
                 <label class="field-label" for="recipe-desc">Description <span class="opt">(optional)</span></label>
                 <textarea class="field-textarea" id="recipe-desc" placeholder="Briefly describe this recipe — method, key flavours, or how it's used…" rows="3"></textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="recipe-tag-input">Tags <span class="opt">(optional)</span></label>
+                <div class="tag-input-wrap" id="recipe-tag-wrap" onclick="document.getElementById('recipe-tag-input').focus()">
+                  <input type="text" id="recipe-tag-input" class="tag-input" placeholder="Add a tag and press Enter…" onkeydown="if(event.key==='Enter'){event.preventDefault();addRecipeTag(this);}"/>
+                </div>
+                <p class="helper-text">e.g. "spicy", "seasonal", "customer favourite" — an extra way to identify and search for this recipe.</p>
               </div>
             </div>
           </div>
@@ -727,6 +742,7 @@
                 <div><div class="review-label">Photo</div><div class="review-val" id="r-photo">—</div></div>
                 <div id="r-allergens-row"><div class="review-label">Allergens</div><div class="review-val" id="r-allergens">—</div></div>
                 <div id="r-dietary-row"><div class="review-label">Dietary</div><div class="review-val" id="r-dietary">—</div></div>
+                <div><div class="review-label">Tags</div><div class="review-val" id="r-tags">—</div></div>
               </div>
 
               <div style="border-top:1px solid var(--border);padding-top:var(--space-md);">
@@ -777,6 +793,32 @@
     let selectedType = null;
     let rowId = 0;
     let recipePhotoDataUrl = null;
+    let recipeTags = [];
+
+    // ── Tags ──────────────────────────────────────────────
+    function renderRecipeTags() {
+      const wrap  = document.getElementById('recipe-tag-wrap');
+      const input = document.getElementById('recipe-tag-input');
+      wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+      recipeTags.forEach(t => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+        chip.innerHTML = `${t}<span class="tag-rm" onclick="removeRecipeTag('${t}')"><i class="ti ti-x" aria-hidden="true"></i></span>`;
+        wrap.insertBefore(chip, input);
+      });
+    }
+
+    function addRecipeTag(input) {
+      const val = input.value.trim();
+      if (!val) return;
+      if (!recipeTags.includes(val)) { recipeTags.push(val); renderRecipeTags(); }
+      input.value = '';
+    }
+
+    function removeRecipeTag(val) {
+      recipeTags = recipeTags.filter(t => t !== val);
+      renderRecipeTags();
+    }
 
     // ── Photo upload ──────────────────────────────────────
     function handlePhotoUpload(e) {
@@ -1072,6 +1114,7 @@
       const dietary    = Array.from(document.querySelectorAll('.dietary-cb:checked')).map(cb => cb.value);
       document.getElementById('r-allergens').textContent = allergens.length ? allergens.join(', ') : 'None';
       document.getElementById('r-dietary').textContent   = dietary.length ? dietary.join(', ') : 'None';
+      document.getElementById('r-tags').textContent      = recipeTags.length ? recipeTags.join(', ') : 'None';
 
       const sellRow = document.getElementById('r-sell-row');
       const fcRow   = document.getElementById('r-fc-row');

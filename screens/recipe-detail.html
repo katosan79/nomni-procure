@@ -167,6 +167,12 @@
     .allergen-item { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; color: var(--text); cursor: pointer; user-select: none; }
     .allergen-item input[type="checkbox"] { accent-color: var(--fern); width: 15px; height: 15px; flex-shrink: 0; }
     .allergen-item.inherited { color: var(--text-soft); }
+    .tag-input-wrap { display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:100%; min-height:36px; padding:6px var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); box-sizing:border-box; cursor:text; }
+    .tag-input-wrap:focus-within { border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 12%,transparent); }
+    .tag-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px 2px 10px; border-radius:var(--radius-pill); font-size:12px; font-weight:600; background:color-mix(in srgb,var(--fern) 12%,transparent); color:var(--spinach); white-space:nowrap; }
+    .tag-chip .tag-rm { cursor:pointer; opacity:0.6; display:flex; align-items:center; font-size:11px; }
+    .tag-chip .tag-rm:hover { opacity:1; }
+    .tag-input { flex:1; min-width:120px; border:none; outline:none; background:transparent; font-family:inherit; font-size:13px; color:var(--text); }
     .allergen-note { font-size: 12px; color: var(--text-soft); margin-top: var(--space-xs); }
 
     /* Version list */
@@ -874,6 +880,17 @@
             </div>
           </div>
 
+          <!-- Tags -->
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-tags"></i>Tags</span></div>
+            <div class="card-body">
+              <div class="tag-input-wrap" id="recipe-tag-wrap" onclick="document.getElementById('recipe-tag-input').focus()">
+                <input type="text" id="recipe-tag-input" class="tag-input" placeholder="Add a tag and press Enter…" onkeydown="if(event.key==='Enter'){event.preventDefault();addRecipeTag(this);}"/>
+              </div>
+              <p style="font-size:12px;color:var(--text-soft);margin-top:var(--space-sm);">An additional way to identify and search for this recipe.</p>
+            </div>
+          </div>
+
           <!-- Version history -->
           <div class="card">
             <div class="card-head">
@@ -1200,6 +1217,33 @@
     if (outletExpanded.has(gid)) outletExpanded.add(gid);
   }
 
+  // ─── Tags ────────────────────────────────────────────────────────────────────
+  let recipeTags = ['Vegetarian favourite', 'Brunch'];
+
+  function renderRecipeTags() {
+    const wrap  = document.getElementById('recipe-tag-wrap');
+    const input = document.getElementById('recipe-tag-input');
+    wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+    recipeTags.forEach(t => {
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${t}<span class="tag-rm" onclick="removeRecipeTag('${t}')"><i class="ti ti-x" aria-hidden="true"></i></span>`;
+      wrap.insertBefore(chip, input);
+    });
+  }
+
+  function addRecipeTag(input) {
+    const val = input.value.trim();
+    if (!val) return;
+    if (!recipeTags.includes(val)) { recipeTags.push(val); renderRecipeTags(); showToast('Tag added.'); }
+    input.value = '';
+  }
+
+  function removeRecipeTag(val) {
+    recipeTags = recipeTags.filter(t => t !== val);
+    renderRecipeTags();
+  }
+
   // ─── Toast ───────────────────────────────────────────────────────────────────
   function showToast(msg) {
     const wrap = document.getElementById('toast-wrap');
@@ -1303,6 +1347,7 @@
     renderOutletTree();
     calcLabour();
     renderCostChart();
+    renderRecipeTags();
   });
 </script>
 </body>

@@ -180,6 +180,12 @@
     .period-btn { display:inline-flex;align-items:center;height:26px;padding-inline:var(--space-md);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-soft);font-family:inherit;transition:background 0.1s,color 0.1s; }
     .period-btn:hover { background:var(--surface-soft);color:var(--text); }
     .period-btn.active { background:color-mix(in srgb,#17B3A3 10%,transparent);color:#0E7A6F;border-color:color-mix(in srgb,#17B3A3 30%,transparent); }
+    .tag-input-wrap { display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:100%; min-height:36px; padding:6px var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); box-sizing:border-box; cursor:text; }
+    .tag-input-wrap:focus-within { border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 12%,transparent); }
+    .tag-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px 2px 10px; border-radius:var(--radius-pill); font-size:12px; font-weight:600; background:color-mix(in srgb,var(--fern) 12%,transparent); color:var(--spinach); white-space:nowrap; }
+    .tag-chip .tag-rm { cursor:pointer; opacity:0.6; display:flex; align-items:center; font-size:11px; }
+    .tag-chip .tag-rm:hover { opacity:1; }
+    .tag-input { flex:1; min-width:120px; border:none; outline:none; background:transparent; font-family:inherit; font-size:13px; color:var(--text); }
   </style>
 </head>
 <body>
@@ -607,6 +613,15 @@
         <!-- ── Settings tab ── -->
         <div id="tab-settings" class="tab-panel">
           <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-tags"></i>Tags</span></div>
+            <div class="card-body">
+              <div class="tag-input-wrap" id="recipe-tag-wrap" onclick="document.getElementById('recipe-tag-input').focus()">
+                <input type="text" id="recipe-tag-input" class="tag-input" placeholder="Add a tag and press Enter…" onkeydown="if(event.key==='Enter'){event.preventDefault();addRecipeTag(this);}"/>
+              </div>
+              <p style="font-size:12px;color:var(--text-soft);margin-top:var(--space-sm);">An additional way to identify and search for this recipe.</p>
+            </div>
+          </div>
+          <div class="card">
             <div class="card-head"><span class="card-title"><i class="ti ti-history"></i>Version history</span></div>
             <div class="version-list">
               <div class="version-item">
@@ -766,6 +781,33 @@
     }
   }
 
+  // ── Tags ────────────────────────────────────────────────
+  let recipeTags = ['Artisan', 'Baked daily'];
+
+  function renderRecipeTags() {
+    const wrap  = document.getElementById('recipe-tag-wrap');
+    const input = document.getElementById('recipe-tag-input');
+    wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+    recipeTags.forEach(t => {
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${t}<span class="tag-rm" onclick="removeRecipeTag('${t}')"><i class="ti ti-x" aria-hidden="true"></i></span>`;
+      wrap.insertBefore(chip, input);
+    });
+  }
+
+  function addRecipeTag(input) {
+    const val = input.value.trim();
+    if (!val) return;
+    if (!recipeTags.includes(val)) { recipeTags.push(val); renderRecipeTags(); showToast('Tag added.'); }
+    input.value = '';
+  }
+
+  function removeRecipeTag(val) {
+    recipeTags = recipeTags.filter(t => t !== val);
+    renderRecipeTags();
+  }
+
   function showToast(msg) {
     const wrap = document.getElementById('toast-wrap');
     const t = document.createElement('div');
@@ -867,6 +909,7 @@
     renderScheduleGrid();
     renderCostChart();
     updateAllocTotal();
+    renderRecipeTags();
     // Update KPI
     const totalCost = ING_COST + LABOUR_COST;
     const perUnit = totalCost / BATCH_SIZE;
