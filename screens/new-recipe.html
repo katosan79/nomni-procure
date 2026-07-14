@@ -80,6 +80,22 @@
     .form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-md); }
     .helper-text { font-size:12px; color:var(--text-soft); margin-top:2px; }
 
+    /* Photo upload */
+    .photo-upload-row { display:flex; align-items:center; gap:var(--space-lg); }
+    .photo-upload { position:relative; width:88px; height:88px; border-radius:var(--radius-lg); overflow:hidden; flex-shrink:0; cursor:pointer; border:1.5px dashed var(--border); background:var(--surface-soft); }
+    .photo-upload:hover { border-color:var(--fern); }
+    .photo-upload img { width:100%; height:100%; object-fit:cover; display:block; }
+    .photo-upload-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--text-soft); font-size:10px; font-weight:600; text-align:center; }
+    .photo-upload-placeholder i { font-size:20px; }
+    .photo-upload-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.45); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; opacity:0; transition:opacity 0.15s; }
+    .photo-upload:hover .photo-upload-overlay { opacity:1; }
+    .photo-upload-overlay i { font-size:16px; color:#fff; }
+    .photo-upload-overlay span { font-size:10px; font-weight:600; color:#fff; }
+
+    /* Allergens */
+    .allergen-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:var(--space-md); }
+    .allergen-item { display:flex; align-items:center; gap:var(--space-sm); font-size:13px; color:var(--text); cursor:pointer; user-select:none; }
+
     /* Type-conditional fields */
     .type-fields { display:none; }
     .type-fields.show { display:contents; }
@@ -281,6 +297,24 @@
             </div>
             <div class="card-body gap">
               <div class="field-group">
+                <label class="field-label">Photo <span class="opt">(optional)</span></label>
+                <div class="photo-upload-row">
+                  <div class="photo-upload" onclick="document.getElementById('recipe-photo-input').click()" role="button" tabindex="0" aria-label="Upload recipe photo">
+                    <div class="photo-upload-placeholder" id="photo-placeholder">
+                      <i class="ti ti-camera-plus" aria-hidden="true"></i>
+                      Add photo
+                    </div>
+                    <img id="photo-preview" style="display:none;" alt="Recipe photo preview"/>
+                    <div class="photo-upload-overlay"><i class="ti ti-camera" aria-hidden="true"></i><span>Change</span></div>
+                  </div>
+                  <div>
+                    <p class="helper-text" style="margin-top:0;">Shown on the recipe card and menu display. JPG or PNG.</p>
+                    <button type="button" class="nb-btn ghost sm" id="photo-remove-btn" onclick="removePhoto()" style="display:none;margin-top:var(--space-xs);"><i class="ti ti-trash" aria-hidden="true"></i>Remove photo</button>
+                  </div>
+                  <input type="file" id="recipe-photo-input" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)"/>
+                </div>
+              </div>
+              <div class="field-group">
                 <label class="field-label" for="recipe-name">Recipe name <span style="color:var(--status-risk-fg);" aria-hidden="true">*</span></label>
                 <input class="field-input" type="text" id="recipe-name" placeholder="e.g. Flat White, Hollandaise Sauce, Sourdough Loaf…" autocomplete="off"/>
                 <p class="helper-text">Use the name as it appears on the menu or in the kitchen.</p>
@@ -395,6 +429,56 @@
                 </div>
                 <p class="helper-text">Transfer cost from CK to outlets is calculated at distribution.</p>
               </div>
+            </div>
+          </div>
+
+          <div class="card" id="card-method">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-notes" aria-hidden="true"></i>Method &amp; instructions</span>
+            </div>
+            <div class="card-body gap">
+              <div class="field-group">
+                <label class="field-label" for="recipe-method">Method <span class="opt">(optional)</span></label>
+                <textarea class="field-textarea" id="recipe-method" placeholder="1. …&#10;2. …&#10;3. …" rows="4"></textarea>
+              </div>
+              <div class="form-row">
+                <div class="field-group">
+                  <label class="field-label" for="recipe-yield-note">Yield / portion note <span class="opt">(optional)</span></label>
+                  <input class="field-input" type="text" id="recipe-yield-note" placeholder="e.g. 1 serve · 165mL · served at 65°C"/>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="recipe-shelf-life">Shelf life after prep <span class="opt">(optional)</span></label>
+                  <input class="field-input" type="text" id="recipe-shelf-life" placeholder="e.g. Serve immediately, or 3 days refrigerated"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="card-allergens">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-alert-circle" aria-hidden="true"></i>Allergens &amp; dietary</span>
+            </div>
+            <div class="card-body gap">
+              <div class="field-group">
+                <label class="field-label">Allergens</label>
+                <div class="allergen-grid">
+                  <label class="allergen-item"><input type="checkbox" class="allergen-cb" value="Dairy"/> Dairy</label>
+                  <label class="allergen-item"><input type="checkbox" class="allergen-cb" value="Gluten"/> Gluten</label>
+                  <label class="allergen-item"><input type="checkbox" class="allergen-cb" value="Eggs"/> Eggs</label>
+                  <label class="allergen-item"><input type="checkbox" class="allergen-cb" value="Nuts"/> Nuts</label>
+                  <label class="allergen-item"><input type="checkbox" class="allergen-cb" value="Soy"/> Soy</label>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Dietary information</label>
+                <div class="allergen-grid">
+                  <label class="allergen-item"><input type="checkbox" class="dietary-cb" value="Vegetarian"/> Vegetarian</label>
+                  <label class="allergen-item"><input type="checkbox" class="dietary-cb" value="Vegan"/> Vegan</label>
+                  <label class="allergen-item"><input type="checkbox" class="dietary-cb" value="Gluten-free"/> Gluten-free</label>
+                  <label class="allergen-item"><input type="checkbox" class="dietary-cb" value="Halal"/> Halal</label>
+                </div>
+              </div>
+              <p class="helper-text">Allergens are also auto-inherited from ingredients once added — refine this list later from the recipe's Settings tab.</p>
             </div>
           </div>
         </div>
@@ -640,6 +724,9 @@
                 <div id="r-sell-row"><div class="review-label">Selling price</div><div class="review-val" id="r-sell">—</div></div>
                 <div id="r-fc-row"><div class="review-label">Food cost %</div><div class="review-val" id="r-fc">—</div></div>
                 <div><div class="review-label">Outlets assigned</div><div class="review-val" id="r-outlets">—</div></div>
+                <div><div class="review-label">Photo</div><div class="review-val" id="r-photo">—</div></div>
+                <div id="r-allergens-row"><div class="review-label">Allergens</div><div class="review-val" id="r-allergens">—</div></div>
+                <div id="r-dietary-row"><div class="review-label">Dietary</div><div class="review-val" id="r-dietary">—</div></div>
               </div>
 
               <div style="border-top:1px solid var(--border);padding-top:var(--space-md);">
@@ -689,6 +776,32 @@
     let step = 1;
     let selectedType = null;
     let rowId = 0;
+    let recipePhotoDataUrl = null;
+
+    // ── Photo upload ──────────────────────────────────────
+    function handlePhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        recipePhotoDataUrl = reader.result;
+        const img = document.getElementById('photo-preview');
+        img.src = recipePhotoDataUrl;
+        img.style.display = 'block';
+        document.getElementById('photo-placeholder').style.display = 'none';
+        document.getElementById('photo-remove-btn').style.display = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removePhoto() {
+      recipePhotoDataUrl = null;
+      document.getElementById('recipe-photo-input').value = '';
+      document.getElementById('photo-preview').style.display = 'none';
+      document.getElementById('photo-preview').src = '';
+      document.getElementById('photo-placeholder').style.display = 'flex';
+      document.getElementById('photo-remove-btn').style.display = 'none';
+    }
 
     const TYPE_LABELS = { finished:'Finished recipe', prep:'Preparation recipe', production:'Production batch' };
     const TYPE_HINTS  = {
@@ -952,6 +1065,13 @@
 
       const outletCount = document.querySelectorAll('.outlet-child:checked').length;
       document.getElementById('r-outlets').textContent = outletCount + (outletCount === 1 ? ' outlet' : ' outlets');
+
+      document.getElementById('r-photo').textContent = recipePhotoDataUrl ? 'Added' : 'Not added';
+
+      const allergens = Array.from(document.querySelectorAll('.allergen-cb:checked')).map(cb => cb.value);
+      const dietary    = Array.from(document.querySelectorAll('.dietary-cb:checked')).map(cb => cb.value);
+      document.getElementById('r-allergens').textContent = allergens.length ? allergens.join(', ') : 'None';
+      document.getElementById('r-dietary').textContent   = dietary.length ? dietary.join(', ') : 'None';
 
       const sellRow = document.getElementById('r-sell-row');
       const fcRow   = document.getElementById('r-fc-row');
