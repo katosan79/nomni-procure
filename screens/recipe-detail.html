@@ -120,9 +120,9 @@
     /* Ingredient type indicator */
     .ing-type-r { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; background: color-mix(in srgb, #B05EC0 10%, transparent); color: #7A3D87; vertical-align: 1px; margin-left: 4px; }
 
-    /* Waste input (inline mini) */
-    .waste-input { width: 52px; height: 26px; padding-inline: 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: 'IBM Plex Mono', monospace; background: var(--surface); color: var(--text); text-align: right; outline: none; }
-    .waste-input:focus { border-color: var(--border-focus); }
+    /* Yield input (inline mini) */
+    .yield-input { width: 52px; height: 26px; padding-inline: 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: 'IBM Plex Mono', monospace; background: var(--surface); color: var(--text); text-align: right; outline: none; }
+    .yield-input:focus { border-color: var(--border-focus); }
 
     /* Costing sections */
     .cost-section { display: flex; flex-direction: column; gap: var(--space-lg); }
@@ -398,7 +398,7 @@
                     <th>Ingredient</th>
                     <th class="num">Qty</th>
                     <th>Unit</th>
-                    <th class="num">Waste %</th>
+                    <th class="num">Yield %</th>
                     <th class="num">Unit cost</th>
                     <th class="num">Subtotal</th>
                     <th></th>
@@ -412,7 +412,7 @@
                     </td>
                     <td class="num">2</td>
                     <td>slices</td>
-                    <td class="num"><input class="waste-input" type="number" value="5" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num"><input class="yield-input" type="number" value="95" min="1" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
                     <td class="num" style="font-feature-settings:'tnum' 1;">$0.45</td>
                     <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.95</td>
                     <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
@@ -424,7 +424,7 @@
                     </td>
                     <td class="num">1</td>
                     <td>each</td>
-                    <td class="num"><input class="waste-input" type="number" value="20" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num"><input class="yield-input" type="number" value="83" min="1" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
                     <td class="num" style="font-feature-settings:'tnum' 1;">$2.00</td>
                     <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$2.40</td>
                     <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
@@ -436,7 +436,7 @@
                     </td>
                     <td class="num">50</td>
                     <td>g</td>
-                    <td class="num"><input class="waste-input" type="number" value="10" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num"><input class="yield-input" type="number" value="91" min="1" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
                     <td class="num" style="font-feature-settings:'tnum' 1;">$0.012</td>
                     <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.60</td>
                     <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
@@ -451,7 +451,7 @@
                     </td>
                     <td class="num">30</td>
                     <td>ml</td>
-                    <td class="num"><input class="waste-input" type="number" value="0" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num"><input class="yield-input" type="number" value="100" min="1" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
                     <td class="num" style="font-feature-settings:'tnum' 1;">$0.04</td>
                     <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$1.20</td>
                     <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
@@ -463,7 +463,7 @@
                     </td>
                     <td class="num">5</td>
                     <td>g</td>
-                    <td class="num"><input class="waste-input" type="number" value="0" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num"><input class="yield-input" type="number" value="100" min="1" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
                     <td class="num" style="font-feature-settings:'tnum' 1;">$0.18</td>
                     <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.90</td>
                     <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
@@ -475,7 +475,7 @@
                     </td>
                     <td class="num">10</td>
                     <td>ml</td>
-                    <td class="num"><input class="waste-input" type="number" value="0" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num"><input class="yield-input" type="number" value="100" min="1" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
                     <td class="num" style="font-feature-settings:'tnum' 1;">$0.02</td>
                     <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.20</td>
                     <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
@@ -565,15 +565,15 @@
             <div class="card-body">
               <div class="cost-section">
                 <div class="cost-row">
-                  <div><div class="cost-row-label">Sourdough Bread <span style="color:var(--text-soft);font-weight:400;">× 2 slices</span></div><div class="cost-row-sub">$0.45/slice · 5% waste</div></div>
+                  <div><div class="cost-row-label">Sourdough Bread <span style="color:var(--text-soft);font-weight:400;">× 2 slices</span></div><div class="cost-row-sub">$0.45/slice · 95% yield</div></div>
                   <div class="cost-row-val">$0.95</div>
                 </div>
                 <div class="cost-row">
-                  <div><div class="cost-row-label">Avocado <span style="color:var(--text-soft);font-weight:400;">× 1</span></div><div class="cost-row-sub">$2.00/each · 20% waste</div></div>
+                  <div><div class="cost-row-label">Avocado <span style="color:var(--text-soft);font-weight:400;">× 1</span></div><div class="cost-row-sub">$2.00/each · 83% yield</div></div>
                   <div class="cost-row-val">$2.40</div>
                 </div>
                 <div class="cost-row">
-                  <div><div class="cost-row-label">Cherry Tomatoes <span style="color:var(--text-soft);font-weight:400;">× 50g</span></div><div class="cost-row-sub">$0.012/g · 10% waste</div></div>
+                  <div><div class="cost-row-label">Cherry Tomatoes <span style="color:var(--text-soft);font-weight:400;">× 50g</span></div><div class="cost-row-sub">$0.012/g · 91% yield</div></div>
                   <div class="cost-row-val">$0.60</div>
                 </div>
                 <div class="cost-row">

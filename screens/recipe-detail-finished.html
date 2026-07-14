@@ -82,7 +82,7 @@
     .ing-table tfoot td { padding: var(--space-md) var(--space-lg); border-top: 2px solid var(--border); font-size: 14px; background: var(--surface-soft); }
     .ing-table .total-label { color: var(--text-soft); font-weight: 600; }
     .ing-table .total-val { text-align: right; font-weight: 700; color: var(--text); font-size: 15px; font-feature-settings: 'tnum' 1; }
-    .waste-input { width: 52px; height: 26px; padding-inline: 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: 'IBM Plex Mono',monospace; background: var(--surface); color: var(--text); text-align: right; outline: none; }
+    .yield-input { width: 52px; height: 26px; padding-inline: 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: 'IBM Plex Mono',monospace; background: var(--surface); color: var(--text); text-align: right; outline: none; }
     .cost-section { display: flex; flex-direction: column; gap: var(--space-lg); }
     .cost-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-md) 0; border-bottom: 1px solid var(--border); }
     .cost-row:last-child { border-bottom: none; }
@@ -305,7 +305,7 @@
             </div>
             <div style="overflow-x:auto;">
               <table class="ing-table" aria-label="Ingredient list">
-                <thead><tr><th>Ingredient</th><th class="num">Qty</th><th>Unit</th><th class="num">Waste %</th><th class="num">Unit cost</th><th class="num">Subtotal</th><th></th></tr></thead>
+                <thead><tr><th>Ingredient</th><th class="num">Qty</th><th>Unit</th><th class="num">Yield %</th><th class="num">Unit cost</th><th class="num">Subtotal</th><th></th></tr></thead>
                 <tbody>
                   <tr>
                     <td>
@@ -313,7 +313,7 @@
                       <div style="font-size:12px;color:var(--text-soft);">Coffee beans · ground &amp; pulled</div>
                     </td>
                     <td class="num">60</td><td>mL</td>
-                    <td class="num"><input class="waste-input" type="number" value="0" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num"><input class="yield-input" type="number" value="100" min="1" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
                     <td class="num" style="font-feature-settings:'tnum' 1;">$0.008</td>
                     <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.48</td>
                     <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
@@ -324,7 +324,7 @@
                       <div style="font-size:12px;color:var(--text-soft);">Dairy · whole milk</div>
                     </td>
                     <td class="num">180</td><td>mL</td>
-                    <td class="num"><input class="waste-input" type="number" value="5" min="0" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
+                    <td class="num"><input class="yield-input" type="number" value="95" min="1" max="100"/><span style="font-size:11px;color:var(--text-soft);margin-left:2px;">%</span></td>
                     <td class="num" style="font-feature-settings:'tnum' 1;">$0.0056</td>
                     <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$1.06</td>
                     <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
@@ -401,11 +401,11 @@
             <div class="card-body">
               <div class="cost-section">
                 <div class="cost-row">
-                  <div><div class="cost-row-label">Espresso (double shot) <span style="color:var(--text-soft);font-weight:400;">× 60mL</span></div><div class="cost-row-sub">$0.008/mL · no waste</div></div>
+                  <div><div class="cost-row-label">Espresso (double shot) <span style="color:var(--text-soft);font-weight:400;">× 60mL</span></div><div class="cost-row-sub">$0.008/mL · 100% yield</div></div>
                   <div class="cost-row-val">$0.48</div>
                 </div>
                 <div class="cost-row">
-                  <div><div class="cost-row-label">Full cream milk <span style="color:var(--text-soft);font-weight:400;">× 180mL</span></div><div class="cost-row-sub">$0.0056/mL · 5% waste</div></div>
+                  <div><div class="cost-row-label">Full cream milk <span style="color:var(--text-soft);font-weight:400;">× 180mL</span></div><div class="cost-row-sub">$0.0056/mL · 95% yield</div></div>
                   <div class="cost-row-val">$1.06</div>
                 </div>
               </div>

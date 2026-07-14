@@ -121,6 +121,17 @@
     .ing-input { padding:4px 6px; border:1px solid transparent; border-radius:var(--radius-sm); font-family:inherit; font-size:13px; color:var(--text); background:transparent; transition:border-color 0.1s, background 0.1s; box-sizing:border-box; height:30px; }
     .ing-input:focus { outline:none; border-color:var(--fern); background:var(--surface); }
     .ing-input.num { text-align:right; font-feature-settings:'tnum' 1; }
+    .ing-item-cell { position:relative; }
+    .ing-item-readout { display:flex; flex-direction:column; padding:4px 6px; }
+    .ing-item-readout .name { font-size:13px; color:var(--text); font-weight:500; }
+    .ing-item-readout .meta { font-size:11px; color:var(--text-soft); }
+    .ing-item-change { background:none; border:none; color:var(--text-accent); font-size:11px; font-weight:600; cursor:pointer; padding:0; text-align:left; }
+    .item-options { position:absolute; top:100%; left:0; right:0; margin-top:2px; max-height:220px; overflow-y:auto; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:0 8px 20px rgba(0,0,0,0.12); z-index:30; }
+    .item-option { display:flex; align-items:center; justify-content:space-between; gap:var(--space-sm); padding:7px 10px; cursor:pointer; font-size:13px; }
+    .item-option:hover, .item-option.hl { background:var(--surface-soft); }
+    .item-option .io-name { color:var(--text); font-weight:500; }
+    .item-option .io-meta { color:var(--text-soft); font-size:11px; white-space:nowrap; }
+    .item-option-empty { padding:10px; font-size:12px; color:var(--text-soft); }
     .ing-remove { background:none; border:none; color:var(--text-soft); cursor:pointer; padding:4px; border-radius:var(--radius-sm); font-size:16px; line-height:1; display:flex; align-items:center; justify-content:center; width:28px; height:28px; }
     .ing-remove:hover { color:var(--status-risk-fg); background:var(--status-risk-bg); }
     .ing-subtotal { font-weight:600; font-feature-settings:'tnum' 1; color:var(--text); white-space:nowrap; }
@@ -513,11 +524,11 @@
               <table class="ing-table" aria-label="Ingredients">
                 <thead>
                   <tr>
-                    <th style="min-width:160px;">Ingredient</th>
+                    <th style="min-width:200px;">Ingredient</th>
                     <th class="num" style="width:65px;">Qty</th>
-                    <th style="width:72px;">Unit</th>
+                    <th style="width:64px;">Unit</th>
                     <th class="num" style="width:88px;">Unit cost</th>
-                    <th class="num" style="width:66px;">Waste %</th>
+                    <th class="num" style="width:66px;">Yield %</th>
                     <th class="num" style="width:80px;">Subtotal</th>
                     <th style="width:32px;"></th>
                   </tr>
@@ -931,24 +942,99 @@
     }
 
     // ── Ingredient table ──────────────────────────────────
-    const UNITS = ['g','kg','mL','L','each','slice','tbsp','tsp','bunch','pkg','loaf'];
+    // Controlled item catalog — HQ-managed master list (mirrors items.html).
+    // Ingredients are picked from here; unit and unit cost are auto-populated, not free text.
+    const ITEM_CATALOG = [
+      { id:'INT-0001', name:'Chicken Breast 500g', uom:'kg',     cost:8.40   },
+      { id:'INT-0002', name:'Avocado',              uom:'each',   cost:1.10   },
+      { id:'INT-0003', name:'Feta Cheese',          uom:'kg',     cost:18.50  },
+      { id:'INT-0004', name:'Sourdough Bread',      uom:'loaf',   cost:4.20   },
+      { id:'INT-0005', name:'Olive Oil 1L',         uom:'bottle', cost:12.00  },
+      { id:'INT-0006', name:'Whole Milk 2L',        uom:'carton', cost:2.95   },
+      { id:'INT-0007', name:'Roma Tomatoes',        uom:'kg',     cost:2.80   },
+      { id:'INT-0008', name:'Espresso Beans',       uom:'mL',     cost:0.008  },
+      { id:'INT-0009', name:'Full Cream Milk',      uom:'mL',     cost:0.0056 },
+      { id:'INT-0010', name:'Cherry Tomatoes',      uom:'g',      cost:0.012  },
+      { id:'INT-0011', name:'Micro Herbs',          uom:'g',      cost:0.18   },
+      { id:'INT-0012', name:'Butter, unsalted',     uom:'g',      cost:0.014  },
+    ];
 
-    function addIngredientRow(name='', qty='', unit='g', cost='', waste='0') {
+    function addIngredientRow() {
       rowId++;
       const rid = 'row' + rowId;
-      const opts = UNITS.map(u => `<option${u===unit?' selected':''}>${u}</option>`).join('');
       const tr = document.createElement('tr');
       tr.id = rid;
+      tr.dataset.unitCost = '';
+      tr.dataset.unit = '';
       tr.innerHTML = `
-        <td><input class="ing-input" style="width:100%;" type="text" placeholder="Ingredient…" value="${name}" oninput="recalcRow(this)"/></td>
-        <td><input class="ing-input num" type="number" placeholder="0" value="${qty}" min="0" step="0.1" oninput="recalcRow(this)" style="width:54px;"/></td>
-        <td><select class="ing-input" onchange="recalcRow(this)" style="font-size:12px;padding:2px 4px;width:68px;">${opts}</select></td>
-        <td><div style="position:relative;display:flex;align-items:center;"><span style="position:absolute;left:3px;font-size:11px;color:var(--text-soft);">$</span><input class="ing-input num" type="number" placeholder="0.000" value="${cost}" min="0" step="0.001" oninput="recalcRow(this)" style="width:76px;padding-left:12px;"/></div></td>
-        <td><div style="position:relative;display:flex;align-items:center;"><input class="ing-input num" type="number" placeholder="0" value="${waste}" min="0" max="100" step="1" oninput="recalcRow(this)" style="width:50px;padding-right:14px;"/><span style="position:absolute;right:3px;font-size:11px;color:var(--text-soft);">%</span></div></td>
+        <td class="ing-item-cell">
+          <div id="${rid}-picker">
+            <input class="ing-input item-search" style="width:100%;" type="text" placeholder="Search item…" autocomplete="off"
+              oninput="filterItemOptions('${rid}', this.value)"
+              onfocus="filterItemOptions('${rid}', this.value)"
+              onblur="setTimeout(()=>closeItemOptions('${rid}'),150)"/>
+            <div class="item-options" id="${rid}-options" style="display:none;"></div>
+          </div>
+          <div class="ing-item-readout" id="${rid}-readout" style="display:none;">
+            <span class="name" id="${rid}-readout-name"></span>
+            <button type="button" class="ing-item-change" onclick="changeItem('${rid}')">Change item</button>
+          </div>
+        </td>
+        <td><input class="ing-input num ing-qty" type="number" placeholder="0" min="0" step="0.1" oninput="recalcRow('${rid}')" style="width:54px;"/></td>
+        <td><span class="ing-unit-disp" id="${rid}-unit">—</span></td>
+        <td class="num"><span class="ing-cost-disp" id="${rid}-cost">—</span></td>
+        <td><div style="position:relative;display:flex;align-items:center;"><input class="ing-input num ing-yield" type="number" placeholder="100" value="100" min="1" max="100" step="1" oninput="recalcRow('${rid}')" style="width:50px;padding-right:14px;"/><span style="position:absolute;right:3px;font-size:11px;color:var(--text-soft);">%</span></div></td>
         <td class="num"><span class="ing-subtotal" id="${rid}-sub">—</span></td>
         <td><button class="ing-remove" onclick="removeRow('${rid}')" title="Remove ingredient" aria-label="Remove ingredient"><i class="ti ti-x" aria-hidden="true" style="font-size:14px;"></i></button></td>`;
       document.getElementById('ing-tbody').appendChild(tr);
-      recalcRow(tr.querySelector('input[type="number"]'));
+    }
+
+    function filterItemOptions(rid, query) {
+      const box = document.getElementById(rid + '-options');
+      if (!box) return;
+      const q = (query || '').trim().toLowerCase();
+      const matches = q ? ITEM_CATALOG.filter(it => it.name.toLowerCase().includes(q)) : ITEM_CATALOG;
+      box.innerHTML = matches.length
+        ? matches.slice(0, 8).map(it => `<div class="item-option" onmousedown="event.preventDefault();selectItem('${rid}','${it.id}')"><span class="io-name">${it.name}</span><span class="io-meta">$${it.cost.toFixed(3)}/${it.uom}</span></div>`).join('')
+        : `<div class="item-option-empty">No matching items in the HQ catalog.</div>`;
+      box.style.display = 'block';
+    }
+
+    function closeItemOptions(rid) {
+      const box = document.getElementById(rid + '-options');
+      if (box) box.style.display = 'none';
+    }
+
+    function selectItem(rid, itemId) {
+      const item = ITEM_CATALOG.find(it => it.id === itemId);
+      const tr = document.getElementById(rid);
+      if (!item || !tr) return;
+      tr.dataset.unitCost = item.cost;
+      tr.dataset.unit = item.uom;
+      document.getElementById(rid + '-picker').style.display = 'none';
+      const readout = document.getElementById(rid + '-readout');
+      readout.style.display = 'flex';
+      document.getElementById(rid + '-readout-name').textContent = item.name;
+      document.getElementById(rid + '-unit').textContent = item.uom;
+      document.getElementById(rid + '-cost').textContent = '$' + item.cost.toFixed(3);
+      closeItemOptions(rid);
+      recalcRow(rid);
+    }
+
+    function changeItem(rid) {
+      const tr = document.getElementById(rid);
+      if (!tr) return;
+      tr.dataset.unitCost = '';
+      tr.dataset.unit = '';
+      document.getElementById(rid + '-readout').style.display = 'none';
+      document.getElementById(rid + '-unit').textContent = '—';
+      document.getElementById(rid + '-cost').textContent = '—';
+      const picker = document.getElementById(rid + '-picker');
+      picker.style.display = '';
+      const input = picker.querySelector('.item-search');
+      input.value = '';
+      input.focus();
+      recalcRow(rid);
     }
 
     function removeRow(id) {
@@ -956,15 +1042,14 @@
       recalcAll();
     }
 
-    function recalcRow(input) {
-      const row = input.closest('tr');
+    function recalcRow(rid) {
+      const row = document.getElementById(rid);
       if (!row) return;
-      const nums = row.querySelectorAll('input[type="number"]');
-      const qty   = parseFloat(nums[0]?.value) || 0;
-      const cost  = parseFloat(nums[1]?.value) || 0;
-      const waste = parseFloat(nums[2]?.value) || 0;
-      const sub   = qty * cost * (1 + waste / 100);
-      const subEl = row.querySelector('.ing-subtotal');
+      const qty      = parseFloat(row.querySelector('.ing-qty')?.value) || 0;
+      const yieldPct = parseFloat(row.querySelector('.ing-yield')?.value) || 100;
+      const cost     = parseFloat(row.dataset.unitCost) || 0;
+      const sub      = cost > 0 ? qty * cost / (yieldPct / 100) : 0;
+      const subEl    = row.querySelector('.ing-subtotal');
       if (subEl) subEl.textContent = sub > 0 ? '$' + sub.toFixed(3) : '—';
       recalcAll();
     }
@@ -972,11 +1057,10 @@
     function recalcAll() {
       let total = 0;
       document.querySelectorAll('#ing-tbody tr').forEach(tr => {
-        const nums = tr.querySelectorAll('input[type="number"]');
-        const qty   = parseFloat(nums[0]?.value) || 0;
-        const cost  = parseFloat(nums[1]?.value) || 0;
-        const waste = parseFloat(nums[2]?.value) || 0;
-        total += qty * cost * (1 + waste / 100);
+        const qty      = parseFloat(tr.querySelector('.ing-qty')?.value) || 0;
+        const yieldPct = parseFloat(tr.querySelector('.ing-yield')?.value) || 100;
+        const cost     = parseFloat(tr.dataset.unitCost) || 0;
+        total += cost > 0 ? qty * cost / (yieldPct / 100) : 0;
       });
       document.getElementById('ing-total').textContent   = '$' + total.toFixed(2);
       document.getElementById('cy-ing-cost').textContent = '$' + total.toFixed(2);
