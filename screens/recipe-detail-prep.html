@@ -141,6 +141,28 @@
     .activity-text { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
     .activity-text strong { color: var(--text); font-weight: 600; }
     .activity-time { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .access-tree-wrap { border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .group-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); background: var(--surface); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .group-row:last-child { border-bottom: none; }
+    .group-row:hover { background: var(--surface-soft); }
+    .group-chevron { font-size: 13px; color: var(--text-soft); transition: transform 0.18s; flex-shrink: 0; }
+    .group-chevron.open { transform: rotate(90deg); }
+    .group-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+    .group-outlet-count { font-size: 12px; color: var(--text-soft); }
+    .group-state-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-pill); }
+    .group-state-none { background: var(--surface-soft); color: var(--text-soft); }
+    .group-state-all  { background: var(--mint); color: var(--spinach); }
+    .group-state-some { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .group-toggle { cursor: pointer; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--fern); }
+    .outlet-list { display: none; background: color-mix(in srgb, var(--mint) 15%, transparent); }
+    .outlet-list.open { display: block; }
+    .outlet-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-sm) var(--space-lg) var(--space-sm) calc(var(--space-lg) + 28px); border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+    .outlet-row:last-child { border-bottom: none; }
+    .outlet-row:hover { background: color-mix(in srgb, var(--mint) 40%, transparent); }
+    .outlet-check { cursor: pointer; width: 15px; height: 15px; accent-color: var(--fern); flex-shrink: 0; }
+    .outlet-name { font-size: 13px; color: var(--text); flex: 1; }
+    .info-banner { display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-md) var(--space-lg); background: color-mix(in srgb, var(--sky,#3FC3FB) 8%, transparent); border: 1px solid color-mix(in srgb, var(--sky,#3FC3FB) 22%, transparent); border-radius: var(--radius-md); font-size: 13px; color: var(--text); line-height: 1.5; }
+    .info-banner i { color: #0872C3; font-size: 15px; flex-shrink: 0; margin-top: 1px; }
     .allergen-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: var(--space-md); }
     .allergen-item { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; color: var(--text); cursor: pointer; user-select: none; }
     .allergen-item input[type="checkbox"] { accent-color: var(--fern); width: 15px; height: 15px; flex-shrink: 0; }
@@ -245,6 +267,7 @@
         <div class="tab-nav">
           <button class="tab-nav-btn active" onclick="switchTab('ingredients')"><i class="ti ti-list-details"></i>Ingredients</button>
           <button class="tab-nav-btn" onclick="switchTab('costing')"><i class="ti ti-calculator"></i>Costing</button>
+          <button class="tab-nav-btn" onclick="switchTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
           <button class="tab-nav-btn" onclick="switchTab('used-in')"><i class="ti ti-layers-intersect"></i>Used in <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:color-mix(in srgb,#B05EC0 15%,transparent);color:#7A3D87;border-radius:50%;font-size:10px;font-weight:700;margin-left:2px;">4</span></button>
           <button class="tab-nav-btn" onclick="switchTab('settings')"><i class="ti ti-settings"></i>Settings</button>
         </div>
@@ -493,6 +516,20 @@
           </div>
         </div><!-- /tab-costing -->
 
+        <!-- ── Outlets tab ── -->
+        <div id="tab-outlets" class="tab-panel">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-building-store"></i>Outlet assignment</span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Outlet assignments saved.')"><i class="ti ti-device-floppy"></i>Save</button>
+            </div>
+            <div class="card-body">
+              <p style="font-size:13px;color:var(--text-soft);line-height:1.6;margin-bottom:var(--space-lg);">Select which outlets can prepare or use this preparation. No selling price applies — this only controls which outlets see it in their recipe/prep list.</p>
+              <div class="access-tree-wrap" id="outlet-tree"></div>
+            </div>
+          </div>
+        </div><!-- /tab-outlets -->
+
         <!-- ── Used In tab ── prep-specific -->
         <div id="tab-used-in" class="tab-panel">
           <div class="card">
@@ -640,6 +677,7 @@
               <div class="meta-row"><span class="meta-label">Batch yield</span><span class="meta-val">1,000 mL</span></div>
               <div class="meta-row"><span class="meta-label">Std portion</span><span class="meta-val">30 mL</span></div>
               <div class="meta-row"><span class="meta-label">Used in</span><span class="meta-val">4 recipes</span></div>
+              <div class="meta-row"><span class="meta-label">Assigned outlets</span><a href="#" onclick="switchTab('outlets');return false;" class="meta-val" style="color:var(--text-accent);text-decoration:none;">4 outlets</a></div>
               <div class="meta-row"><span class="meta-label">Selling price</span><span style="font-size:12px;color:var(--text-soft);font-style:italic;">None — prep item</span></div>
               <div class="meta-row"><span class="meta-label">Version</span><span class="meta-val">v2 (current)</span></div>
               <div class="meta-row"><span class="meta-label">Last updated</span><span class="meta-val">3 May 2026</span></div>
@@ -735,6 +773,47 @@
     setTimeout(() => t.remove(), 3000);
   }
 
+  // ── Outlet assignment (which outlets can prepare/use this prep item) ──
+  const OUTLET_GROUPS = [
+    { id:'g1', name:'CBD Cluster',  outlets:['Harbour Kitchen','Darling St Bistro','The CBD Rooftop'] },
+    { id:'g2', name:'Beachside',    outlets:['Bondi Rooftop','Manly Wharf Bar'] },
+    { id:'g3', name:'Suburban',     outlets:['Parramatta Table','Surry Hills Social'] },
+  ];
+  const outletAccess = { g1: new Set(['Harbour Kitchen','Darling St Bistro','The CBD Rooftop']), g2: new Set(['Bondi Rooftop']), g3: new Set() };
+  const outletExpanded = new Set();
+
+  function renderOutletTree() {
+    const tree = document.getElementById('outlet-tree');
+    if (!tree) return;
+    tree.innerHTML = '';
+    OUTLET_GROUPS.forEach(group => {
+      const isExpanded = outletExpanded.has(group.id);
+      const sel = outletAccess[group.id], total = group.outlets.length, count = sel.size;
+      let stateLabel, stateClass;
+      if (count === 0) { stateLabel = 'None'; stateClass = 'group-state-none'; }
+      else if (count === total) { stateLabel = 'All outlets'; stateClass = 'group-state-all'; }
+      else { stateLabel = 'Custom'; stateClass = 'group-state-some'; }
+      const groupRow = document.createElement('div');
+      groupRow.className = 'group-row';
+      groupRow.innerHTML = `<i class="ti ti-chevron-right group-chevron ${isExpanded ? 'open' : ''}"></i><span class="group-name">${group.name}</span><span class="group-outlet-count">${total} outlets</span><span class="group-state-label ${stateClass}">${stateLabel}</span><input type="checkbox" class="group-toggle" id="gcb-${group.id}" ${count === total ? 'checked' : ''} onclick="groupToggle(event,'${group.id}')"/>`;
+      groupRow.addEventListener('click', e => { if (e.target.classList.contains('group-toggle')) return; outletExpanded.has(group.id) ? outletExpanded.delete(group.id) : outletExpanded.add(group.id); renderOutletTree(); });
+      tree.appendChild(groupRow);
+      const cb = groupRow.querySelector(`#gcb-${group.id}`);
+      if (count > 0 && count < total) cb.indeterminate = true;
+      const outletList = document.createElement('div');
+      outletList.className = `outlet-list ${isExpanded ? 'open' : ''}`;
+      group.outlets.forEach(name => {
+        const row = document.createElement('div'); row.className = 'outlet-row';
+        const slug = name.replace(/\s+/g,'-');
+        row.innerHTML = `<input type="checkbox" class="outlet-check" id="oc-${slug}" ${sel.has(name) ? 'checked' : ''} onchange="outletToggle('${group.id}','${name}',this)"/><label class="outlet-name" for="oc-${slug}" style="cursor:pointer;">${name}</label>`;
+        outletList.appendChild(row);
+      });
+      tree.appendChild(outletList);
+    });
+  }
+  function groupToggle(e, gid) { e.stopPropagation(); const g = OUTLET_GROUPS.find(g => g.id === gid); outletAccess[gid] = e.target.checked ? new Set(g.outlets) : new Set(); renderOutletTree(); }
+  function outletToggle(gid, name, cb) { cb.checked ? outletAccess[gid].add(name) : outletAccess[gid].delete(name); renderOutletTree(); if (outletExpanded.has(gid)) outletExpanded.add(gid); }
+
   // ── Cost movement chart ──
   const COST_HISTORY = [
     { l:"Jul '25", s:'Jul', v:9.20 },
@@ -823,7 +902,7 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => { calcLabour(); renderCostChart(); });
+  document.addEventListener('DOMContentLoaded', () => { calcLabour(); renderCostChart(); renderOutletTree(); });
 </script>
 </body>
 </html>
