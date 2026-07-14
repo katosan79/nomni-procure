@@ -218,6 +218,7 @@
             <span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>Beverages</span>
             <span class="nb-pill neutral"><i class="ti ti-building-store" style="font-size:11px;"></i>The Burger Co</span>
             <span class="pos-badge mapped"><i class="ti ti-circles-relation" style="font-size:10px;"></i>POS mapped · PLU 1001</span>
+            <span id="header-tags" style="display:contents;"></span>
           </div>
         </div>
       </div>
@@ -829,6 +830,8 @@
       chip.innerHTML = `${t}<span class="tag-rm" onclick="removeRecipeTag('${t}')"><i class="ti ti-x" aria-hidden="true"></i></span>`;
       wrap.insertBefore(chip, input);
     });
+    const headerEl = document.getElementById('header-tags');
+    if (headerEl) headerEl.innerHTML = recipeTags.map(t => `<span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>${t}</span>`).join('');
   }
 
   function addRecipeTag(input) {

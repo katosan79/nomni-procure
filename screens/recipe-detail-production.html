@@ -213,6 +213,7 @@
             <span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>Bakery</span>
             <span class="nb-pill neutral"><i class="ti ti-clock" style="font-size:11px;"></i>Daily · 4:30 am</span>
             <span class="nb-pill neutral"><i class="ti ti-building-store" style="font-size:11px;"></i>Dispatches to 6 outlets</span>
+            <span id="header-tags" style="display:contents;"></span>
           </div>
         </div>
       </div>
@@ -794,6 +795,8 @@
       chip.innerHTML = `${t}<span class="tag-rm" onclick="removeRecipeTag('${t}')"><i class="ti ti-x" aria-hidden="true"></i></span>`;
       wrap.insertBefore(chip, input);
     });
+    const headerEl = document.getElementById('header-tags');
+    if (headerEl) headerEl.innerHTML = recipeTags.map(t => `<span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>${t}</span>`).join('');
   }
 
   function addRecipeTag(input) {
