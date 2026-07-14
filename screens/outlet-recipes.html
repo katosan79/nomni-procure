@@ -124,6 +124,8 @@
     .status-pill.ok::before { background: var(--status-ok-fg); }
     .status-pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
     .status-pill.warn::before { background: var(--sun); }
+    .status-pill.draft { background: var(--status-info-bg); color: var(--status-info-fg); }
+    .status-pill.draft::before { background: var(--status-info-fg); }
 
     /* Managed by HQ cell */
     .cell-managed {
@@ -469,7 +471,7 @@
               <td><span class="cell-cat">Mains</span></td>
               <td class="cell-price" style="text-align:right">$5.10</td>
               <td class="cell-price" style="text-align:right">$19.00</td>
-              <td><span class="status-pill warn">Pending review</span></td>
+              <td><span class="status-pill draft">Draft</span></td>
               <td>
                 <div class="cell-managed">
                   <span class="hq-badge"><i class="ti ti-lock"></i>HQ</span>
