@@ -950,6 +950,14 @@
     // ── Ingredient table ──────────────────────────────────
     // Controlled item catalog — HQ-managed master list (mirrors items.html).
     // Ingredients are picked from here; unit and unit cost are auto-populated, not free text.
+    // The system's controlled list of units of measure (mirrors new-item.html's UoM select).
+    const SYSTEM_UOMS = {
+      'Weight': ['kg','g','lb'],
+      'Volume': ['L','mL'],
+      'Count':  ['each','dozen','portion','serve'],
+      'Pack':   ['loaf','bottle','can','carton','bag','box','case'],
+    };
+
     // altUnits: alternative UOMs a user can enter quantity in instead of the item's base uom.
     // factor = how many of that alt unit equal 1 base unit (e.g. 1kg = 1000g -> factor:1000).
     const KG_TO_G  = [{ unit:'g', factor:1000 }];
@@ -1116,13 +1124,23 @@
       sel.value = sel.dataset.prevValue || sel.options[0].value;
       closeAddUnitPopover();
       const tr = document.getElementById(rid);
+      const item = ITEM_CATALOG.find(it => it.id === tr.dataset.itemId);
+      if (!item) return;
+      const taken = new Set([item.uom, ...(item.altUnits || []).map(u => u.unit)].map(u => u.toLowerCase()));
+      const groupsHtml = Object.entries(SYSTEM_UOMS).map(([group, units]) => {
+        const opts = units.filter(u => !taken.has(u.toLowerCase())).map(u => `<option value="${u}">${u}</option>`).join('');
+        return opts ? `<optgroup label="${group}">${opts}</optgroup>` : '';
+      }).join('');
       const cell = sel.closest('.ing-unit-cell');
       const pop = document.createElement('div');
       pop.className = 'unit-add-pop';
       pop.id = 'unit-add-pop';
       pop.innerHTML = `
-        <label>New unit name</label>
-        <input type="text" id="new-unit-name" placeholder="e.g. slice" autocomplete="off"/>
+        <label>New unit</label>
+        <select class="field-select" id="new-unit-name" style="height:30px;font-size:12px;">
+          <option value="">Select UoM…</option>
+          ${groupsHtml}
+        </select>
         <label>1 ${tr.dataset.baseUnit} equals how many of this unit?</label>
         <input type="number" id="new-unit-factor" min="0.0001" step="any" placeholder="e.g. 10"/>
         <div class="row">
@@ -1140,9 +1158,13 @@
     function confirmAddUnit(rid) {
       const nameInput   = document.getElementById('new-unit-name');
       const factorInput = document.getElementById('new-unit-factor');
-      const name   = nameInput.value.trim();
+      const name   = nameInput.value;
       const factor = parseFloat(factorInput.value);
-      if (!name || !factor || factor <= 0) {
+      if (!name) {
+        nameInput.style.borderColor = 'var(--status-risk-fg)';
+        return;
+      }
+      if (!factor || factor <= 0) {
         factorInput.style.borderColor = 'var(--status-risk-fg)';
         factorInput.placeholder = 'Enter a number > 0';
         return;
