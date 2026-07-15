@@ -132,6 +132,12 @@
     .item-option .io-name { color:var(--text); font-weight:500; }
     .item-option .io-meta { color:var(--text-soft); font-size:11px; white-space:nowrap; }
     .item-option-empty { padding:10px; font-size:12px; color:var(--text-soft); }
+    .ing-unit-cell { position:relative; }
+    .unit-add-pop { position:absolute; top:100%; left:0; margin-top:2px; z-index:35; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:0 8px 20px rgba(0,0,0,0.14); padding:var(--space-md); display:flex; flex-direction:column; gap:6px; width:200px; }
+    .unit-add-pop label { font-size:11px; font-weight:600; color:var(--text-soft); line-height:1.3; }
+    .unit-add-pop input { height:30px; padding-inline:8px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; color:var(--text); background:var(--surface); }
+    .unit-add-pop input:focus { outline:none; border-color:var(--fern); }
+    .unit-add-pop .row { display:flex; gap:6px; margin-top:2px; }
     .ing-remove { background:none; border:none; color:var(--text-soft); cursor:pointer; padding:4px; border-radius:var(--radius-sm); font-size:16px; line-height:1; display:flex; align-items:center; justify-content:center; width:28px; height:28px; }
     .ing-remove:hover { color:var(--status-risk-fg); background:var(--status-risk-bg); }
     .ing-subtotal { font-weight:600; font-feature-settings:'tnum' 1; color:var(--text); white-space:nowrap; }
@@ -944,27 +950,30 @@
     // ── Ingredient table ──────────────────────────────────
     // Controlled item catalog — HQ-managed master list (mirrors items.html).
     // Ingredients are picked from here; unit and unit cost are auto-populated, not free text.
+    // altUnits: alternative UOMs a user can enter quantity in instead of the item's base uom.
+    // factor = how many of that alt unit equal 1 base unit (e.g. 1kg = 1000g -> factor:1000).
+    const KG_TO_G  = [{ unit:'g', factor:1000 }];
     const ITEM_CATALOG = [
-      { id:'INT-0001', name:'Chicken Breast 500g',            uom:'kg',     cost:8.40  },
-      { id:'INT-0002', name:'Avocado',                        uom:'each',   cost:1.10  },
-      { id:'INT-0003', name:'Feta Cheese',                    uom:'kg',     cost:18.50 },
-      { id:'INT-0004', name:'Sourdough Bread',                uom:'loaf',   cost:4.20  },
-      { id:'INT-0005', name:'Olive Oil 1L',                   uom:'bottle', cost:12.00 },
-      { id:'INT-0006', name:'Whole Milk 2L',                  uom:'carton', cost:2.95  },
-      { id:'INT-0007', name:'Roma Tomatoes',                  uom:'kg',     cost:2.80  },
-      { id:'INT-0008', name:'Salmon Fillet 200g',             uom:'kg',     cost:27.00 },
-      { id:'INT-0009', name:'Free-range Eggs',                uom:'dozen',  cost:6.00  },
-      { id:'INT-0010', name:'Baby Spinach',                   uom:'kg',     cost:6.50  },
-      { id:'INT-0011', name:'Parmesan Cheese',                uom:'kg',     cost:34.00 },
-      { id:'INT-0012', name:'Bacon Rashers',                  uom:'kg',     cost:18.00 },
-      { id:'INT-0013', name:'Fresh Basil',                    uom:'bunch',  cost:2.50  },
-      { id:'INT-0014', name:'Garlic',                         uom:'kg',     cost:7.20  },
-      { id:'INT-0015', name:'Brown Onion',                    uom:'kg',     cost:1.80  },
-      { id:'INT-0016', name:'Cheddar Cheese',                 uom:'kg',     cost:16.00 },
-      { id:'INT-0017', name:'Greek Yogurt',                   uom:'kg',     cost:8.50  },
-      { id:'INT-0018', name:'Plain Flour',                    uom:'kg',     cost:1.30  },
-      { id:'INT-0019', name:'Coffee Beans (Espresso Blend)',  uom:'kg',     cost:28.00 },
-      { id:'INT-0020', name:'Orange Juice',                   uom:'L',      cost:4.50  },
+      { id:'INT-0001', name:'Chicken Breast 500g',            uom:'kg',     cost:8.40,  altUnits:[...KG_TO_G] },
+      { id:'INT-0002', name:'Avocado',                        uom:'each',   cost:1.10,  altUnits:[] },
+      { id:'INT-0003', name:'Feta Cheese',                    uom:'kg',     cost:18.50, altUnits:[...KG_TO_G] },
+      { id:'INT-0004', name:'Sourdough Bread',                uom:'loaf',   cost:4.20,  altUnits:[] },
+      { id:'INT-0005', name:'Olive Oil 1L',                   uom:'bottle', cost:12.00, altUnits:[] },
+      { id:'INT-0006', name:'Whole Milk 2L',                  uom:'carton', cost:2.95,  altUnits:[] },
+      { id:'INT-0007', name:'Roma Tomatoes',                  uom:'kg',     cost:2.80,  altUnits:[...KG_TO_G] },
+      { id:'INT-0008', name:'Salmon Fillet 200g',             uom:'kg',     cost:27.00, altUnits:[...KG_TO_G] },
+      { id:'INT-0009', name:'Free-range Eggs',                uom:'dozen',  cost:6.00,  altUnits:[{ unit:'each', factor:12 }] },
+      { id:'INT-0010', name:'Baby Spinach',                   uom:'kg',     cost:6.50,  altUnits:[...KG_TO_G] },
+      { id:'INT-0011', name:'Parmesan Cheese',                uom:'kg',     cost:34.00, altUnits:[...KG_TO_G] },
+      { id:'INT-0012', name:'Bacon Rashers',                  uom:'kg',     cost:18.00, altUnits:[...KG_TO_G] },
+      { id:'INT-0013', name:'Fresh Basil',                    uom:'bunch',  cost:2.50,  altUnits:[] },
+      { id:'INT-0014', name:'Garlic',                         uom:'kg',     cost:7.20,  altUnits:[...KG_TO_G] },
+      { id:'INT-0015', name:'Brown Onion',                    uom:'kg',     cost:1.80,  altUnits:[...KG_TO_G] },
+      { id:'INT-0016', name:'Cheddar Cheese',                 uom:'kg',     cost:16.00, altUnits:[...KG_TO_G] },
+      { id:'INT-0017', name:'Greek Yogurt',                   uom:'kg',     cost:8.50,  altUnits:[...KG_TO_G] },
+      { id:'INT-0018', name:'Plain Flour',                    uom:'kg',     cost:1.30,  altUnits:[...KG_TO_G] },
+      { id:'INT-0019', name:'Coffee Beans (Espresso Blend)',  uom:'kg',     cost:28.00, altUnits:[...KG_TO_G] },
+      { id:'INT-0020', name:'Orange Juice',                   uom:'L',      cost:4.50,  altUnits:[{ unit:'mL', factor:1000 }] },
     ];
 
     function addIngredientRow() {
@@ -972,8 +981,11 @@
       const rid = 'row' + rowId;
       const tr = document.createElement('tr');
       tr.id = rid;
-      tr.dataset.unitCost = '';
+      tr.dataset.baseCost = '';
+      tr.dataset.baseUnit = '';
       tr.dataset.unit = '';
+      tr.dataset.factor = '1';
+      tr.dataset.itemId = '';
       tr.innerHTML = `
         <td class="ing-item-cell">
           <div id="${rid}-picker">
@@ -989,12 +1001,24 @@
           </div>
         </td>
         <td><input class="ing-input num ing-qty" type="number" placeholder="0" min="0" step="0.1" oninput="recalcRow('${rid}')" style="width:54px;"/></td>
-        <td><span class="ing-unit-disp" id="${rid}-unit">—</span></td>
+        <td class="ing-unit-cell">
+          <span class="ing-unit-disp" id="${rid}-unit">—</span>
+          <select class="ing-input ing-unit-select" id="${rid}-unit-select" style="display:none;font-size:12px;padding:2px 4px;width:76px;" onchange="onUnitChange('${rid}', this)"></select>
+        </td>
         <td class="num"><span class="ing-cost-disp" id="${rid}-cost">—</span></td>
         <td><div style="position:relative;display:flex;align-items:center;"><input class="ing-input num ing-yield" type="number" placeholder="100" value="100" min="1" max="100" step="1" oninput="recalcRow('${rid}')" style="width:50px;padding-right:14px;"/><span style="position:absolute;right:3px;font-size:11px;color:var(--text-soft);">%</span></div></td>
         <td class="num"><span class="ing-subtotal" id="${rid}-sub">—</span></td>
         <td><button class="ing-remove" onclick="removeRow('${rid}')" title="Remove ingredient" aria-label="Remove ingredient"><i class="ti ti-x" aria-hidden="true" style="font-size:14px;"></i></button></td>`;
       document.getElementById('ing-tbody').appendChild(tr);
+    }
+
+    function unitOptionsList(item) {
+      return [{ unit:item.uom, factor:1 }, ...(item.altUnits || [])];
+    }
+
+    function unitOptionsHtml(item, selectedUnit) {
+      return unitOptionsList(item).map(o => `<option value="${o.unit}"${o.unit === selectedUnit ? ' selected' : ''}>${o.unit}</option>`).join('')
+        + `<option value="__add__">+ Add unit…</option>`;
     }
 
     function filterItemOptions(rid, query) {
@@ -1017,31 +1041,126 @@
       const item = ITEM_CATALOG.find(it => it.id === itemId);
       const tr = document.getElementById(rid);
       if (!item || !tr) return;
-      tr.dataset.unitCost = item.cost;
-      tr.dataset.unit = item.uom;
+      tr.dataset.itemId   = item.id;
+      tr.dataset.baseCost = item.cost;
+      tr.dataset.baseUnit = item.uom;
+      tr.dataset.unit     = item.uom;
+      tr.dataset.factor   = '1';
       document.getElementById(rid + '-picker').style.display = 'none';
       const readout = document.getElementById(rid + '-readout');
       readout.style.display = 'flex';
       document.getElementById(rid + '-readout-name').textContent = item.name;
-      document.getElementById(rid + '-unit').textContent = item.uom;
-      document.getElementById(rid + '-cost').textContent = '$' + item.cost.toFixed(3);
+      document.getElementById(rid + '-unit').style.display = 'none';
+      const sel = document.getElementById(rid + '-unit-select');
+      sel.style.display = '';
+      sel.innerHTML = unitOptionsHtml(item, item.uom);
+      sel.dataset.prevValue = item.uom;
       closeItemOptions(rid);
+      updateUnitCostDisplay(rid);
       recalcRow(rid);
     }
 
     function changeItem(rid) {
       const tr = document.getElementById(rid);
       if (!tr) return;
-      tr.dataset.unitCost = '';
-      tr.dataset.unit = '';
+      tr.dataset.itemId   = '';
+      tr.dataset.baseCost = '';
+      tr.dataset.baseUnit = '';
+      tr.dataset.unit     = '';
+      tr.dataset.factor   = '1';
       document.getElementById(rid + '-readout').style.display = 'none';
-      document.getElementById(rid + '-unit').textContent = '—';
+      const unitDisp = document.getElementById(rid + '-unit');
+      unitDisp.style.display = '';
+      unitDisp.textContent = '—';
+      const sel = document.getElementById(rid + '-unit-select');
+      sel.style.display = 'none';
+      sel.innerHTML = '';
       document.getElementById(rid + '-cost').textContent = '—';
+      closeAddUnitPopover();
       const picker = document.getElementById(rid + '-picker');
       picker.style.display = '';
       const input = picker.querySelector('.item-search');
       input.value = '';
       input.focus();
+      recalcRow(rid);
+    }
+
+    // ── Alternative units of measure ───────────────────────
+    function onUnitChange(rid, sel) {
+      if (sel.value === '__add__') {
+        openAddUnitPopover(rid, sel);
+        return;
+      }
+      const tr = document.getElementById(rid);
+      const item = ITEM_CATALOG.find(it => it.id === tr.dataset.itemId);
+      if (!item) return;
+      const opt = unitOptionsList(item).find(o => o.unit === sel.value);
+      tr.dataset.unit = sel.value;
+      tr.dataset.factor = opt ? opt.factor : 1;
+      sel.dataset.prevValue = sel.value;
+      updateUnitCostDisplay(rid);
+      recalcRow(rid);
+    }
+
+    function updateUnitCostDisplay(rid) {
+      const tr = document.getElementById(rid);
+      if (!tr) return;
+      const baseCost = parseFloat(tr.dataset.baseCost) || 0;
+      const factor   = parseFloat(tr.dataset.factor) || 1;
+      const perUnitCost = baseCost / factor;
+      const costEl = document.getElementById(rid + '-cost');
+      if (costEl) costEl.textContent = '$' + perUnitCost.toFixed(perUnitCost < 0.01 ? 4 : 3);
+    }
+
+    function openAddUnitPopover(rid, sel) {
+      sel.value = sel.dataset.prevValue || sel.options[0].value;
+      closeAddUnitPopover();
+      const tr = document.getElementById(rid);
+      const cell = sel.closest('.ing-unit-cell');
+      const pop = document.createElement('div');
+      pop.className = 'unit-add-pop';
+      pop.id = 'unit-add-pop';
+      pop.innerHTML = `
+        <label>New unit name</label>
+        <input type="text" id="new-unit-name" placeholder="e.g. slice" autocomplete="off"/>
+        <label>1 ${tr.dataset.baseUnit} equals how many of this unit?</label>
+        <input type="number" id="new-unit-factor" min="0.0001" step="any" placeholder="e.g. 10"/>
+        <div class="row">
+          <button type="button" class="nb-btn outline sm" onclick="closeAddUnitPopover()" style="flex:1;">Cancel</button>
+          <button type="button" class="nb-btn primary sm" onclick="confirmAddUnit('${rid}')" style="flex:1;">Add</button>
+        </div>`;
+      cell.appendChild(pop);
+      document.getElementById('new-unit-name').focus();
+    }
+
+    function closeAddUnitPopover() {
+      document.getElementById('unit-add-pop')?.remove();
+    }
+
+    function confirmAddUnit(rid) {
+      const nameInput   = document.getElementById('new-unit-name');
+      const factorInput = document.getElementById('new-unit-factor');
+      const name   = nameInput.value.trim();
+      const factor = parseFloat(factorInput.value);
+      if (!name || !factor || factor <= 0) {
+        factorInput.style.borderColor = 'var(--status-risk-fg)';
+        factorInput.placeholder = 'Enter a number > 0';
+        return;
+      }
+      const tr = document.getElementById(rid);
+      const item = ITEM_CATALOG.find(it => it.id === tr.dataset.itemId);
+      if (!item) return;
+      item.altUnits = item.altUnits || [];
+      if (!item.altUnits.some(u => u.unit.toLowerCase() === name.toLowerCase()) && name.toLowerCase() !== item.uom.toLowerCase()) {
+        item.altUnits.push({ unit:name, factor });
+      }
+      closeAddUnitPopover();
+      const sel = document.getElementById(rid + '-unit-select');
+      sel.innerHTML = unitOptionsHtml(item, name);
+      sel.dataset.prevValue = name;
+      tr.dataset.unit = name;
+      tr.dataset.factor = factor;
+      updateUnitCostDisplay(rid);
       recalcRow(rid);
     }
 
@@ -1053,11 +1172,13 @@
     function recalcRow(rid) {
       const row = document.getElementById(rid);
       if (!row) return;
-      const qty      = parseFloat(row.querySelector('.ing-qty')?.value) || 0;
-      const yieldPct = parseFloat(row.querySelector('.ing-yield')?.value) || 100;
-      const cost     = parseFloat(row.dataset.unitCost) || 0;
-      const sub      = cost > 0 ? qty * cost / (yieldPct / 100) : 0;
-      const subEl    = row.querySelector('.ing-subtotal');
+      const qty       = parseFloat(row.querySelector('.ing-qty')?.value) || 0;
+      const yieldPct  = parseFloat(row.querySelector('.ing-yield')?.value) || 100;
+      const baseCost  = parseFloat(row.dataset.baseCost) || 0;
+      const factor    = parseFloat(row.dataset.factor) || 1;
+      const qtyInBase = qty / factor;
+      const sub       = baseCost > 0 ? qtyInBase * baseCost / (yieldPct / 100) : 0;
+      const subEl     = row.querySelector('.ing-subtotal');
       if (subEl) subEl.textContent = sub > 0 ? '$' + sub.toFixed(3) : '—';
       recalcAll();
     }
@@ -1065,10 +1186,12 @@
     function recalcAll() {
       let total = 0;
       document.querySelectorAll('#ing-tbody tr').forEach(tr => {
-        const qty      = parseFloat(tr.querySelector('.ing-qty')?.value) || 0;
-        const yieldPct = parseFloat(tr.querySelector('.ing-yield')?.value) || 100;
-        const cost     = parseFloat(tr.dataset.unitCost) || 0;
-        total += cost > 0 ? qty * cost / (yieldPct / 100) : 0;
+        const qty       = parseFloat(tr.querySelector('.ing-qty')?.value) || 0;
+        const yieldPct  = parseFloat(tr.querySelector('.ing-yield')?.value) || 100;
+        const baseCost  = parseFloat(tr.dataset.baseCost) || 0;
+        const factor    = parseFloat(tr.dataset.factor) || 1;
+        const qtyInBase = qty / factor;
+        total += baseCost > 0 ? qtyInBase * baseCost / (yieldPct / 100) : 0;
       });
       document.getElementById('ing-total').textContent   = '$' + total.toFixed(2);
       document.getElementById('cy-ing-cost').textContent = '$' + total.toFixed(2);
