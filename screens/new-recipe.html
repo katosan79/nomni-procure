@@ -520,7 +520,7 @@
               <span class="card-title"><i class="ti ti-list-details" aria-hidden="true"></i>Ingredient list</span>
               <button class="nb-btn outline sm" onclick="addIngredientRow()"><i class="ti ti-plus" aria-hidden="true"></i>Add ingredient</button>
             </div>
-            <div style="overflow-x:auto;">
+            <div>
               <table class="ing-table" aria-label="Ingredients">
                 <thead>
                   <tr>
@@ -945,18 +945,26 @@
     // Controlled item catalog — HQ-managed master list (mirrors items.html).
     // Ingredients are picked from here; unit and unit cost are auto-populated, not free text.
     const ITEM_CATALOG = [
-      { id:'INT-0001', name:'Chicken Breast 500g', uom:'kg',     cost:8.40   },
-      { id:'INT-0002', name:'Avocado',              uom:'each',   cost:1.10   },
-      { id:'INT-0003', name:'Feta Cheese',          uom:'kg',     cost:18.50  },
-      { id:'INT-0004', name:'Sourdough Bread',      uom:'loaf',   cost:4.20   },
-      { id:'INT-0005', name:'Olive Oil 1L',         uom:'bottle', cost:12.00  },
-      { id:'INT-0006', name:'Whole Milk 2L',        uom:'carton', cost:2.95   },
-      { id:'INT-0007', name:'Roma Tomatoes',        uom:'kg',     cost:2.80   },
-      { id:'INT-0008', name:'Espresso Beans',       uom:'mL',     cost:0.008  },
-      { id:'INT-0009', name:'Full Cream Milk',      uom:'mL',     cost:0.0056 },
-      { id:'INT-0010', name:'Cherry Tomatoes',      uom:'g',      cost:0.012  },
-      { id:'INT-0011', name:'Micro Herbs',          uom:'g',      cost:0.18   },
-      { id:'INT-0012', name:'Butter, unsalted',     uom:'g',      cost:0.014  },
+      { id:'INT-0001', name:'Chicken Breast 500g',            uom:'kg',     cost:8.40  },
+      { id:'INT-0002', name:'Avocado',                        uom:'each',   cost:1.10  },
+      { id:'INT-0003', name:'Feta Cheese',                    uom:'kg',     cost:18.50 },
+      { id:'INT-0004', name:'Sourdough Bread',                uom:'loaf',   cost:4.20  },
+      { id:'INT-0005', name:'Olive Oil 1L',                   uom:'bottle', cost:12.00 },
+      { id:'INT-0006', name:'Whole Milk 2L',                  uom:'carton', cost:2.95  },
+      { id:'INT-0007', name:'Roma Tomatoes',                  uom:'kg',     cost:2.80  },
+      { id:'INT-0008', name:'Salmon Fillet 200g',             uom:'kg',     cost:27.00 },
+      { id:'INT-0009', name:'Free-range Eggs',                uom:'dozen',  cost:6.00  },
+      { id:'INT-0010', name:'Baby Spinach',                   uom:'kg',     cost:6.50  },
+      { id:'INT-0011', name:'Parmesan Cheese',                uom:'kg',     cost:34.00 },
+      { id:'INT-0012', name:'Bacon Rashers',                  uom:'kg',     cost:18.00 },
+      { id:'INT-0013', name:'Fresh Basil',                    uom:'bunch',  cost:2.50  },
+      { id:'INT-0014', name:'Garlic',                         uom:'kg',     cost:7.20  },
+      { id:'INT-0015', name:'Brown Onion',                    uom:'kg',     cost:1.80  },
+      { id:'INT-0016', name:'Cheddar Cheese',                 uom:'kg',     cost:16.00 },
+      { id:'INT-0017', name:'Greek Yogurt',                   uom:'kg',     cost:8.50  },
+      { id:'INT-0018', name:'Plain Flour',                    uom:'kg',     cost:1.30  },
+      { id:'INT-0019', name:'Coffee Beans (Espresso Blend)',  uom:'kg',     cost:28.00 },
+      { id:'INT-0020', name:'Orange Juice',                   uom:'L',      cost:4.50  },
     ];
 
     function addIngredientRow() {
@@ -995,7 +1003,7 @@
       const q = (query || '').trim().toLowerCase();
       const matches = q ? ITEM_CATALOG.filter(it => it.name.toLowerCase().includes(q)) : ITEM_CATALOG;
       box.innerHTML = matches.length
-        ? matches.slice(0, 8).map(it => `<div class="item-option" onmousedown="event.preventDefault();selectItem('${rid}','${it.id}')"><span class="io-name">${it.name}</span><span class="io-meta">$${it.cost.toFixed(3)}/${it.uom}</span></div>`).join('')
+        ? matches.map(it => `<div class="item-option" onmousedown="event.preventDefault();selectItem('${rid}','${it.id}')"><span class="io-name">${it.name}</span><span class="io-meta">$${it.cost.toFixed(3)}/${it.uom}</span></div>`).join('')
         : `<div class="item-option-empty">No matching items in the HQ catalog.</div>`;
       box.style.display = 'block';
     }
