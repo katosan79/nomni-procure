@@ -396,6 +396,83 @@ const MERCHANTS = {
   UNATTRIBUTED: [],
 };
 
+/* ── Extra real data for metric drill-down screens (also pulled from the
+   live 35.226.78.102/procure-insights JSON feeds) ── */
+
+// Cancelled orders per market — real Orders Overview summaryValues.cancelledOrders.
+// TOTALS[mk].orders is already "non-cancelled", so total order rows = orders + cancelled.
+const CANCELLED = { SG: 961, MY: 168, ID: 8, AU: 0 };
+
+// Top suppliers per market — real Invoice Overview rankings['Top Suppliers'] (top 6 shown).
+const SUPPLIERS = {
+  SG: [
+    { name: 'Fresh Direct Pte Ltd',               orders: 411, orderValue: 48103.28 },
+    { name: 'Bidfood Singapore Pte Ltd',          orders: 387, orderValue: 120772.07 },
+    { name: 'Lineage Logistics Mandai Pte Ltd',   orders: 376, orderValue: 267805.84 },
+    { name: 'Classic Fine Foods (S) Pte Ltd',     orders: 364, orderValue: 99411.42 },
+    { name: 'Double Chin Food Services Pte Ltd',  orders: 329, orderValue: 142485.82 },
+    { name: 'Phoon Huat Pte Ltd',                 orders: 322, orderValue: 100459.30 },
+  ],
+  MY: [
+    { name: 'Global Pacific Victory (M) Sdn Bhd',    orders: 74, orderValue: 87799.97 },
+    { name: 'Sri Segar Food Corporation Sdn Bhd',    orders: 55, orderValue: 26473.20 },
+    { name: 'Piau Kee Live & Frozen Seafoods Sdn Bhd', orders: 44, orderValue: 35089.36 },
+    { name: 'Accent Foods Sdn Bhd',                  orders: 41, orderValue: 12995.63 },
+    { name: 'BGS Trading Sdn Bhd',                   orders: 41, orderValue: 42945.38 },
+    { name: 'QL Ansan Poultry Farm Sdn Bhd',          orders: 39, orderValue: 15696.70 },
+  ],
+  ID: [
+    { name: 'UD Dwipa',                    orders: 75, orderValue: 84172325 },
+    { name: 'Jaya Lestari Supplier',       orders: 36, orderValue: 12360304.99 },
+    { name: 'Mulia Jaya Supplier',         orders: 31, orderValue: 13028000 },
+    { name: 'PT Sukanda Djaya (Bali)',     orders: 30, orderValue: 23962094.46 },
+    { name: 'PT Wahana Boga Nusantara',    orders: 29, orderValue: 13837500 },
+    { name: 'PT Bali Tirta Bhuana',        orders: 27, orderValue: 1319500 },
+  ],
+  AU: [],
+};
+
+// Payment terms per market — real Invoice Overview breakdowns['Payment Terms'] (top 5 shown).
+const PAYMENT_TERMS = {
+  SG: [
+    { name: 'NET30', count: 11411 }, { name: 'Not specified', count: 2209 },
+    { name: '30 days after EOM', count: 804 }, { name: 'NET60', count: 554 }, { name: 'COD', count: 304 },
+  ],
+  MY: [
+    { name: 'NET30', count: 750 }, { name: 'Not specified', count: 160 },
+    { name: 'COD', count: 65 }, { name: 'NET14', count: 23 }, { name: 'NET60', count: 22 },
+  ],
+  ID: [
+    { name: 'NET30', count: 603 }, { name: 'NET14', count: 205 },
+    { name: 'Bank transfer', count: 148 }, { name: 'NET7', count: 21 }, { name: 'NET20', count: 16 },
+  ],
+  AU: [],
+};
+
+// Upload source & match/OCR status — real Invoice Processing breakdowns, but that report has
+// NO market tagging at all, so these ratios are applied pro-rata per market as an estimate.
+const UPLOAD_SOURCE_RATIO = { Mobile: 17588 / 19119, Web: 1381 / 19119, Unknown: 150 / 19119 };
+const MATCH_STATUS_RATIO = [
+  { name: 'Match',                        pct: 14947 / 19119 },
+  { name: 'Unable to match line items',   pct: 2315 / 19119 },
+  { name: 'Preloaded with market list',   pct: 890 / 19119 },
+  { name: 'Invoice number not found',     pct: 530 / 19119 },
+  { name: 'Other exceptions',             pct: (19119 - 14947 - 2315 - 890 - 530) / 19119 },
+];
+
+// Real, platform-wide "Processed by" ranking (Invoice Processing has no market split, so this
+// is shown once, under Singapore, which carries ~90%+ of platform volume).
+const PROCESSORS_ALL = [
+  { name: 'Zeemart System', count: 10830, auto: 10828, manual: 2 },
+  { name: 'Yora Milenda',   count: 975,   auto: 9,     manual: 966 },
+  { name: 'Farah Aqilah',   count: 886,   auto: 0,     manual: 886 },
+  { name: 'Amanda Alviana', count: 764,   auto: 0,     manual: 764 },
+  { name: 'Jocelyn Tan',    count: 692,   auto: 2,     manual: 690 },
+];
+
+// Real Invoice Overview UNKNOWN-market view — where unattributed invoices actually sit.
+const UNATTRIBUTED_STATUS = { issued: 3351, deleted: 2962, pending: 3139 };
+
 const METRIC_DEFS_ALL = [
   { key: 'orders',       label: 'Orders',              icon: 'ti-shopping-cart' },
   { key: 'invProcessed', label: 'Invoices processed',  icon: 'ti-file-check' },
@@ -415,6 +492,7 @@ const METRIC_DEFS_MARKET = [
 
 let compareLabel = 'previous month';
 let sortState = { SG: 'orders', MY: 'orders', ID: 'orders', AU: 'orders' };
+let metricState = { SG: null, MY: null, ID: null, AU: null, UNATTRIBUTED: null };
 
 /* ── Formatting helpers ── */
 function fmtNum(n) { return n === null || n === undefined ? '—' : Math.round(n).toLocaleString('en-US'); }
@@ -490,6 +568,8 @@ function renderAllPanel() {
    RENDER: Per-market panel (Point 2 + 3)
    ══════════════════════════════════════════════════════ */
 function renderMarketPanel(mk) {
+  if (metricState[mk]) { renderMetricDetail(mk, metricState[mk]); return; }
+
   const meta = MARKET_META[mk];
   const t = TOTALS[mk];
   const panel = document.getElementById('panel-' + mk);
@@ -497,10 +577,10 @@ function renderMarketPanel(mk) {
   const totalMerchants = t.merchants;
 
   const kpiTiles = METRIC_DEFS_MARKET.map(m => {
-    const clickable = mk !== 'UNATTRIBUTED';
+    const clickable = mk === 'UNATTRIBUTED' ? (m.key === 'invUploaded' || m.key === 'invValue') : true;
     const val = t[m.key];
-    return `<div class="kpi-tile ${clickable ? 'clickable' : ''} ${sortState[mk] === m.key ? 'sorted' : ''} ${val === null ? 'dim' : ''}"
-                 ${clickable && val !== null ? `onclick="sortMerchants('${mk}','${m.key}')"` : ''}>
+    return `<div class="kpi-tile ${clickable && val !== null ? 'clickable' : ''} ${val === null ? 'dim' : ''}"
+                 ${clickable && val !== null ? `onclick="openMetricDetail('${mk}','${m.key}')"` : ''}>
       <div class="kpi-label"><i class="ti ${m.icon}"></i>${m.label}</div>
       <div class="kpi-value">${m.money ? fmtMoney(val) : fmtNum(val)}</div>
       <div class="kpi-context">${val !== null ? deltaChip(DELTA[m.key]) : 'Not attributable'}</div>
@@ -593,6 +673,211 @@ function sortMerchants(mk, key) {
   sortState[mk] = key;
   renderMarketPanel(mk);
   document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ══════════════════════════════════════════════════════
+   METRIC DRILL-DOWN — the "deeper screen" behind each KPI tile
+   ══════════════════════════════════════════════════════ */
+function openMetricDetail(mk, key) {
+  sortState[mk] = key;
+  metricState[mk] = key;
+  renderMarketPanel(mk);
+  document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function closeMetricDetail(mk) {
+  metricState[mk] = null;
+  renderMarketPanel(mk);
+  document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function miniBarList(items, totalOverride) {
+  const total = totalOverride !== undefined ? totalOverride : items.reduce((a, b) => a + b.value, 0);
+  const max = Math.max(...items.map(i => i.value), 1);
+  return items.map(i => {
+    const pct = Math.max(2, (i.value / max) * 100);
+    const share = total ? (i.value / total * 100).toFixed(1) : '0.0';
+    return `<div class="bar-row" style="grid-template-columns:180px 1fr 120px;">
+      <span class="bar-label">${i.name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <span class="bar-value">${fmtNum(Math.round(i.value))} (${share}%)</span>
+    </div>`;
+  }).join('');
+}
+
+function renderMetricDetail(mk, key) {
+  const meta = MARKET_META[mk];
+  const t = TOTALS[mk];
+  const def = METRIC_DEFS_MARKET.find(m => m.key === key);
+  const panel = document.getElementById('panel-' + mk);
+  const val = t[key];
+
+  let html = `
+    <div style="display:flex;align-items:center;gap:var(--space-md);">
+      <button class="nb-btn ghost" onclick="closeMetricDetail('${mk}')"><i class="ti ti-arrow-left"></i>${meta.label} overview</button>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:var(--space-xl);flex-wrap:wrap;">
+      <div class="kpi-tile" style="min-width:260px;">
+        <div class="kpi-label"><i class="ti ${def.icon}"></i>${def.label}</div>
+        <div class="kpi-value" style="font-size:34px;">${def.money ? fmtMoney(val) : fmtNum(val)}</div>
+        <div class="kpi-context">${deltaChip(DELTA[key])}</div>
+      </div>
+    </div>
+    <div class="chart-card full">
+      <div class="chart-head"><span class="chart-title">${meta.label} · ${def.label} over time</span></div>
+      <div class="svg-chart-wrap" id="metric-trend-${mk}"></div>
+      <div class="chart-x-labels" id="metric-trend-x-${mk}"></div>
+    </div>
+  `;
+
+  html += renderMetricBreakdown(mk, key);
+
+  if (mk !== 'UNATTRIBUTED') {
+    html += `
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Merchants</span>
+          <span class="panel-meta">Showing top ${MERCHANTS[mk].length} of ${fmtNum(t.merchants)} active merchants · sorted by ${def.label.toLowerCase()}</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" aria-label="Merchants" id="merchant-table-${mk}"></table>
+        </div>
+      </div>`;
+  }
+
+  panel.innerHTML = html;
+
+  const days = 17, peak = 8;
+  const series = distribute(val || 0, days, peak);
+  renderDualLineChart('metric-trend-' + mk, series, series.map(() => 0));
+  document.getElementById('metric-trend-x-' + mk).innerHTML =
+    ['01 Jul', '', '', '', '', '', '', '08 Jul', '', '', '', '', '', '', '', '', '17 Jul']
+      .map(l => `<span class="chart-x-label">${l}</span>`).join('');
+
+  if (mk !== 'UNATTRIBUTED') renderMerchantTable(mk);
+}
+
+function renderMetricBreakdown(mk, key) {
+  if (mk === 'UNATTRIBUTED') {
+    const s = UNATTRIBUTED_STATUS;
+    return `<div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Where these invoices sit</span>
+        <span class="panel-meta">Can't be resolved to a merchant, so status is as close as we can get</span>
+      </div>
+      <div style="padding:var(--space-xl);">
+        ${miniBarList([{ name: 'Issued', value: s.issued }, { name: 'Deleted', value: s.deleted }, { name: 'Pending', value: s.pending }])}
+      </div>
+    </div>`;
+  }
+
+  if (key === 'merchants') {
+    const list = MERCHANTS[mk] || [];
+    const news = list.filter(m => m.status === 'new');
+    const dropped = list.filter(m => m.status === 'dropped');
+    const activeCount = list.filter(m => m.status === 'active').length;
+    return `
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Merchant movement</span></div>
+        <div style="padding:var(--space-xl);">
+          ${miniBarList([{ name: 'Active', value: activeCount }, { name: 'New this period', value: news.length }, { name: 'Dropped this period', value: dropped.length }])}
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">New this period</span><span class="panel-meta">${news.length} merchant${news.length === 1 ? '' : 's'}</span></div>
+          <div>
+            ${news.length ? news.map(m => `<div style="display:flex;justify-content:space-between;padding:8px var(--space-xl);border-bottom:1px solid var(--border);font-size:13px;"><span>${m.name}</span><span class="td-sub">${fmtNum(m.orders)} orders</span></div>`).join('') : `<div style="padding:var(--space-xl);color:var(--text-soft);font-size:13px;">None this period.</div>`}
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Dropped this period</span><span class="panel-meta">${dropped.length} merchant${dropped.length === 1 ? '' : 's'}</span></div>
+          <div>
+            ${dropped.length ? dropped.map(m => `<div style="display:flex;justify-content:space-between;padding:8px var(--space-xl);border-bottom:1px solid var(--border);font-size:13px;"><span>${m.name}</span><span class="td-sub">${fmtNum(m.orders)} orders last active</span></div>`).join('') : `<div style="padding:var(--space-xl);color:var(--text-soft);font-size:13px;">None this period.</div>`}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (key === 'orders') {
+    const cancelled = CANCELLED[mk] || 0;
+    const completed = TOTALS[mk].orders;
+    const total = completed + cancelled;
+    const cancelRate = total ? (cancelled / total * 100).toFixed(1) : '0.0';
+    const suppliers = [...(SUPPLIERS[mk] || [])].sort((a, b) => b.orders - a.orders);
+    return `
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Order status</span><span class="panel-meta">${cancelRate}% cancellation rate</span></div>
+          <div style="padding:var(--space-xl);">${miniBarList([{ name: 'Completed / active', value: completed }, { name: 'Cancelled', value: cancelled }], total)}</div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Top suppliers by orders</span></div>
+          ${suppliers.length ? `<table class="data-table"><thead><tr><th>Supplier</th><th class="r">Orders</th></tr></thead><tbody>${suppliers.map(s => `<tr><td class="td-name">${s.name}</td><td class="r">${fmtNum(s.orders)}</td></tr>`).join('')}</tbody></table>` : `<div style="padding:var(--space-xl);color:var(--text-soft);font-size:13px;">No supplier data yet for this market.</div>`}
+        </div>
+      </div>`;
+  }
+
+  if (key === 'orderValue') {
+    const avg = TOTALS[mk].orders ? TOTALS[mk].orderValue / TOTALS[mk].orders : 0;
+    const suppliers = [...(SUPPLIERS[mk] || [])].sort((a, b) => b.orderValue - a.orderValue);
+    return `
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Average order value</span></div>
+          <div style="padding:var(--space-xl);">
+            <div class="kpi-value" style="font-size:28px;">${fmtMoney(avg)}</div>
+            <div class="kpi-context" style="margin-top:6px;">per order, this period</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Top suppliers by order value</span></div>
+          ${suppliers.length ? `<table class="data-table"><thead><tr><th>Supplier</th><th class="r">Order value</th></tr></thead><tbody>${suppliers.map(s => `<tr><td class="td-name">${s.name}</td><td class="r">${fmtMoney(s.orderValue)}</td></tr>`).join('')}</tbody></table>` : `<div style="padding:var(--space-xl);color:var(--text-soft);font-size:13px;">No supplier data yet for this market.</div>`}
+        </div>
+      </div>`;
+  }
+
+  if (key === 'invUploaded') {
+    const total = TOTALS[mk].invUploaded;
+    const items = [
+      { name: 'Mobile', value: total * UPLOAD_SOURCE_RATIO.Mobile },
+      { name: 'Web', value: total * UPLOAD_SOURCE_RATIO.Web },
+      { name: 'Unknown', value: total * UPLOAD_SOURCE_RATIO.Unknown },
+    ];
+    return `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Upload source</span><span class="panel-meta">Estimated — the platform doesn't track upload source per market today</span></div>
+      <div style="padding:var(--space-xl);">${miniBarList(items, total)}</div>
+    </div>`;
+  }
+
+  if (key === 'invProcessed') {
+    const total = TOTALS[mk].invUploaded;
+    const items = MATCH_STATUS_RATIO.map(r => ({ name: r.name, value: total * r.pct }));
+    let html = `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Match / OCR status</span><span class="panel-meta">Estimated — not tracked per market today</span></div>
+      <div style="padding:var(--space-xl);">${miniBarList(items, total)}</div>
+    </div>`;
+    if (mk === 'SG') {
+      html += `<div class="panel" style="margin-top:var(--space-lg);">
+        <div class="panel-header"><span class="panel-title">Processed by</span><span class="panel-meta">Platform-wide — not broken out by market today</span></div>
+        <table class="data-table"><thead><tr><th>Processor</th><th class="r">Auto</th><th class="r">Manual</th><th class="r">Total</th></tr></thead><tbody>
+          ${PROCESSORS_ALL.map(p => `<tr><td class="td-name">${p.name}</td><td class="r">${fmtNum(p.auto)}</td><td class="r">${fmtNum(p.manual)}</td><td class="r">${fmtNum(p.count)}</td></tr>`).join('')}
+        </tbody></table>
+      </div>`;
+    }
+    return html;
+  }
+
+  if (key === 'invValue') {
+    const terms = PAYMENT_TERMS[mk] || [];
+    const totalCount = terms.reduce((a, b) => a + b.count, 0);
+    const items = terms.map(t => ({ name: t.name, value: t.count }));
+    return `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Payment terms</span><span class="panel-meta">By invoice count, top ${items.length}</span></div>
+      <div style="padding:var(--space-xl);">${items.length ? miniBarList(items, totalCount) : `<div style="color:var(--text-soft);font-size:13px;">No payment terms recorded yet for this market.</div>`}</div>
+    </div>`;
+  }
+
+  return '';
 }
 
 /* ── Merchant drawer ── */
@@ -690,7 +975,7 @@ function switchMarket(mk) {
   });
   document.getElementById('panel-' + mk).classList.add('active');
   document.getElementById('page-sub').innerHTML = `${MARKET_META[mk].flag ? MARKET_META[mk].flag + ' ' : ''}${MARKET_META[mk].label} · <span>${document.getElementById('daterange-label').textContent}</span>`;
-  if (mk !== 'ALL' && !document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk);
+  if (mk !== 'ALL') { metricState[mk] = null; renderMarketPanel(mk); }
 }
 
 /* ── Date range popover ── */
