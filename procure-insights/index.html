@@ -3,11 +3,25 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Procure Insights — Nomni HQ</title>
+<title>Procure Insights</title>
 <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
 <link rel="stylesheet" href="../shared/components.css?v=4"/>
 <style>
-  body { background: var(--surface-soft); }
+  body { background: var(--surface-soft); margin: 0; }
+
+  /* ── Standalone top bar (this is its own site — no HQ shell/nav) ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px; padding-inline: var(--space-2xl);
+    background: var(--surface-deep); color: var(--cream);
+  }
+  .topbar-left { display: flex; align-items: center; gap: var(--space-md); }
+  .brand-mark { width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--fern); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .brand-name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .brand-sep { color: color-mix(in srgb, var(--cream) 35%, transparent); }
+  .brand-product { font-size: 14px; font-weight: 500; color: color-mix(in srgb, var(--cream) 80%, transparent); }
+  .topbar-right { font-size: 12px; color: color-mix(in srgb, var(--cream) 65%, transparent); font-feature-settings: 'tnum' 1; }
+
   .page-body { padding-block: var(--space-2xl); }
   .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-2xl); }
 
@@ -140,10 +154,28 @@
   .info-note strong { color: var(--text); }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); align-items: start; }
+
+  @media (max-width: 1100px) {
+    .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(3, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
-<script src="../shared/shell.js?v=12" data-active="insights"></script>
+
+<!-- Standalone top bar — this page is its own site, not part of the Nomni Procure HQ module -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="brand-mark" aria-hidden="true">N</div>
+    <span class="brand-name">nomni</span>
+    <span class="brand-sep">/</span>
+    <span class="brand-product">Procure Insights</span>
+  </div>
+  <div class="topbar-right" id="topbar-clock"></div>
+</header>
 
 <div class="page-body">
   <div class="napp-canvas" data-measure="wide">
@@ -272,7 +304,19 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => { NomniShell.init('Insights'); init(); });
+document.addEventListener('DOMContentLoaded', () => { init(); startClock(); });
+
+function startClock() {
+  const el = document.getElementById('topbar-clock');
+  function tick() {
+    const now = new Date();
+    const label = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' +
+      now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' SGT';
+    el.textContent = label;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
 
 /* ══════════════════════════════════════════════════════
    DATA MODEL
