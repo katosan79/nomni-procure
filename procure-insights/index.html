@@ -158,6 +158,15 @@
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); align-items: start; }
 
+  /* ── Reused stat/mini-row primitives (drawer stat cards, merchant movement lists) ── */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+  .stat-card { background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); }
+  .mini-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+  .stat-value { font-size: 20px; font-weight: 700; margin-top: 4px; color: var(--text); }
+  .mini-row { display: flex; justify-content: space-between; padding: 8px var(--space-xl); border-bottom: 1px solid var(--border); font-size: 13px; }
+  .mini-row:last-child { border-bottom: none; }
+  .mini-empty { padding: var(--space-xl); color: var(--text-soft); font-size: 13px; }
+
   @media (max-width: 1100px) {
     .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(3, 1fr); }
     .two-col { grid-template-columns: 1fr; }
@@ -527,6 +536,52 @@ function distribute(total, days, peakDay) {
   return weights.map(w => (total || 0) * w / sum);
 }
 
+const TREND_X_LABELS = ['01 Jul', '', '', '', '', '', '', '08 Jul', '', '', '', '', '', '', '', '', '17 Jul'];
+
+// Shared by the market-overview trend (two real series) and the metric-detail trend
+// (one series — pass null for seriesB to get a flat zero baseline instead of a second line).
+function renderTrendChart(containerId, xLabelsId, seriesA, seriesB) {
+  renderDualLineChart(containerId, seriesA, seriesB || seriesA.map(() => 0));
+  document.getElementById(xLabelsId).innerHTML = TREND_X_LABELS.map(l => `<span class="chart-x-label">${l}</span>`).join('');
+}
+
+// Shared "Merchants" panel (header + empty <table> shell) used by both the market overview
+// and every metric-detail screen — the caller fills the <table> via renderMerchantTable(mk).
+function merchantsPanelHtml(mk) {
+  const t = TOTALS[mk];
+  const sortLabel = METRIC_DEFS_MARKET.find(m => m.key === sortState[mk])?.label.toLowerCase() || 'orders';
+  return `
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Merchants</span>
+        <span class="panel-meta">Showing top ${MERCHANTS[mk].length} of ${fmtNum(t.merchants)} active merchants · sorted by ${sortLabel}</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" aria-label="Merchants" id="merchant-table-${mk}"></table>
+      </div>
+    </div>`;
+}
+
+function statCardHtml(label, value) {
+  return `<div class="stat-card"><div class="mini-label">${label}</div><div class="stat-value">${value}</div></div>`;
+}
+
+function miniRowHtml(name, meta) {
+  return `<div class="mini-row"><span>${name}</span><span class="td-sub">${meta}</span></div>`;
+}
+
+// One shared supplier table (Orders + Order value columns) reused by both the Orders and
+// Order Value metric breakdowns — sorted by whichever one the user drilled into, with that
+// column called out, instead of rendering two near-identical single-column tables.
+function suppliersPanelHtml(mk, sortBy) {
+  const suppliers = [...(SUPPLIERS[mk] || [])].sort((a, b) => b[sortBy] - a[sortBy]);
+  if (!suppliers.length) return `<div class="mini-empty">No supplier data yet for this market.</div>`;
+  return `<table class="data-table">
+    <thead><tr><th>Supplier</th><th class="r ${sortBy === 'orders' ? 'sorted' : ''}">Orders</th><th class="r ${sortBy === 'orderValue' ? 'sorted' : ''}">Order value</th></tr></thead>
+    <tbody>${suppliers.map(s => `<tr><td class="td-name">${s.name}</td><td class="r">${fmtNum(s.orders)}</td><td class="r">${fmtMoney(s.orderValue)}</td></tr>`).join('')}</tbody>
+  </table>`;
+}
+
 /* ══════════════════════════════════════════════════════
    RENDER: All-markets panel
    ══════════════════════════════════════════════════════ */
@@ -580,8 +635,6 @@ function renderMarketPanel(mk) {
   const meta = MARKET_META[mk];
   const t = TOTALS[mk];
   const panel = document.getElementById('panel-' + mk);
-  const merchants = MERCHANTS[mk] || [];
-  const totalMerchants = t.merchants;
 
   const kpiTiles = METRIC_DEFS_MARKET.map(m => {
     const clickable = mk === 'UNATTRIBUTED' ? (m.key === 'invUploaded' || m.key === 'invValue') : true;
@@ -615,28 +668,13 @@ function renderMarketPanel(mk) {
         <span>These ${fmtNum(t.invUploaded)} invoices arrived without a resolvable outlet or supplier match, so they can't be attributed to a merchant or market — there's nothing to drill into below. They sit in Issued / Deleted / Pending states rather than Processed, which is why Invoices processed reads 0 here.</span>
       </div>`;
   } else {
-    bodyHtml += `
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">Merchants</span>
-          <span class="panel-meta">Showing top ${merchants.length} of ${fmtNum(totalMerchants)} active merchants · sorted by ${METRIC_DEFS_MARKET.find(m => m.key === sortState[mk]).label.toLowerCase()}</span>
-        </div>
-        <div style="overflow-x:auto;">
-          <table class="data-table" aria-label="Merchants" id="merchant-table-${mk}"></table>
-        </div>
-      </div>`;
+    bodyHtml += merchantsPanelHtml(mk);
   }
 
   panel.innerHTML = bodyHtml;
 
-  // Trend chart
   const days = 17, peak = 8;
-  const orderSeries = distribute(t.orders, days, peak);
-  const invSeries = distribute(t.invProcessed, days, peak);
-  renderDualLineChart('trend-' + mk, orderSeries, invSeries);
-  document.getElementById('trend-x-' + mk).innerHTML =
-    ['01 Jul', '', '', '', '', '', '', '08 Jul', '', '', '', '', '', '', '', '', '17 Jul']
-      .map(l => `<span class="chart-x-label">${l}</span>`).join('');
+  renderTrendChart('trend-' + mk, 'trend-x-' + mk, distribute(t.orders, days, peak), distribute(t.invProcessed, days, peak));
 
   if (mk !== 'UNATTRIBUTED') renderMerchantTable(mk);
 }
@@ -697,7 +735,10 @@ function closeMetricDetail(mk) {
   document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function miniBarList(items, totalOverride) {
+// noShare: when the items are a small displayed sample (not the full population — e.g. New/
+// Dropped counts out of a top-12 merchant list), a "% of these items" figure would misread as
+// "% of the true total". Pass noShare to show plain counts instead of a potentially-wrong share.
+function miniBarList(items, totalOverride, { noShare = false } = {}) {
   const total = totalOverride !== undefined ? totalOverride : items.reduce((a, b) => a + b.value, 0);
   const max = Math.max(...items.map(i => i.value), 1);
   return items.map(i => {
@@ -706,7 +747,7 @@ function miniBarList(items, totalOverride) {
     return `<div class="bar-row" style="grid-template-columns:180px 1fr 120px;">
       <span class="bar-label">${i.name}</span>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
-      <span class="bar-value">${fmtNum(Math.round(i.value))} (${share}%)</span>
+      <span class="bar-value">${fmtNum(Math.round(i.value))}${noShare ? '' : ` (${share}%)`}</span>
     </div>`;
   }).join('');
 }
@@ -738,29 +779,18 @@ function renderMetricDetail(mk, key) {
 
   html += renderMetricBreakdown(mk, key);
 
-  if (mk !== 'UNATTRIBUTED') {
-    html += `
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">Merchants</span>
-          <span class="panel-meta">Showing top ${MERCHANTS[mk].length} of ${fmtNum(t.merchants)} active merchants · sorted by ${def.label.toLowerCase()}</span>
-        </div>
-        <div style="overflow-x:auto;">
-          <table class="data-table" aria-label="Merchants" id="merchant-table-${mk}"></table>
-        </div>
-      </div>`;
-  }
+  // "Active merchants" has no per-merchant numeric equivalent to sort a list by — the
+  // Merchant movement + New/Dropped panels above are the meaningful merchant-level detail
+  // for this metric, so skip repeating the (unsorted) full table here.
+  const showMerchantTable = mk !== 'UNATTRIBUTED' && key !== 'merchants';
+  if (showMerchantTable) html += merchantsPanelHtml(mk);
 
   panel.innerHTML = html;
 
   const days = 17, peak = 8;
-  const series = distribute(val || 0, days, peak);
-  renderDualLineChart('metric-trend-' + mk, series, series.map(() => 0));
-  document.getElementById('metric-trend-x-' + mk).innerHTML =
-    ['01 Jul', '', '', '', '', '', '', '08 Jul', '', '', '', '', '', '', '', '', '17 Jul']
-      .map(l => `<span class="chart-x-label">${l}</span>`).join('');
+  renderTrendChart('metric-trend-' + mk, 'metric-trend-x-' + mk, distribute(val || 0, days, peak));
 
-  if (mk !== 'UNATTRIBUTED') renderMerchantTable(mk);
+  if (showMerchantTable) renderMerchantTable(mk);
 }
 
 function renderMetricBreakdown(mk, key) {
@@ -784,49 +814,52 @@ function renderMetricBreakdown(mk, key) {
     const activeCount = list.filter(m => m.status === 'active').length;
     return `
       <div class="panel">
-        <div class="panel-header"><span class="panel-title">Merchant movement</span></div>
+        <div class="panel-header">
+          <span class="panel-title">Merchant movement</span>
+          <span class="panel-meta">Within the ${list.length} merchants shown below, not the full ${fmtNum(TOTALS[mk].merchants)}</span>
+        </div>
         <div style="padding:var(--space-xl);">
-          ${miniBarList([{ name: 'Active', value: activeCount }, { name: 'New this period', value: news.length }, { name: 'Dropped this period', value: dropped.length }])}
+          ${miniBarList([{ name: 'Active', value: activeCount }, { name: 'New this period', value: news.length }, { name: 'Dropped this period', value: dropped.length }], null, { noShare: true })}
         </div>
       </div>
       <div class="two-col">
         <div class="panel">
           <div class="panel-header"><span class="panel-title">New this period</span><span class="panel-meta">${news.length} merchant${news.length === 1 ? '' : 's'}</span></div>
           <div>
-            ${news.length ? news.map(m => `<div style="display:flex;justify-content:space-between;padding:8px var(--space-xl);border-bottom:1px solid var(--border);font-size:13px;"><span>${m.name}</span><span class="td-sub">${fmtNum(m.orders)} orders</span></div>`).join('') : `<div style="padding:var(--space-xl);color:var(--text-soft);font-size:13px;">None this period.</div>`}
+            ${news.length ? news.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders')).join('') : `<div class="mini-empty">None this period.</div>`}
           </div>
         </div>
         <div class="panel">
           <div class="panel-header"><span class="panel-title">Dropped this period</span><span class="panel-meta">${dropped.length} merchant${dropped.length === 1 ? '' : 's'}</span></div>
           <div>
-            ${dropped.length ? dropped.map(m => `<div style="display:flex;justify-content:space-between;padding:8px var(--space-xl);border-bottom:1px solid var(--border);font-size:13px;"><span>${m.name}</span><span class="td-sub">${fmtNum(m.orders)} orders last active</span></div>`).join('') : `<div style="padding:var(--space-xl);color:var(--text-soft);font-size:13px;">None this period.</div>`}
+            ${dropped.length ? dropped.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders last active')).join('') : `<div class="mini-empty">None this period.</div>`}
           </div>
         </div>
       </div>`;
   }
 
-  if (key === 'orders') {
-    const cancelled = CANCELLED[mk] || 0;
-    const completed = TOTALS[mk].orders;
-    const total = completed + cancelled;
-    const cancelRate = total ? (cancelled / total * 100).toFixed(1) : '0.0';
-    const suppliers = [...(SUPPLIERS[mk] || [])].sort((a, b) => b.orders - a.orders);
-    return `
-      <div class="two-col">
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">Order status</span><span class="panel-meta">${cancelRate}% cancellation rate</span></div>
-          <div style="padding:var(--space-xl);">${miniBarList([{ name: 'Completed / active', value: completed }, { name: 'Cancelled', value: cancelled }], total)}</div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">Top suppliers by orders</span></div>
-          ${suppliers.length ? `<table class="data-table"><thead><tr><th>Supplier</th><th class="r">Orders</th></tr></thead><tbody>${suppliers.map(s => `<tr><td class="td-name">${s.name}</td><td class="r">${fmtNum(s.orders)}</td></tr>`).join('')}</tbody></table>` : `<div style="padding:var(--space-xl);color:var(--text-soft);font-size:13px;">No supplier data yet for this market.</div>`}
-        </div>
-      </div>`;
-  }
+  if (key === 'orders' || key === 'orderValue') {
+    const suppliersPanel = `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Top suppliers</span><span class="panel-meta">Sorted by ${key === 'orders' ? 'orders' : 'order value'}</span></div>
+      ${suppliersPanelHtml(mk, key)}
+    </div>`;
 
-  if (key === 'orderValue') {
+    if (key === 'orders') {
+      const cancelled = CANCELLED[mk] || 0;
+      const completed = TOTALS[mk].orders;
+      const total = completed + cancelled;
+      const cancelRate = total ? (cancelled / total * 100).toFixed(1) : '0.0';
+      return `
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Order status</span><span class="panel-meta">${cancelRate}% cancellation rate</span></div>
+            <div style="padding:var(--space-xl);">${miniBarList([{ name: 'Completed / active', value: completed }, { name: 'Cancelled', value: cancelled }], total)}</div>
+          </div>
+          ${suppliersPanel}
+        </div>`;
+    }
+
     const avg = TOTALS[mk].orders ? TOTALS[mk].orderValue / TOTALS[mk].orders : 0;
-    const suppliers = [...(SUPPLIERS[mk] || [])].sort((a, b) => b.orderValue - a.orderValue);
     return `
       <div class="two-col">
         <div class="panel">
@@ -836,10 +869,7 @@ function renderMetricBreakdown(mk, key) {
             <div class="kpi-context" style="margin-top:6px;">per order, this period</div>
           </div>
         </div>
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">Top suppliers by order value</span></div>
-          ${suppliers.length ? `<table class="data-table"><thead><tr><th>Supplier</th><th class="r">Order value</th></tr></thead><tbody>${suppliers.map(s => `<tr><td class="td-name">${s.name}</td><td class="r">${fmtMoney(s.orderValue)}</td></tr>`).join('')}</tbody></table>` : `<div style="padding:var(--space-xl);color:var(--text-soft);font-size:13px;">No supplier data yet for this market.</div>`}
-        </div>
+        ${suppliersPanel}
       </div>`;
   }
 
@@ -898,31 +928,19 @@ function openMerchant(mk, idx) {
       <span class="nb-pill neutral">${meta.flag} ${meta.label}</span>
       ${statusLabel(r.status)}
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
-      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
-        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">Outlets</div>
-        <div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--text);">1</div>
-      </div>
-      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
-        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">Orders made</div>
-        <div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--text);">${fmtNum(r.orders)}</div>
-      </div>
-      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
-        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">Order value</div>
-        <div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--text);">${fmtMoney(r.orderValue)}</div>
-      </div>
-      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
-        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">Invoice value</div>
-        <div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--text);">${fmtMoney(r.invValue)}</div>
-      </div>
+    <div class="stat-grid">
+      ${statCardHtml('Outlets', '1')}
+      ${statCardHtml('Orders made', fmtNum(r.orders))}
+      ${statCardHtml('Order value', fmtMoney(r.orderValue))}
+      ${statCardHtml('Invoice value', fmtMoney(r.invValue))}
     </div>
     <div>
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-bottom:var(--space-xs);">Invoices</div>
+      <div class="mini-label" style="margin-bottom:var(--space-xs);">Invoices</div>
       <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border);"><span>Uploaded</span><strong>${fmtNum(r.invUploaded)}</strong></div>
       <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:6px 0;"><span>Processed</span><strong>${fmtNum(r.invProcessed)}</strong></div>
     </div>
     ${r.suppliers.length ? `<div>
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-bottom:var(--space-xs);">Suppliers used</div>
+      <div class="mini-label" style="margin-bottom:var(--space-xs);">Suppliers used</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">${r.suppliers.map(s => `<span class="nb-pill neutral">${s}</span>`).join('')}</div>
     </div>` : ''}
   `;
@@ -1031,7 +1049,7 @@ function applyCompare() {
   const labels = { 'previous-week': 'previous week', 'previous-month': 'previous month', 'previous-year': 'same month last year', 'none': '' };
   compareLabel = labels[sel.value];
   renderAllPanel();
-  ['SG', 'MY', 'ID', 'AU'].forEach(mk => { if (document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk); });
+  ['SG', 'MY', 'ID', 'AU', 'UNATTRIBUTED'].forEach(mk => { if (document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk); });
   insightsToast(sel.value === 'none' ? 'Comparison turned off.' : 'Now comparing against ' + compareLabel + '.');
 }
 
