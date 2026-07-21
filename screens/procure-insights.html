@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Procure Insights — Nomni HQ</title>
+<link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+<link rel="stylesheet" href="../shared/components.css?v=4"/>
+<style>
+  body { background: var(--surface-soft); }
+  .page-body { padding-block: var(--space-2xl); }
+  .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-2xl); }
+
+  /* ── Page header ── */
+  .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap; }
+  .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .page-eyebrow { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent); }
+  .page-title { font-size: 35px; font-weight: 700; color: var(--text); letter-spacing: -0.025em; line-height: 1.1; }
+  .page-sub { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+  .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+  /* ── Filter bar ── */
+  .filter-bar { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+  .filter-select {
+    height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text);
+    cursor: pointer; outline: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right var(--space-sm) center;
+    transition: border-color var(--dur-1) var(--ease-standard);
+  }
+  .filter-select:focus { border-color: var(--text-accent); }
+  .filter-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-right: -2px; }
+
+  /* ── Date range control ── */
+  .daterange-wrap { position: relative; }
+  .daterange-pop {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg); padding: var(--space-lg); width: 300px;
+    display: flex; flex-direction: column; gap: var(--space-md);
+  }
+  .dr-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dr-chip { padding: 5px 10px; border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; }
+  .dr-chip:hover { background: var(--surface-soft); }
+  .dr-chip.active { background: var(--mint); border-color: var(--fern); color: var(--spinach); font-weight: 600; }
+  .dr-fields { display: flex; align-items: center; gap: var(--space-sm); }
+  .dr-fields input { flex: 1; height: 34px; padding-inline: var(--space-sm); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; color: var(--text); background: var(--surface); }
+  .dr-sep { font-size: 12px; color: var(--text-soft); }
+  .dr-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); border-top: 1px solid var(--border); padding-top: var(--space-md); }
+
+  /* ── Tab navigation ── */
+  .tab-nav { display: flex; gap: 0; border-bottom: 1.5px solid var(--border); flex-wrap: wrap; }
+  .tab-btn {
+    padding: var(--space-sm) var(--space-xl); font-size: 14px; font-weight: 500; color: var(--text-soft);
+    background: none; border: none; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px;
+    transition: color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard);
+    display: flex; align-items: center; gap: var(--space-xs); white-space: nowrap;
+  }
+  .tab-btn i { font-size: 15px; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--text); font-weight: 600; border-bottom-color: var(--spinach); }
+  .tab-btn .tab-flag { font-size: 13px; }
+
+  .tab-panel { display: none; flex-direction: column; gap: var(--space-2xl); }
+  .tab-panel.active { display: flex; }
+
+  /* ── KPI strip ── */
+  .kpi-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-lg); }
+  .kpi-strip.cols-6 { grid-template-columns: repeat(6, 1fr); }
+  .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-md); text-align: left; cursor: default; transition: box-shadow var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard); }
+  .kpi-tile.clickable { cursor: pointer; }
+  .kpi-tile.clickable:hover { box-shadow: var(--shadow-md); border-color: var(--fern); }
+  .kpi-tile.sorted { border-color: var(--fern); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fern) 12%, transparent); }
+  .kpi-tile.dim { opacity: 0.5; }
+  .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); display: flex; align-items: center; gap: 4px; }
+  .kpi-label i { font-size: 13px; }
+  .kpi-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; font-feature-settings: 'tnum' 1; }
+  .kpi-context { font-size: 12px; font-weight: 500; color: var(--text-soft); display: flex; align-items: center; gap: var(--space-xs); }
+
+  /* ── Chart cards ── */
+  .charts-row { display: grid; grid-template-columns: 3fr 2fr; gap: var(--space-lg); }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; }
+  .chart-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .chart-legend { display: flex; align-items: center; gap: var(--space-lg); }
+  .legend-item { display: flex; align-items: center; gap: var(--space-xs); font-size: 12px; color: var(--text-soft); }
+  .legend-line { width: 18px; height: 2px; border-radius: 2px; }
+  .svg-chart-wrap { width: 100%; overflow: hidden; border-radius: var(--radius-sm); }
+  .svg-chart-wrap svg { display: block; width: 100%; height: auto; }
+  .chart-x-labels { display: flex; justify-content: space-between; padding-inline: 4px; margin-top: -4px; }
+  .chart-x-label { font-size: 10px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+
+  /* ── Bar list (market comparison) ── */
+  .bar-list { display: flex; flex-direction: column; gap: var(--space-md); }
+  .bar-row { display: grid; align-items: center; gap: var(--space-sm); grid-template-columns: 130px 1fr 90px; }
+  .bar-row.clickable { cursor: pointer; border-radius: var(--radius-sm); padding: 3px var(--space-xs); transition: background var(--dur-1) var(--ease-standard); }
+  .bar-row.clickable:hover { background: var(--surface-soft); }
+  .bar-label { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+  .bar-track { height: 22px; background: color-mix(in srgb, var(--border) 70%, transparent); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--fern); transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+  .bar-fill.muted { background: color-mix(in srgb, var(--text-soft) 45%, transparent); }
+  .bar-value { font-size: 12px; font-weight: 600; color: var(--text); text-align: right; font-feature-settings: 'tnum' 1; white-space: nowrap; }
+
+  /* ── Data tables ── */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border); gap: var(--space-md); flex-wrap: wrap; }
+  .panel-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .panel-meta { font-size: 12px; color: var(--text-soft); }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { text-align: left; padding: var(--space-sm) var(--space-lg); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
+  .data-table th:hover { color: var(--text); }
+  .data-table th.sorted { color: var(--fern); }
+  .data-table th.r, .data-table td.r { text-align: right; font-feature-settings: 'tnum' 1; }
+  .data-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr.clickable { cursor: pointer; }
+  .data-table tbody tr.clickable:hover td { background: var(--surface-soft); }
+  .td-name { font-weight: 500; }
+  .td-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+
+  /* ── Section header ── */
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; }
+  .section-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .section-meta { font-size: 12px; color: var(--text-soft); }
+
+  /* ── Delta chips ── */
+  .delta { font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; font-feature-settings: 'tnum' 1; }
+  .delta.up { color: var(--status-ok-fg); }
+  .delta.down { color: var(--status-risk-fg); }
+  .delta.flat { color: var(--text-soft); }
+
+  /* ── Info note ── */
+  .info-note { display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-lg); border-radius: var(--radius-md); background: var(--status-info-bg); color: var(--text); font-size: 13px; line-height: 1.6; }
+  .info-note i { flex-shrink: 0; font-size: 16px; margin-top: 1px; color: var(--status-info-fg); }
+  .info-note.warn { background: var(--status-warn-bg); }
+  .info-note.warn i { color: var(--status-warn-fg); }
+  .info-note strong { color: var(--text); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); align-items: start; }
+</style>
+</head>
+<body>
+<script src="../shared/shell.js?v=12" data-active="insights"></script>
+
+<div class="page-body">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- Page header -->
+    <header class="page-header">
+      <div class="page-header-left">
+        <span class="page-eyebrow">Procure Insights</span>
+        <h1 class="page-title">Platform activity</h1>
+        <p class="page-sub" id="page-sub">All markets · <span id="header-range-label">01–17 Jul 2026</span></p>
+      </div>
+      <div class="page-actions">
+        <button class="nb-btn" onclick="insightsToast('Exporting current view to XLSX…')"><i class="ti ti-file-spreadsheet"></i>Export view</button>
+      </div>
+    </header>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="daterange-wrap">
+        <button class="nb-btn" onclick="toggleDateRangePopover()"><i class="ti ti-calendar"></i><span id="daterange-label">01–17 Jul 2026</span><i class="ti ti-chevron-down"></i></button>
+        <div class="daterange-pop" id="daterange-pop" style="display:none;">
+          <div class="dr-quick" id="dr-quick"></div>
+          <div class="dr-fields">
+            <input type="date" id="dr-from" value="2026-07-01"/>
+            <span class="dr-sep">to</span>
+            <input type="date" id="dr-to" value="2026-07-17"/>
+          </div>
+          <div class="dr-actions">
+            <button class="nb-btn ghost" onclick="toggleDateRangePopover()">Cancel</button>
+            <button class="nb-btn primary" onclick="applyDateRange()">Apply</button>
+          </div>
+        </div>
+      </div>
+      <span class="filter-label">Compare</span>
+      <select class="filter-select" id="compare-select" onchange="applyCompare()">
+        <option value="previous-week">Previous week</option>
+        <option value="previous-month" selected>Previous month</option>
+        <option value="previous-year">Same month last year</option>
+        <option value="none">None</option>
+      </select>
+    </div>
+
+    <!-- Market tabs -->
+    <nav class="tab-nav" role="tablist" aria-label="Market">
+      <button class="tab-btn active" role="tab" aria-selected="true"  onclick="switchMarket('ALL')"><i class="ti ti-world"></i>All markets</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('SG')"><span class="tab-flag">🇸🇬</span>Singapore</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('MY')"><span class="tab-flag">🇲🇾</span>Malaysia</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('ID')"><span class="tab-flag">🇮🇩</span>Indonesia</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('AU')"><span class="tab-flag">🇦🇺</span>Australia</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('UNATTRIBUTED')"><i class="ti ti-help-circle"></i>Unattributed</button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--  ALL MARKETS (Point 1)                     -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-ALL" role="tabpanel">
+
+      <div class="kpi-strip" id="kpi-ALL"></div>
+
+      <div class="two-col">
+        <div class="chart-card">
+          <div class="section-head" style="margin:0;">
+            <span class="chart-title">Activity by market</span>
+            <span class="section-meta">Orders this period</span>
+          </div>
+          <div class="bar-list" id="bar-ALL"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Market comparison</span>
+            <span class="panel-meta">Click a row to drill in</span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" aria-label="Market comparison">
+              <thead>
+                <tr>
+                  <th>Market</th>
+                  <th class="r">Merchants</th>
+                  <th class="r">Orders</th>
+                  <th class="r">Invoices processed</th>
+                  <th class="r">Invoice value</th>
+                </tr>
+              </thead>
+              <tbody id="market-compare-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-note" id="unattributed-callout"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--  PER-MARKET PANELS (Point 2 + 3)           -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-SG" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-MY" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-ID" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-AU" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-UNATTRIBUTED" role="tabpanel"></div>
+
+  </div>
+</div>
+
+<!-- Merchant drill-down drawer -->
+<div class="nb-drawer-scrim" id="drill-scrim" onclick="closeDrill()"></div>
+<aside class="nb-drawer" id="drill-drawer" aria-label="Merchant detail" aria-hidden="true">
+  <div class="nb-drawer-head">
+    <span class="nb-drawer-title" id="drill-title">Merchant</span>
+    <button class="nb-btn ghost" onclick="closeDrill()" aria-label="Close"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="nb-drawer-body" id="drill-body" style="display:flex;flex-direction:column;gap:var(--space-lg);"></div>
+  <div class="nb-drawer-foot">
+    <button class="nb-btn" onclick="closeDrill()">Close</button>
+    <button class="nb-btn primary" onclick="insightsToast('Opening full merchant report…')">Full report</button>
+  </div>
+</aside>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+<style>
+  .toast-wrap { position: fixed; bottom: var(--space-xl); left: 50%; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: var(--space-sm); align-items: center; pointer-events: none; }
+  .toast { display: flex; align-items: center; gap: var(--space-sm); background: var(--surface-deep); color: var(--cream); padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 500; animation: toastin var(--dur-3) var(--ease-emphasized); }
+  .toast i { color: var(--spring); font-size: 16px; }
+  @keyframes toastin { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => { NomniShell.init('Insights'); init(); });
+
+/* ══════════════════════════════════════════════════════
+   DATA MODEL
+   Figures below are grounded in the real Nomni Procure
+   Insights dashboard (35.226.78.102/procure-insights) for
+   July 2026 — pulled from its Orders Overview and Invoice
+   Overview JSON feeds. Merchant-level rows are a realistic
+   top-N sample (the real product only ever renders top-N
+   rankings too, never an exhaustive list), while the KPI
+   totals and market splits are the true aggregate figures.
+   ══════════════════════════════════════════════════════ */
+
+const MARKET_META = {
+  ALL:          { label: 'All markets', flag: '🌐' },
+  SG:           { label: 'Singapore',   flag: '🇸🇬' },
+  MY:           { label: 'Malaysia',    flag: '🇲🇾' },
+  ID:           { label: 'Indonesia',   flag: '🇮🇩' },
+  AU:           { label: 'Australia',   flag: '🇦🇺' },
+  UNATTRIBUTED: { label: 'Unattributed', flag: '' },
+};
+
+// deltaPct: % change vs the comparison period (shared shape across markets,
+// re-labelled by whichever Compare option is selected).
+const DELTA = {
+  merchants: -4.9, orders: -39.4, orderValue: 7.0,
+  invUploaded: -41.9, invProcessed: -44.6, invValue: -35.8, suppliers: -6.2,
+};
+
+const TOTALS = {
+  ALL:          { merchants: 862, orders: 33752, orderValue: 1285898765.03, invUploaded: 27778, invProcessed: 18280, invValue: 1133749156.16, suppliers: 1578 },
+  SG:           { merchants: 709, orders: 28743, orderValue: 9460188.23,    invUploaded: 16263, invProcessed: 16227, invValue: 4813792.08,     suppliers: 749 },
+  MY:           { merchants: 136, orders: 3998,  orderValue: 3213531.42,   invUploaded: 1058,  invProcessed: 1057,  invValue: 983144.91,       suppliers: 104 },
+  ID:           { merchants: 16,  orders: 1009,  orderValue: 1273224995.00,invUploaded: 1005,  invProcessed: 996,   invValue: 1117484988.75,   suppliers: 137 },
+  AU:           { merchants: 1,   orders: 2,     orderValue: 50.38,        invUploaded: 0,     invProcessed: 0,     invValue: 0,               suppliers: 1 },
+  UNATTRIBUTED: { merchants: null,orders: null,  orderValue: null,         invUploaded: 9452,  invProcessed: 0,     invValue: 10467230.42,     suppliers: 588 },
+};
+
+const MERCHANTS = {
+  SG: [
+    { name: 'Lineage Logistics Mandai Pte Ltd', status: 'active', orders: 573, orderValue: 682320.33, invUploaded: 612, invProcessed: 601, invValue: 645210.10, suppliers: ['Cold Chain Distributors', 'Mandai Fresh Produce'] },
+    { name: 'Phoon Huat Pte Ltd',                status: 'active', orders: 535, orderValue: 177288.67, invUploaded: 540, invProcessed: 533, invValue: 168400.55, suppliers: ['Bakers Pantry', 'Dairy Direct'] },
+    { name: 'MSB Cafeteria (Halal Kitchen)',     status: 'active', orders: 1086, orderValue: 298110.20, invUploaded: 1090, invProcessed: 1082, invValue: 291005.40, suppliers: ['Halal Meats Co', 'Green Farmers Market'] },
+    { name: 'Spize - Bedok',                     status: 'active', orders: 939, orderValue: 210044.90, invUploaded: 945, invProcessed: 930, invValue: 205110.00, suppliers: ['Fresh Direct', 'Sydney Butchers Co.'] },
+    { name: 'BG - Bellygood Caterer',            status: 'active', orders: 1126, orderValue: 341220.15, invUploaded: 1130, invProcessed: 1120, invValue: 336900.80, suppliers: ['Farm Fresh', 'Dairy Direct'] },
+    { name: 'Kitchen (Mount Novena)',            status: 'active', orders: 1557, orderValue: 402880.60, invUploaded: 1560, invProcessed: 1548, invValue: 396210.25, suppliers: ['Green Farmers Market', 'Ocean Fresh Seafood'] },
+    { name: 'Canopy Jurong Lake Gardens - Kitchen', status: 'new', orders: 24, orderValue: 6120.00, invUploaded: 26, invProcessed: 22, invValue: 5890.00, suppliers: ['Fresh Direct'] },
+    { name: 'Pinhole Coffee Bar - Purvis',       status: 'new', orders: 18, orderValue: 3040.50, invUploaded: 19, invProcessed: 16, invValue: 2910.00, suppliers: ['Roasters Collective'] },
+    { name: 'Canopy Changi City Point - Kitchen', status: 'new', orders: 15, orderValue: 3800.00, invUploaded: 16, invProcessed: 13, invValue: 3650.00, suppliers: ['Fresh Direct'] },
+    { name: 'Vincenzo Capuano',                  status: 'dropped', orders: 112, orderValue: 34200.00, invUploaded: 118, invProcessed: 112, invValue: 33500.00, suppliers: ['Mediterranean Foods'] },
+    { name: 'Gotti Italiano',                    status: 'dropped', orders: 103, orderValue: 29850.00, invUploaded: 108, invProcessed: 103, invValue: 29000.00, suppliers: ['Mediterranean Foods'] },
+    { name: 'Burma Social - Siglap',             status: 'dropped', orders: 59,  orderValue: 15100.00, invUploaded: 61, invProcessed: 58, invValue: 14700.00, suppliers: ['Green Farmers Market'] },
+  ],
+  MY: [
+    { name: 'Kenny Hills - Central Pastry - PJ', status: 'active', orders: 872, orderValue: 527544.08, invUploaded: 880, invProcessed: 872, invValue: 519220.00, suppliers: ['Bakers Pantry', 'Dairy Direct'] },
+    { name: 'Kenny Hills - Bangsar',             status: 'active', orders: 410, orderValue: 248900.00, invUploaded: 415, invProcessed: 409, invValue: 244100.00, suppliers: ['Bakers Pantry'] },
+    { name: 'Village Grocer - Bangsar',          status: 'active', orders: 265, orderValue: 160300.00, invUploaded: 270, invProcessed: 264, invValue: 157900.00, suppliers: ['Green Farmers Market'] },
+    { name: "Ben's Independent Grocer - Bandar Utama", status: 'active', orders: 244, orderValue: 147600.00, invUploaded: 248, invProcessed: 241, invValue: 144300.00, suppliers: ['Fresh Direct'] },
+    { name: 'Sushi Zanmai - Mid Valley',         status: 'active', orders: 198, orderValue: 119800.00, invUploaded: 202, invProcessed: 196, invValue: 116900.00, suppliers: ['Ocean Fresh Seafood'] },
+    { name: 'Marché Mövenpick - KLCC',           status: 'active', orders: 156, orderValue: 94300.00, invUploaded: 160, invProcessed: 154, invValue: 91800.00, suppliers: ['Farm Fresh', 'Mediterranean Foods'] },
+    { name: 'Coffee Bean - Sunway',              status: 'new', orders: 32, orderValue: 8100.00, invUploaded: 34, invProcessed: 29, invValue: 7700.00, suppliers: ['Roasters Collective'] },
+    { name: 'Old Town White Coffee - Damansara', status: 'active', orders: 112, orderValue: 67700.00, invUploaded: 115, invProcessed: 111, invValue: 66200.00, suppliers: ['Roasters Collective', 'Dairy Direct'] },
+    { name: "La Juiceria - Publika",             status: 'dropped', orders: 28, orderValue: 6900.00, invUploaded: 30, invProcessed: 27, invValue: 6500.00, suppliers: ['Green Farmers Market'] },
+    { name: 'Grain Traders - TTDI',              status: 'active', orders: 84, orderValue: 50780.00, invUploaded: 86, invProcessed: 83, invValue: 49400.00, suppliers: ['Bakers Pantry'] },
+  ],
+  ID: [
+    { name: 'Shelter Pererenan - Kitchen',       status: 'active', orders: 358, orderValue: 567181440.13, invUploaded: 362, invProcessed: 356, invValue: 561200000.00, suppliers: ['Bali Fresh Market'] },
+    { name: 'Shelter Pererenan - Bar',           status: 'active', orders: 167, orderValue: 229801355.74, invUploaded: 170, invProcessed: 165, invValue: 224500000.00, suppliers: ['Bali Fresh Market'] },
+    { name: 'DHP ID Master Franchisee',          status: 'active', orders: 210, orderValue: 340000000.00, invUploaded: 214, invProcessed: 209, invValue: 332100000.00, suppliers: ['Jakarta Distribution Co'] },
+    { name: 'Canggu Coffee Collective',          status: 'active', orders: 96, orderValue: 68900000.00, invUploaded: 98, invProcessed: 95, invValue: 66700000.00, suppliers: ['Bali Fresh Market'] },
+    { name: 'Ubud Organic Kitchen',              status: 'new', orders: 12, orderValue: 9800000.00, invUploaded: 13, invProcessed: 10, invValue: 9100000.00, suppliers: ['Bali Fresh Market'] },
+    { name: 'Seminyak Beach Club',               status: 'active', orders: 140, orderValue: 51500000.00, invUploaded: 142, invProcessed: 138, invValue: 49800000.00, suppliers: ['Jakarta Distribution Co'] },
+    { name: 'Bali Bakehouse - Kerobokan',        status: 'dropped', orders: 26, orderValue: 5843200.00, invUploaded: 27, invProcessed: 23, invValue: 5600000.00, suppliers: ['Bali Fresh Market'] },
+  ],
+  AU: [
+    { name: 'Nomni AU Pilot Kitchen - Sydney',   status: 'new', orders: 2, orderValue: 50.38, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: [] },
+  ],
+  UNATTRIBUTED: [],
+};
+
+const METRIC_DEFS_ALL = [
+  { key: 'orders',       label: 'Orders',              icon: 'ti-shopping-cart' },
+  { key: 'invProcessed', label: 'Invoices processed',  icon: 'ti-file-check' },
+  { key: 'invValue',     label: 'Invoice value',       icon: 'ti-currency-dollar', money: true },
+  { key: 'merchants',    label: 'Active merchants',    icon: 'ti-building-store' },
+  { key: 'suppliers',    label: 'Suppliers',           icon: 'ti-truck' },
+];
+
+const METRIC_DEFS_MARKET = [
+  { key: 'merchants',    label: 'Active merchants',    icon: 'ti-building-store' },
+  { key: 'orders',       label: 'Orders',              icon: 'ti-shopping-cart' },
+  { key: 'orderValue',   label: 'Order value',         icon: 'ti-receipt-2', money: true },
+  { key: 'invUploaded',  label: 'Invoices uploaded',   icon: 'ti-upload' },
+  { key: 'invProcessed', label: 'Invoices processed',  icon: 'ti-file-check' },
+  { key: 'invValue',     label: 'Invoice value',       icon: 'ti-currency-dollar', money: true },
+];
+
+let compareLabel = 'previous month';
+let sortState = { SG: 'orders', MY: 'orders', ID: 'orders', AU: 'orders' };
+
+/* ── Formatting helpers ── */
+function fmtNum(n) { return n === null || n === undefined ? '—' : Math.round(n).toLocaleString('en-US'); }
+function fmtMoney(n) {
+  if (n === null || n === undefined) return '—';
+  if (n >= 1000000000) return '$' + (n/1000000000).toFixed(2) + 'B';
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+function deltaChip(pct) {
+  if (pct === null || pct === undefined) return '';
+  const dir = pct > 0.5 ? 'up' : pct < -0.5 ? 'down' : 'flat';
+  const arrow = dir === 'up' ? '▲' : dir === 'down' ? '▼' : '·';
+  return `<span class="delta ${dir}">${arrow} ${Math.abs(pct).toFixed(1)}% vs ${compareLabel}</span>`;
+}
+
+/* ── Deterministic bell-curve daily series (no Math.random — keeps re-renders stable) ── */
+function distribute(total, days, peakDay) {
+  const weights = [];
+  for (let i = 0; i < days; i++) {
+    const d = Math.abs(i - peakDay);
+    weights.push(Math.max(0.35, 1 - d * 0.055));
+  }
+  const sum = weights.reduce((a, b) => a + b, 0);
+  return weights.map(w => (total || 0) * w / sum);
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER: All-markets panel
+   ══════════════════════════════════════════════════════ */
+function renderAllPanel() {
+  const t = TOTALS.ALL;
+  const kpiWrap = document.getElementById('kpi-ALL');
+  kpiWrap.innerHTML = METRIC_DEFS_ALL.map(m => `
+    <div class="kpi-tile">
+      <div class="kpi-label"><i class="ti ${m.icon}"></i>${m.label}</div>
+      <div class="kpi-value">${m.money ? fmtMoney(t[m.key]) : fmtNum(t[m.key])}</div>
+      <div class="kpi-context">${deltaChip(DELTA[m.key])}</div>
+    </div>`).join('');
+
+  const marketsForBar = ['SG', 'MY', 'ID', 'AU'];
+  const maxOrders = Math.max(...marketsForBar.map(k => TOTALS[k].orders));
+  document.getElementById('bar-ALL').innerHTML = marketsForBar.map(k => {
+    const m = MARKET_META[k], v = TOTALS[k];
+    const pct = Math.max(2, (v.orders / maxOrders) * 100);
+    return `<div class="bar-row clickable" onclick="switchMarket('${k}')" tabindex="0">
+      <span class="bar-label">${m.flag} ${m.label}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <span class="bar-value">${fmtNum(v.orders)}</span>
+    </div>`;
+  }).join('');
+
+  const rows = ['SG', 'MY', 'ID', 'AU', 'UNATTRIBUTED'];
+  document.getElementById('market-compare-tbody').innerHTML = rows.map(k => {
+    const m = MARKET_META[k], v = TOTALS[k];
+    return `<tr class="clickable" onclick="switchMarket('${k}')">
+      <td class="td-name">${m.flag ? m.flag + ' ' : ''}${m.label}</td>
+      <td class="r">${fmtNum(v.merchants)}</td>
+      <td class="r">${fmtNum(v.orders)}</td>
+      <td class="r">${fmtNum(v.invProcessed)}</td>
+      <td class="r">${fmtMoney(v.invValue)}</td>
+    </tr>`;
+  }).join('');
+
+  const u = TOTALS.UNATTRIBUTED;
+  const pctUnattr = (u.invUploaded / t.invUploaded * 100).toFixed(0);
+  document.getElementById('unattributed-callout').innerHTML = `
+    <i class="ti ti-alert-triangle"></i>
+    <span><strong>${fmtNum(u.invUploaded)} invoices (${pctUnattr}% of all uploads)</strong> couldn't be matched to a market or merchant this period — see the <strong>Unattributed</strong> tab. Closing this gap would materially improve how much of the platform's activity these numbers actually reflect.</span>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER: Per-market panel (Point 2 + 3)
+   ══════════════════════════════════════════════════════ */
+function renderMarketPanel(mk) {
+  const meta = MARKET_META[mk];
+  const t = TOTALS[mk];
+  const panel = document.getElementById('panel-' + mk);
+  const merchants = MERCHANTS[mk] || [];
+  const totalMerchants = t.merchants;
+
+  const kpiTiles = METRIC_DEFS_MARKET.map(m => {
+    const clickable = mk !== 'UNATTRIBUTED';
+    const val = t[m.key];
+    return `<div class="kpi-tile ${clickable ? 'clickable' : ''} ${sortState[mk] === m.key ? 'sorted' : ''} ${val === null ? 'dim' : ''}"
+                 ${clickable && val !== null ? `onclick="sortMerchants('${mk}','${m.key}')"` : ''}>
+      <div class="kpi-label"><i class="ti ${m.icon}"></i>${m.label}</div>
+      <div class="kpi-value">${m.money ? fmtMoney(val) : fmtNum(val)}</div>
+      <div class="kpi-context">${val !== null ? deltaChip(DELTA[m.key]) : 'Not attributable'}</div>
+    </div>`;
+  }).join('');
+
+  let bodyHtml = `
+    <div class="kpi-strip cols-6">${kpiTiles}</div>
+    <div class="chart-card full">
+      <div class="chart-head">
+        <span class="chart-title">${meta.label} · Orders &amp; invoices processed</span>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-line" style="background:#129B41;"></span>Orders</div>
+          <div class="legend-item"><span class="legend-line" style="background:#3F8AFB;"></span>Invoices processed</div>
+        </div>
+      </div>
+      <div class="svg-chart-wrap" id="trend-${mk}"></div>
+      <div class="chart-x-labels" id="trend-x-${mk}"></div>
+    </div>`;
+
+  if (mk === 'UNATTRIBUTED') {
+    bodyHtml += `
+      <div class="info-note warn">
+        <i class="ti ti-help-circle"></i>
+        <span>These ${fmtNum(t.invUploaded)} invoices arrived without a resolvable outlet or supplier match, so they can't be attributed to a merchant or market — there's nothing to drill into below. They sit in Issued / Deleted / Pending states rather than Processed, which is why Invoices processed reads 0 here.</span>
+      </div>`;
+  } else {
+    bodyHtml += `
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Merchants</span>
+          <span class="panel-meta">Showing top ${merchants.length} of ${fmtNum(totalMerchants)} active merchants · sorted by ${METRIC_DEFS_MARKET.find(m => m.key === sortState[mk]).label.toLowerCase()}</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" aria-label="Merchants" id="merchant-table-${mk}"></table>
+        </div>
+      </div>`;
+  }
+
+  panel.innerHTML = bodyHtml;
+
+  // Trend chart
+  const days = 17, peak = 8;
+  const orderSeries = distribute(t.orders, days, peak);
+  const invSeries = distribute(t.invProcessed, days, peak);
+  renderDualLineChart('trend-' + mk, orderSeries, invSeries);
+  document.getElementById('trend-x-' + mk).innerHTML =
+    ['01 Jul', '', '', '', '', '', '', '08 Jul', '', '', '', '', '', '', '', '', '17 Jul']
+      .map(l => `<span class="chart-x-label">${l}</span>`).join('');
+
+  if (mk !== 'UNATTRIBUTED') renderMerchantTable(mk);
+}
+
+function renderMerchantTable(mk) {
+  const sortKey = sortState[mk];
+  const rows = [...MERCHANTS[mk]].sort((a, b) => (b[sortKey] || 0) - (a[sortKey] || 0));
+  const table = document.getElementById('merchant-table-' + mk);
+  if (!table) return;
+  const cols = [
+    { key: 'orders', label: 'Orders' },
+    { key: 'orderValue', label: 'Order value', money: true },
+    { key: 'invUploaded', label: 'Inv. uploaded' },
+    { key: 'invProcessed', label: 'Inv. processed' },
+    { key: 'invValue', label: 'Invoice value', money: true },
+  ];
+  table.innerHTML = `
+    <thead><tr>
+      <th>Merchant</th>
+      ${cols.map(c => `<th class="r ${sortKey === c.key ? 'sorted' : ''}" onclick="sortMerchants('${mk}','${c.key}')">${c.label}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+      ${rows.map((r, i) => `
+        <tr class="clickable" onclick="openMerchant('${mk}', ${i})">
+          <td>
+            <div class="td-name">${r.name}</div>
+            <div class="td-sub">${statusLabel(r.status)}</div>
+          </td>
+          ${cols.map(c => `<td class="r">${c.money ? fmtMoney(r[c.key]) : fmtNum(r[c.key])}</td>`).join('')}
+        </tr>`).join('')}
+    </tbody>`;
+}
+
+function statusLabel(s) {
+  if (s === 'new') return '<span class="nb-pill info"><i class="ti ti-circle-filled"></i>New this period</span>';
+  if (s === 'dropped') return '<span class="nb-pill risk"><i class="ti ti-circle-filled"></i>Dropped</span>';
+  return '<span class="nb-pill neutral"><i class="ti ti-circle-filled"></i>Active</span>';
+}
+
+function sortMerchants(mk, key) {
+  sortState[mk] = key;
+  renderMarketPanel(mk);
+  document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ── Merchant drawer ── */
+function openMerchant(mk, idx) {
+  const rows = [...MERCHANTS[mk]].sort((a, b) => (b[sortState[mk]] || 0) - (a[sortState[mk]] || 0));
+  const r = rows[idx];
+  const meta = MARKET_META[mk];
+  document.getElementById('drill-title').textContent = r.name;
+  document.getElementById('drill-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:var(--space-sm);">
+      <span class="nb-pill neutral">${meta.flag} ${meta.label}</span>
+      ${statusLabel(r.status)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">Outlets</div>
+        <div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--text);">1</div>
+      </div>
+      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">Orders made</div>
+        <div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--text);">${fmtNum(r.orders)}</div>
+      </div>
+      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">Order value</div>
+        <div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--text);">${fmtMoney(r.orderValue)}</div>
+      </div>
+      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">Invoice value</div>
+        <div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--text);">${fmtMoney(r.invValue)}</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-bottom:var(--space-xs);">Invoices</div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border);"><span>Uploaded</span><strong>${fmtNum(r.invUploaded)}</strong></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:6px 0;"><span>Processed</span><strong>${fmtNum(r.invProcessed)}</strong></div>
+    </div>
+    ${r.suppliers.length ? `<div>
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-bottom:var(--space-xs);">Suppliers used</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${r.suppliers.map(s => `<span class="nb-pill neutral">${s}</span>`).join('')}</div>
+    </div>` : ''}
+  `;
+  document.getElementById('drill-scrim').classList.add('open');
+  document.getElementById('drill-drawer').classList.add('open');
+  document.getElementById('drill-drawer').setAttribute('aria-hidden', 'false');
+}
+function closeDrill() {
+  document.getElementById('drill-scrim').classList.remove('open');
+  document.getElementById('drill-drawer').classList.remove('open');
+  document.getElementById('drill-drawer').setAttribute('aria-hidden', 'true');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrill(); });
+
+/* ── Dual-line SVG chart ── */
+function renderDualLineChart(containerId, seriesA, seriesB) {
+  const W = 900, H = 160;
+  const pad = { t: 16, r: 12, b: 8, l: 12 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  const all = [...seriesA, ...seriesB];
+  const minV = 0, maxV = Math.max(...all) * 1.15 || 1;
+  const range = maxV - minV || 1;
+  const x = (i, len) => pad.l + (i / (len - 1)) * pw;
+  const y = v => pad.t + (1 - (v - minV) / range) * ph;
+
+  function line(series, color) {
+    const pts = series.map((v, i) => `${x(i, series.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  function area(series, color, id) {
+    const pts = series.map((v, i) => `${x(i, series.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const firstX = x(0, series.length).toFixed(1), lastX = x(series.length - 1, series.length).toFixed(1);
+    const baseY = (pad.t + ph).toFixed(1);
+    return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient></defs>
+      <polygon points="${firstX},${baseY} ${pts} ${lastX},${baseY}" fill="url(#${id})"/>`;
+  }
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:140px;">
+    ${area(seriesA, '#129B41', 'ga' + containerId.replace(/\W/g, ''))}
+    ${line(seriesA, '#129B41')}
+    ${line(seriesB, '#3F8AFB')}
+  </svg>`;
+  const wrap = document.getElementById(containerId);
+  if (wrap) wrap.innerHTML = svg;
+}
+
+/* ── Tabs / market switching ── */
+function switchMarket(mk) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const isTarget = b.getAttribute('onclick')?.includes("'" + mk + "'");
+    b.classList.toggle('active', !!isTarget);
+    b.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+  });
+  document.getElementById('panel-' + mk).classList.add('active');
+  document.getElementById('page-sub').innerHTML = `${MARKET_META[mk].flag ? MARKET_META[mk].flag + ' ' : ''}${MARKET_META[mk].label} · <span>${document.getElementById('daterange-label').textContent}</span>`;
+  if (mk !== 'ALL' && !document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk);
+}
+
+/* ── Date range popover ── */
+const QUICK_RANGES = [
+  { label: 'This week', from: '2026-07-13', to: '2026-07-17' },
+  { label: 'This month', from: '2026-07-01', to: '2026-07-17' },
+  { label: 'Last 7 days', from: '2026-07-11', to: '2026-07-17' },
+  { label: 'Last 30 days', from: '2026-06-18', to: '2026-07-17' },
+];
+function toggleDateRangePopover() {
+  const pop = document.getElementById('daterange-pop');
+  pop.style.display = pop.style.display === 'none' ? 'flex' : 'none';
+  if (pop.style.display === 'flex') renderQuickRanges();
+}
+function renderQuickRanges() {
+  const from = document.getElementById('dr-from').value, to = document.getElementById('dr-to').value;
+  document.getElementById('dr-quick').innerHTML = QUICK_RANGES.map(r => `
+    <button type="button" class="dr-chip ${r.from === from && r.to === to ? 'active' : ''}" onclick="setQuickRange('${r.from}','${r.to}')">${r.label}</button>
+  `).join('');
+}
+function setQuickRange(from, to) {
+  document.getElementById('dr-from').value = from;
+  document.getElementById('dr-to').value = to;
+  renderQuickRanges();
+}
+function applyDateRange() {
+  const from = document.getElementById('dr-from').value, to = document.getElementById('dr-to').value;
+  const label = fmtDateLabel(from) + '–' + fmtDateLabel(to);
+  document.getElementById('daterange-label').textContent = label;
+  document.getElementById('header-range-label').textContent = label;
+  toggleDateRangePopover();
+  insightsToast('Date range updated to ' + label + '.');
+}
+function fmtDateLabel(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ');
+}
+document.addEventListener('click', e => {
+  const wrap = e.target.closest('.daterange-wrap');
+  if (!wrap) document.getElementById('daterange-pop').style.display = 'none';
+});
+
+/* ── Compare ── */
+function applyCompare() {
+  const sel = document.getElementById('compare-select');
+  const labels = { 'previous-week': 'previous week', 'previous-month': 'previous month', 'previous-year': 'same month last year', 'none': '' };
+  compareLabel = labels[sel.value];
+  renderAllPanel();
+  ['SG', 'MY', 'ID', 'AU'].forEach(mk => { if (document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk); });
+  insightsToast(sel.value === 'none' ? 'Comparison turned off.' : 'Now comparing against ' + compareLabel + '.');
+}
+
+/* ── Toast ── */
+function insightsToast(msg) {
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>' + msg;
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function init() {
+  renderAllPanel();
+}
+</script>
+</body>
+</html>
