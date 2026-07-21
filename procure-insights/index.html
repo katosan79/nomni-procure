@@ -6,6 +6,7 @@
 <title>Procure Insights</title>
 <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
 <link rel="stylesheet" href="../shared/components.css?v=4"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <style>
   body { background: var(--surface-soft); margin: 0; }
 
@@ -130,24 +131,40 @@
   .data-table th { text-align: left; padding: var(--space-sm) var(--space-lg); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
   .data-table th:hover { color: var(--text); }
   .data-table th.sorted { color: var(--fern); }
+  .data-table th .sort-caret { font-size: 12px; margin-left: 3px; vertical-align: -1px; }
   .data-table th.r, .data-table td.r { text-align: right; font-feature-settings: 'tnum' 1; }
   .data-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; }
   .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover td { background: color-mix(in srgb, var(--surface-soft) 55%, transparent); }
   .data-table tbody tr.clickable { cursor: pointer; }
   .data-table tbody tr.clickable:hover td { background: var(--surface-soft); }
   .td-name { font-weight: 500; }
   .td-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+
+  /* ── Entity cell (avatar + name) — Shopify Admin-style initials avatar in table rows ── */
+  .entity-cell { display: flex; align-items: center; gap: var(--space-sm); }
+  .row-avatar {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 26px; height: 26px; border-radius: 50%;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.01em;
+  }
 
   /* ── Section header ── */
   .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; }
   .section-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
   .section-meta { font-size: 12px; color: var(--text-soft); }
 
-  /* ── Delta chips ── */
-  .delta { font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; font-feature-settings: 'tnum' 1; }
-  .delta.up { color: var(--status-ok-fg); }
-  .delta.down { color: var(--status-risk-fg); }
-  .delta.flat { color: var(--text-soft); }
+  /* ── Delta chips — Shopify Admin-style trend badge (pill + arrow) instead of plain colored text ── */
+  .delta-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px; border-radius: var(--radius-pill);
+    font-size: 11px; font-weight: 600; line-height: 1.5; font-feature-settings: 'tnum' 1;
+  }
+  .delta-badge i { font-size: 11px; }
+  .delta-badge.up   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+  .delta-badge.down { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+  .delta-badge.flat { background: var(--surface-soft);   color: var(--text-soft); }
+  .delta-compare { font-size: 11px; color: var(--text-soft); }
 
   /* ── Info note ── */
   .info-note { display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-lg); border-radius: var(--radius-md); background: var(--status-info-bg); color: var(--text); font-size: 13px; line-height: 1.6; }
@@ -166,6 +183,9 @@
   .mini-row { display: flex; justify-content: space-between; padding: 8px var(--space-xl); border-bottom: 1px solid var(--border); font-size: 13px; }
   .mini-row:last-child { border-bottom: none; }
   .mini-empty { padding: var(--space-xl); color: var(--text-soft); font-size: 13px; }
+
+  /* ── Drawer title gets an avatar too, matching the table rows it drilled in from ── */
+  .nb-drawer-title { display: flex; align-items: center; gap: var(--space-sm); }
 
   @media (max-width: 1100px) {
     .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(3, 1fr); }
@@ -521,8 +541,32 @@ function fmtMoney(n) {
 function deltaChip(pct) {
   if (pct === null || pct === undefined) return '';
   const dir = pct > 0.5 ? 'up' : pct < -0.5 ? 'down' : 'flat';
-  const arrow = dir === 'up' ? '▲' : dir === 'down' ? '▼' : '·';
-  return `<span class="delta ${dir}">${arrow} ${Math.abs(pct).toFixed(1)}% vs ${compareLabel}</span>`;
+  const icon = dir === 'up' ? 'ti-arrow-up-right' : dir === 'down' ? 'ti-arrow-down-right' : 'ti-minus';
+  return `<span class="delta-badge ${dir}"><i class="ti ${icon}"></i>${Math.abs(pct).toFixed(1)}%</span> <span class="delta-compare">vs ${compareLabel}</span>`;
+}
+
+/* ── Entity avatars — Shopify Admin-style initials circle, deterministic per name ── */
+const AVATAR_PALETTE = [
+  { bg: 'var(--mint)', fg: 'var(--spinach)' },
+  { bg: 'var(--status-info-bg)', fg: 'var(--status-info-fg)' },
+  { bg: 'var(--status-warn-bg)', fg: 'var(--status-warn-fg)' },
+  { bg: 'var(--status-risk-bg)', fg: 'var(--status-risk-fg)' },
+  { bg: 'var(--surface-soft)', fg: 'var(--text-soft)' },
+];
+function initials(name) {
+  const parts = (name || '').match(/[A-Za-z0-9]+/g) || [];
+  if (!parts.length) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function avatarChip(name) {
+  const c = AVATAR_PALETTE[hashStr(name || '') % AVATAR_PALETTE.length];
+  return `<span class="row-avatar" style="background:${c.bg};color:${c.fg};">${initials(name)}</span>`;
 }
 
 /* ── Deterministic bell-curve daily series (no Math.random — keeps re-renders stable) ── */
@@ -576,9 +620,14 @@ function miniRowHtml(name, meta) {
 function suppliersPanelHtml(mk, sortBy) {
   const suppliers = [...(SUPPLIERS[mk] || [])].sort((a, b) => b[sortBy] - a[sortBy]);
   if (!suppliers.length) return `<div class="mini-empty">No supplier data yet for this market.</div>`;
+  const caret = '<i class="ti ti-chevron-down sort-caret"></i>';
   return `<table class="data-table">
-    <thead><tr><th>Supplier</th><th class="r ${sortBy === 'orders' ? 'sorted' : ''}">Orders</th><th class="r ${sortBy === 'orderValue' ? 'sorted' : ''}">Order value</th></tr></thead>
-    <tbody>${suppliers.map(s => `<tr><td class="td-name">${s.name}</td><td class="r">${fmtNum(s.orders)}</td><td class="r">${fmtMoney(s.orderValue)}</td></tr>`).join('')}</tbody>
+    <thead><tr>
+      <th>Supplier</th>
+      <th class="r ${sortBy === 'orders' ? 'sorted' : ''}">Orders${sortBy === 'orders' ? caret : ''}</th>
+      <th class="r ${sortBy === 'orderValue' ? 'sorted' : ''}">Order value${sortBy === 'orderValue' ? caret : ''}</th>
+    </tr></thead>
+    <tbody>${suppliers.map(s => `<tr><td><div class="entity-cell">${avatarChip(s.name)}<span class="td-name">${s.name}</span></div></td><td class="r">${fmtNum(s.orders)}</td><td class="r">${fmtMoney(s.orderValue)}</td></tr>`).join('')}</tbody>
   </table>`;
 }
 
@@ -694,14 +743,19 @@ function renderMerchantTable(mk) {
   table.innerHTML = `
     <thead><tr>
       <th>Merchant</th>
-      ${cols.map(c => `<th class="r ${sortKey === c.key ? 'sorted' : ''}" onclick="sortMerchants('${mk}','${c.key}')">${c.label}</th>`).join('')}
+      ${cols.map(c => `<th class="r ${sortKey === c.key ? 'sorted' : ''}" onclick="sortMerchants('${mk}','${c.key}')">${c.label}${sortKey === c.key ? '<i class="ti ti-chevron-down sort-caret"></i>' : ''}</th>`).join('')}
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `
         <tr class="clickable" onclick="openMerchant('${mk}', ${i})">
           <td>
-            <div class="td-name">${r.name}</div>
-            <div class="td-sub">${statusLabel(r.status)}</div>
+            <div class="entity-cell">
+              ${avatarChip(r.name)}
+              <div>
+                <div class="td-name">${r.name}</div>
+                <div class="td-sub">${statusLabel(r.status)}</div>
+              </div>
+            </div>
           </td>
           ${cols.map(c => `<td class="r">${c.money ? fmtMoney(r[c.key]) : fmtNum(r[c.key])}</td>`).join('')}
         </tr>`).join('')}
@@ -922,7 +976,7 @@ function openMerchant(mk, idx) {
   const rows = [...MERCHANTS[mk]].sort((a, b) => (b[sortState[mk]] || 0) - (a[sortState[mk]] || 0));
   const r = rows[idx];
   const meta = MARKET_META[mk];
-  document.getElementById('drill-title').textContent = r.name;
+  document.getElementById('drill-title').innerHTML = `${avatarChip(r.name)}<span>${r.name}</span>`;
   document.getElementById('drill-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:var(--space-sm);">
       <span class="nb-pill neutral">${meta.flag} ${meta.label}</span>
