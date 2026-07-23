@@ -102,8 +102,19 @@
   .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); }
   .chart-card.full { grid-column: 1 / -1; }
   .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; }
+  .chart-head-left { display: flex; flex-direction: column; gap: 2px; }
   .chart-title { font-size: 14px; font-weight: 600; color: var(--text); }
-  .chart-legend { display: flex; align-items: center; gap: var(--space-lg); }
+  .chart-legend { display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap; }
+
+  /* ── Metric switcher (segmented pills) — drives the All-markets trend chart ── */
+  .metric-pills { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .metric-pill {
+    padding: 5px 12px; border-radius: var(--radius-pill); border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-soft); font-size: 12px; font-weight: 500;
+    font-family: inherit; cursor: pointer; transition: background var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
+  }
+  .metric-pill:hover { color: var(--text); border-color: var(--fern); }
+  .metric-pill.active { background: var(--mint); border-color: var(--fern); color: var(--spinach); font-weight: 600; }
   .legend-item { display: flex; align-items: center; gap: var(--space-xs); font-size: 12px; color: var(--text-soft); }
   .legend-line { width: 18px; height: 2px; border-radius: 2px; }
   .svg-chart-wrap { width: 100%; overflow: hidden; border-radius: var(--radius-sm); }
@@ -270,6 +281,19 @@
     <div class="tab-panel active" id="panel-ALL" role="tabpanel">
 
       <div class="kpi-strip" id="kpi-ALL"></div>
+
+      <div class="chart-card full">
+        <div class="chart-head">
+          <div class="chart-head-left">
+            <span class="chart-title">Trend over time</span>
+            <span class="panel-meta" id="trend-sub-ALL"></span>
+          </div>
+          <div class="metric-pills" id="trend-pills-ALL"></div>
+        </div>
+        <div class="svg-chart-wrap" id="trend-chart-ALL"></div>
+        <div class="chart-x-labels" id="trend-x-ALL"></div>
+        <div class="chart-legend" id="trend-legend-ALL"></div>
+      </div>
 
       <div class="two-col">
         <div class="chart-card">
@@ -529,6 +553,8 @@ const METRIC_DEFS_MARKET = [
 let compareLabel = 'previous month';
 let sortState = { SG: 'orders', MY: 'orders', ID: 'orders', AU: 'orders' };
 let metricState = { SG: null, MY: null, ID: null, AU: null, UNATTRIBUTED: null };
+let trendMetric = 'merchants';
+const MARKET_COLOR = { SG: '#129B41', MY: '#3F8AFB', ID: '#F5C219', AU: '#EE4B87' };
 
 /* ── Formatting helpers ── */
 function fmtNum(n) { return n === null || n === undefined ? '—' : Math.round(n).toLocaleString('en-US'); }
@@ -673,6 +699,37 @@ function renderAllPanel() {
   document.getElementById('unattributed-callout').innerHTML = `
     <i class="ti ti-alert-triangle"></i>
     <span><strong>${fmtNum(u.invUploaded)} invoices (${pctUnattr}% of all uploads)</strong> couldn't be matched to a market or merchant this period — see the <strong>Unattributed</strong> tab. Closing this gap would materially improve how much of the platform's activity these numbers actually reflect.</span>`;
+
+  renderTrendPills();
+  renderAllTrendChart();
+}
+
+function renderTrendPills() {
+  document.getElementById('trend-pills-ALL').innerHTML = METRIC_DEFS_ALL.map(m =>
+    `<button class="metric-pill ${trendMetric === m.key ? 'active' : ''}" onclick="setTrendMetric('${m.key}')">${m.label}</button>`
+  ).join('');
+}
+
+function setTrendMetric(key) {
+  trendMetric = key;
+  renderTrendPills();
+  renderAllTrendChart();
+}
+
+function renderAllTrendChart() {
+  const marketsForTrend = ['SG', 'MY', 'ID', 'AU'];
+  const seriesList = marketsForTrend.map(mk => ({ data: trendSeries(trendMetric, mk), color: MARKET_COLOR[mk] }));
+  renderMultiLineChart('trend-chart-ALL', seriesList);
+
+  const label = METRIC_DEFS_ALL.find(m => m.key === trendMetric).label;
+  document.getElementById('trend-sub-ALL').textContent = `${label} · indexed to 100 at period start, by market`;
+
+  document.getElementById('trend-x-ALL').innerHTML = TREND_X_LABELS.map(l => `<span class="chart-x-label">${l}</span>`).join('');
+
+  document.getElementById('trend-legend-ALL').innerHTML = marketsForTrend.map(mk => {
+    const m = MARKET_META[mk];
+    return `<div class="legend-item"><span class="legend-line" style="background:${MARKET_COLOR[mk]};"></span>${m.flag} ${m.label}</div>`;
+  }).join('');
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1010,6 +1067,47 @@ function closeDrill() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrill(); });
 
 /* ── Dual-line SVG chart ── */
+// Indexed-to-100 daily series for a market/metric — deterministic (seeded by name, not
+// Math.random) so re-renders are stable. The random-walk drifts toward DELTA[metricKey]'s
+// real platform-wide % change so the chart's overall direction matches the KPI tiles above
+// it rather than being an arbitrary shape.
+function trendSeries(metricKey, mk) {
+  const days = 17;
+  const target = Math.max(40, Math.min(180, 100 + (DELTA[metricKey] || 0)));
+  let seed = hashStr(metricKey + mk) % 2147483647;
+  function rand() { seed = (seed * 48271) % 2147483647; return seed / 2147483647; }
+  const pts = [100];
+  for (let i = 1; i < days; i++) {
+    const t = i / (days - 1);
+    const onTrend = 100 + (target - 100) * t;
+    pts.push(Math.max(20, onTrend + (rand() - 0.5) * 10));
+  }
+  pts[days - 1] = target;
+  return pts;
+}
+
+// Generic multi-series line chart (no area fill) — used by the All-markets trend card,
+// one line per market, sharing one y-scale so relative movement is comparable.
+function renderMultiLineChart(containerId, seriesList) {
+  const W = 900, H = 160;
+  const pad = { t: 16, r: 12, b: 8, l: 12 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  const all = seriesList.flatMap(s => s.data);
+  const minV = Math.min(...all) * 0.95 || 0, maxV = Math.max(...all) * 1.05 || 1;
+  const range = (maxV - minV) || 1;
+  const x = (i, len) => pad.l + (i / (len - 1)) * pw;
+  const y = v => pad.t + (1 - (v - minV) / range) * ph;
+
+  const lines = seriesList.map(s => {
+    const pts = s.data.map((v, i) => `${x(i, s.data.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }).join('');
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:140px;">${lines}</svg>`;
+  const wrap = document.getElementById(containerId);
+  if (wrap) wrap.innerHTML = svg;
+}
+
 function renderDualLineChart(containerId, seriesA, seriesB) {
   const W = 900, H = 160;
   const pad = { t: 16, r: 12, b: 8, l: 12 };
