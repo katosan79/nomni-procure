@@ -1162,10 +1162,8 @@ function trendWiggle(seedKey, days, center) {
   let seed = hashStr(seedKey) % 2147483647;
   function rand() { seed = (seed * 48271) % 2147483647; return seed / 2147483647; }
   const pts = [];
-  let v = center;
   for (let i = 0; i < days; i++) {
-    v = Math.max(15, Math.min(center * 1.8, v + (rand() - 0.5) * center * 0.12));
-    pts.push(v);
+    pts.push(Math.max(15, center + (rand() - 0.5) * center * 0.16));
   }
   pts[days - 1] = center;
   return pts;
@@ -1192,22 +1190,34 @@ function comparisonLevel(metricKey) {
 // one line per market, sharing one y-scale so relative movement is comparable. Renders
 // a left-hand y-axis (as HTML, not SVG text, so it isn't distorted by preserveAspectRatio
 // stretching) and an optional dashed divider marking where the report period begins.
+// Rounds a raw tick step up to a "nice" human-friendly increment (1/2/5/10 × a power of
+// ten) — e.g. 84, 129, 152 as gridlines, matching how real chart libraries pick axis ticks.
+function niceStep(rough) {
+  if (!isFinite(rough) || rough <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  const niceNorm = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+  return niceNorm * mag;
+}
+
 function renderMultiLineChart(containerId, seriesList, dividerIndex) {
   const W = 900, H = 160;
   const pad = { t: 16, r: 12, b: 8, l: 12 };
   const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
   const all = seriesList.flatMap(s => s.data);
-  const minV = Math.min(...all) * 0.9 || 0, maxV = Math.max(...all) * 1.1 || 1;
-  const range = (maxV - minV) || 1;
+  const rawMin = Math.min(...all), rawMax = Math.max(...all);
+  const TICKS = 4;
+  const step = niceStep((rawMax - rawMin) / TICKS || 1);
+  const minV = Math.floor(rawMin / step) * step;
+  const maxV = Math.ceil(rawMax / step) * step;
+  const range = (maxV - minV) || step;
   const len = Math.max(...seriesList.map(s => s.data.length));
   const x = i => pad.l + (i / (len - 1)) * pw;
   const y = v => pad.t + (1 - (v - minV) / range) * ph;
 
-  const TICKS = 4;
   let gridLines = '';
   const tickValues = [];
-  for (let i = 0; i <= TICKS; i++) {
-    const v = minV + range * i / TICKS;
+  for (let v = minV; v <= maxV + step * 0.001; v += step) {
     tickValues.unshift(Math.round(v));
     gridLines += `<line x1="${pad.l}" y1="${y(v).toFixed(1)}" x2="${W - pad.r}" y2="${y(v).toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`;
   }
