@@ -365,6 +365,18 @@
     }
     .ns-bank-notice i { color: var(--fern); font-size: 13px; flex-shrink: 0; }
 
+    /* Delivery tab */
+    .day-picker { display: flex; gap: 4px; }
+    .day-chip {
+      width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border);
+      background: var(--surface); font-size: 12px; font-weight: 700; color: var(--text-soft);
+      cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .day-chip:hover { border-color: var(--fern); }
+    .day-chip.on { background: var(--fern); color: #fff; border-color: var(--fern); }
+    .day-chip.locked { cursor: not-allowed; pointer-events: none; opacity: 0.7; }
+
     /* Toast */
     #toast-wrap { position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center; }
 
@@ -659,6 +671,7 @@
         <!-- Tab nav -->
         <div class="tab-nav">
           <button class="tab-nav-btn active" data-tab="profile"     onclick="switchTab('profile')"><i class="ti ti-building" style="font-size:13px;margin-right:4px;"></i>Profile</button>
+          <button class="tab-nav-btn"        data-tab="delivery"    onclick="switchTab('delivery')"><i class="ti ti-truck-delivery" style="font-size:13px;margin-right:4px;"></i>Delivery</button>
           <button class="tab-nav-btn"        data-tab="outlets"     onclick="switchTab('outlets')"><i class="ti ti-building-store" style="font-size:13px;margin-right:4px;"></i>Outlet assignments</button>
           <button class="tab-nav-btn"        data-tab="orders"      onclick="switchTab('orders')"><i class="ti ti-receipt" style="font-size:13px;margin-right:4px;"></i>Order history</button>
           <button class="tab-nav-btn"        data-tab="skus"        onclick="switchTab('skus')"><i class="ti ti-book-2" style="font-size:13px;margin-right:4px;"></i>Catalogue</button>
@@ -935,6 +948,113 @@
           </aside>
           </div><!-- /profile-layout -->
         </div><!-- /tab-profile -->
+
+        <!-- ── Delivery tab ── -->
+        <div id="tab-delivery" class="tab-panel">
+          <div style="display:flex;flex-direction:column;gap:var(--space-xl);max-width:760px;">
+
+            <!-- NS-managed notice (NS-connected suppliers only) -->
+            <div id="delivery-ns-banner" class="ns-bank-notice" style="display:none;">
+              <i class="ti ti-plug-connected"></i>
+              <span>Delivery schedule is managed by <strong id="delivery-ns-supplier-name">Sydney Butchers Co.</strong> on Nomni Supply and kept in sync automatically.</span>
+            </div>
+            <!-- Non-NS notice (shown for suppliers not on Nomni Supply) -->
+            <div id="delivery-non-ns-banner" class="info-banner" style="display:none;">
+              <i class="ti ti-info-circle"></i>
+              <span>This supplier isn't on Nomni Supply, so set their delivery schedule manually below — it's used to plan order cutoffs and expected arrival.</span>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title"><i class="ti ti-calendar-time"></i>Delivery days</span>
+              </div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                  <div class="field-group">
+                    <label class="field-label">Days this supplier delivers</label>
+                    <div class="day-picker" id="delivery-day-picker">
+                      <button type="button" class="day-chip on" data-day="Mon" onclick="toggleDeliveryDay(this)">M</button>
+                      <button type="button" class="day-chip on" data-day="Tue" onclick="toggleDeliveryDay(this)">T</button>
+                      <button type="button" class="day-chip on" data-day="Wed" onclick="toggleDeliveryDay(this)">W</button>
+                      <button type="button" class="day-chip on" data-day="Thu" onclick="toggleDeliveryDay(this)">T</button>
+                      <button type="button" class="day-chip on" data-day="Fri" onclick="toggleDeliveryDay(this)">F</button>
+                      <button type="button" class="day-chip" data-day="Sat" onclick="toggleDeliveryDay(this)">S</button>
+                      <button type="button" class="day-chip" data-day="Sun" onclick="toggleDeliveryDay(this)">S</button>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="field-group">
+                      <label class="field-label">Standard lead time</label>
+                      <select class="field-select" id="delivery-lead-time">
+                        <option>Same day</option>
+                        <option selected>Next day</option>
+                        <option>2 days</option>
+                        <option>3 days</option>
+                        <option>1 week</option>
+                      </select>
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Order cutoff time <span class="opt">(optional)</span></label>
+                      <input class="field-input" type="time" id="delivery-cutoff" value="14:00"/>
+                      <p style="font-size:12px;color:var(--text-soft);margin-top:2px;">POs placed after this time roll to the next delivery day.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title"><i class="ti ti-clock"></i>Delivery window</span>
+                <span style="font-size:12px;color:var(--text-soft);">Typical arrival time on delivery days</span>
+              </div>
+              <div class="card-body">
+                <div class="form-row">
+                  <div class="field-group">
+                    <label class="field-label">From</label>
+                    <input class="field-input" type="time" id="delivery-window-start" value="05:00"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">To</label>
+                    <input class="field-input" type="time" id="delivery-window-end" value="08:00"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title"><i class="ti ti-map-pin"></i>Delivery area &amp; minimum order</span>
+              </div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                  <div class="form-row">
+                    <div class="field-group">
+                      <label class="field-label">Delivery area <span class="opt">(optional)</span></label>
+                      <input class="field-input" type="text" id="delivery-area" value="Sydney metro" placeholder="e.g. Sydney metro, Inner West"/>
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Minimum order value <span class="opt">(optional)</span></label>
+                      <div style="position:relative;">
+                        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);">$</span>
+                        <input class="field-input" type="text" id="delivery-min-order" value="250.00" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Delivery notes <span class="opt">(optional)</span></label>
+                    <textarea class="field-textarea" id="delivery-notes" placeholder="Special delivery instructions, dock access, contact on arrival, etc.">Deliver to loading dock at rear. Call ahead 15 min before arrival.</textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="delivery-save-row" style="display:flex;justify-content:flex-end;">
+              <button class="btn btn-primary" onclick="saveDeliverySettings()"><i class="ti ti-device-floppy"></i>Save delivery settings</button>
+            </div>
+
+          </div>
+        </div><!-- /tab-delivery -->
 
         <!-- ── Outlet assignments tab ── -->
         <div id="tab-outlets" class="tab-panel">
@@ -2034,7 +2154,40 @@
         el.outerHTML = '<span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span>';
       });
     }
+
+    // ── Delivery tab: NS vs non-NS rendering ───────────────────────────────────
+    const deliveryNsBanner    = document.getElementById('delivery-ns-banner');
+    const deliveryNonNsBanner = document.getElementById('delivery-non-ns-banner');
+    const deliveryNsNameEl    = document.getElementById('delivery-ns-supplier-name');
+    const deliverySaveRow     = document.getElementById('delivery-save-row');
+    if (deliveryNsNameEl) deliveryNsNameEl.textContent = SUPPLIER.name;
+
+    if (SUPPLIER.nsConnected) {
+      if (deliveryNsBanner)    deliveryNsBanner.style.display    = '';
+      if (deliveryNonNsBanner) deliveryNonNsBanner.style.display = 'none';
+      if (deliverySaveRow)     deliverySaveRow.style.display     = 'none';
+      // Managed by the supplier on Nomni Supply — read-only here, same convention as bank details
+      document.querySelectorAll('#tab-delivery .field-input, #tab-delivery .field-select, #tab-delivery .field-textarea').forEach(el => {
+        el.setAttribute('readonly', 'readonly');
+        el.disabled = el.tagName === 'SELECT';
+        el.closest('.field-group')?.classList.add('field-locked');
+      });
+      document.querySelectorAll('#tab-delivery .day-chip').forEach(chip => chip.classList.add('locked'));
+    } else {
+      if (deliveryNsBanner)    deliveryNsBanner.style.display    = 'none';
+      if (deliveryNonNsBanner) deliveryNonNsBanner.style.display = '';
+      if (deliverySaveRow)     deliverySaveRow.style.display     = '';
+    }
   });
+
+  function toggleDeliveryDay(chip) {
+    if (chip.classList.contains('locked')) return;
+    chip.classList.toggle('on');
+  }
+
+  function saveDeliverySettings() {
+    showToast('Delivery settings saved for ' + SUPPLIER.name + '.');
+  }
 </script>
 </body>
 </html>
