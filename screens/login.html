@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+  <style>
+    body { background: var(--surface-soft); }
+
+    .login-page {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Nav rail (login-only: ghost/decorative) ── */
+    .login-chrome {
+      width: var(--nav-width, 220px);
+      flex-shrink: 0;
+      background: var(--chrome-bg);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-xl) var(--space-lg);
+      gap: var(--space-3xl);
+    }
+    .login-wordmark {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .login-wordmark-icon {
+      width: 24px; height: 27px;
+      background: none;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .login-wordmark-icon svg { width: 24px; height: 27px; }
+    .login-wordmark-text {
+      font-size: 16px; font-weight: 600;
+      color: var(--chrome-fg);
+      letter-spacing: -0.01em;
+    }
+    .login-nav {
+      display: flex; flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .login-nav-item {
+      display: flex; align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 500;
+      color: var(--chrome-fg-soft);
+      opacity: 0.4;
+      user-select: none;
+    }
+    .login-nav-item i { font-size: 16px; flex-shrink: 0; }
+
+    /* ── Main area ── */
+    .login-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-3xl) var(--space-2xl);
+    }
+
+    /* ── Card ── */
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3xl);
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2xl);
+    }
+
+    .status-banner {
+      display: flex; align-items: center;
+      gap: var(--space-sm);
+      background: var(--status-ok-bg);
+      border-radius: var(--radius-sm);
+      padding: var(--space-sm) var(--space-md);
+      font-size: 12px; font-weight: 500;
+      color: var(--status-ok-fg);
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--status-ok-fg);
+      flex-shrink: 0;
+    }
+
+    .card-header { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-accent);
+    }
+    .card-title {
+      font-size: 24px; font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .card-sub {
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.5;
+      margin-top: 2px;
+    }
+
+    .form { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .field { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .field label { font-size: 13px; font-weight: 500; color: var(--text); }
+    .field input {
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px var(--space-md);
+      height: var(--control-h);
+      outline: none;
+      transition: border-color var(--dur-2) var(--ease-standard), box-shadow var(--dur-2) var(--ease-standard);
+    }
+    .field input::placeholder { color: var(--text-soft); }
+    .field input:focus {
+      border-color: var(--border-focus);
+      box-shadow: var(--focus-ring);
+    }
+    .field-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+    }
+    .field-row label { font-size: 13px; font-weight: 500; color: var(--text); }
+    .forgot {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-link);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .forgot:hover { text-decoration: underline; }
+
+    .btn-primary {
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      font-size: 14px; font-weight: 600;
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border: none;
+      border-radius: var(--radius-md);
+      height: var(--control-h);
+      cursor: pointer;
+      transition: background var(--dur-2) var(--ease-standard);
+      width: 100%;
+      letter-spacing: -0.01em;
+    }
+    .btn-primary:hover { background: var(--btn-primary-hover); }
+    .btn-primary:active { transform: scale(0.99); }
+
+    .divider {
+      display: flex; align-items: center;
+      gap: var(--space-md);
+    }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-label { font-size: 12px; color: var(--text-soft); }
+
+    .btn-sso {
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      font-size: 13px; font-weight: 500;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      height: var(--control-h);
+      cursor: pointer;
+      width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      gap: var(--space-sm);
+      transition: border-color var(--dur-2) var(--ease-standard), background var(--dur-2) var(--ease-standard);
+      letter-spacing: -0.01em;
+    }
+    .btn-sso:hover {
+      border-color: var(--border-focus);
+      background: var(--surface-soft);
+    }
+    .btn-sso i { font-size: 16px; color: var(--text-soft); }
+
+    .card-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.6;
+    }
+    .card-footer a {
+      color: var(--text-link);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .card-footer a:hover { text-decoration: underline; }
+
+    /* Error banner */
+    .error-banner {
+      display: flex; align-items: center; gap: var(--space-sm);
+      background: var(--status-risk-bg); color: var(--status-risk-fg);
+      border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-md);
+      font-size: 13px; font-weight: 500;
+    }
+    .error-banner i { font-size: 16px; flex-shrink: 0; }
+    .field input.invalid { border-color: var(--status-risk-fg); }
+    .btn-primary:disabled { opacity: 0.6; cursor: progress; }
+    @media (max-width: 768px) { .login-chrome { display: none; } }
+  </style>
+</head>
+<body>
+  <h2 class="sr-only">Nomni HQ — sign in to your account</h2>
+
+  <div class="login-page">
+    <aside class="login-chrome" aria-hidden="true">
+      <div class="login-wordmark">
+        <div class="login-wordmark-icon">
+          <svg viewBox="0 0 138.195 157.144" xmlns="http://www.w3.org/2000/svg"><path d="M20.941 30.552C21.157 29.542 22.148 28.896 23.158 29.111L115.484 48.735C116.494 48.951 117.14 49.942 116.925 50.952L115.362 58.322C114.801 60.941 114.043 63.467 113.107 65.89L132.117 61.849C133.128 61.634 134.12 62.279 134.335 63.289L136.683 74.336C144.849 112.732 119.085 150.482 79.635 156.412C43.253 161.874 9.472 136.152 1.838 100.254L0.042 91.826C-0.173 90.816 0.472 89.824 1.482 89.609L33.14 82.885C21.493 71.015 16.095 53.318 19.763 36.052L20.932 30.562ZM92.068 0.041C93.079-0.174 94.07 0.471 94.285 1.481L94.818 3.97C97.559 16.859 88.916 29.532 75.669 31.524C63.461 33.358 52.112 24.725 49.549 12.668L49.203 11.06C48.988 10.049 49.633 9.058 50.644 8.843Z" fill="#2AC864"/></svg>
+        </div>
+        <span class="login-wordmark-text">nomni <span style="font-weight:400;opacity:0.65;">procure</span></span>
+      </div>
+      <nav class="login-nav">
+        <div class="login-nav-item"><i class="ti ti-layout-dashboard"></i>Overview</div>
+        <div class="login-nav-item"><i class="ti ti-shopping-cart"></i>Orders</div>
+        <div class="login-nav-item"><i class="ti ti-file-invoice"></i>Invoices</div>
+        <div class="login-nav-item"><i class="ti ti-stack"></i>Items</div>
+        <div class="login-nav-item"><i class="ti ti-package"></i>Inventory</div>
+        <div class="login-nav-item"><i class="ti ti-receipt"></i>Market lists</div>
+        <div class="login-nav-item"><i class="ti ti-tools-kitchen-2"></i>Recipes</div>
+        <div class="login-nav-item"><i class="ti ti-device-desktop"></i>POS mapping</div>
+        <div class="login-nav-item"><i class="ti ti-chart-bar"></i>Reporting</div>
+        <div class="login-nav-item"><i class="ti ti-building-store"></i>Outlets</div>
+        <div class="login-nav-item"><i class="ti ti-truck"></i>Suppliers</div>
+        <div class="login-nav-item"><i class="ti ti-users"></i>Users</div>
+        <div class="login-nav-item"><i class="ti ti-tag"></i>Brands</div>
+      </nav>
+    </aside>
+
+    <main class="login-main">
+      <div class="login-card" role="main">
+
+        <div class="status-banner" role="status" aria-live="polite">
+          <div class="status-dot" aria-hidden="true"></div>
+          All systems operational
+        </div>
+
+        <header class="card-header">
+          <p class="card-eyebrow">HQ module</p>
+          <h1 class="card-title" id="step-title">Sign in to your account</h1>
+          <p class="card-sub" id="step-sub">Central management for your outlet network.</p>
+        </header>
+
+        <!-- Step 1: credentials -->
+        <form class="form" id="step-credentials" novalidate onsubmit="handleLogin(event)">
+          <div class="field">
+            <label for="email">Email address</label>
+            <input
+              type="email" id="email" name="email"
+              value="keith@nomni.ai"
+              placeholder="you@yourgroup.com.au"
+              autocomplete="email" spellcheck="false"
+            />
+          </div>
+          <div class="field">
+            <div class="field-row">
+              <label for="password">Password</label>
+              <a class="forgot" tabindex="0" role="button" onclick="loginToast('Password reset link sent if the account exists')">Forgot password?</a>
+            </div>
+            <input
+              type="password" id="password" name="password"
+              value="demo1234"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+          </div>
+          <button type="submit" class="btn-primary" id="signin-btn">Sign in</button>
+        </form>
+
+        <!-- Step 2: MFA (NF-8) -->
+        <form class="form" id="step-mfa" novalidate onsubmit="verifyMfa(event)" hidden>
+          <div class="field">
+            <label for="mfa-code">6-digit authentication code</label>
+            <input
+              type="text" id="mfa-code" name="mfa-code"
+              value="078432"
+              inputmode="numeric" maxlength="6" placeholder="••••••"
+              autocomplete="one-time-code"
+              style="letter-spacing:0.4em;text-align:center;font-size:18px;font-feature-settings:'tnum' 1;"
+            />
+            <span style="font-size:12px;color:var(--text-soft);">Enter the code from your authenticator app.</span>
+          </div>
+          <button type="submit" class="btn-primary" id="verify-btn">Verify &amp; continue</button>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <a class="forgot" tabindex="0" role="button" onclick="loginToast('New code sent')">Resend code</a>
+            <a class="forgot" tabindex="0" role="button" onclick="backToCredentials()">Use a different account</a>
+          </div>
+        </form>
+
+        <div id="sso-block">
+          <div class="divider" aria-hidden="true">
+            <div class="divider-line"></div>
+            <span class="divider-label">or</span>
+            <div class="divider-line"></div>
+          </div>
+
+          <button class="btn-sso" type="button" onclick="handleSso()">
+            <i class="ti ti-building" aria-hidden="true"></i>
+            Continue with enterprise SSO
+          </button>
+        </div>
+
+        <footer class="card-footer">
+          Don't have an account?
+          <a tabindex="0" role="button" onclick="loginToast('Ask your HQ administrator to invite you')">Contact your administrator</a>
+        </footer>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function showError(msg) {}
+    function hideError() {}
+
+    function handleLogin(e) {
+      e.preventDefault();
+      hideError();
+      const email = document.getElementById('email').value.trim();
+      const pw = document.getElementById('password').value;
+      if (!email || !pw) {
+        showError('Enter both your email and password to continue.');
+        if (!email) document.getElementById('email').classList.add('invalid');
+        if (!pw) document.getElementById('password').classList.add('invalid');
+        return;
+      }
+      // Loading state, then advance to MFA
+      const btn = document.getElementById('signin-btn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+        // Advance to MFA step
+        document.getElementById('step-credentials').hidden = true;
+        document.getElementById('sso-block').hidden = true;
+        document.getElementById('step-mfa').hidden = false;
+        document.getElementById('step-title').textContent = 'Two-factor authentication';
+        document.getElementById('step-sub').textContent = 'We sent a code to your authenticator app.';
+        document.getElementById('mfa-code').focus();
+      }, 700);
+    }
+
+    function verifyMfa(e) {
+      e.preventDefault();
+      hideError();
+      const code = document.getElementById('mfa-code').value.trim();
+      if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+        document.getElementById('mfa-code').classList.add('invalid');
+        showError('Enter the 6-digit code from your authenticator app.');
+        return;
+      }
+      const btn = document.getElementById('verify-btn');
+      btn.disabled = true;
+      btn.textContent = 'Verifying…';
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+    }
+
+    function backToCredentials() {
+      hideError();
+      document.getElementById('step-mfa').hidden = true;
+      document.getElementById('step-credentials').hidden = false;
+      document.getElementById('sso-block').hidden = false;
+      document.getElementById('step-title').textContent = 'Sign in to your account';
+      document.getElementById('step-sub').textContent = 'Central management for your outlet network.';
+    }
+
+    function handleSso() {
+      const email = document.getElementById('email').value.trim();
+      const domain = email.includes('@') ? email.split('@')[1] : '';
+      loginToast(domain ? 'Routing ' + domain + ' to your identity provider…' : 'Enter your work email, then continue with SSO');
+      if (domain) setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+    }
+
+    function loginToast(msg) {
+      let wrap = document.getElementById('login-toast');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'login-toast';
+        wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;';
+        document.body.appendChild(wrap);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-info-circle" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    // Clear invalid state on input
+    ['email','password','mfa-code'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', e => e.target.classList.remove('invalid'));
+    });
+  </script>
+</body>
+</html>

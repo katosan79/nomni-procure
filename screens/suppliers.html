@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Suppliers — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex; flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex; flex-direction: column;
+      gap: var(--space-3xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.025em; line-height: 1.1;
+    }
+    .page-desc { font-size: 14px; color: var(--text-soft); margin-top: var(--space-xs); }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none; white-space: nowrap; border: 1.5px solid transparent;
+      font-family: inherit;
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn i { font-size: 15px; }
+
+    /* KPI strip */
+    .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-md); }
+    .kpi-tile {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column; gap: var(--space-xs);
+    }
+    .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); }
+    .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; font-feature-settings: 'tnum' 1; }
+    .kpi-sub { font-size: 12px; color: var(--text-soft); }
+    .kpi-delta { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
+    .kpi-delta.up { color: var(--status-ok-fg); }
+    .kpi-delta.down { color: var(--status-risk-fg); }
+
+    /* Activity cell */
+    .cell-activity { display: flex; flex-direction: column; gap: 3px; }
+    .activity-last { font-size: 13px; color: var(--text); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+    .activity-last i { font-size: 12px; color: var(--text-soft); }
+    .freq-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 700; padding: 2px 7px;
+      border-radius: var(--radius-pill); white-space: nowrap;
+    }
+    .freq-badge.high   { background: var(--mint); color: var(--spinach); }
+    .freq-badge.medium { background: color-mix(in srgb, var(--mint) 40%, transparent); color: var(--fern); }
+    .freq-badge.low    { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .freq-badge.none   { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+
+    /* Spend cell */
+    .cell-spend { text-align: right; }
+    .spend-val { font-size: 14px; font-weight: 600; color: var(--text); font-feature-settings: 'tnum' 1; }
+    .spend-sub { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap i {
+      position: absolute; left: var(--space-md); top: 50%; transform: translateY(-50%);
+      color: var(--text-soft); font-size: 15px; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; height: var(--control-h); padding-inline: var(--space-3xl) var(--space-lg);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); outline: none;
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .filter-select {
+      height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+
+    /* Table card */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .data-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px; }
+    .data-table thead tr { border-bottom: 1px solid var(--border); }
+    .data-table th {
+      padding: var(--space-md) var(--space-lg); text-align: left;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--space-md) var(--space-lg); color: var(--text);
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+
+    /* Supplier cell */
+    .cell-supplier { display: flex; align-items: center; gap: var(--space-md); }
+    .supplier-avatar {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--text-accent);
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .cell-name { font-weight: 600; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--text-soft); }
+    .ns-supply-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 700; padding: 1px 6px;
+      border-radius: var(--radius-pill); vertical-align: 1px;
+      background: color-mix(in srgb, var(--fern) 12%, transparent);
+      color: var(--fern); border: 1px solid color-mix(in srgb, var(--fern) 25%, transparent);
+      white-space: nowrap;
+    }
+    .internal-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 700; padding: 1px 6px;
+      border-radius: var(--radius-pill); vertical-align: 1px;
+      background: color-mix(in srgb, #3F8AFB 12%, transparent);
+      color: #3F8AFB; border: 1px solid color-mix(in srgb, #3F8AFB 25%, transparent);
+      white-space: nowrap;
+    }
+
+    /* Category pills */
+    .cat-list { display: flex; gap: 4px; flex-wrap: wrap; }
+    .cat-pill {
+      font-size: 11px; font-weight: 600; padding: 2px 8px;
+      border-radius: var(--radius-pill); background: var(--surface-soft);
+      border: 1px solid var(--border); color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    /* Status pill */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-pill);
+    }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
+    .status-pill.inactive { background: var(--surface-soft); color: var(--text-soft); }
+    .status-pill.inactive::before { background: var(--text-soft); }
+
+    /* Row actions */
+    .row-actions { display: flex; align-items: center; gap: var(--space-sm); white-space: nowrap; }
+    .link-action {
+      font-size: 13px; font-weight: 600; color: var(--text-accent);
+      background: none; border: none; cursor: pointer; padding: 0; font-family: inherit;
+    }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+    .overflow-btn {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft); transition: background 0.12s;
+    }
+    .overflow-btn:hover { background: var(--surface-soft); color: var(--text); }
+    .overflow-btn i { font-size: 15px; }
+    .overflow-wrap { position: relative; display: inline-flex; }
+    .overflow-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 50;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+      min-width: 160px; padding: var(--space-xs);
+    }
+    .overflow-menu.open { display: block; }
+    .overflow-menu-item {
+      display: flex; align-items: center; gap: var(--space-sm);
+      width: 100%; padding: var(--space-sm) var(--space-md);
+      font-size: 13px; font-weight: 500; color: var(--text);
+      background: none; border: none; cursor: pointer;
+      border-radius: var(--radius-sm); font-family: inherit; text-align: left;
+    }
+    .overflow-menu-item:hover { background: var(--surface-soft); }
+    .overflow-menu-item.destructive { color: var(--status-risk-fg); }
+    .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
+    .overflow-menu-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
+    .overflow-cell { width: 1%; white-space: nowrap; }
+
+    /* Responsive */
+    @media (max-width: 1024px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 768px) { .page-header { flex-direction: column; align-items: flex-start; } }
+    @media (max-width: 480px) {
+      .kpi-strip { grid-template-columns: 1fr 1fr; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+    }
+
+    /* ── Add Supplier Drawer ─────────────────────────────────────────────────── */
+    .as-scrim {
+      display: none; position: fixed; inset: 0; z-index: 190;
+      background: color-mix(in srgb, var(--seaweed) 40%, transparent);
+    }
+    .as-scrim.open { display: block; }
+    .as-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
+      width: min(560px, 100vw); background: var(--surface);
+      box-shadow: var(--shadow-lg);
+      transform: translateX(100%); transition: transform 0.22s ease;
+      display: flex; flex-direction: column;
+    }
+    .as-drawer.open { transform: translateX(0); }
+    .as-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: var(--space-xl) var(--space-2xl) var(--space-lg);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .as-title { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; margin-top: 2px; }
+    .as-close {
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft); flex-shrink: 0;
+      transition: background 0.12s;
+    }
+    .as-close:hover { background: var(--surface-soft); color: var(--text); }
+    .as-close i { font-size: 16px; }
+
+    /* Step indicator */
+    .as-steps {
+      display: flex; align-items: center; padding: var(--space-lg) var(--space-2xl);
+      border-bottom: 1px solid var(--border); gap: 0; flex-shrink: 0;
+    }
+    .as-step {
+      display: flex; align-items: center; gap: var(--space-xs);
+      opacity: 0.4;
+    }
+    .as-step.active { opacity: 1; }
+    .as-step.done { opacity: 0.7; }
+    .as-step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--surface-soft); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--text-soft);
+      flex-shrink: 0;
+    }
+    .as-step.active .as-step-num { background: var(--fern); border-color: var(--fern); color: #fff; }
+    .as-step.done .as-step-num { background: var(--mint); border-color: var(--fern); color: var(--spinach); }
+    .as-step-label { font-size: 12px; font-weight: 600; color: var(--text-soft); white-space: nowrap; }
+    .as-step.active .as-step-label { color: var(--text); }
+    .as-step-line { flex: 1; height: 1px; background: var(--border); margin: 0 var(--space-sm); min-width: 20px; }
+
+    /* Body */
+    .as-body { flex: 1; overflow-y: auto; padding: var(--space-2xl); }
+    .as-panel { display: none; }
+    .as-panel.active { display: block; }
+
+    /* Form elements */
+    .as-field-stack { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .as-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .as-field { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .as-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .as-req { color: var(--status-risk-fg); }
+    .as-opt { font-weight: 400; color: var(--text-soft); font-size: 12px; }
+    .as-input {
+      height: var(--control-h); padding-inline: var(--space-md);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); outline: none; width: 100%; box-sizing: border-box;
+      transition: border-color 0.12s;
+    }
+    .as-input:focus { border-color: var(--border-focus); }
+    .as-input.error { border-color: var(--status-risk-fg); }
+    .as-select {
+      height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right var(--space-sm) center;
+      width: 100%; box-sizing: border-box;
+    }
+    .as-select:focus { border-color: var(--border-focus); }
+    .as-error { font-size: 12px; color: var(--status-risk-fg); font-weight: 500; }
+    .as-section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-soft);
+      padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border);
+    }
+
+    /* Category tags */
+    .as-cat-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .as-cat {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600; padding: 4px 10px;
+      border-radius: var(--radius-pill); background: var(--surface-soft);
+      border: 1.5px solid var(--border); color: var(--text-soft);
+      cursor: pointer; transition: background 0.12s, border-color 0.12s;
+    }
+    .as-cat.selected { background: var(--mint); border-color: var(--fern); color: var(--spinach); }
+
+    /* Outlet access tree */
+    .as-tree-wrap { border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .as-group-row {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none;
+    }
+    .as-group-row:last-child { border-bottom: none; }
+    .as-group-row:hover { background: var(--surface-soft); }
+    .as-chevron { font-size: 13px; color: var(--text-soft); transition: transform 0.18s; flex-shrink: 0; }
+    .as-chevron.open { transform: rotate(90deg); }
+    .as-group-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+    .as-group-count { font-size: 12px; color: var(--text-soft); }
+    .as-group-state {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-pill);
+    }
+    .as-state-none { background: var(--surface-soft); color: var(--text-soft); }
+    .as-state-all  { background: var(--mint); color: var(--spinach); }
+    .as-state-some { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .as-group-cb { cursor: pointer; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--fern); }
+    .as-outlet-list { display: none; background: color-mix(in srgb, var(--mint) 15%, transparent); }
+    .as-outlet-list.open { display: block; }
+    .as-outlet-row {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg) var(--space-sm) calc(var(--space-lg) + 28px);
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    }
+    .as-outlet-row:last-child { border-bottom: none; }
+    .as-outlet-row:hover { background: color-mix(in srgb, var(--mint) 40%, transparent); }
+    .as-outlet-cb { cursor: pointer; width: 15px; height: 15px; accent-color: var(--fern); flex-shrink: 0; }
+    .as-outlet-name { font-size: 13px; color: var(--text); flex: 1; }
+
+    /* Review card */
+    .as-review-card {
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column; gap: var(--space-md);
+    }
+    .as-review-row { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-lg); }
+    .as-review-label { font-size: 12px; color: var(--text-soft); flex-shrink: 0; min-width: 120px; }
+    .as-review-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
+    .as-review-divider { height: 1px; background: var(--border); }
+
+    /* Supplier search UI */
+    .as-results-list { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .as-result-item {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); cursor: pointer;
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .as-result-item:hover { border-color: var(--fern); background: color-mix(in srgb, var(--mint) 20%, transparent); }
+    .as-result-item.selected { border-color: var(--fern); background: color-mix(in srgb, var(--mint) 25%, transparent); cursor: default; }
+    .as-result-logo {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--text-accent);
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .as-result-info { flex: 1; min-width: 0; }
+    .as-result-name { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .as-result-meta { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .as-create-prompt {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-md); padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .as-link-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: none; border: none; cursor: pointer; padding: 0;
+      font-size: 13px; font-weight: 600; color: var(--text-accent); font-family: inherit;
+    }
+    .as-link-btn:hover { color: var(--spinach); text-decoration: underline; }
+    .as-existing-banner {
+      display: flex; align-items: flex-start; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: color-mix(in srgb, var(--fern) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--fern) 20%, transparent);
+      border-radius: var(--radius-md); font-size: 13px; color: var(--text);
+      margin-bottom: var(--space-lg);
+    }
+    .as-existing-banner i { color: var(--fern); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Footer */
+    .as-foot {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-lg) var(--space-2xl);
+      border-top: 1px solid var(--border); flex-shrink: 0;
+      background: var(--surface);
+    }
+  </style>
+</head>
+<body>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <span class="page-eyebrow" id="sup-eyebrow">Administration</span>
+        <h1 class="page-title">Suppliers</h1>
+        <p class="page-desc" id="sup-desc">Manage the suppliers your outlets procure from, their categories, and approval status.</p>
+      </div>
+      <div class="page-actions">
+        <a href="#" class="btn btn-outline" onclick="supToast('Preparing XLSX export…'); return false;"><i class="ti ti-table-export"></i>Export XLSX</a>
+        <button class="btn btn-outline" onclick="supToast('Opening anonymised price benchmarking vs network medians…')"><i class="ti ti-chart-histogram"></i>Benchmark</button>
+        <button class="btn btn-outline" onclick="supToast('Starting a new RFQ across network suppliers…')"><i class="ti ti-file-dollar"></i>New RFQ</button>
+        <button class="btn btn-primary" onclick="openAddSupplierDialog()"><i class="ti ti-plus"></i>Add supplier</button>
+      </div>
+    </div>
+
+    <!-- KPI strip -->
+    <div class="kpi-strip">
+      <div class="kpi-tile">
+        <span class="kpi-label">Total suppliers</span>
+        <span class="kpi-value" id="kpi-total">38</span>
+        <span class="kpi-sub" id="kpi-total-sub">Across all outlets</span>
+      </div>
+      <div class="kpi-tile">
+        <span class="kpi-label">Active</span>
+        <span class="kpi-value" id="kpi-active">32</span>
+        <span class="kpi-sub">Currently supplying</span>
+      </div>
+      <div class="kpi-tile">
+        <span class="kpi-label">Spend YTD</span>
+        <span class="kpi-value" id="kpi-spend">$324k</span>
+        <span class="kpi-sub" id="kpi-spend-sub"><span class="kpi-delta up"><i class="ti ti-trending-up" style="font-size:11px;"></i>+12%</span> vs same period last year</span>
+      </div>
+      <div class="kpi-tile">
+        <span class="kpi-label">Avg order frequency</span>
+        <span class="kpi-value" style="font-size:22px;">2.4×</span>
+        <span class="kpi-sub">Per week across active suppliers</span>
+      </div>
+    </div>
+
+    <!-- Suppliers table -->
+    <div>
+      <div class="filter-bar" style="margin-bottom: var(--space-md);">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input class="search-input" type="search" placeholder="Search suppliers…" aria-label="Search suppliers"/>
+        </div>
+        <select class="filter-select" aria-label="Filter by category">
+          <option value="">All categories</option>
+          <option>Meat &amp; Seafood</option>
+          <option>Produce</option>
+          <option>Dairy</option>
+          <option>Dry Goods</option>
+          <option>Beverages</option>
+          <option>Bakery</option>
+          <option>Packaging</option>
+          <option>Cleaning</option>
+          <option>Equipment</option>
+          <option>Production</option>
+        </select>
+        <select class="filter-select" aria-label="Filter by status">
+          <option value="">All status</option>
+          <option>Active</option>
+          <option>Inactive</option>
+        </select>
+      </div>
+      <div class="table-card">
+        <table class="data-table" aria-label="Suppliers">
+          <thead>
+            <tr>
+              <th>Supplier</th>
+              <th>Categories</th>
+              <th class="col-outlets">Outlets</th>
+              <th>Order activity</th>
+              <th style="text-align:right;">Spend YTD</th>
+              <th>Status</th>
+              <th class="overflow-cell"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">SB</div>
+                  <div>
+                    <div class="cell-name">Sydney Butchers Co. <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i> <span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span></div>
+                    <div class="cell-sub">orders@sydneybutchers.com.au</div>
+                  </div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Meat &amp; Seafood</span></div></td>
+              <td class="col-outlets">8 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>2 days ago</div>
+                  <span class="freq-badge high"><i class="ti ti-repeat" style="font-size:10px;"></i>Weekly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$84,720</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="supplier-detail.html?id=sydney-butchers">View</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Sydney Butchers Co." onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Outlet assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr data-ck-internal="true">
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">CK</div>
+                  <div>
+                    <div class="cell-name">Sydney Central Kitchen <span class="internal-badge"><i class="ti ti-building-warehouse" style="font-size:9px;"></i>Internal</span></div>
+                    <div class="cell-sub">Produces &amp; redistributes to outlets · own seller workspace</div>
+                  </div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Production</span></div></td>
+              <td class="col-outlets">6 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>Today</div>
+                  <span class="freq-badge high"><i class="ti ti-repeat" style="font-size:10px;"></i>Daily</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$28,410</div>
+                  <div class="spend-sub">MTD at transfer price</div>
+                </div>
+              </td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="supplier-detail.html?id=sydney-central-kitchen">View</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Sydney Central Kitchen" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem" onclick="window.location='seller-catalog.html'"><i class="ti ti-list-details"></i>Catalog &amp; prices</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Outlet assignments</button>
+                      <button class="overflow-menu-item" role="menuitem" onclick="window.location='seller-orders.html'"><i class="ti ti-inbox"></i>View orders</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">GF</div>
+                  <div>
+                    <div class="cell-name">Green Farmers Market <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i> <span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span></div>
+                    <div class="cell-sub">supply@greenfarmers.com.au</div>
+                  </div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Produce</span><span class="cat-pill">Dairy</span></div></td>
+              <td class="col-outlets">12 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>Yesterday</div>
+                  <span class="freq-badge high"><i class="ti ti-repeat" style="font-size:10px;"></i>3× / week</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$112,400</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="supplier-detail.html?id=green-farmers">View</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Green Farmers Market" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Outlet assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">AB</div>
+                  <div>
+                    <div class="cell-name">Artisan Bakehouse <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-sub">wholesale@artisanbake.com.au</div>
+                  </div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Bakery</span><span class="cat-pill">Dry Goods</span></div></td>
+              <td class="col-outlets">5 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>5 days ago</div>
+                  <span class="freq-badge medium"><i class="ti ti-repeat" style="font-size:10px;"></i>Bi-weekly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$28,350</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="supplier-detail.html?id=artisan-bakehouse">View</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Artisan Bakehouse" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Outlet assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">PD</div>
+                  <div>
+                    <div class="cell-name">Pacific Drinks Wholesale <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i> <span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span></div>
+                    <div class="cell-sub">trade@pacificdrinks.com.au</div>
+                  </div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Beverages</span></div></td>
+              <td class="col-outlets">12 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>8 days ago</div>
+                  <span class="freq-badge medium"><i class="ti ti-repeat" style="font-size:10px;"></i>Bi-weekly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$67,800</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="supplier-detail.html?id=pacific-drinks">View</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Pacific Drinks Wholesale" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Outlet assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">NS</div>
+                  <div>
+                    <div class="cell-name">NSW Seafood Direct</div>
+                    <div class="cell-sub">fresh@nswseafood.com.au</div>
+                  </div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Meat &amp; Seafood</span></div></td>
+              <td class="col-outlets">3 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>6 days ago</div>
+                  <span class="freq-badge low"><i class="ti ti-repeat" style="font-size:10px;"></i>Monthly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$9,450</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="supplier-detail.html?id=nsw-seafood">View</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for NSW Seafood Direct" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Outlet assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-supplier">
+                  <div class="supplier-avatar">CP</div>
+                  <div>
+                    <div class="cell-name">Clean Pack Solutions <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:13px;vertical-align:-1px;"></i></div>
+                    <div class="cell-sub">b2b@cleanpack.com.au</div>
+                  </div>
+                </div>
+              </td>
+              <td><div class="cat-list"><span class="cat-pill">Packaging</span><span class="cat-pill">Cleaning</span></div></td>
+              <td class="col-outlets">12 outlets</td>
+              <td>
+                <div class="cell-activity">
+                  <div class="activity-last"><i class="ti ti-clock"></i>11 days ago</div>
+                  <span class="freq-badge low"><i class="ti ti-repeat" style="font-size:10px;"></i>Monthly</span>
+                </div>
+              </td>
+              <td>
+                <div class="cell-spend">
+                  <div class="spend-val">$31,200</div>
+                  <div class="spend-sub">Jan–Jun 2026</div>
+                </div>
+              </td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="supplier-detail.html?id=clean-pack">View</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Clean Pack Solutions" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit details</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Outlet assignments</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-file-invoice"></i>View orders</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-circle-off"></i>Deactivate</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /.napp-canvas -->
+</div><!-- /.page-body -->
+
+<!-- Add supplier drawer (3-step) -->
+<div class="as-scrim" id="as-scrim" onclick="asClose()"></div>
+<aside class="as-drawer" id="as-drawer" aria-label="Add supplier" aria-hidden="true">
+
+  <!-- Header -->
+  <div class="as-head">
+    <div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-soft);" id="as-eyebrow">Step 1 of 3</div>
+      <div class="as-title" id="as-title">Add supplier</div>
+    </div>
+    <button class="as-close" onclick="asClose()" aria-label="Close"><i class="ti ti-x"></i></button>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="as-steps">
+    <div class="as-step active" id="as-step-dot-1"><span class="as-step-num">1</span><span class="as-step-label" id="as-step-label-1">Find</span></div>
+    <div class="as-step-line"></div>
+    <div class="as-step" id="as-step-dot-2"><span class="as-step-num">2</span><span class="as-step-label" id="as-step-label-2">Outlets</span></div>
+    <div class="as-step-line"></div>
+    <div class="as-step" id="as-step-dot-3"><span class="as-step-num">3</span><span class="as-step-label" id="as-step-label-3">Confirm</span></div>
+  </div>
+
+  <!-- Body -->
+  <div class="as-body">
+
+    <!-- Step 1: Find supplier -->
+    <div class="as-panel active" id="as-panel-1">
+
+      <!-- SEARCH UI (default state) -->
+      <div id="as-search-ui">
+        <div class="as-field-stack">
+          <p style="font-size:13px;color:var(--text-soft);margin:0;line-height:1.6;">Search the Nomni supplier directory first. If your supplier is already on the platform, connect to their existing profile — no duplicates needed.</p>
+          <div class="as-field">
+            <label class="as-label">Search by name or ABN</label>
+            <div style="position:relative;">
+              <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text-soft);pointer-events:none;"></i>
+              <input class="as-input" id="as-search" type="text" placeholder="e.g. John's Meats or 54 321 987 654" style="padding-left:38px;" oninput="asSearchInput(this.value)" autocomplete="off"/>
+            </div>
+          </div>
+          <div id="as-results-wrap" style="display:none;">
+            <div id="as-results-list" class="as-results-list"></div>
+          </div>
+          <div id="as-selected-wrap" style="display:none;">
+            <div id="as-selected-card"></div>
+            <button class="as-link-btn" onclick="asClearSelection()" style="margin-top:var(--space-sm);"><i class="ti ti-arrow-left" style="font-size:13px;"></i>Search again</button>
+          </div>
+          <div class="as-create-prompt">
+            <span style="font-size:13px;color:var(--text-soft);">Can't find your supplier?</span>
+            <button class="btn btn-outline btn-sm" onclick="asStartCreate()"><i class="ti ti-plus"></i>Create new supplier</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREATE UI (shown after "Create new supplier" click) -->
+      <div id="as-create-ui" style="display:none;">
+        <div class="as-field-stack">
+          <button class="as-link-btn" onclick="asBackToSearch()"><i class="ti ti-arrow-left" style="font-size:13px;"></i>Back to search</button>
+          <div class="as-field">
+            <label class="as-label">Supplier name <span class="as-req">*</span></label>
+            <input class="as-input" id="as-name" type="text" placeholder="e.g. NSW Dairy Direct"/>
+            <div class="as-error" id="as-name-err" style="display:none;">Supplier name is required.</div>
+          </div>
+          <div class="as-row">
+            <div class="as-field">
+              <label class="as-label">Contact email <span class="as-req">*</span></label>
+              <input class="as-input" id="as-email" type="email" placeholder="orders@supplier.com.au"/>
+              <div class="as-error" id="as-email-err" style="display:none;">A valid email is required.</div>
+            </div>
+            <div class="as-field">
+              <label class="as-label">Phone <span class="as-opt">(optional)</span></label>
+              <input class="as-input" id="as-phone" type="tel" placeholder="+61 2 XXXX XXXX"/>
+            </div>
+          </div>
+          <div class="as-row">
+            <div class="as-field">
+              <label class="as-label">ABN <span class="as-opt">(optional)</span></label>
+              <input class="as-input" id="as-abn" type="text" placeholder="XX XXX XXX XXX" style="font-family:'IBM Plex Mono',monospace;"/>
+            </div>
+            <div class="as-field">
+              <label class="as-label">Website <span class="as-opt">(optional)</span></label>
+              <input class="as-input" id="as-website" type="url" placeholder="https://…"/>
+            </div>
+          </div>
+          <div class="as-field">
+            <label class="as-label">Address <span class="as-opt">(optional)</span></label>
+            <input class="as-input" id="as-address" type="text" placeholder="Street address, suburb, state, postcode"/>
+          </div>
+          <div class="as-field">
+            <label class="as-label">Categories <span class="as-req">*</span></label>
+            <div class="as-cat-tags" id="as-cats">
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Meat &amp; Seafood">Meat &amp; Seafood</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Produce">Produce</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Dairy">Dairy</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Dry Goods">Dry Goods</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Beverages">Beverages</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Bakery">Bakery</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Packaging">Packaging</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Cleaning">Cleaning</span>
+              <span class="as-cat" onclick="asToggleCat(this)" data-val="Equipment">Equipment</span>
+            </div>
+            <div class="as-error" id="as-cat-err" style="display:none;">Select at least one category.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Step 2: Trading account + outlet assignment -->
+    <div class="as-panel" id="as-panel-2">
+      <!-- Existing supplier banner (shown only in 'existing' mode) -->
+      <div id="as-existing-banner" class="as-existing-banner" style="display:none;">
+        <i class="ti ti-plug-connected"></i>
+        <div>Connecting to <strong id="as-existing-name"></strong> — their verified profile is already on Nomni. Set your payment terms and assign outlets below.</div>
+      </div>
+      <div class="as-field-stack">
+        <div class="as-section-title">Trading account <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text-soft);">— all optional</span></div>
+        <div class="as-row">
+          <div class="as-field">
+            <label class="as-label">Account number <span class="as-opt">(optional)</span></label>
+            <input class="as-input" id="as-account" type="text" placeholder="e.g. ACC-00100" style="font-family:'IBM Plex Mono',monospace;"/>
+          </div>
+          <div class="as-field">
+            <label class="as-label">Payment terms <span class="as-opt">(optional)</span></label>
+            <select class="as-select" id="as-terms">
+              <option value="">Select terms…</option>
+              <option>COD – Cash on Delivery</option>
+              <option>Net 7</option>
+              <option>Net 14</option>
+              <option>Net 30</option>
+              <option>Net 60</option>
+              <option>EOM – End of Month</option>
+            </select>
+          </div>
+        </div>
+        <div class="as-field" style="max-width:180px;">
+          <label class="as-label">Credit limit <span class="as-opt">(optional)</span></label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);">$</span>
+            <input class="as-input" id="as-credit" type="text" placeholder="0.00" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+          </div>
+        </div>
+
+        <div class="as-section-title" style="margin-top:var(--space-sm);">Outlet assignment</div>
+        <p style="font-size:13px;color:var(--text-soft);line-height:1.6;margin:0;">Select which outlets this supplier is approved to supply. You can change this at any time from the supplier's profile.</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-soft);">
+          <span>Approved for</span>
+          <span id="as-outlet-count" style="font-weight:600;color:var(--text-accent);">0 outlets</span>
+        </div>
+        <div class="as-tree-wrap" id="as-access-tree"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Review -->
+    <div class="as-panel" id="as-panel-3">
+      <div class="as-field-stack">
+        <div class="as-section-title">Review &amp; confirm</div>
+        <p style="font-size:13px;color:var(--text-soft);margin:0;line-height:1.6;">The supplier will be added as <strong>Active</strong> immediately and assigned to the selected outlets.</p>
+        <div class="as-review-card" id="as-review"></div>
+      </div>
+    </div>
+
+  </div><!-- /as-body -->
+
+  <!-- Footer -->
+  <div class="as-foot">
+    <button class="btn btn-outline" id="as-back-btn" onclick="asBack()" style="display:none;"><i class="ti ti-arrow-left"></i>Back</button>
+    <div style="flex:1;"></div>
+    <button class="btn btn-outline" onclick="asClose()">Cancel</button>
+    <button class="btn btn-primary" id="as-next-btn" onclick="asNext()">Next<i class="ti ti-arrow-right"></i></button>
+  </div>
+
+</aside>
+
+<!-- Supplier detail drawer (SN-1, buyer-primary SKU links) -->
+<div class="nb-drawer-scrim" id="sup-scrim" onclick="closeSupplier()"></div>
+<aside class="nb-drawer" id="sup-drawer" aria-label="Supplier detail" aria-hidden="true" style="width:min(520px,94vw);">
+  <div class="nb-drawer-head">
+    <span class="nb-drawer-title" id="sup-name">Supplier</span>
+    <button class="nb-btn ghost" onclick="closeSupplier()" aria-label="Close"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="nb-drawer-body" id="sup-body"></div>
+  <div class="nb-drawer-foot">
+    <button class="nb-btn" onclick="supToast('Opening order history…')">View orders</button>
+    <button class="nb-btn primary" onclick="supToast('Opening RFQ for this supplier…')"><i class="ti ti-file-dollar"></i>Invite to RFQ</button>
+  </div>
+</aside>
+
+<div id="sup-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
+
+<script src="../shared/shell.js?v=12" data-active="suppliers"></script>
+<script>
+  NomniShell.init('Suppliers');
+  applySuppliersScope();
+
+  /* A Central Kitchen viewing its own Purchasing > Suppliers sees the
+     suppliers IT buys raw ingredients from — not the HQ-wide, all-outlets
+     framing this page defaults to. Re-scope in place rather than fork a
+     separate file, since the table/drawer markup is otherwise identical. */
+  function applySuppliersScope() {
+    if (document.documentElement.getAttribute('data-role') !== 'ck-operator') return;
+
+    document.getElementById('sup-eyebrow').textContent = 'Purchasing';
+    document.getElementById('sup-desc').textContent = 'Suppliers Sydney Central Kitchen buys raw ingredients and stock from, their categories, and approval status.';
+    document.querySelectorAll('.col-outlets').forEach(el => el.style.display = 'none');
+
+    const ckRow = document.querySelector('tr[data-ck-internal="true"]');
+    if (ckRow) ckRow.remove();
+
+    const rows = [...document.querySelectorAll('.data-table tbody tr')];
+    document.getElementById('kpi-total').textContent = rows.length;
+    document.getElementById('kpi-total-sub').textContent = 'Suppliers to this CK';
+    document.getElementById('kpi-active').textContent = rows.filter(r => r.querySelector('.status-pill.active')).length;
+
+    const spend = rows.reduce((sum, r) => {
+      const val = r.querySelector('.spend-val');
+      const n = val ? parseFloat(val.textContent.replace(/[^0-9.]/g, '')) : 0;
+      return sum + (isNaN(n) ? 0 : n);
+    }, 0);
+    document.getElementById('kpi-spend').textContent = '$' + Math.round(spend).toLocaleString('en-AU');
+    document.getElementById('kpi-spend-sub').textContent = 'Jan–Jun 2026, this CK only';
+  }
+
+  /* Supplier detail drawer with Supplier SKU Links + preferred link */
+  function openSupplier(btn) {
+    const row = btn.closest('tr');
+    const name = row.querySelector('.cell-name').textContent.trim();
+    const verified = !!row.querySelector('.ti-rosette-discount-check-filled');
+    document.getElementById('sup-name').textContent = name;
+    document.getElementById('sup-body').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:var(--space-xl);">
+        <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+          ${verified ? '<span class="nb-pill ok"><i class="ti ti-rosette-discount-check"></i>Verified</span>' : '<span class="nb-pill warn"><i class="ti ti-clock"></i>Verification pending</span>'}
+          <span class="nb-pill neutral"><i class="ti ti-star-filled" style="color:var(--sun)"></i>4.7 rating</span>
+          <span class="nb-pill neutral"><i class="ti ti-truck"></i>Next-day · Sydney metro</span>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:var(--space-sm);">Supplier SKU links</div>
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:var(--space-md);line-height:1.5;">How this supplier's catalogue maps to your internal items — with pack size, UOM and lead time.</p>
+          <table class="data-table" style="min-width:0;">
+            <thead><tr><th>Internal item</th><th>Pack / UOM</th><th class="num">Price</th><th class="num">Lead</th><th>Preferred</th></tr></thead>
+            <tbody>
+              <tr><td>Chicken Breast 500g</td><td>5kg carton</td><td class="num" style="font-feature-settings:'tnum' 1">$7.15/kg</td><td class="num" style="font-feature-settings:'tnum' 1">1 day</td><td><span class="nb-pill ok"><i class="ti ti-check"></i>Preferred</span></td></tr>
+              <tr><td>Beef Mince 80/20</td><td>2kg pack</td><td class="num" style="font-feature-settings:'tnum' 1">$11.20/kg</td><td class="num" style="font-feature-settings:'tnum' 1">1 day</td><td><span class="nb-pill neutral">Fallback</span></td></tr>
+              <tr><td>Pork Sausage</td><td>3kg pack</td><td class="num" style="font-feature-settings:'tnum' 1">$8.90/kg</td><td class="num" style="font-feature-settings:'tnum' 1">2 days</td><td><span class="nb-pill ok"><i class="ti ti-check"></i>Preferred</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:var(--space-sm);">Price benchmark</div>
+          <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:13px;color:var(--text);">
+            <span class="nb-pill ok"><i class="ti ti-arrow-down"></i>4% below network median</span>
+            <span style="color:var(--text-soft);">on Meat &amp; Seafood, NSW</span>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('sup-scrim').classList.add('open');
+    document.getElementById('sup-drawer').classList.add('open');
+    document.getElementById('sup-drawer').setAttribute('aria-hidden','false');
+  }
+  function closeSupplier() {
+    document.getElementById('sup-scrim').classList.remove('open');
+    document.getElementById('sup-drawer').classList.remove('open');
+    document.getElementById('sup-drawer').setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSupplier(); });
+
+  function supToast(msg) {
+    const wrap = document.getElementById('sup-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  function toggleMenu(btn) {
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+    menu.classList.toggle('open');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.overflow-wrap')) {
+      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  // ── Add Supplier Drawer ────────────────────────────────────────────────────
+
+  const AS_GLOBAL_SUPPLIERS = [
+    { id: 'gs1', initials: 'JP', name: "John's Premium Meats",   abn: '12 345 678 901', email: 'orders@johnspremiummeats.com.au', category: 'Meat & Seafood', location: 'Melbourne, VIC', nsConnected: true,  verified: true,  buyers: 6 },
+    { id: 'gs2', initials: 'SF', name: 'Sunrise Fresh Produce',  abn: '98 765 432 109', email: 'supply@sunriseproduce.com.au',    category: 'Produce',        location: 'Sydney, NSW',    nsConnected: false, verified: true,  buyers: 3 },
+    { id: 'gs3', initials: 'MC', name: 'Metro Coffee Supplies',  abn: '55 432 109 876', email: 'trade@metrocoffee.com.au',        category: 'Beverages',      location: 'Brisbane, QLD',  nsConnected: false, verified: false, buyers: 1 },
+  ];
+
+  let asStep = 1;
+  let asMode = 'search'; // 'search' | 'existing' | 'new'
+  let asSelectedSupplier = null;
+
+  const AS_GROUPS = [
+    { id: 'ag1', name: 'CBD Cluster',  outlets: ['Harbour Kitchen', 'Darling St Bistro', 'The CBD Rooftop', 'Central Brasserie'] },
+    { id: 'ag2', name: 'Beachside',    outlets: ['Bondi Rooftop', 'Manly Wharf Bar', 'Coogee Bay Dining'] },
+    { id: 'ag3', name: 'Suburban',     outlets: ['Parramatta Table', 'Surry Hills Social', 'Newtown Kitchen', 'Leichhardt Trattoria'] },
+  ];
+  const asAccess = { ag1: new Set(), ag2: new Set(), ag3: new Set() };
+  const asExpanded = new Set();
+
+  function openAddSupplierDialog() {
+    asStep = 1;
+    asMode = 'search';
+    asSelectedSupplier = null;
+    // Reset search UI
+    document.getElementById('as-search-ui').style.display = 'block';
+    document.getElementById('as-create-ui').style.display = 'none';
+    document.getElementById('as-results-wrap').style.display = 'none';
+    document.getElementById('as-selected-wrap').style.display = 'none';
+    document.getElementById('as-search').value = '';
+    // Reset form fields
+    ['as-name','as-email','as-phone','as-abn','as-website','as-address','as-account','as-credit'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('as-terms').value = '';
+    document.querySelectorAll('.as-cat').forEach(c => c.classList.remove('selected'));
+    AS_GROUPS.forEach(g => asAccess[g.id] = new Set());
+    asExpanded.clear();
+    ['as-name-err','as-email-err','as-cat-err'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    ['as-name','as-email'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('error'); });
+    asRender();
+    asUpdateUI();
+    document.getElementById('as-scrim').classList.add('open');
+    document.getElementById('as-drawer').classList.add('open');
+    document.getElementById('as-drawer').setAttribute('aria-hidden','false');
+    setTimeout(() => document.getElementById('as-search').focus(), 250);
+  }
+
+  function asClose() {
+    document.getElementById('as-scrim').classList.remove('open');
+    document.getElementById('as-drawer').classList.remove('open');
+    document.getElementById('as-drawer').setAttribute('aria-hidden','true');
+  }
+
+  function asSearchInput(val) {
+    if (asSelectedSupplier) return;
+    const q = val.trim().toLowerCase();
+    const wrap = document.getElementById('as-results-wrap');
+    const list = document.getElementById('as-results-list');
+    if (q.length < 2) { wrap.style.display = 'none'; return; }
+    const matches = AS_GLOBAL_SUPPLIERS.filter(s =>
+      s.name.toLowerCase().includes(q) || s.abn.replace(/\s/g,'').includes(q.replace(/\s/g,''))
+    );
+    if (matches.length === 0) {
+      list.innerHTML = `<div style="padding:var(--space-lg);text-align:center;color:var(--text-soft);font-size:13px;">No suppliers found for "<strong>${val}</strong>"</div>`;
+    } else {
+      list.innerHTML = matches.map(s => `
+        <div class="as-result-item" onclick="asSelectSupplier('${s.id}')">
+          <div class="as-result-logo">${s.initials}</div>
+          <div class="as-result-info">
+            <div class="as-result-name">
+              ${s.name}
+              ${s.verified ? '<i class="ti ti-rosette-discount-check-filled" title="Verified" style="color:var(--text-accent);font-size:13px;"></i>' : ''}
+              ${s.nsConnected ? '<span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span>' : ''}
+            </div>
+            <div class="as-result-meta">${s.category} · ${s.location} · Used by ${s.buyers} buyer${s.buyers !== 1 ? 's' : ''}</div>
+          </div>
+          <button class="btn btn-outline btn-sm" style="pointer-events:none;flex-shrink:0;">Connect</button>
+        </div>`).join('');
+    }
+    wrap.style.display = 'block';
+  }
+
+  function asSelectSupplier(id) {
+    asSelectedSupplier = AS_GLOBAL_SUPPLIERS.find(s => s.id === id);
+    asMode = 'existing';
+    document.getElementById('as-results-wrap').style.display = 'none';
+    document.getElementById('as-search').value = '';
+    const s = asSelectedSupplier;
+    document.getElementById('as-selected-card').innerHTML = `
+      <div class="as-result-item selected" style="cursor:default;">
+        <div class="as-result-logo">${s.initials}</div>
+        <div class="as-result-info">
+          <div class="as-result-name">
+            ${s.name}
+            ${s.verified ? '<i class="ti ti-rosette-discount-check-filled" title="Verified" style="color:var(--text-accent);font-size:13px;"></i>' : ''}
+            ${s.nsConnected ? '<span class="ns-supply-badge"><i class="ti ti-plug-connected" style="font-size:9px;"></i>Nomni Supply</span>' : ''}
+          </div>
+          <div class="as-result-meta">${s.category} · ${s.location} · Used by ${s.buyers} buyer${s.buyers !== 1 ? 's' : ''}</div>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:var(--fern);display:inline-flex;align-items:center;gap:3px;flex-shrink:0;"><i class="ti ti-check" style="font-size:12px;"></i>Selected</span>
+      </div>`;
+    document.getElementById('as-selected-wrap').style.display = 'block';
+    asUpdateUI();
+  }
+
+  function asClearSelection() {
+    asSelectedSupplier = null;
+    asMode = 'search';
+    document.getElementById('as-selected-wrap').style.display = 'none';
+    document.getElementById('as-search').value = '';
+    document.getElementById('as-search').focus();
+    asUpdateUI();
+  }
+
+  function asStartCreate() {
+    asMode = 'new';
+    document.getElementById('as-search-ui').style.display = 'none';
+    document.getElementById('as-create-ui').style.display = 'block';
+    asUpdateUI();
+    setTimeout(() => document.getElementById('as-name').focus(), 100);
+  }
+
+  function asBackToSearch() {
+    asMode = 'search';
+    asSelectedSupplier = null;
+    document.getElementById('as-create-ui').style.display = 'none';
+    document.getElementById('as-search-ui').style.display = 'block';
+    asUpdateUI();
+  }
+
+  function asUpdateUI() {
+    const stepLabels = {
+      search:   ['Find', 'Outlets', 'Confirm'],
+      existing: ['Find', 'Outlets', 'Confirm'],
+      new:      ['Details', 'Terms & outlets', 'Confirm'],
+    };
+    const titles = {
+      search:   ['Add supplier', 'Outlet assignment', 'Review & confirm'],
+      existing: ['Add supplier', 'Outlet assignment', 'Review & confirm'],
+      new:      ['Add supplier', 'Supplier details', 'Review & confirm'],
+    };
+    const labels = stepLabels[asMode];
+    for (let i = 1; i <= 3; i++) {
+      const lbl = document.getElementById(`as-step-label-${i}`);
+      if (lbl) lbl.textContent = labels[i - 1];
+    }
+    document.getElementById('as-title').textContent = titles[asMode][asStep - 1];
+    document.getElementById('as-eyebrow').textContent = `Step ${asStep} of 3`;
+    document.querySelectorAll('.as-panel').forEach((p, i) => p.classList.toggle('active', i === asStep - 1));
+    // Existing supplier banner in step 2
+    const banner = document.getElementById('as-existing-banner');
+    if (banner) {
+      banner.style.display = (asMode === 'existing' && asStep === 2) ? 'flex' : 'none';
+      if (asSelectedSupplier) document.getElementById('as-existing-name').textContent = asSelectedSupplier.name;
+    }
+    // Step dots
+    for (let i = 1; i <= 3; i++) {
+      const dot = document.getElementById(`as-step-dot-${i}`);
+      dot.classList.remove('active','done');
+      if (i === asStep) dot.classList.add('active');
+      else if (i < asStep) dot.classList.add('done');
+    }
+    for (let i = 1; i < asStep; i++) {
+      document.querySelector(`#as-step-dot-${i} .as-step-num`).innerHTML = '<i class="ti ti-check" style="font-size:11px;"></i>';
+    }
+    document.getElementById('as-back-btn').style.display = asStep > 1 ? 'inline-flex' : 'none';
+    const nextBtn = document.getElementById('as-next-btn');
+    if (asStep === 3) nextBtn.innerHTML = '<i class="ti ti-circle-check"></i>Add supplier';
+    else if (asStep === 1 && asMode === 'existing') nextBtn.innerHTML = 'Continue<i class="ti ti-arrow-right"></i>';
+    else nextBtn.innerHTML = 'Next<i class="ti ti-arrow-right"></i>';
+  }
+
+  function asNext() {
+    if (asStep === 1) {
+      if (asMode === 'search') return; // nothing selected yet
+      if (asMode === 'new' && !asValidateCreateForm()) return;
+    }
+    if (asStep === 3) { asConfirm(); return; }
+    if (asStep === 2) asPopulateReview();
+    asStep++;
+    asUpdateUI();
+    document.querySelector('.as-body').scrollTop = 0;
+  }
+
+  function asBack() {
+    if (asStep > 1) { asStep--; asUpdateUI(); }
+    document.querySelector('.as-body').scrollTop = 0;
+  }
+
+  function asValidateCreateForm() {
+    let ok = true;
+    const name = document.getElementById('as-name');
+    const email = document.getElementById('as-email');
+    const cats = document.querySelectorAll('.as-cat.selected');
+    if (!name.value.trim()) { name.classList.add('error'); document.getElementById('as-name-err').style.display = 'block'; ok = false; }
+    else { name.classList.remove('error'); document.getElementById('as-name-err').style.display = 'none'; }
+    if (!email.value.trim() || !email.value.includes('@')) { email.classList.add('error'); document.getElementById('as-email-err').style.display = 'block'; ok = false; }
+    else { email.classList.remove('error'); document.getElementById('as-email-err').style.display = 'none'; }
+    if (cats.length === 0) { document.getElementById('as-cat-err').style.display = 'block'; ok = false; }
+    else { document.getElementById('as-cat-err').style.display = 'none'; }
+    return ok;
+  }
+
+  function asPopulateReview() {
+    let totalOutlets = 0;
+    Object.values(asAccess).forEach(s => totalOutlets += s.size);
+    const terms = document.getElementById('as-terms').value || '—';
+    const credit = document.getElementById('as-credit').value ? '$' + document.getElementById('as-credit').value : '—';
+    const account = document.getElementById('as-account').value || '—';
+    if (asMode === 'existing' && asSelectedSupplier) {
+      const s = asSelectedSupplier;
+      document.getElementById('as-review').innerHTML = `
+        <div class="as-review-row"><span class="as-review-label">Connecting to</span><span class="as-review-val">${s.name}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Category</span><span class="as-review-val">${s.category}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Location</span><span class="as-review-val">${s.location}</span></div>
+        ${s.nsConnected ? '<div class="as-review-row"><span class="as-review-label">Profile</span><span class="as-review-val" style="color:var(--fern);">Nomni Supply connected</span></div>' : ''}
+        <div class="as-review-divider"></div>
+        <div class="as-review-row"><span class="as-review-label">Payment terms</span><span class="as-review-val">${terms}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Account number</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${account}</span></div>
+        <div class="as-review-divider"></div>
+        <div class="as-review-row"><span class="as-review-label">Outlet assignment</span><span class="as-review-val">${totalOutlets} outlet${totalOutlets !== 1 ? 's' : ''} selected</span></div>
+        <div class="as-review-row"><span class="as-review-label">Status</span><span class="as-review-val" style="color:var(--status-ok-fg);">Active immediately</span></div>`;
+    } else {
+      const cats = [...document.querySelectorAll('.as-cat.selected')].map(c => c.dataset.val).join(', ');
+      document.getElementById('as-review').innerHTML = `
+        <div class="as-review-row"><span class="as-review-label">Supplier name</span><span class="as-review-val">${document.getElementById('as-name').value}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Email</span><span class="as-review-val">${document.getElementById('as-email').value}</span></div>
+        ${document.getElementById('as-phone').value ? `<div class="as-review-row"><span class="as-review-label">Phone</span><span class="as-review-val">${document.getElementById('as-phone').value}</span></div>` : ''}
+        ${document.getElementById('as-abn').value ? `<div class="as-review-row"><span class="as-review-label">ABN</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${document.getElementById('as-abn').value}</span></div>` : ''}
+        <div class="as-review-row"><span class="as-review-label">Categories</span><span class="as-review-val">${cats}</span></div>
+        <div class="as-review-divider"></div>
+        <div class="as-review-row"><span class="as-review-label">Payment terms</span><span class="as-review-val">${terms}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Account number</span><span class="as-review-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${account}</span></div>
+        <div class="as-review-row"><span class="as-review-label">Credit limit</span><span class="as-review-val">${credit}</span></div>
+        <div class="as-review-divider"></div>
+        <div class="as-review-row"><span class="as-review-label">Outlet assignment</span><span class="as-review-val">${totalOutlets} outlet${totalOutlets !== 1 ? 's' : ''} selected</span></div>
+        <div class="as-review-row"><span class="as-review-label">Status</span><span class="as-review-val" style="color:var(--status-ok-fg);">Active immediately</span></div>`;
+    }
+  }
+
+  function asConfirm() {
+    asClose();
+    const msg = asMode === 'existing' && asSelectedSupplier
+      ? `${asSelectedSupplier.name} connected and added to your suppliers.`
+      : 'New supplier created and is now active.';
+    supToast(msg);
+  }
+
+  function asToggleCat(el) {
+    el.classList.toggle('selected');
+  }
+
+  // Outlet access tree for the drawer
+  function asRender() {
+    const tree = document.getElementById('as-access-tree');
+    tree.innerHTML = '';
+    AS_GROUPS.forEach(group => {
+      const isExpanded = asExpanded.has(group.id);
+      const sel = asAccess[group.id];
+      const total = group.outlets.length;
+      const count = sel.size;
+      let stateLabel, stateClass;
+      if (count === 0)     { stateLabel = 'None';        stateClass = 'as-state-none'; }
+      else if (count === total) { stateLabel = 'All outlets'; stateClass = 'as-state-all'; }
+      else                 { stateLabel = 'Custom';      stateClass = 'as-state-some'; }
+
+      const groupRow = document.createElement('div');
+      groupRow.className = 'as-group-row';
+      groupRow.innerHTML = `
+        <i class="ti ti-chevron-right as-chevron ${isExpanded ? 'open' : ''}"></i>
+        <span class="as-group-name">${group.name}</span>
+        <span class="as-group-count">${total} outlets</span>
+        <span class="as-group-state ${stateClass}">${stateLabel}</span>
+        <input type="checkbox" class="as-group-cb" id="ascb-${group.id}"
+          ${count === total ? 'checked' : ''}
+          onclick="asGroupToggle(event, '${group.id}')"/>
+      `;
+      groupRow.addEventListener('click', e => {
+        if (e.target.classList.contains('as-group-cb')) return;
+        asExpanded.has(group.id) ? asExpanded.delete(group.id) : asExpanded.add(group.id);
+        asRender();
+      });
+      tree.appendChild(groupRow);
+
+      const cb = groupRow.querySelector(`#ascb-${group.id}`);
+      if (count > 0 && count < total) cb.indeterminate = true;
+
+      const outletList = document.createElement('div');
+      outletList.className = `as-outlet-list ${isExpanded ? 'open' : ''}`;
+      group.outlets.forEach(name => {
+        const row = document.createElement('div');
+        row.className = 'as-outlet-row';
+        const slug = name.replace(/\s+/g, '-');
+        row.innerHTML = `
+          <input type="checkbox" class="as-outlet-cb" id="asout-${group.id}-${slug}"
+            ${sel.has(name) ? 'checked' : ''}
+            onchange="asOutletToggle('${group.id}', '${name}', this)"/>
+          <label class="as-outlet-name" for="asout-${group.id}-${slug}" style="cursor:pointer;">${name}</label>
+        `;
+        outletList.appendChild(row);
+      });
+      tree.appendChild(outletList);
+    });
+    asUpdateOutletCount();
+  }
+
+  function asGroupToggle(e, groupId) {
+    e.stopPropagation();
+    const group = AS_GROUPS.find(g => g.id === groupId);
+    asAccess[groupId] = e.target.checked ? new Set(group.outlets) : new Set();
+    asRender();
+  }
+
+  function asOutletToggle(groupId, name, cb) {
+    cb.checked ? asAccess[groupId].add(name) : asAccess[groupId].delete(name);
+    asRender();
+    if (asExpanded.has(groupId)) {
+      document.querySelectorAll('.as-outlet-list').forEach(l => {
+        if (l.previousElementSibling && l.previousElementSibling.querySelector(`#ascb-${groupId}`)) l.classList.add('open');
+      });
+    }
+  }
+
+  function asUpdateOutletCount() {
+    let total = 0;
+    Object.values(asAccess).forEach(s => total += s.size);
+    const el = document.getElementById('as-outlet-count');
+    if (el) el.textContent = total + ' outlet' + (total !== 1 ? 's' : '');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeSupplier();
+      asClose();
+    }
+  });
+
+  // Clickable rows
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', e => {
+        if (e.target.closest('.overflow-wrap, .row-actions a, .row-actions button')) return;
+        const link = tr.querySelector('.link-action');
+        window.location.href = link ? link.href : 'supplier-detail.html';
+      });
+    });
+  });
+</script>
+</body>
+</html>

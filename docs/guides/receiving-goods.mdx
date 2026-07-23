@@ -1,0 +1,52 @@
+---
+title: Receiving Goods
+description: Record deliveries, flag discrepancies, and keep inventory accurate.
+---
+
+When goods arrive at your outlet, you record a **Goods Receipt Note (GRN)** against the purchase order. This updates inventory levels and feeds into invoice matching.
+
+## Recording a delivery
+
+<Steps>
+  <Step title="Find the order">
+    Go to **Orders** and open the order you're receiving against. You can also scan or search by order number at the delivery dock.
+  </Step>
+  <Step title="Click Receive delivery">
+    The order detail page shows a **Receive delivery** button once the order is in Approved or Sent status.
+  </Step>
+  <Step title="Enter received quantities">
+    For each line item, enter the quantity you actually received. The system pre-fills the ordered quantity — only change it if the delivery is short or has a substitution.
+  </Step>
+  <Step title="Note any issues">
+    If an item is damaged, wrong, or missing, add a note in the line item comments. This surfaces to your HQ Admin and Finance team.
+  </Step>
+  <Step title="Confirm receipt">
+    Click **Confirm receipt**. Inventory is updated immediately. If any quantities differ from the order, a discrepancy flag is raised automatically.
+  </Step>
+</Steps>
+
+## Discrepancies
+
+A discrepancy is raised when the received quantity doesn't match the ordered quantity. Discrepancies appear on:
+
+- The invoice detail page (for Finance to review during 3-way match)
+- The outlet manager's attention list on the dashboard
+- The supplier's Nomni Supply portal (if connected)
+
+Discrepancies don't block invoice processing — Finance can choose to accept a partial receipt or raise a credit note with the supplier.
+
+## Partial deliveries
+
+If only part of an order arrives, record the quantities you received and confirm. The order status changes to **Partially Delivered** and remains open for you to receive the remainder when it arrives.
+
+## What happens to inventory
+
+When you confirm a GRN, inventory levels at your outlet are updated immediately:
+
+- Items received increase your on-hand stock
+- If a recipe uses the received item, food cost calculations update automatically
+- Stock variance reporting compares GRN quantities against what recipes suggest should have been used
+
+<Tip>
+Accurate GRNs are the foundation of variance analysis. A missing or incorrect GRN is the most common cause of "unexplained" stock variance.
+</Tip>

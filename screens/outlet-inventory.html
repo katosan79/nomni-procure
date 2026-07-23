@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Outlet inventory · Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { padding-block: var(--space-2xl); }
+    .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-2xl); }
+
+    .breadcrumb { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; color: var(--text-soft); }
+    .breadcrumb a { color: var(--text-link); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { opacity: 0.45; }
+
+    /* Outlet header */
+    .out-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap; }
+    .out-header-left { display: flex; align-items: center; gap: var(--space-xl); }
+    .out-logo { width: 56px; height: 56px; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: white; flex-shrink: 0; background: var(--seaweed); }
+    .out-meta { display: flex; flex-direction: column; gap: 4px; }
+    .out-name { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
+    .out-tags { display: flex; align-items: center; gap: var(--space-sm); margin-top: 4px; flex-wrap: wrap; }
+    .out-tag { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: var(--radius-pill); border: 1px solid var(--border); color: var(--text-soft); background: var(--surface); display: inline-flex; align-items: center; gap: 4px; }
+    .out-tag.ok      { background: var(--status-ok-bg);   color: var(--status-ok-fg);   border-color: transparent; }
+    .out-tag.warn    { background: var(--status-warn-bg); color: var(--status-warn-fg); border-color: transparent; }
+    .out-tag.risk    { background: var(--status-risk-bg); color: var(--status-risk-fg); border-color: transparent; }
+    .out-tag.pending { background: var(--surface-soft);   color: var(--text-soft); }
+
+    /* KPI strip */
+    .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-lg); }
+    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm); transition: box-shadow var(--dur-1) var(--ease-standard); }
+    .kpi-tile:hover { box-shadow: var(--shadow-md); }
+    .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .kpi-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; font-feature-settings: 'tnum' 1; }
+    .kpi-context { font-size: 12px; font-weight: 500; color: var(--text-soft); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+    .kpi-context.ok   { color: var(--status-ok-fg); }
+    .kpi-context.warn { color: var(--status-warn-fg); }
+    .kpi-context.risk { color: var(--status-risk-fg); }
+    @media (max-width: 900px) { .kpi-strip { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } .out-name { font-size: 22px; } }
+
+    /* Panel / cards */
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border); }
+    .panel-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .panel-meta  { font-size: 12px; color: var(--text-soft); }
+    .panel-body  { padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); }
+
+    /* Recent flags */
+    .flag-row { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) var(--space-lg); border-radius: var(--radius-sm); }
+    .flag-row.risk { background: var(--status-risk-bg); }
+    .flag-row.warn { background: var(--status-warn-bg); }
+    .flag-row i { font-size: 16px; margin-top: 2px; flex-shrink: 0; }
+    .flag-row.risk i, .flag-row.risk .flag-title { color: var(--status-risk-fg); }
+    .flag-row.warn i, .flag-row.warn .flag-title { color: var(--status-warn-fg); }
+    .flag-title { font-size: 13px; font-weight: 700; }
+    .flag-desc { font-size: 13px; color: var(--text-soft); margin-top: 2px; line-height: 1.5; }
+    .flag-items { display: flex; flex-direction: column; gap: 2px; margin-top: var(--space-sm); }
+    .flag-item-row { display: flex; justify-content: space-between; gap: var(--space-md); font-size: 12px; color: var(--text-soft); }
+    .flag-item-row .fi-name { color: var(--text); font-weight: 500; }
+    .flag-item-row .fi-cost { color: var(--status-risk-fg); font-weight: 600; font-feature-settings: 'tnum' 1; }
+
+    /* Empty state */
+    .empty-state { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); padding: var(--space-2xl); text-align: center; color: var(--text-soft); }
+    .empty-state i { font-size: 28px; }
+    .empty-state-text { font-size: 13px; }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table thead tr { border-bottom: 1px solid var(--border); }
+    .data-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap; }
+    .data-table td { padding: var(--space-md) var(--space-lg); color: var(--text); border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+    .data-table .num { text-align: right; }
+    .data-table .tabular { font-feature-settings: 'tnum' 1; }
+    .link-action { font-size: 13px; font-weight: 600; color: var(--text-accent); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+    .cadence-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: var(--radius-pill); background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+
+    /* Session drawer (verbatim from inventory.html so both pages behave identically) */
+    .session-drawer-backdrop { position: fixed; inset: 0; background: rgba(14,55,39,0.25); z-index: 190; opacity: 0; pointer-events: none; transition: opacity 0.22s; }
+    .session-drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .session-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 520px; max-width: 95vw; background: var(--surface); border-left: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s ease; overflow: hidden; }
+    .session-drawer.open { transform: translateX(0); }
+    .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-xl) var(--space-2xl); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: var(--space-md); }
+    .drawer-head-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .drawer-close { width: 32px; height: 32px; flex-shrink: 0; border-radius: var(--radius-sm); background: none; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-soft); font-size: 16px; }
+    .drawer-close:hover { background: var(--surface-soft); color: var(--text); }
+    .drawer-body { flex: 1; overflow-y: auto; padding: var(--space-xl) var(--space-2xl); display: flex; flex-direction: column; gap: var(--space-2xl); }
+    .drawer-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); margin-bottom: var(--space-md); }
+    .drawer-footer { padding: var(--space-lg) var(--space-2xl); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--space-sm); flex-shrink: 0; }
+
+    .sheet-row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-md); align-items: center; padding: var(--space-md) 0; border-bottom: 1px solid var(--border); }
+    .sheet-row:last-child { border-bottom: none; }
+    .sheet-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .sheet-status-dot.submitted       { background: var(--fern); }
+    .sheet-status-dot.in-progress     { background: var(--status-warn-fg); }
+    .sheet-status-dot.pending         { background: var(--border); }
+    .sheet-status-dot.carried-forward { background: var(--text-soft); }
+
+    .cogs-panel { background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm); }
+    .cogs-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-soft); }
+    .cogs-total { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; color: var(--text); padding-top: var(--space-sm); border-top: 1px solid var(--border); font-feature-settings: 'tnum' 1; }
+
+    .var-cat-row { display: grid; grid-template-columns: 100px 1fr 90px; align-items: center; gap: var(--space-md); padding: var(--space-sm) 0; cursor: pointer; border-radius: var(--radius-sm); }
+    .var-cat-row:hover { background: var(--surface-soft); }
+    .var-track { height: 18px; background: color-mix(in srgb, var(--border) 70%, transparent); border-radius: 3px; overflow: hidden; }
+    .var-fill { height: 100%; background: color-mix(in srgb, var(--fern) 58%, transparent); border-radius: 3px; }
+    .var-item-list { padding: var(--space-sm) 0 var(--space-md) var(--space-lg); display: none; }
+    .var-item-list.open { display: block; }
+    .var-item-row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-md); font-size: 12px; color: var(--text-soft); padding: 3px 0; }
+    .var-item-row-wrap { padding: 3px 0; border-bottom: 1px dashed var(--border); }
+    .var-item-row-wrap:last-child { border-bottom: none; }
+    .var-item-row-wrap .var-item-row { padding: 0; }
+    .waste-match-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 2px; background: none; border: none; padding: 0; font-family: inherit; }
+    .waste-match-tag.ok      { color: var(--status-ok-fg); }
+    .waste-match-tag.partial { color: var(--status-warn-fg); }
+    .waste-match-tag.none    { color: var(--status-risk-fg); cursor: pointer; }
+    .waste-match-tag.none:hover { text-decoration: underline; }
+    .waste-match-tag.suspected { color: var(--text-accent); background: var(--surface-soft); border: 1px dashed var(--border); border-radius: var(--radius-pill); padding: 1px 8px; margin-top: 2px; cursor: pointer; }
+    .waste-match-tag.suspected:hover { border-color: var(--fern); }
+    .classify-wrap { position: relative; display: inline-flex; }
+    .classify-menu { position: absolute; left: 0; top: 100%; margin-top: 4px; z-index: 80; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); min-width: 170px; padding: var(--space-xs) 0; display: none; }
+    .classify-menu.open { display: block; }
+    .classify-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-lg); font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .classify-item:hover { background: var(--surface-soft); }
+    .flag-explain-summary { display: flex; align-items: center; gap: var(--space-sm); font-size: 12px; font-weight: 600; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-sm); background: var(--surface-soft); border: 1px solid var(--border); color: var(--text-soft); }
+    .flag-explain-summary i { font-size: 14px; }
+    .flag-explain-summary strong { color: var(--text); }
+
+    .btn { display: inline-flex; align-items: center; gap: var(--space-xs); height: var(--control-h); padding-inline: var(--space-lg); border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s; text-decoration: none; white-space: nowrap; border: 1.5px solid transparent; }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12" data-active="inventory-operations"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <div class="breadcrumb">
+        <a href="inventory.html">Inventory</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="inventory.html#overview">Overview</a>
+        <span class="breadcrumb-sep">/</span>
+        <span id="bc-outlet">Outlet</span>
+      </div>
+
+      <div class="out-header">
+        <div class="out-header-left">
+          <div class="out-logo" id="out-logo">--</div>
+          <div class="out-meta">
+            <div class="out-name" id="out-name">Outlet</div>
+            <div class="out-tags" id="out-tags"></div>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-outline" onclick="invToast('Exporting count history…')"><i class="ti ti-download"></i>Export</button>
+        </div>
+      </div>
+
+      <div class="kpi-strip" id="kpi-strip"></div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Recent flags</span>
+          <span class="panel-meta" id="flags-meta"></span>
+        </div>
+        <div class="panel-body" id="flags-body"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Count sessions</span>
+          <span class="panel-meta" id="sessions-meta"></span>
+        </div>
+        <table class="data-table" id="sessions-table" aria-label="Count sessions for this outlet">
+          <thead>
+            <tr>
+              <th>Session</th>
+              <th>Sheets</th>
+              <th>Status</th>
+              <th class="num">COGS</th>
+              <th class="num">Variance</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="sessions-tbody"></tbody>
+        </table>
+        <div class="empty-state" id="sessions-empty" style="display:none;">
+          <i class="ti ti-clipboard-off" aria-hidden="true"></i>
+          <span class="empty-state-text">No count sessions recorded yet for this outlet.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="session-drawer-backdrop" id="session-drawer-backdrop" onclick="closeSessionDrawer()"></div>
+  <aside class="session-drawer" id="session-drawer" role="dialog" aria-modal="true" aria-label="Count session details"></aside>
+
+  <div id="toast-wrap" style="position:fixed;bottom:var(--space-xl);left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Inventory · Operations'));
+
+    /* ── Outlet data ── */
+    // streak = consecutive cycles flagged at this status or worse — tells
+    // a one-off spike apart from a systemic problem (Supy's framing).
+    const OUTLETS = {
+      'bondi-beach':    { name: 'Bondi Beach',    group: 'NSW Metro', status: 'risk',    reason: 'Escalate · overdue 14d',        cadence: 'Fortnightly', lastCount: '1 Jun 2026', stockValue: 21400, streak: 3 },
+      'newtown':        { name: 'Newtown',        group: 'NSW Metro', status: 'risk',    reason: '2 anomalies flagged',           cadence: 'Weekly',      lastCount: '8 Jun 2026',  stockValue: 18600, streak: 1 },
+      'surry-hills':    { name: 'Surry Hills',    group: 'NSW Metro', status: 'warn',    reason: '6.3% variance',                 cadence: 'Weekly',      lastCount: '15 Jun 2026 (in progress)', stockValue: 22100, streak: 2 },
+      'parramatta':     { name: 'Parramatta',     group: 'NSW Metro', status: 'warn',    reason: 'New outlet · monitor',          cadence: 'Weekly',      lastCount: '—', stockValue: 9200, streak: 1 },
+      'circular-quay':  { name: 'Circular Quay',  group: 'NSW Metro', status: 'ok',      reason: 'On track',                      cadence: 'Weekly',      lastCount: '—', stockValue: 15800, streak: 0 },
+      'melbourne-cbd':  { name: 'Melbourne CBD',  group: 'VIC Metro', status: 'ok',      reason: 'On track',                      cadence: 'Spot only',   lastCount: '13 Jun 2026', stockValue: 12400, streak: 0 },
+      'richmond':       { name: 'Richmond',       group: 'VIC Metro', status: 'warn',    reason: '3.9% variance',                 cadence: 'Fortnightly', lastCount: '—', stockValue: 14300, streak: 1 },
+      'st-kilda':       { name: 'St Kilda',       group: 'VIC Metro', status: 'warn',    reason: '4.2% variance',                 cadence: 'Fortnightly', lastCount: '—', stockValue: 13100, streak: 2 },
+      'fitzroy':        { name: 'Fitzroy',        group: 'VIC Metro', status: 'pending', reason: 'Counted · awaiting review',     cadence: 'Fortnightly', lastCount: '20 Jun 2026', stockValue: 10700, streak: 0 },
+    };
+    const STATUS_ICON  = { risk: 'alert-triangle', warn: 'alert-circle', pending: 'clock', ok: 'check' };
+    const STATUS_LABEL = { risk: 'Escalate', warn: 'Needs attention', pending: 'Awaiting review', ok: 'On track' };
+    function streakSuffix(streak) {
+      if (!streak || streak < 2) return '';
+      const ord = streak === 2 ? '2nd' : streak === 3 ? '3rd' : streak + 'th';
+      return ` · ${ord} cycle running`;
+    }
+
+    const slug = new URLSearchParams(location.search).get('outlet') || 'bondi-beach';
+    const outlet = OUTLETS[slug] || OUTLETS['bondi-beach'];
+
+    document.title = outlet.name + ' — Inventory · Nomni HQ';
+    document.getElementById('bc-outlet').textContent = outlet.name;
+    document.getElementById('out-name').textContent = outlet.name;
+    document.getElementById('out-logo').textContent = outlet.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    const streakTag = outlet.streak >= 2 ? `<span class="out-tag ${outlet.streak>=3?'risk':'warn'}"><i class="ti ti-repeat" aria-hidden="true"></i>${outlet.streak} cycles running</span>` : '';
+    document.getElementById('out-tags').innerHTML = `
+      <span class="out-tag ${outlet.status}"><i class="ti ti-${STATUS_ICON[outlet.status]}" aria-hidden="true"></i>${STATUS_LABEL[outlet.status]}</span>
+      ${streakTag}
+      <span class="out-tag">${outlet.group}</span>
+      <span class="out-tag">${outlet.cadence} counts</span>`;
+
+    /* ── Sessions (shared shape with inventory.html's SESSIONS) ── */
+    // Waste log — cross-referenced against variance item rows so a usage
+    // gap can be told apart from "explained by a logged waste entry" vs.
+    // genuinely unexplained (Supy calls the latter a "black hole").
+    const WASTE_LOG = [
+      { item:'Roma Tomatoes',  outlet:'Surry Hills',   qty:'2.4 kg',    reason:'Spoilage',   cost:8.40,  loggedBy:'Sarah Kim' },
+      { item:'Sourdough Bread',outlet:'Circular Quay', qty:'6 loaf',    reason:'End of day', cost:14.40, loggedBy:'James Nguyen' },
+      { item:'Whole Milk 2L',  outlet:'Newtown',       qty:'3 carton',  reason:'Expired',    cost:11.70, loggedBy:'Marcus Lee' },
+    ];
+    function matchWaste(itemName, outletName) {
+      return WASTE_LOG.find(w => w.item === itemName && w.outlet === outletName) || null;
+    }
+    function wasteMatch(it, outletName) {
+      const match = matchWaste(it.name, outletName);
+      if (!match) return { match: null, explained: 0, full: false };
+      const explained = Math.min(match.cost, it.varCost);
+      return { match, explained, full: explained >= it.varCost - 0.01 };
+    }
+    function wasteMatchTagHTML(it, outletName, sessionId) {
+      const { match, explained, full } = wasteMatch(it, outletName);
+      if (match) {
+        return full
+          ? `<span class="waste-match-tag ok"><i class="ti ti-check" aria-hidden="true"></i>Explained · ${match.reason} logged by ${match.loggedBy}</span>`
+          : `<span class="waste-match-tag partial"><i class="ti ti-alert-circle" aria-hidden="true"></i>Partially explained · $${match.cost.toFixed(2)} ${match.reason.toLowerCase()} logged, $${(it.varCost-explained).toFixed(2)} unexplained</span>`;
+      }
+      const suspected = SUSPECTED[sessionId + '|' + it.name];
+      const label = suspected ? `Suspected: ${suspected}` : 'Unexplained · Classify';
+      const cls = suspected ? 'suspected' : 'none';
+      return `<div class="classify-wrap">
+        <button class="waste-match-tag ${cls}" onclick="toggleClassifyMenu(event,this)"><i class="ti ti-help-circle" aria-hidden="true"></i>${label} <i class="ti ti-chevron-down" aria-hidden="true" style="font-size:9px;"></i></button>
+        <div class="classify-menu" role="menu">${classifyMenuItems(sessionId, it.name)}</div>
+      </div>`;
+    }
+
+    // Items with no waste-log match get a manual classification affordance
+    // — HQ can tag a suspected cause even without a formal log entry.
+    const SUSPECTED = {};
+    function classifyMenuItems(sessionId, itemName) {
+      return ['Over-portion', 'Spoilage (unlogged)', 'Theft', 'Count error'].map(c =>
+        `<button class="classify-item" role="menuitem" onclick="setSuspected(event,'${sessionId}','${itemName.replace(/'/g,"\\'")}','${c}')">${c}</button>`
+      ).join('');
+    }
+    function toggleClassifyMenu(e, btn) {
+      e.stopPropagation();
+      const menu = btn.nextElementSibling;
+      document.querySelectorAll('.classify-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.classify-wrap')) {
+        document.querySelectorAll('.classify-menu.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+    function setSuspected(e, sessionId, itemName, cause) {
+      e.stopPropagation();
+      SUSPECTED[sessionId + '|' + itemName] = cause;
+      invToast(itemName + ' tagged as suspected ' + cause.toLowerCase());
+      renderFlags();
+      if (activeSession) renderSessionDrawer(activeSession);
+    }
+
+    const ALL_SESSIONS = [
+      {
+        id:'CS-003', period:'Week ending 15 Jun 2026', outlet:'Surry Hills', type:'full', status:'in-progress',
+        sheets:[
+          {name:'Dry Store',  required:true,  cadence:'Weekly',      assignee:'Keith Tan',  status:'submitted'},
+          {name:'Freezer',    required:true,  cadence:'Weekly',      assignee:'Keith Tan',  status:'submitted'},
+          {name:'Bar',        required:true,  cadence:'Weekly',      assignee:'Sarah Kim',  status:'in-progress'},
+          {name:'FOH',        required:false, cadence:'Monthly',     assignee:'Sarah Kim',  status:'pending'},
+        ],
+        openingStock:14200, purchases:8400, closingStock:null, actualCogs:null, theoreticalCogs:null,
+        variance:null, variancePct:null, varByCategory:null,
+        createdAt:'13 Jun 2026', createdBy:'Keith Tan',
+      },
+      {
+        id:'CS-002', period:'Week ending 8 Jun 2026', outlet:'Newtown', type:'full', status:'submitted',
+        sheets:[
+          {name:'Dry Store',  required:true, cadence:'Weekly', assignee:'Marcus Lee', status:'submitted'},
+          {name:'Freezer',    required:true, cadence:'Weekly', assignee:'Marcus Lee', status:'submitted'},
+          {name:'Bar',        required:true, cadence:'Weekly', assignee:'Jake Chen',  status:'submitted'},
+          {name:'FOH',        required:true, cadence:'Weekly', assignee:'Jake Chen',  status:'submitted'},
+        ],
+        openingStock:12800, purchases:6900, closingStock:9800, actualCogs:9900, theoreticalCogs:9200,
+        variance:700, variancePct:7.6,
+        varByCategory:[
+          {cat:'Proteins',  actual:3800, theoretical:3400, var:400, varPct:11.8, items:[
+            {name:'Chicken Breast 500g', theoretical:'1.2 kg',  actual:'1.8 kg',  varCost:180},
+            {name:'Beef Short Rib 500g', theoretical:'0.8 kg',  actual:'1.1 kg',  varCost:110},
+          ]},
+          {cat:'Produce',   actual:2400, theoretical:2200, var:200, varPct:9.1, items:[
+            {name:'Avocado',       theoretical:'40 ea',  actual:'52 ea',  varCost:96},
+            {name:'Roma Tomatoes', theoretical:'15 kg',  actual:'19 kg',  varCost:66},
+          ]},
+          {cat:'Dairy',     actual:1900, theoretical:1820, var:80,  varPct:4.4, items:[
+            {name:'Whole Milk 2L', theoretical:'24 ctn', actual:'27 ctn', varCost:48},
+          ]},
+          {cat:'Beverages', actual:1200, theoretical:1180, var:20,  varPct:1.7, items:[
+            {name:'Orange Juice 2L', theoretical:'10 btl', actual:'11 btl', varCost:20},
+          ]},
+          {cat:'Dry goods', actual:600, theoretical:600, var:0, varPct:0, items:[]},
+        ],
+        createdAt:'8 Jun 2026', submittedAt:'9 Jun, 8:30 am', createdBy:'Marcus Lee',
+      },
+      {
+        id:'CS-001', period:'Fortnight ending 1 Jun 2026', outlet:'Bondi Beach', type:'full', status:'locked',
+        sheets:[
+          {name:'Dry Store',  required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'Freezer',    required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'Bar',        required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'FOH',        required:false, cadence:'Monthly',     assignee:'Priya Mendez', status:'carried-forward'},
+        ],
+        openingStock:9800, purchases:7200, closingStock:8400, actualCogs:8600, theoreticalCogs:8100,
+        variance:500, variancePct:6.2,
+        varByCategory:[
+          {cat:'Proteins',  actual:3200, theoretical:2900, var:300, varPct:10.3, items:[
+            {name:'Chicken Thigh 2kg', theoretical:'8 pkg', actual:'11 pkg', varCost:180},
+          ]},
+          {cat:'Produce',   actual:2100, theoretical:2050, var:50,  varPct:2.4, items:[]},
+          {cat:'Dairy',     actual:1600, theoretical:1600, var:0,   varPct:0,   items:[]},
+          {cat:'Beverages', actual:1200, theoretical:1150, var:50,  varPct:4.3, items:[]},
+          {cat:'Dry goods', actual:500,  theoretical:400,  var:100, varPct:25.0, items:[
+            {name:'Olive Oil 1L', theoretical:'6 btl', actual:'10 btl', varCost:100},
+          ]},
+        ],
+        approvedBy:'Keith Tan', approvedAt:'2 Jun, 10:14 am',
+        createdAt:'1 Jun 2026', createdBy:'Priya Mendez',
+      },
+      {
+        id:'SC-041', period:'Spot · Proteins', outlet:'Melbourne CBD', type:'spot', status:'complete',
+        sheets:[{name:'Proteins (spot)', required:true, cadence:null, assignee:'Lee Sung', status:'submitted'}],
+        openingStock:null, purchases:null, closingStock:null, actualCogs:null, theoreticalCogs:null,
+        variance:null, variancePct:null, varByCategory:null,
+        createdAt:'13 Jun 2026', createdBy:'Lee Sung',
+      },
+    ];
+    const SESSIONS = ALL_SESSIONS.filter(s => s.outlet === outlet.name);
+
+    function fmt(n) { return n==null?'—':'$'+n.toLocaleString(); }
+    function fmtPct(p) { return p==null?'—':p.toFixed(1)+'%'; }
+
+    /* ── KPI strip ── */
+    function renderKpis() {
+      const latest = SESSIONS.find(s => s.variancePct != null);
+      const varCtx = latest
+        ? `<span class="${latest.variancePct>4?'risk':latest.variancePct>2?'warn':'ok'}">${latest.variancePct>2?'▲':'●'} ${latest.period}</span>`
+        : `<span>No completed session yet</span>`;
+      const reqCadenceNote = outlet.status === 'risk' && outlet.reason.includes('overdue')
+        ? `<span class="risk">${outlet.reason}${streakSuffix(outlet.streak)}</span>`
+        : `<span class="${outlet.status==='ok'?'ok':outlet.status==='pending'?'':'warn'}">${outlet.status==='ok' ? 'No open issues' : outlet.reason + streakSuffix(outlet.streak)}</span>`;
+      document.getElementById('kpi-strip').innerHTML = `
+        <div class="kpi-tile">
+          <div class="kpi-label">Stock value</div>
+          <div class="kpi-value">${fmt(outlet.stockValue)}</div>
+          <div class="kpi-context">Live theoretical, this outlet</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Latest variance</div>
+          <div class="kpi-value">${latest ? fmtPct(latest.variancePct) : '—'}</div>
+          <div class="kpi-context">${varCtx}</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Count cadence</div>
+          <div class="kpi-value" style="font-size:20px;">${outlet.cadence}</div>
+          <div class="kpi-context">Last count: ${outlet.lastCount}</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Health status</div>
+          <div class="kpi-value" style="font-size:20px;">${STATUS_LABEL[outlet.status]}</div>
+          <div class="kpi-context">${reqCadenceNote}</div>
+        </div>`;
+    }
+
+    /* ── Recent flags ── */
+    function renderFlags() {
+      const body = document.getElementById('flags-body');
+      const meta = document.getElementById('flags-meta');
+      const flagged = SESSIONS.filter(s => s.varByCategory).flatMap(s =>
+        (s.varByCategory || []).filter(c => c.varPct >= 4).map(c => ({ session: s, cat: c }))
+      );
+      if (!flagged.length) {
+        meta.textContent = 'No open flags';
+        body.innerHTML = `<div class="empty-state"><i class="ti ti-circle-check" aria-hidden="true" style="color:var(--status-ok-fg);"></i><span class="empty-state-text">No variance flags for this outlet — all recent categories within tolerance.</span></div>`;
+        return;
+      }
+      meta.textContent = flagged.length + ' open';
+
+      // Roll up how much of the flagged variance is explained by a logged
+      // waste entry vs. genuinely unexplained — the diagnostic Supy's
+      // article treats as the single highest-value variance check.
+      let totalVar = 0, totalExplained = 0;
+      flagged.forEach(f => f.cat.items.forEach(it => {
+        totalVar += it.varCost;
+        totalExplained += wasteMatch(it, outlet.name).explained;
+      }));
+      const explainPct = totalVar > 0 ? Math.round((totalExplained/totalVar)*100) : 0;
+      const summaryTone = explainPct >= 70 ? 'ok' : explainPct >= 30 ? 'warn' : 'risk';
+      const summaryIcon = explainPct >= 70 ? 'ti-check' : 'ti-help-circle';
+      const summaryHTML = totalVar > 0 ? `<div class="flag-explain-summary" style="margin-bottom:var(--space-md);color:var(--status-${summaryTone}-fg);">
+        <i class="ti ${summaryIcon}" aria-hidden="true"></i>
+        <span><strong>$${totalExplained.toFixed(2)} of $${totalVar.toFixed(2)}</strong> flagged variance explained by a logged waste entry — ${100-explainPct}% unexplained</span>
+      </div>` : '';
+
+      body.innerHTML = summaryHTML + flagged.map(f => {
+        const tone = f.cat.varPct > 8 ? 'risk' : 'warn';
+        const items = f.cat.items.length
+          ? `<div class="flag-items">${f.cat.items.map(it => `<div class="flag-item-row"><span class="fi-name">${it.name}</span><span>${it.theoretical} → ${it.actual}</span><span class="fi-cost">+$${it.varCost}</span></div><div style="margin:-2px 0 4px;">${wasteMatchTagHTML(it, outlet.name, f.session.id)}</div>`).join('')}</div>`
+          : '';
+        return `<div class="flag-row ${tone}">
+          <i class="ti ti-${tone==='risk'?'alert-triangle':'alert-circle'}" aria-hidden="true"></i>
+          <div>
+            <div class="flag-title">${f.cat.cat} · ${fmtPct(f.cat.varPct)} variance — ${f.session.period}</div>
+            <div class="flag-desc">${fmt(f.cat.var)} above theoretical this session.</div>
+            ${items}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    /* ── Sessions table ── */
+    function renderSessions() {
+      const tbody = document.getElementById('sessions-tbody');
+      const table = document.getElementById('sessions-table');
+      const empty = document.getElementById('sessions-empty');
+      document.getElementById('sessions-meta').textContent = SESSIONS.length + (SESSIONS.length === 1 ? ' session' : ' sessions');
+      if (!SESSIONS.length) {
+        table.style.display = 'none';
+        empty.style.display = 'flex';
+        return;
+      }
+      table.style.display = '';
+      empty.style.display = 'none';
+      tbody.innerHTML = SESSIONS.map(s => {
+        const reqSheets = s.sheets.filter(sh=>sh.required);
+        const doneReq   = reqSheets.filter(sh=>sh.status==='submitted'||sh.status==='carried-forward').length;
+        const totalReq  = reqSheets.length;
+
+        const dots = s.sheets.map(sh => {
+          const col = sh.status==='submitted'?'var(--fern)': sh.status==='in-progress'?'var(--status-warn-fg)': sh.status==='carried-forward'?'var(--text-soft)':'var(--border)';
+          return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;" title="${sh.name}: ${sh.status}"></span>`;
+        }).join('');
+        const sheetsCell = `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">${dots}<span style="font-size:11px;color:var(--text-soft);white-space:nowrap;">${doneReq}/${totalReq} req.</span></div>`;
+
+        const statusBadge = s.status==='in-progress'  ? `<span class="nb-pill warn"><i class="ti ti-edit"></i>In progress</span>`
+                          : s.status==='submitted'      ? `<span class="nb-pill info"><i class="ti ti-send"></i>Pending approval</span>`
+                          : s.status==='locked'         ? `<span class="nb-pill ok"><i class="ti ti-lock"></i>Locked</span>`
+                          : s.status==='complete'       ? `<span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span>`
+                          : `<span class="nb-pill neutral"><i class="ti ti-clock"></i>Open</span>`;
+
+        const varColor = s.variancePct==null?'':s.variancePct>4?'color:var(--status-risk-fg);font-weight:600':s.variancePct>2?'color:var(--status-warn-fg);font-weight:600':'';
+
+        const actionBtn = s.status==='submitted'
+          ? `<button class="btn btn-primary" style="height:32px;font-size:12px;padding-inline:var(--space-md);" onclick="event.stopPropagation();approveSession('${s.id}')"><i class="ti ti-check"></i>Approve</button>`
+          : `<button class="link-action" onclick="event.stopPropagation();openSessionDrawer('${s.id}')">View</button>`;
+
+        return `<tr style="cursor:pointer;" onclick="openSessionDrawer('${s.id}')">
+          <td>
+            <div style="font-weight:600;color:var(--text);">${s.period}</div>
+            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-soft);">${s.id}</div>
+          </td>
+          <td>${sheetsCell}</td>
+          <td>${statusBadge}</td>
+          <td class="num tabular">${fmt(s.actualCogs)}</td>
+          <td class="num tabular" style="${varColor}">${fmtPct(s.variancePct)}</td>
+          <td onclick="event.stopPropagation()">${actionBtn}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    let activeSession = null;
+    function openSessionDrawer(id) {
+      activeSession = SESSIONS.find(s=>s.id===id);
+      if (!activeSession) return;
+      renderSessionDrawer(activeSession);
+      document.getElementById('session-drawer').classList.add('open');
+      document.getElementById('session-drawer-backdrop').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSessionDrawer() {
+      document.getElementById('session-drawer').classList.remove('open');
+      document.getElementById('session-drawer-backdrop').classList.remove('open');
+      document.body.style.overflow = '';
+      activeSession = null;
+    }
+    function approveSession(id) {
+      const s = SESSIONS.find(x=>x.id===id);
+      if (!s) return;
+      s.status = 'locked';
+      s.approvedBy = 'Keith Tan';
+      s.approvedAt = '13 Jun, now';
+      renderSessions();
+      invToast('Session approved and locked — COGS posted');
+    }
+
+    function renderSessionDrawer(s) {
+      const el = document.getElementById('session-drawer');
+
+      const statusBadge = s.status==='in-progress'  ? `<span class="nb-pill warn"><i class="ti ti-edit"></i>In progress</span>`
+                        : s.status==='submitted'      ? `<span class="nb-pill info"><i class="ti ti-send"></i>Pending approval</span>`
+                        : s.status==='locked'         ? `<span class="nb-pill ok"><i class="ti ti-lock"></i>Locked</span>`
+                        : s.status==='complete'       ? `<span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span>`
+                        : `<span class="nb-pill neutral"><i class="ti ti-clock"></i>Open</span>`;
+
+      const reqSheets = s.sheets.filter(sh=>sh.required);
+      const doneReq   = reqSheets.filter(sh=>sh.status==='submitted').length;
+      const totalReq  = reqSheets.length;
+      const sheetsHtml = s.sheets.map(sh => {
+        const dotClass = sh.status==='submitted'?'submitted':sh.status==='in-progress'?'in-progress':sh.status==='carried-forward'?'carried-forward':'pending';
+        const statusLabel = sh.status==='submitted'?'Submitted':sh.status==='in-progress'?'In progress':sh.status==='carried-forward'?'Carry-forward':'Pending';
+        const cadenceBadge = sh.cadence ? `<span class="cadence-badge">${sh.cadence}</span>` : '';
+        const optionalNote = !sh.required ? `<span style="font-size:10px;color:var(--text-soft);margin-left:4px;">optional</span>` : '';
+        return `<div class="sheet-row">
+          <div>
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${sh.name}</span>
+            ${cadenceBadge}${optionalNote}
+            <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${sh.assignee}</div>
+          </div>
+          <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">${sh.assignee}</span>
+          <div style="display:flex;align-items:center;gap:var(--space-xs);white-space:nowrap;">
+            <span class="sheet-status-dot ${dotClass}"></span>
+            <span style="font-size:12px;font-weight:600;color:${dotClass==='submitted'?'var(--fern)':dotClass==='in-progress'?'var(--status-warn-fg)':'var(--text-soft)'};">${statusLabel}</span>
+          </div>
+        </div>`;
+      }).join('');
+
+      let cogsHtml = '';
+      const showCogs = s.actualCogs != null;
+      if (showCogs) {
+        const varColor = s.variancePct>4?'color:var(--status-risk-fg)':s.variancePct>2?'color:var(--status-warn-fg)':'color:var(--status-ok-fg)';
+        const varIcon  = s.variancePct>4?'ti-alert-triangle':s.variancePct>2?'ti-alert-circle':'ti-check';
+        const cfNote   = s.sheets.some(sh=>sh.status==='carried-forward')?' + 1 carry-forward':'';
+        cogsHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">COGS summary</div>
+        <div class="cogs-panel">
+          <div class="cogs-row"><span>Opening stock</span><span class="tabular">${fmt(s.openingStock)}</span></div>
+          <div class="cogs-row"><span style="color:var(--status-ok-fg)">+ Purchases</span><span class="tabular">${fmt(s.purchases)}</span></div>
+          <div class="cogs-row"><span style="color:var(--status-risk-fg)">− Closing stock</span><span class="tabular">${fmt(s.closingStock)}</span></div>
+          <div class="cogs-total"><span>Actual COGS</span><span>${fmt(s.actualCogs)}</span></div>
+          <div class="cogs-row" style="margin-top:var(--space-xs);"><span>Theoretical COGS <span style="font-size:11px;">(POS × recipes)</span></span><span class="tabular">${fmt(s.theoreticalCogs)}</span></div>
+          <div class="cogs-total" style="${varColor}"><span><i class="ti ${varIcon}" style="font-size:12px;margin-right:4px;"></i>Variance</span><span>${fmt(s.variance)} (${fmtPct(s.variancePct)})</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-soft);margin-top:var(--space-sm);">Based on ${doneReq}/${totalReq} required sheets${cfNote}</div>`;
+      }
+
+      let varCatHtml = '';
+      if (showCogs && s.varByCategory) {
+        const rows = s.varByCategory.map((c,i) => {
+          const maxVar = Math.max(...s.varByCategory.map(x=>x.varPct));
+          const barW   = maxVar>0 ? Math.round((c.varPct/maxVar)*100) : 0;
+          const textColor = c.varPct>4?'color:var(--status-risk-fg);font-weight:700':c.varPct>2?'color:var(--status-warn-fg);font-weight:600':'color:var(--text-soft)';
+          const fillColor = c.varPct>4?'background:var(--status-risk-fg)':c.varPct>2?'background:var(--status-warn-fg)':'background:var(--fern)';
+          const itemRows  = c.items.length ? c.items.map(it=>`
+            <div class="var-item-row-wrap">
+              <div class="var-item-row">
+                <span>${it.name}</span>
+                <span class="tabular" style="color:var(--text-soft);">${it.theoretical} → ${it.actual}</span>
+                <span class="tabular" style="color:var(--status-risk-fg);">+$${it.varCost}</span>
+              </div>
+              ${wasteMatchTagHTML(it, s.outlet, s.id)}
+            </div>`).join('') : `<div style="font-size:12px;color:var(--text-soft);padding:4px 0;">No significant item variance</div>`;
+          return `<div class="var-cat-row" ondblclick="toggleVarItems('var-items-${i}')">
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${c.cat}</span>
+            <div class="var-track" style="height:6px;"><div class="var-fill" style="width:${barW}%;${fillColor}"></div></div>
+            <span style="font-size:12px;${textColor}">${c.var>0?'+':''}${fmt(c.var)} (${fmtPct(c.varPct)})</span>
+          </div>
+          <div class="var-item-list" id="var-items-${i}">${itemRows}</div>`;
+        }).join('');
+        varCatHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">Variance by category <span style="font-size:11px;font-weight:400;color:var(--text-soft);">· Double-click to expand</span></div>
+        ${rows}`;
+      }
+
+      const actItems = [`Created by <strong>${s.createdBy}</strong> · ${s.createdAt}`];
+      if (s.submittedAt) actItems.push(`Submitted for approval · ${s.submittedAt}`);
+      if (s.approvedBy)  actItems.push(`Approved by <strong>${s.approvedBy}</strong> · ${s.approvedAt}`);
+      const actHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">Activity</div>
+        ${actItems.map(a=>`<div style="font-size:12px;color:var(--text-soft);padding:var(--space-xs) 0;border-bottom:1px solid var(--border);">${a}</div>`).join('')}`;
+
+      const reqDone = s.sheets.filter(sh=>sh.required&&sh.status==='submitted').length === s.sheets.filter(sh=>sh.required).length;
+      const footerHtml = s.status==='submitted'
+        ? `<button class="btn btn-primary" onclick="approveSession('${s.id}');closeSessionDrawer()"><i class="ti ti-check"></i>Approve &amp; lock</button>
+           <button class="btn btn-outline" onclick="invToast('Re-count request sent to outlet manager')"><i class="ti ti-arrow-back"></i>Request re-count</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : s.status==='locked'||s.status==='complete'
+        ? `<button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : reqDone
+        ? `<button class="btn btn-primary" onclick="invToast('Session submitted for HQ approval')"><i class="ti ti-send"></i>Submit for review</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : `<button class="btn btn-primary" style="opacity:0.45;cursor:not-allowed;" disabled title="All required sheets must be submitted first"><i class="ti ti-send"></i>Submit for review</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`;
+
+      el.innerHTML = `
+        <div class="drawer-head">
+          <div class="drawer-head-left">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-soft);">${s.id}</span>
+            <span style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">${s.period}</span>
+            <span style="font-size:13px;color:var(--text-soft);">${s.outlet} &nbsp;${statusBadge}</span>
+          </div>
+          <button class="drawer-close" onclick="closeSessionDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="drawer-body" style="overflow-y:auto;flex:1;padding:var(--space-xl);">
+          <div class="drawer-section-label">Count sheets <span style="font-weight:400;color:var(--text-soft);">(${doneReq}/${totalReq} required submitted)</span></div>
+          ${sheetsHtml}
+          ${cogsHtml}
+          ${varCatHtml}
+          ${actHtml}
+        </div>
+        <div class="drawer-footer">${footerHtml}</div>`;
+    }
+
+    function toggleVarItems(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('open');
+    }
+
+    /* ── Toast ── */
+    function invToast(msg) {
+      const wrap = document.getElementById('toast-wrap');
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    renderKpis();
+    renderFlags();
+    renderSessions();
+  </script>
+</body>
+</html>

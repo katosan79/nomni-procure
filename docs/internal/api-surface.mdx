@@ -1,0 +1,140 @@
+---
+title: API Surface Summary
+description: High-level API surface — resources, key operations, and auth model.
+---
+
+<Warning>
+This is a design-phase summary derived from the prototype screens and PRD. Exact endpoint paths, request/response shapes, and pagination conventions are to be defined during backend estimation.
+</Warning>
+
+## Auth model
+
+- **JWT** issued at login (email + password + MFA)
+- **SSO** — SAML 2.0 / OIDC for enterprise customers
+- Token scoped to `userId` + `outletGroupId` + `roleId`
+- Permission engine evaluates 200+ discrete permissions at the API layer — role is a template, not a hard gate
+- Agent operations use a service account JWT with `agentId` claim — agents cannot impersonate users
+
+## Resource hierarchy
+
+```
+/organisations/:orgId
+  /brands/:brandId
+    /regions/:regionId
+      /outlet-groups/:groupId
+        /outlets/:outletId
+        /market-lists/:listId
+        /par-levels
+
+/items/:itemId
+  /supplier-sku-links
+  /par-levels
+
+/purchase-orders/:orderId
+  /lines
+  /grn
+
+/invoices/:invoiceId
+  /lines
+  /match-result
+
+/recipes/:recipeId
+  /ingredients
+  /versions
+
+/pos-items/:posItemId
+  /mapping
+
+/stock-counts/:countId
+  /lines
+
+/agents/runs/:runId
+/agents/:agentId/config
+```
+
+## Key operations by module
+
+### Orders
+
+| Operation | Notes |
+|---|---|
+| `POST /purchase-orders` | Create draft. `agentDraft: false` for manual. |
+| `PATCH /purchase-orders/:id/submit` | Triggers approval routing |
+| `PATCH /purchase-orders/:id/approve` | HQ Approver or auto-approve |
+| `PATCH /purchase-orders/:id/grn` | Record goods receipt (upsert GRN + lines) |
+| `GET /purchase-orders?outletId&status&supplierId` | Paginated list with filters |
+
+### Invoices
+
+| Operation | Notes |
+|---|---|
+| `POST /invoices/upload` | Multipart upload — triggers OCR extraction |
+| `GET /invoices/:id/match-result` | Returns 3-way match detail |
+| `PATCH /invoices/:id/approve` | Finance approval |
+| `POST /invoices/:id/export-xero` | Trigger Xero export |
+
+### Items
+
+| Operation | Notes |
+|---|---|
+| `POST /items` | Create internal item |
+| `PUT /items/:id/supplier-sku-links` | Replace full set of SKU links |
+| `PATCH /items/:id/preferred-supplier` | Set preferred `supplierSkuLinkId` per outlet group |
+| `POST /items/import` | Bulk import from Excel |
+| `DELETE /items/:id` | Requires `downstreamImpact` acknowledgement in body |
+
+### Recipes
+
+| Operation | Notes |
+|---|---|
+| `POST /recipes` | Create recipe (any type) |
+| `PUT /recipes/:id/ingredients` | Replace ingredient set — creates new version |
+| `POST /recipes/:id/push` | Push to outlet group (scope: all \| group \| selection) |
+| `PATCH /recipes/:id/lock` | HQ lock/unlock |
+
+### POS Mapping
+
+| Operation | Notes |
+|---|---|
+| `GET /pos-items?outletId&status` | List items from POS sync |
+| `PUT /pos-items/:id/mapping` | Create or update mapping |
+| `POST /pos-items/:id/mapping/ignore` | Mark as intentionally unmapped |
+| `GET /pos-monitoring/outlets` | Aggregated health per outlet for monitoring screen |
+
+### Agents
+
+| Operation | Notes |
+|---|---|
+| `POST /agents/ordering-agent/run` | Manual trigger |
+| `GET /agents/runs/:runId` | Run status and output |
+| `PATCH /agents/:agentId/config` | Update thresholds, on/off per group |
+| `POST /agents/runs/:runId/undo` | Undo auto-applied action within undo window |
+
+## Pagination
+
+All list endpoints use cursor-based pagination:
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "cursor": "eyJpZCI6IjEyMzQ1In0",
+    "hasMore": true,
+    "total": 547
+  }
+}
+```
+
+## Webhook events (outbound)
+
+| Event | Trigger |
+|---|---|
+| `order.submitted` | |
+| `order.approved` | |
+| `invoice.matched` | |
+| `invoice.price_changed` | |
+| `stock_count.submitted` | |
+| `market_list.propagated` | |
+| `margin.alert_created` | |
+
+Webhooks are scoped per outlet group and configured in Settings → Integrations.

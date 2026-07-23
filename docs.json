@@ -1,0 +1,117 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Nomni Procure",
+  "colors": {
+    "primary": "#129B41",
+    "light": "#2AC864",
+    "dark": "#076715"
+  },
+  "topbarCtaButton": {
+    "name": "Live Prototype",
+    "url": "https://katosan79.github.io/nomni-procure/"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "User Guides",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "docs/guides/introduction",
+              "docs/guides/getting-started",
+              "docs/guides/roles"
+            ]
+          },
+          {
+            "group": "Ordering",
+            "pages": [
+              "docs/guides/ordering",
+              "docs/guides/receiving-goods",
+              "docs/guides/invoices"
+            ]
+          },
+          {
+            "group": "Catalogue & Recipes",
+            "pages": [
+              "docs/guides/items",
+              "docs/guides/recipes"
+            ]
+          },
+          {
+            "group": "Inventory",
+            "pages": [
+              "docs/guides/inventory",
+              "docs/guides/stock-counts"
+            ]
+          },
+          {
+            "group": "POS & Reporting",
+            "pages": [
+              "docs/guides/pos-mapping",
+              "docs/guides/reports"
+            ]
+          },
+          {
+            "group": "AI Agents",
+            "pages": [
+              "docs/guides/agents"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developer Docs",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "docs/internal/overview",
+              "docs/internal/architecture"
+            ]
+          },
+          {
+            "group": "Data Model",
+            "pages": [
+              "docs/internal/data-model",
+              "docs/internal/order-schema",
+              "docs/internal/item-model"
+            ]
+          },
+          {
+            "group": "Feature Specs",
+            "pages": [
+              "docs/internal/screens/orders",
+              "docs/internal/screens/invoices",
+              "docs/internal/screens/items",
+              "docs/internal/screens/recipes",
+              "docs/internal/screens/inventory",
+              "docs/internal/screens/market-lists",
+              "docs/internal/screens/pos-mapping",
+              "docs/internal/screens/reporting",
+              "docs/internal/screens/outlets"
+            ]
+          },
+          {
+            "group": "Agent Layer",
+            "pages": [
+              "docs/internal/agents/overview",
+              "docs/internal/agents/ordering-agent",
+              "docs/internal/agents/invoice-agent",
+              "docs/internal/agents/margin-agent",
+              "docs/internal/agents/variance-agent",
+              "docs/internal/agents/governance-agent"
+            ]
+          },
+          {
+            "group": "API Surface",
+            "pages": [
+              "docs/internal/api-surface"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

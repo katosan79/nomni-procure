@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Import recipes — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { padding-block: var(--space-2xl) 100px; }
+
+    /* Breadcrumb */
+    .breadcrumb { display:flex; align-items:center; gap:var(--space-xs); font-size:13px; color:var(--text-soft); margin-bottom:var(--space-lg); }
+    .breadcrumb a { color:var(--text-link); text-decoration:none; }
+    .breadcrumb a:hover { text-decoration:underline; }
+    .breadcrumb i { font-size:11px; }
+
+    /* Page header */
+    .page-eyebrow { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); margin-bottom:var(--space-xs); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+
+    /* Stepper */
+    .stepper { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; margin-top:var(--space-xl); margin-bottom:var(--space-2xl); }
+    .step { display:flex; align-items:center; gap:var(--space-sm); cursor:default; }
+    .step-dot { width:28px; height:28px; border-radius:var(--radius-pill); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; background:var(--surface); border:1.5px solid var(--border); color:var(--text-soft); flex-shrink:0; transition:background 0.15s, border-color 0.15s, color 0.15s; }
+    .step.active .step-dot { background:var(--btn-primary-bg); border-color:var(--btn-primary-bg); color:#fff; }
+    .step.done .step-dot { background:var(--status-ok-bg); border-color:var(--status-ok-fg); color:var(--status-ok-fg); }
+    .step-label { font-size:13px; font-weight:600; color:var(--text-soft); }
+    .step.active .step-label { color:var(--text); }
+    .step-line { width:32px; height:1.5px; background:var(--border); flex-shrink:0; }
+
+    /* Panels */
+    .step-panel { display:none; flex-direction:column; gap:var(--space-xl); max-width:720px; }
+    .step-panel.active { display:flex; }
+
+    /* Cards */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); min-height:52px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-body { padding:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-lg); }
+
+    /* Template download row */
+    .template-row {
+      display:flex; align-items:center; gap:var(--space-lg);
+      padding:var(--space-lg); background:var(--surface-soft);
+      border:1px solid var(--border); border-radius:var(--radius-md);
+    }
+    .template-icon { width:44px; height:44px; border-radius:var(--radius-md); background:color-mix(in srgb,var(--fern) 10%,transparent); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .template-icon i { font-size:22px; color:var(--fern); }
+    .template-info { flex:1; }
+    .template-name { font-size:14px; font-weight:700; color:var(--text); }
+    .template-desc { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .template-dl-btn { display:inline-flex; align-items:center; gap:var(--space-xs); padding:7px var(--space-lg); background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:13px; font-weight:600; color:var(--text); cursor:pointer; text-decoration:none; white-space:nowrap; transition:border-color 0.12s, background 0.12s; }
+    .template-dl-btn:hover { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 4%,transparent); color:var(--text-accent); }
+
+    /* Import mode radios */
+    .mode-label { font-size:13px; font-weight:600; color:var(--text); margin-bottom:var(--space-sm); }
+    .mode-radio-group { display:flex; gap:var(--space-md); }
+    .mode-radio { flex:1; border:1.5px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md); cursor:pointer; display:flex; align-items:flex-start; gap:var(--space-sm); transition:border-color 0.12s, background 0.12s; }
+    .mode-radio.selected { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 6%,transparent); }
+    .mode-radio input[type=radio] { margin-top:2px; flex-shrink:0; accent-color:var(--fern); }
+    .mode-radio-text strong { font-size:13px; font-weight:700; color:var(--text); display:block; margin-bottom:2px; }
+    .mode-radio-text span { font-size:11px; color:var(--text-soft); line-height:1.4; }
+
+    /* Column guide accordion */
+    .col-guide-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; background:none; border:none; cursor:pointer; padding:0; font-size:13px; font-weight:600; color:var(--text-soft); }
+    .col-guide-toggle:hover { color:var(--text); }
+    .col-guide-toggle i { transition:transform 0.15s; font-size:14px; }
+    .col-guide-toggle.open i.ti-chevron-down { transform:rotate(180deg); }
+    .col-guide-body { display:none; margin-top:var(--space-md); }
+    .col-guide-body.open { display:block; }
+    .col-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .col-table th { text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); padding:6px var(--space-md); border-bottom:1px solid var(--border); }
+    .col-table td { padding:8px var(--space-md); border-bottom:1px solid var(--border); color:var(--text); vertical-align:top; }
+    .col-table tr:last-child td { border-bottom:none; }
+    .col-table .req-badge { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; padding:1px 6px; border-radius:var(--radius-pill); background:var(--status-ok-bg); color:var(--status-ok-fg); }
+    .col-table .opt-badge { font-size:10px; font-weight:600; color:var(--text-soft); }
+    .mono { font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--surface-soft); padding:1px 5px; border-radius:3px; }
+
+    /* Info note */
+    .info-note { display:flex; align-items:flex-start; gap:var(--space-sm); padding:var(--space-md) var(--space-lg); background:color-mix(in srgb,var(--sky,#3FC3FB) 8%,transparent); border:1px solid color-mix(in srgb,var(--sky,#3FC3FB) 25%,transparent); border-radius:var(--radius-md); font-size:12px; color:var(--text-soft); line-height:1.5; }
+    .info-note i { color:#3FC3FB; font-size:15px; flex-shrink:0; margin-top:1px; }
+
+    /* Dropzone */
+    .dropzone { border:2px dashed var(--border); border-radius:var(--radius-md); padding:var(--space-3xl) var(--space-xl); text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; position:relative; }
+    .dropzone:hover, .dropzone.drag-over { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 4%,transparent); }
+    .dropzone.has-file { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 4%,transparent); border-style:solid; }
+    .dropzone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .dropzone-icon { font-size:32px; color:var(--text-soft); display:block; margin-bottom:var(--space-md); }
+    .dropzone.has-file .dropzone-icon { color:var(--fern); }
+    .dropzone-label { font-size:14px; font-weight:600; color:var(--text); }
+    .dropzone-sub { font-size:12px; color:var(--text-soft); margin-top:4px; }
+    .dropzone-file-pill { display:inline-flex; align-items:center; gap:var(--space-sm); margin-top:var(--space-md); padding:6px var(--space-md); background:var(--surface); border:1px solid var(--fern); border-radius:var(--radius-pill); font-size:12px; font-weight:600; color:var(--fern); }
+    .dropzone-file-pill i { font-size:14px; }
+    .dropzone-change { font-size:11px; color:var(--text-soft); margin-top:var(--space-xs); cursor:pointer; text-decoration:underline; display:none; }
+    .dropzone.has-file .dropzone-change { display:block; }
+
+    /* Validation strip */
+    .validation-strip { display:none; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); border-radius:var(--radius-md); font-size:13px; font-weight:600; }
+    .validation-strip.show { display:flex; }
+    .validation-strip.ok { background:var(--status-ok-bg); color:var(--status-ok-fg); border:1px solid color-mix(in srgb,var(--status-ok-fg) 25%,transparent); }
+    .validation-strip.warn { background:var(--status-warn-bg); color:var(--status-warn-fg); border:1px solid color-mix(in srgb,var(--status-warn-fg) 25%,transparent); }
+    .validation-strip.error { background:var(--status-risk-bg); color:var(--status-risk-fg); border:1px solid color-mix(in srgb,var(--status-risk-fg) 25%,transparent); }
+    .validation-strip i { font-size:17px; flex-shrink:0; }
+    .validation-strip-text { flex:1; }
+
+    /* Preview table */
+    .preview-wrap { display:none; }
+    .preview-wrap.show { display:block; }
+    .preview-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-sm); }
+    .preview-table-scroll { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-md); }
+    .preview-table { width:100%; border-collapse:collapse; font-size:12px; white-space:nowrap; }
+    .preview-table th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-soft); background:var(--surface-soft); padding:8px var(--space-md); text-align:left; border-bottom:1px solid var(--border); }
+    .preview-table td { padding:8px var(--space-md); border-bottom:1px solid var(--border); color:var(--text); }
+    .preview-table tr:last-child td { border-bottom:none; }
+    .preview-table tr.row-error td { background:color-mix(in srgb,var(--status-risk-bg) 60%,transparent); }
+    .preview-table tr.row-warn td { background:color-mix(in srgb,var(--status-warn-bg) 60%,transparent); }
+    .row-flag { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; font-size:10px; font-weight:700; }
+    .row-flag.err { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .row-flag.warn { background:var(--status-warn-bg); color:var(--status-warn-fg); }
+
+    /* Issue list */
+    .issue-list { display:none; flex-direction:column; gap:var(--space-xs); }
+    .issue-list.show { display:flex; }
+    .issue-list-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
+    .issue-row { display:flex; align-items:flex-start; gap:var(--space-sm); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-md); font-size:12px; }
+    .issue-row.err { background:color-mix(in srgb,var(--status-risk-bg) 50%,transparent); color:var(--status-risk-fg); }
+    .issue-row.warn { background:color-mix(in srgb,var(--status-warn-bg) 50%,transparent); color:var(--status-warn-fg); }
+    .issue-row i { font-size:14px; flex-shrink:0; margin-top:1px; }
+    .issue-location { font-weight:700; margin-right:4px; }
+
+    /* Step 3 — Review */
+    .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-md); }
+    .summary-tile { border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-lg); text-align:center; }
+    .summary-tile-val { font-size:28px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; letter-spacing:-0.02em; }
+    .summary-tile-label { font-size:12px; color:var(--text-soft); margin-top:4px; }
+    .summary-tile.create .summary-tile-val { color:var(--status-ok-fg); }
+    .summary-tile.update .summary-tile-val { color:#3FC3FB; }
+    .summary-tile.skip .summary-tile-val { color:var(--text-soft); }
+
+    /* Impact note */
+    .impact-note { display:flex; align-items:flex-start; gap:var(--space-sm); padding:var(--space-md) var(--space-lg); background:color-mix(in srgb,var(--fern) 6%,transparent); border:1px solid color-mix(in srgb,var(--fern) 20%,transparent); border-radius:var(--radius-md); font-size:13px; color:var(--text); line-height:1.5; }
+    .impact-note i { color:var(--fern); font-size:16px; flex-shrink:0; margin-top:2px; }
+
+    /* Audit note */
+    .audit-note { display:flex; align-items:center; gap:var(--space-sm); font-size:12px; color:var(--text-soft); padding:var(--space-sm) 0; border-top:1px solid var(--border); }
+    .audit-note i { font-size:14px; color:var(--text-soft); }
+
+    /* Done panel */
+    .done-panel { display:none; flex-direction:column; align-items:center; text-align:center; gap:var(--space-xl); padding:var(--space-3xl) var(--space-xl); max-width:480px; margin:0 auto; }
+    .done-panel.active { display:flex; }
+    .done-icon { width:72px; height:72px; border-radius:50%; background:var(--status-ok-bg); display:flex; align-items:center; justify-content:center; }
+    .done-icon i { font-size:36px; color:var(--status-ok-fg); }
+    .done-headline { font-size:24px; font-weight:700; color:var(--text); letter-spacing:-0.02em; }
+    .done-sub { font-size:14px; color:var(--text-soft); line-height:1.6; }
+    .done-actions { display:flex; gap:var(--space-md); flex-wrap:wrap; justify-content:center; }
+
+    /* Agent done callout */
+    .agent-done-callout { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-md) var(--space-lg); background:color-mix(in srgb,var(--spring) 8%,transparent); border:1.5px solid color-mix(in srgb,var(--spring) 35%,transparent); border-radius:var(--radius-md); text-align:left; box-shadow:0 0 0 4px color-mix(in srgb,var(--spring) 8%,transparent); }
+    .agent-done-avatar { width:32px; height:32px; border-radius:50%; background:var(--btn-primary-bg); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; }
+    .agent-done-text { flex:1; }
+    .agent-done-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-accent); margin-bottom:2px; }
+    .agent-done-msg { font-size:13px; color:var(--text); line-height:1.5; }
+
+    /* Sticky footer */
+    .sticky-footer { position:fixed; bottom:0; left:0; right:0; z-index:90; background:var(--surface); border-top:1px solid var(--border); padding:var(--space-md) var(--space-xl); display:flex; align-items:center; justify-content:space-between; gap:var(--space-md); box-shadow:0 -2px 8px rgba(0,0,0,0.06); }
+    .footer-context { font-size:12px; color:var(--text-soft); }
+    .footer-actions { display:flex; align-items:center; gap:var(--space-sm); }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12" data-active="recipes"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="recipes.html">Recipes</a>
+        <i class="ti ti-chevron-right" aria-hidden="true"></i>
+        <span aria-current="page">Import recipes</span>
+      </nav>
+
+      <div>
+        <p class="page-eyebrow">Recipe management</p>
+        <h1 class="page-title">Import recipes</h1>
+      </div>
+
+      <!-- Stepper -->
+      <div class="stepper" id="stepper" role="list" aria-label="Steps">
+        <div class="step active" data-step="1" role="listitem"><span class="step-dot">1</span><span class="step-label">Template</span></div>
+        <div class="step-line" aria-hidden="true"></div>
+        <div class="step" data-step="2" role="listitem"><span class="step-dot">2</span><span class="step-label">Upload</span></div>
+        <div class="step-line" aria-hidden="true"></div>
+        <div class="step" data-step="3" role="listitem"><span class="step-dot">3</span><span class="step-label">Review &amp; import</span></div>
+      </div>
+
+      <!-- ── Step 1: Template ── -->
+      <div class="step-panel active" id="panel-1">
+
+        <!-- Template download -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-file-spreadsheet"></i>Download template</span>
+          </div>
+          <div class="card-body">
+            <div class="template-row">
+              <div class="template-icon"><i class="ti ti-file-spreadsheet"></i></div>
+              <div class="template-info">
+                <div class="template-name">recipe-import-template.csv</div>
+                <div class="template-desc">Includes all columns with example data and format hints in row 2</div>
+              </div>
+              <a class="template-dl-btn" href="#" onclick="showToast('Downloading recipe-import-template.csv…'); return false;">
+                <i class="ti ti-download"></i> Download CSV
+              </a>
+            </div>
+            <p class="info-note" style="margin-top:0;">
+              <i class="ti ti-info-circle"></i>
+              <span>You can also use <strong>.xlsx</strong> format. Keep column headers exactly as shown in the template — the importer is case-sensitive. Row 2 in the template contains example data; delete it before importing.</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Import mode -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-settings-2"></i>Import mode</span>
+          </div>
+          <div class="card-body">
+            <p class="mode-label">What should happen when a recipe name already exists?</p>
+            <div class="mode-radio-group" role="radiogroup" aria-label="Import mode">
+              <label class="mode-radio" id="mode-add" onclick="selectMode('add', this)">
+                <input type="radio" name="import-mode" value="add" checked/>
+                <div class="mode-radio-text">
+                  <strong>Add new only</strong>
+                  <span>Creates new recipes. Skips rows where a recipe with the same name already exists.</span>
+                </div>
+              </label>
+              <label class="mode-radio" id="mode-update" onclick="selectMode('update', this)">
+                <input type="radio" name="import-mode" value="update"/>
+                <div class="mode-radio-text">
+                  <strong>Update existing</strong>
+                  <span>Updates recipes that already exist by name. Skips rows with no match.</span>
+                </div>
+              </label>
+              <label class="mode-radio selected" id="mode-both" onclick="selectMode('both', this)">
+                <input type="radio" name="import-mode" value="both"/>
+                <div class="mode-radio-text">
+                  <strong>Add &amp; update</strong>
+                  <span>Creates new recipes and updates existing ones in one pass. Recommended.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column guide -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-table"></i>Column reference</span>
+          </div>
+          <div class="card-body" style="gap:var(--space-sm);">
+            <button class="col-guide-toggle" id="col-toggle" onclick="toggleColGuide()" aria-expanded="false">
+              <span>Show all 9 columns <span style="font-weight:400;color:var(--text-soft);">· 4 required, 5 optional</span></span>
+              <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="col-guide-body" id="col-guide-body">
+              <div class="preview-table-scroll">
+                <table class="col-table">
+                  <thead>
+                    <tr>
+                      <th>Column</th>
+                      <th>Required</th>
+                      <th>Type</th>
+                      <th>Example</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="mono">Recipe Name</span></td>
+                      <td><span class="req-badge">Required</span></td>
+                      <td>Text</td>
+                      <td>Flat White</td>
+                      <td>Used as the unique identifier for update matching</td>
+                    </tr>
+                    <tr>
+                      <td><span class="mono">Type</span></td>
+                      <td><span class="req-badge">Required</span></td>
+                      <td>Text</td>
+                      <td><span class="mono">finished</span></td>
+                      <td>One of: <span class="mono">finished</span>, <span class="mono">prep</span>, <span class="mono">production</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="mono">Category</span></td>
+                      <td><span class="opt-badge">Optional</span></td>
+                      <td>Text</td>
+                      <td>Beverages</td>
+                      <td>Free text. Creates category if it doesn't exist.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="mono">Brand</span></td>
+                      <td><span class="opt-badge">Optional</span></td>
+                      <td>Text</td>
+                      <td>The Burger Co</td>
+                      <td>Must match an existing brand in the system</td>
+                    </tr>
+                    <tr>
+                      <td><span class="mono">Selling Price</span></td>
+                      <td><span class="opt-badge">Optional</span></td>
+                      <td>Number</td>
+                      <td>6.50</td>
+                      <td>Applies to <span class="mono">finished</span> type only. Ignored for prep/production.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="mono">Yield Quantity</span></td>
+                      <td><span class="opt-badge">Optional</span></td>
+                      <td>Number</td>
+                      <td>1</td>
+                      <td>Positive number. Defaults to 1 if empty.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="mono">Yield Unit</span></td>
+                      <td><span class="opt-badge">Optional</span></td>
+                      <td>Text</td>
+                      <td>serve</td>
+                      <td>Free text. E.g. serve, mL, kg, loaf.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="mono">Target FC%</span></td>
+                      <td><span class="opt-badge">Optional</span></td>
+                      <td>Number</td>
+                      <td>28</td>
+                      <td>Percentage as a number (e.g. 28, not 0.28). Defaults to outlet setting.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="mono">Notes</span></td>
+                      <td><span class="opt-badge">Optional</span></td>
+                      <td>Text</td>
+                      <td>House special</td>
+                      <td>Internal notes, not visible to outlet staff.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <p class="info-note">
+          <i class="ti ti-info-circle"></i>
+          <span><strong>Tips:</strong> Maximum 1,000 rows per import. Save your file as UTF-8 CSV if using special characters. Imported recipes are created as <strong>drafts</strong> — they won't be published or assigned to outlets automatically.</span>
+        </p>
+
+      </div><!-- /panel-1 -->
+
+      <!-- ── Step 2: Upload ── -->
+      <div class="step-panel" id="panel-2">
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-upload"></i>Upload your file</span>
+          </div>
+          <div class="card-body">
+
+            <!-- Dropzone -->
+            <div class="dropzone" id="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+              <input type="file" id="file-input" accept=".csv,.xlsx" onchange="handleFileSelect(event)" aria-label="Upload CSV or XLSX file"/>
+              <i class="ti ti-cloud-upload dropzone-icon" id="dz-icon"></i>
+              <div class="dropzone-label" id="dz-label">Drop your CSV or XLSX here</div>
+              <div class="dropzone-sub" id="dz-sub">or click to browse · max 1,000 rows · .csv or .xlsx</div>
+              <div class="dropzone-file-pill" id="dz-pill" style="display:none;">
+                <i class="ti ti-file-spreadsheet"></i>
+                <span id="dz-filename">recipes.csv</span>
+                <span id="dz-rowcount" style="font-weight:400;color:var(--text-soft);"></span>
+              </div>
+              <div class="dropzone-change" id="dz-change" onclick="resetFile()">Change file</div>
+            </div>
+
+            <!-- Validation strip -->
+            <div class="validation-strip ok show" id="validation-strip">
+              <i class="ti ti-circle-check"></i>
+              <span class="validation-strip-text" id="validation-text">47 rows ready to import · no errors found</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Preview table -->
+        <div class="card preview-wrap show" id="preview-wrap">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-table"></i>Preview <span style="font-size:12px;font-weight:500;color:var(--text-soft);">(first 5 rows)</span></span>
+          </div>
+          <div class="card-body" style="gap:var(--space-md);">
+            <div class="preview-table-scroll">
+              <table class="preview-table" id="preview-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Recipe Name</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Brand</th>
+                    <th>Selling Price</th>
+                    <th>Target FC%</th>
+                  </tr>
+                </thead>
+                <tbody id="preview-tbody">
+                  <tr>
+                    <td></td>
+                    <td>Flat White</td><td>finished</td><td>Beverages</td><td>The Burger Co</td><td>$6.50</td><td>28%</td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td>Scrambled Eggs</td><td>finished</td><td>Breakfast</td><td>The Burger Co</td><td>$18.00</td><td>30%</td>
+                  </tr>
+                  <tr class="row-warn">
+                    <td><span class="row-flag warn" title="Warning">!</span></td>
+                    <td>Hollandaise Sauce</td><td>prep</td><td>Sauces</td><td></td><td></td><td></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td>Sourdough Loaf</td><td>production</td><td>Bakery</td><td></td><td></td><td>22%</td>
+                  </tr>
+                  <tr class="row-error">
+                    <td><span class="row-flag err" title="Error">✕</span></td>
+                    <td></td><td>finished</td><td>Beverages</td><td>The Burger Co</td><td>$4.50</td><td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Issue list -->
+            <div class="issue-list show" id="issue-list">
+              <div class="issue-list-label">Issues found</div>
+              <div class="issue-row err">
+                <i class="ti ti-circle-x"></i>
+                <span><span class="issue-location">Row 5 · Recipe Name</span> Required field is empty — this row will be skipped</span>
+              </div>
+              <div class="issue-row warn">
+                <i class="ti ti-alert-triangle"></i>
+                <span><span class="issue-location">Row 3 · Brand</span> Brand field is empty — recipe will be created with no brand assigned</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /panel-2 -->
+
+      <!-- ── Step 3: Review & Import ── -->
+      <div class="step-panel" id="panel-3">
+
+        <!-- Summary tiles -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-chart-bar"></i>Import summary</span>
+          </div>
+          <div class="card-body">
+            <div class="summary-grid">
+              <div class="summary-tile create">
+                <div class="summary-tile-val">44</div>
+                <div class="summary-tile-label">Recipes will be created</div>
+              </div>
+              <div class="summary-tile update">
+                <div class="summary-tile-val">2</div>
+                <div class="summary-tile-label">Recipes will be updated</div>
+              </div>
+              <div class="summary-tile skip">
+                <div class="summary-tile-val">1</div>
+                <div class="summary-tile-label">Row skipped (error)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Impact note -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-info-circle"></i>What happens next</span>
+          </div>
+          <div class="card-body">
+            <div class="impact-note">
+              <i class="ti ti-book-2"></i>
+              <div>
+                <strong>Recipes are imported as drafts.</strong> They will not be published or assigned to any outlets automatically. After importing, go to each recipe and assign it to the relevant outlet groups, then publish.
+              </div>
+            </div>
+            <div class="info-note" style="margin-top:0;">
+              <i class="ti ti-info-circle"></i>
+              <span>Ingredient lists are not included in the CSV import — you'll need to add ingredients to each recipe manually after importing. Selling prices and target FC% will be set from the file where provided.</span>
+            </div>
+            <div class="audit-note">
+              <i class="ti ti-clipboard-check"></i>
+              This import will be logged in the activity timeline with your name, timestamp, and the number of records affected.
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panel-3 -->
+
+      <!-- ── Done ── -->
+      <div class="done-panel" id="panel-done">
+        <div class="done-icon"><i class="ti ti-check"></i></div>
+        <div>
+          <div class="done-headline">46 recipes imported</div>
+          <div class="done-sub" style="margin-top:var(--space-sm);">44 created · 2 updated · 1 row skipped<br/>Imported by Keith Tan · just now</div>
+        </div>
+        <div class="agent-done-callout">
+          <div class="agent-done-avatar">Cy</div>
+          <div class="agent-done-text">
+            <div class="agent-done-label">Cyrus · Margin Agent</div>
+            <div class="agent-done-msg">I'll review costing for the imported recipes and flag any FC% anomalies once ingredients are added. Check the Recipes page for any alerts.</div>
+          </div>
+        </div>
+        <div class="done-actions">
+          <a href="recipes.html?filter=imported" class="btn btn-primary"><i class="ti ti-list"></i>View imported recipes</a>
+          <button class="btn btn-outline" onclick="resetWizard()"><i class="ti ti-upload"></i>Import another file</button>
+        </div>
+      </div>
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <!-- Sticky footer -->
+  <div class="sticky-footer" id="sticky-footer">
+    <button class="btn btn-ghost" id="footer-back" onclick="goBack()" style="display:none;"><i class="ti ti-arrow-left"></i> Back</button>
+    <span class="footer-context" id="footer-context">Step 1 of 3 — Download the template, then choose your import mode</span>
+    <div class="footer-actions">
+      <a href="recipes.html" class="btn btn-ghost">Cancel</a>
+      <button class="btn btn-primary" id="footer-next" onclick="goNext()">Continue <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 1;
+    const TOTAL_STEPS = 3;
+    let fileChosen = false;
+    let importMode = 'both';
+
+    function selectMode(mode, el) {
+      importMode = mode;
+      document.querySelectorAll('.mode-radio').forEach(r => r.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function toggleColGuide() {
+      const body = document.getElementById('col-guide-body');
+      const toggle = document.getElementById('col-toggle');
+      const open = body.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.add('drag-over');
+    }
+    function handleDragLeave(e) {
+      document.getElementById('dropzone').classList.remove('drag-over');
+    }
+    function handleDrop(e) {
+      e.preventDefault();
+      const dz = document.getElementById('dropzone');
+      dz.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) activateFile(file);
+    }
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) activateFile(file);
+    }
+
+    function activateFile(file) {
+      const allowed = file.name.endsWith('.csv') || file.name.endsWith('.xlsx');
+      if (!allowed) {
+        showValidation('error', '<i class="ti ti-circle-x"></i><span class="validation-strip-text">Unsupported file type — only .csv and .xlsx are accepted</span>');
+        return;
+      }
+      fileChosen = true;
+      const dz = document.getElementById('dropzone');
+      dz.classList.add('has-file');
+      document.getElementById('dz-icon').className = 'ti ti-file-spreadsheet dropzone-icon';
+      document.getElementById('dz-label').textContent = file.name;
+      document.getElementById('dz-sub').style.display = 'none';
+      document.getElementById('dz-pill').style.display = 'none';
+      document.getElementById('dz-filename').textContent = file.name;
+      document.getElementById('dz-rowcount').textContent = '';
+      // Simulate parse
+      setTimeout(() => {
+        document.getElementById('dz-rowcount').textContent = '· 47 rows';
+        showValidation('warn', '<i class="ti ti-alert-triangle"></i><span class="validation-strip-text">47 rows · 1 error · 1 warning — review the issues below before importing</span>');
+        document.getElementById('preview-wrap').classList.add('show');
+        updateFooter();
+      }, 600);
+    }
+
+    function resetFile() {
+      fileChosen = false;
+      const dz = document.getElementById('dropzone');
+      dz.classList.remove('has-file', 'drag-over');
+      document.getElementById('dz-icon').className = 'ti ti-cloud-upload dropzone-icon';
+      document.getElementById('dz-label').textContent = 'Drop your CSV or XLSX here';
+      document.getElementById('dz-sub').style.display = '';
+      document.getElementById('file-input').value = '';
+      showValidation('ok', '<i class="ti ti-circle-check"></i><span class="validation-strip-text">47 rows ready to import · no errors found</span>');
+      document.getElementById('preview-wrap').classList.remove('show');
+    }
+
+    function showValidation(tone, html) {
+      const strip = document.getElementById('validation-strip');
+      strip.className = 'validation-strip show ' + tone;
+      strip.innerHTML = html;
+    }
+
+    function goNext() {
+      if (currentStep < TOTAL_STEPS) {
+        markDone(currentStep);
+        currentStep++;
+        showStep(currentStep);
+      } else {
+        // Import
+        runImport();
+      }
+    }
+
+    function goBack() {
+      if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    }
+
+    function showStep(n) {
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-done').classList.remove('active');
+      document.getElementById('panel-' + n).classList.add('active');
+      document.querySelectorAll('.step[data-step]').forEach(s => {
+        const sn = parseInt(s.dataset.step);
+        s.classList.remove('active');
+        if (sn === n) s.classList.add('active');
+      });
+      updateFooter();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function markDone(n) {
+      const s = document.querySelector('.step[data-step="' + n + '"]');
+      if (s) { s.classList.remove('active'); s.classList.add('done'); }
+    }
+
+    function updateFooter() {
+      const back = document.getElementById('footer-back');
+      const next = document.getElementById('footer-next');
+      const ctx  = document.getElementById('footer-context');
+      const footer = document.getElementById('sticky-footer');
+
+      back.style.display = currentStep > 1 ? '' : 'none';
+
+      const ctxMap = {
+        1: 'Step 1 of 3 — Download the template, then choose your import mode',
+        2: 'Step 2 of 3 — Upload your file and review any issues',
+        3: 'Step 3 of 3 — Confirm what will be imported',
+      };
+      ctx.textContent = ctxMap[currentStep] || '';
+
+      if (currentStep === TOTAL_STEPS) {
+        next.innerHTML = '<i class="ti ti-file-import"></i> Import 46 records';
+      } else {
+        next.innerHTML = 'Continue <i class="ti ti-arrow-right"></i>';
+      }
+
+      // Hide footer on done
+      footer.style.display = '';
+    }
+
+    function runImport() {
+      const next = document.getElementById('footer-next');
+      next.disabled = true;
+      next.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;"></i> Importing…';
+
+      setTimeout(() => {
+        document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+        [1,2,3].forEach(n => markDone(n));
+        document.getElementById('panel-done').classList.add('active');
+        document.getElementById('sticky-footer').style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 1200);
+    }
+
+    function resetWizard() {
+      currentStep = 1;
+      fileChosen = false;
+      document.querySelectorAll('.step').forEach(s => { s.classList.remove('active','done'); });
+      document.querySelector('.step[data-step="1"]').classList.add('active');
+      document.getElementById('panel-done').classList.remove('active');
+      document.getElementById('panel-1').classList.add('active');
+      resetFile();
+      document.getElementById('sticky-footer').style.display = '';
+      updateFooter();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) { t = document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--surface);padding:10px 20px;border-radius:var(--radius-pill);font-size:14px;font-weight:500;z-index:999;pointer-events:none;opacity:0;transition:opacity 0.2s;'; document.body.appendChild(t); }
+      t.textContent = msg; t.style.opacity = '1';
+      clearTimeout(t._to); t._to = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+    }
+
+    // Spin animation
+    const style = document.createElement('style');
+    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => { updateFooter(); });
+  </script>
+</body>
+</html>

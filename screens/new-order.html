@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>New order — Nomni Procure</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { padding-block: var(--space-2xl) 120px; }
+    .napp-canvas { display: flex; flex-direction: column; gap: var(--space-2xl); }
+
+    /* Breadcrumb + header */
+    .breadcrumb { display: flex; align-items: center; gap: var(--space-xs); font-size: 13px; color: var(--text-soft); }
+    .breadcrumb a { color: var(--text-link); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); }
+    .page-title { font-size: 35px; font-weight: 700; color: var(--text); letter-spacing: -0.025em; line-height: 1.1; }
+    .page-eyebrow { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent); }
+
+    /* Role toggle */
+    .role-switch { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .role-btn { padding: 0 var(--space-md); height: var(--control-h); background: var(--surface); border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-soft); transition: background var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard); }
+    .role-btn:not(.active):hover { background: var(--surface-soft); color: var(--text); }
+    .role-btn.active { background: var(--surface-deep); color: var(--cream); }
+
+    /* Stepper */
+    .stepper { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+    .step { display: flex; align-items: center; gap: var(--space-sm); }
+    .step-dot { width: 28px; height: 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; font-feature-settings: 'tnum' 1; background: var(--surface); border: 1.5px solid var(--border); color: var(--text-soft); flex-shrink: 0; }
+    .step.active .step-dot { background: var(--btn-primary-bg); border-color: var(--btn-primary-bg); color: var(--btn-primary-fg); }
+    .step.done .step-dot { background: var(--status-ok-bg); border-color: var(--status-ok-fg); color: var(--status-ok-fg); }
+    .step-label { font-size: 13px; font-weight: 600; color: var(--text-soft); }
+    .step.active .step-label { color: var(--text); }
+    .step-line { width: 28px; height: 1.5px; background: var(--border); }
+
+    /* Panels */
+    .step-panel { display: none; flex-direction: column; gap: var(--space-xl); }
+    .step-panel.active { display: flex; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: var(--space-xs); }
+    .card-sub { font-size: 13px; color: var(--text-soft); margin-bottom: var(--space-lg); line-height: 1.5; }
+
+    /* Type choice cards */
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .type-card { border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); cursor: pointer; display: flex; flex-direction: column; gap: var(--space-sm); transition: border-color var(--dur-1) var(--ease-standard), background var(--dur-1) var(--ease-standard); }
+    .type-card:hover { border-color: var(--text-accent); }
+    .type-card.selected { border-color: var(--text-accent); background: var(--mint); }
+    .type-card .type-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .type-card .type-icon.pr { background: color-mix(in srgb, var(--procurement) 14%, transparent); color: var(--procurement); }
+    .type-card .type-icon.po { background: color-mix(in srgb, var(--ordering) 14%, transparent); color: var(--ordering); }
+    .type-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .type-desc { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: var(--space-xs); display: block; }
+    .select-input { width: 100%; max-width: 360px; height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 14px; background: var(--surface); color: var(--text); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-md) center; }
+    .select-input:disabled { background: var(--surface-soft); color: var(--text-soft); cursor: not-allowed; }
+
+    /* Item source tabs */
+    .src-tabs { display: flex; gap: var(--space-xs); border-bottom: 1px solid var(--border); margin-bottom: var(--space-lg); flex-wrap: wrap; }
+    .src-tab { display: inline-flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); background: none; border: none; border-bottom: 2px solid transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text-soft); cursor: pointer; margin-bottom: -1px; }
+    .src-tab i { font-size: 16px; }
+    .src-tab.active { color: var(--text-accent); border-bottom-color: var(--text-accent); }
+    .src-panel { display: none; } .src-panel.active { display: block; }
+
+    /* Item rows */
+    .item-row { display: grid; grid-template-columns: auto 1fr 90px auto; align-items: center; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
+    .item-row:last-child { border-bottom: none; }
+    .item-check { width: 16px; height: 16px; accent-color: var(--fern); cursor: pointer; }
+    .item-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .item-meta { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .qty-input { width: 72px; height: 32px; padding-inline: var(--space-sm); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; text-align: right; font-feature-settings: 'tnum' 1; color: var(--text); }
+    .add-btn { font-size: 12px; font-weight: 700; padding: 4px var(--space-md); border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text-accent); cursor: pointer; white-space: nowrap; }
+    .add-btn:hover { background: var(--surface-soft); }
+    .add-btn.added { color: var(--status-ok-fg); border-color: color-mix(in srgb, var(--fern) 35%, transparent); }
+    .below-par { font-size: 11px; font-weight: 700; color: var(--status-warn-fg); }
+
+    .reorder-card { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: var(--space-sm); }
+    .reorder-info { flex: 1; }
+
+    /* Basket */
+    .basket { position: sticky; top: var(--space-lg); }
+    .basket-item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .basket-item:last-child { border-bottom: none; }
+    .basket-remove { background: none; border: none; color: var(--text-soft); cursor: pointer; font-size: 16px; padding: 4px; border-radius: var(--radius-sm); line-height: 1; }
+    .basket-remove:hover { color: var(--status-risk-fg); background: var(--status-risk-bg); }
+    .basket-total { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; padding-top: var(--space-md); margin-top: var(--space-sm); border-top: 1.5px solid var(--border); font-feature-settings: 'tnum' 1; }
+    .basket-empty { font-size: 13px; color: var(--text-soft); text-align: center; padding: var(--space-xl) 0; }
+    /* Basket supplier groups */
+    .basket-group { margin-bottom: var(--space-md); }
+    .basket-group:last-child { margin-bottom: 0; }
+    .basket-group-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--space-sm); border-bottom: 1.5px solid var(--border); margin-bottom: 2px; }
+    .basket-supplier { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .delivery-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--status-ok-bg); color: var(--status-ok-fg); white-space: nowrap; }
+    .delivery-chip.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .delivery-sched { font-size: 11px; color: var(--text-soft); padding: var(--space-xs) 0 2px; display: flex; align-items: center; gap: 4px; }
+    .delivery-sched.cutoff { color: var(--status-warn-fg); }
+
+    .two-col { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-lg); align-items: start; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } .type-grid { grid-template-columns: 1fr; } }
+
+    /* Review routing */
+    .route-group { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); }
+    .route-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
+    .route-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .route-items { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+    .route-summary { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-md); background: var(--mint); border-radius: var(--radius-md); font-size: 13px; font-weight: 600; color: var(--spinach); }
+    .info-note { display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-md); border-radius: var(--radius-md); background: var(--status-info-bg); color: var(--status-info-fg); font-size: 13px; line-height: 1.5; }
+    .info-note.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .info-note i { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+    /* Done */
+    .done-wrap { text-align: center; padding: var(--space-3xl) var(--space-xl); display: flex; flex-direction: column; align-items: center; gap: var(--space-md); }
+    .done-icon { width: 64px; height: 64px; border-radius: var(--radius-pill); background: var(--status-ok-bg); color: var(--status-ok-fg); display: flex; align-items: center; justify-content: center; font-size: 32px; }
+    .done-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .done-sub { font-size: 14px; color: var(--text-soft); line-height: 1.6; max-width: 440px; }
+    .done-ids { display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: center; }
+
+    /* PO confirmation cards (Step 4) */
+    .po-cards-wrap { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: var(--space-sm); text-align: left; }
+    .po-card-anim { background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md); overflow: hidden; }
+    .po-card-row { display: flex; align-items: center; gap: var(--space-md); }
+    .po-init { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; flex-shrink: 0; }
+    .po-card-info { flex: 1; min-width: 0; }
+    .po-card-id { font-size: 13px; font-weight: 700; color: var(--text); }
+    .po-card-sup { font-size: 12px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .po-card-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); white-space: nowrap; flex-shrink: 0; }
+    .po-card-status.sending { background: var(--status-info-bg); color: var(--status-info-fg); }
+    .po-card-status.ok { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+
+    /* Add-on order callout (appears in Step 3 route groups) */
+    .addon-callout {
+      display:flex; align-items:flex-start; gap:var(--space-md);
+      padding:var(--space-md) var(--space-lg);
+      background:color-mix(in srgb, #17B3A3 8%, transparent);
+      border:1.5px solid color-mix(in srgb, #17B3A3 28%, transparent);
+      border-radius:var(--radius-md); margin-top:var(--space-sm);
+      animation:row-in var(--dur-3) var(--ease-emphasized) both;
+    }
+    .addon-callout-icon {
+      width:32px; height:32px; border-radius:50%;
+      background:color-mix(in srgb,#17B3A3 16%,transparent); color:#17B3A3;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; flex-shrink:0; margin-top:1px;
+    }
+    .addon-callout-title { font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-xs); flex-wrap:wrap; }
+    .addon-callout-title a { color:#17B3A3; text-decoration:none; }
+    .addon-callout-title a:hover { text-decoration:underline; }
+    .addon-mov-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700; padding:1px 7px; border-radius:var(--radius-pill); background:color-mix(in srgb,#17B3A3 12%,transparent); color:#17B3A3; }
+    .addon-callout-sub { font-size:12px; color:var(--text-soft); margin-top:3px; line-height:1.45; }
+    /* Add-on badge in done cards */
+    .addon-done-tag { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700; color:#17B3A3; margin-top:2px; }
+    .po-card-status.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .po-progress-track { height: 3px; background: var(--border); border-radius: var(--radius-pill); overflow: hidden; margin-top: var(--space-sm); }
+    .po-progress-fill { height: 100%; background: var(--spring); border-radius: var(--radius-pill); width: 0%; animation: po-fill 1.4s var(--ease-standard) forwards; }
+    @keyframes po-fill { from { width: 0%; } to { width: 100%; } }
+
+    /* Supplier initial avatar colours */
+    .po-init[data-sup="Harbour Meats"]            { background: rgba(23,179,163,0.15); color: #0E7A6E; }
+    .po-init[data-sup="Fresh Produce Co"]         { background: rgba(42,200,100,0.15); color: var(--spinach); }
+    .po-init[data-sup="Green Farmers Market"]     { background: rgba(18,155,65,0.15);  color: var(--fern); }
+    .po-init[data-sup="Pacific Drinks Wholesale"] { background: rgba(63,195,251,0.15); color: #0A6B8A; }
+    .po-init[data-sup="Artisan Bakehouse"]        { background: rgba(245,194,25,0.15); color: #7A5000; }
+
+    /* Supplier header in Step 3 review */
+    .sup-review-head { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm); }
+    .sup-review-name { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .sup-review-meta { font-size: 12px; color: var(--text-soft); }
+
+    /* Sticky footer nav */
+    .wizard-foot { position: fixed; bottom: 0; left: var(--nav-width, 220px); right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-2xl); z-index: 40; }
+    .wizard-foot .est { font-size: 13px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    @media (max-width: 768px) { .wizard-foot { left: 0; } }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12" data-active="orders"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="orders.html">Orders</a><i class="ti ti-chevron-right" aria-hidden="true"></i><span aria-current="page">New order</span>
+      </nav>
+
+      <div class="head-row">
+        <div>
+          <span class="page-eyebrow">Procure to pay</span>
+          <h1 class="page-title">New order</h1>
+        </div>
+        <div class="role-switch" role="group" aria-label="Acting as">
+          <button class="role-btn active" id="role-hq" onclick="setRole('hq')">HQ admin</button>
+          <button class="role-btn" id="role-outlet" onclick="setRole('outlet')">Outlet user</button>
+        </div>
+      </div>
+
+      <!-- Draft restore banner -->
+      <div id="draft-banner" style="display:none;align-items:center;gap:var(--space-md);padding:var(--space-md) var(--space-lg);background:var(--mint);border-radius:var(--radius-md);font-size:13px;">
+        <i class="ti ti-file-pencil" style="color:var(--text-accent);font-size:18px;flex-shrink:0;" aria-hidden="true"></i>
+        <span id="draft-banner-text" style="flex:1;font-weight:600;color:var(--text);"></span>
+        <button class="nb-btn primary" style="height:34px;" onclick="resumeDraft()"><i class="ti ti-player-play"></i>Resume draft</button>
+        <button class="nb-btn" style="height:34px;" onclick="discardDraft()">Discard</button>
+      </div>
+
+      <!-- Stepper -->
+      <div class="stepper" id="stepper" aria-label="Progress">
+        <div class="step active" data-step="1"><span class="step-dot">1</span><span class="step-label">Setup</span></div>
+        <span class="step-line"></span>
+        <div class="step" data-step="2"><span class="step-dot">2</span><span class="step-label">Items</span></div>
+        <span class="step-line"></span>
+        <div class="step" data-step="3"><span class="step-dot">3</span><span class="step-label">Review</span></div>
+        <span class="step-line"></span>
+        <div class="step" data-step="4"><span class="step-dot">4</span><span class="step-label">Done</span></div>
+      </div>
+
+      <!-- ═══ Step 1: Setup ═══ -->
+      <div class="step-panel active" id="panel-1">
+        <div class="card">
+          <div class="card-title">What kind of order?</div>
+          <div class="card-sub">Choose how this order should flow. A requisition is reviewed by HQ before any POs are sent; a purchase order goes straight to a supplier.</div>
+          <div class="type-grid">
+            <div class="type-card selected" id="type-pr" onclick="selectType('pr')">
+              <div class="type-icon pr" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
+              <span class="type-name">Purchase requisition</span>
+              <span class="type-desc">Goes to HQ first. HQ reviews and routes it to one or more suppliers — one requisition can become several POs.</span>
+            </div>
+            <div class="type-card" id="type-po" onclick="selectType('po')">
+              <div class="type-icon po" aria-hidden="true"><i class="ti ti-file-invoice"></i></div>
+              <span class="type-name">Purchase order</span>
+              <span class="type-desc">Goes directly to a chosen supplier. Orders over the $500 policy threshold need manager approval first.</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <label class="field-label" for="outlet-select">Ordering for which outlet?</label>
+          <select class="select-input" id="outlet-select">
+            <option>Surry Hills</option>
+            <option>Circular Quay</option>
+            <option>Newtown</option>
+            <option>Bondi Beach</option>
+            <option>Melbourne CBD</option>
+            <option>Parramatta Table</option>
+          </select>
+          <p class="card-sub" id="outlet-note" style="margin:var(--space-sm) 0 0;">As HQ, you can raise this order on behalf of any outlet.</p>
+        </div>
+
+      </div>
+
+      <!-- ═══ Step 2: Items ═══ -->
+      <div class="step-panel" id="panel-2">
+        <div class="two-col">
+          <div class="card">
+            <div class="src-tabs" role="tablist">
+              <button class="src-tab active" role="tab" onclick="srcTab('otto')"><i class="ti ti-sparkles"></i>Otto suggestions</button>
+              <button class="src-tab" role="tab" onclick="srcTab('market')"><i class="ti ti-receipt"></i>Market list</button>
+              <button class="src-tab" role="tab" onclick="srcTab('reorder')"><i class="ti ti-history"></i>Re-order</button>
+            </div>
+
+            <!-- Otto -->
+            <div class="src-panel active" id="src-otto">
+              <div class="agent-byline" style="margin-bottom:var(--space-md);"><i class="ti ti-sparkles spark"></i> Otto pre-selected items below par for this outlet — adjust quantities or uncheck any.</div>
+              <div id="otto-list"></div>
+              <button class="add-btn" style="margin-top:var(--space-md);" onclick="addCheckedOtto()"><i class="ti ti-plus"></i> Add checked to order</button>
+            </div>
+
+            <!-- Market list -->
+            <div class="src-panel" id="src-market">
+              <div class="card-sub">From the <strong>Spring Menu AU</strong> market list assigned to this outlet.</div>
+              <div id="market-list"></div>
+            </div>
+
+            <!-- Re-order -->
+            <div class="src-panel" id="src-reorder">
+              <div class="card-sub">Duplicate a recent order as a starting basket.</div>
+              <div class="reorder-card">
+                <span class="pack-icon" style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--surface-soft);display:flex;align-items:center;justify-content:center;color:var(--text-accent);"><i class="ti ti-file-invoice"></i></span>
+                <div class="reorder-info"><div class="item-name">PO-5510 · Green Farmers Market</div><div class="item-meta">8 items · $890 · 2 weeks ago</div></div>
+                <button class="add-btn" onclick="reorder('5510', this)">Use this</button>
+              </div>
+              <div class="reorder-card">
+                <span class="pack-icon" style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--surface-soft);display:flex;align-items:center;justify-content:center;color:var(--text-accent);"><i class="ti ti-clipboard-list"></i></span>
+                <div class="reorder-info"><div class="item-name">PR-1030 · Dry goods top-up</div><div class="item-meta">3 items · $410 · 3 weeks ago</div></div>
+                <button class="add-btn" onclick="reorder('1030', this)">Use this</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Basket -->
+          <div class="card basket">
+            <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">Order <span class="item-meta" id="basket-count">0 items</span></div>
+            <div id="basket-items"><div class="basket-empty">No items yet. Add from the sources on the left.</div></div>
+            <div class="basket-total" id="basket-total-row" hidden><span>Est. total</span><span id="basket-total">$0.00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Step 3: Review ═══ -->
+      <div class="step-panel" id="panel-3">
+        <div class="card" id="review-card">
+          <div class="card-title" id="review-title">Review &amp; route</div>
+          <div class="card-sub" id="review-sub"></div>
+          <div id="review-body"></div>
+        </div>
+      </div>
+
+      <!-- ═══ Step 4: Done ═══ -->
+      <div class="step-panel" id="panel-4">
+        <div class="card">
+          <div class="done-wrap">
+            <div class="done-icon" aria-hidden="true"><i class="ti ti-check"></i></div>
+            <div class="done-title" id="done-title">Order submitted</div>
+            <p class="done-sub" id="done-sub"></p>
+            <div class="done-ids" id="done-ids"></div>
+            <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-lg);">
+              <button class="btn-ghost" onclick="window.location.href='orders.html'" style="display:inline-flex;align-items:center;gap:var(--space-xs);height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);"><i class="ti ti-arrow-left"></i>View in Orders</button>
+              <button class="nb-btn primary" style="height:40px;" onclick="resetWizard()"><i class="ti ti-plus"></i>Create another</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sticky footer -->
+  <div class="wizard-foot" id="wizard-foot">
+    <button class="nb-btn" id="back-btn" onclick="prevStep()" style="visibility:hidden;"><i class="ti ti-arrow-left"></i>Back</button>
+    <span class="est" id="foot-est"></span>
+    <button class="nb-btn primary" id="next-btn" onclick="nextStep()">Continue<i class="ti ti-arrow-right"></i></button>
+  </div>
+
+  <div id="no-toast" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('New order'));
+
+    /* ── State ── */
+    let role = 'hq';
+    let orderType = 'pr';
+    let step = 1;
+    let basket = []; // {name, qty, unit, cat}
+    const CAT_SUPPLIER = { Proteins:'Harbour Meats', Produce:'Fresh Produce Co', 'Dry goods':'Fresh Produce Co', Dairy:'Green Farmers Market', Bakery:'Artisan Bakehouse', Beverages:'Pacific Drinks Wholesale', Production:'Sydney Central Kitchen' };
+
+    // days: 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat · cutoff: 24h hour
+    const SUPPLIER_SCHEDULES = {
+      'Harbour Meats':            { days:[1,3,5], cutoff:15 },
+      'Fresh Produce Co':         { days:[1,2,3,4,5], cutoff:14 },
+      'Green Farmers Market':     { days:[1,3,5], cutoff:15 },
+      'Pacific Drinks Wholesale': { days:[2,4], cutoff:16 },
+      'Artisan Bakehouse':        { days:[1,2,3,4,5,6], cutoff:8 },
+      // Mirrors the "City" delivery zone default set in Settings > Delivery zones for the CK seller workspace.
+      'Sydney Central Kitchen':   { days:[1,2,3,4,5], cutoff:15 },
+    };
+
+    // Existing open POs used to detect add-on eligibility in Step 3.
+    // Matched against supplier + next-available delivery date at review time.
+    const EXISTING_POS_SEED = [
+      { id: 'PO-5520', supplier: 'Fresh Produce Co' },
+      { id: 'PO-5521', supplier: 'Harbour Meats' },
+    ];
+
+    const addOnFlags = new Map(); // supplier → { parentId } when add-on detected
+
+    function checkAddOn(supplier, deliveryStr, groupEl) {
+      groupEl.querySelector('.addon-callout')?.remove();
+      addOnFlags.delete(supplier);
+
+      const match = EXISTING_POS_SEED.find(p =>
+        p.supplier === supplier &&
+        nextDelivery(supplier)?.shortStr === deliveryStr
+      );
+
+      if (match) {
+        addOnFlags.set(supplier, { parentId: match.id });
+        const div = document.createElement('div');
+        div.className = 'addon-callout';
+        div.innerHTML = `
+          <div class="addon-callout-icon"><i class="ti ti-plus"></i></div>
+          <div>
+            <div class="addon-callout-title">
+              Add-on to <a href="order-detail.html?id=${match.id}">${match.id}</a>
+              <span class="addon-mov-badge"><i class="ti ti-bolt"></i>MOV waived</span>
+            </div>
+            <div class="addon-callout-sub">
+              An open order to ${supplier} is already scheduled for this delivery date.
+              This order will be added on — the minimum order value guardrail does not apply.
+            </div>
+          </div>`;
+        groupEl.appendChild(div);
+      }
+    }
+
+    function formatDays(days) {
+      return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].filter((_,i)=>days.includes(i)).join(' / ');
+    }
+    function formatHour(h) { return h >= 12 ? (h===12?'12':h-12)+'pm' : h+'am'; }
+    function supInitials(name) {
+      return name.split(' ').filter(w=>w.length>2).map(w=>w[0]).slice(0,2).join('').toUpperCase() || name.slice(0,2).toUpperCase();
+    }
+
+    function buildDeliveryOptions(supplier, count) {
+      count = count || 4;
+      const sched = SUPPLIER_SCHEDULES[supplier];
+      if (!sched) return '<option value="—">—</option>';
+      const now = new Date();
+      const hour = now.getHours() + now.getMinutes()/60;
+      const opts = [];
+      for (let i = 0; i < 60 && opts.length < count; i++) {
+        const d = new Date(now); d.setDate(d.getDate() + i);
+        if (!sched.days.includes(d.getDay())) continue;
+        if (i === 0 && hour >= sched.cutoff) continue;
+        const val = d.toLocaleDateString('en-AU', { day:'numeric', month:'short' });
+        const label = d.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' });
+        opts.push(`<option value="${val}">${label}${opts.length===0?' — next available':''}</option>`);
+      }
+      return opts.join('');
+    }
+
+    function nextDelivery(supplier) {
+      const sched = SUPPLIER_SCHEDULES[supplier];
+      if (!sched) return null;
+      const now = new Date();
+      const hour = now.getHours() + now.getMinutes()/60;
+      const todayCutoffPassed = sched.days.includes(now.getDay()) && hour >= sched.cutoff;
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(now); d.setDate(d.getDate() + i);
+        if (!sched.days.includes(d.getDay())) continue;
+        if (i === 0 && hour >= sched.cutoff) continue;
+        return {
+          shortStr:     d.toLocaleDateString('en-AU', { day:'numeric', month:'short' }),
+          dateStr:      d.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' }),
+          cutoffPassed: todayCutoffPassed,
+          schedLabel:   formatDays(sched.days) + ' · cutoff ' + formatHour(sched.cutoff),
+        };
+      }
+      return null;
+    }
+
+    const OTTO = [
+      { name:'Chicken Breast 500g',   supplierItem:'Free-Range Chicken Breast',  supplierSku:'HM-CHK-500', qty:20, unit:7.15,  cat:'Proteins',  uom:'pkg', par:true },
+      { name:'Avocado (each)',         supplierItem:'Avocado Grade A',            supplierSku:'FP-AVO-EA',  qty:40, unit:2.40,  cat:'Produce',   uom:'ea',  par:true },
+      { name:'Roma Tomatoes 5kg',      supplierItem:'Roma Tomatoes Box',          supplierSku:'FP-ROM-5KG', qty:4,  unit:16.50, cat:'Produce',   uom:'box', par:true },
+      { name:'Olive Oil 1L',           supplierItem:'Extra Virgin Olive Oil 1L',  supplierSku:'FP-OLV-1L',  qty:6,  unit:12.00, cat:'Dry goods', uom:'btl', par:true },
+      { name:'Oat Milk 1L',            supplierItem:'Oat Milk Barista Edition',   supplierSku:'GF-OAT-1L',  qty:24, unit:3.20,  cat:'Dairy',     uom:'btl', par:false },
+    ];
+    const MARKET = [
+      { name:'Sourdough Loaf',          supplierItem:'Country Sourdough',   supplierSku:'AB-SDG-EA',  qty:12, unit:4.20, cat:'Bakery',  uom:'ea' },
+      { name:'Feta Cheese 200g',        supplierItem:'Danish Feta 200g',    supplierSku:'GF-FTA-200', qty:8,  unit:3.80, cat:'Dairy',   uom:'ea' },
+      { name:'Buffalo Mozzarella 250g', supplierItem:'Buffalo Mozzarella',  supplierSku:'GF-MOZ-250', qty:6,  unit:4.20, cat:'Dairy',   uom:'ea' },
+      { name:'Free-range Eggs (dozen)', supplierItem:'Free Range Eggs',     supplierSku:'FP-EGG-DOZ', qty:10, unit:6.50, cat:'Produce', uom:'doz' },
+      { name:'Napoli Sauce 5L',         supplierItem:'Napoli Sauce 5L',     supplierSku:'CK-NAP-005', qty:4,  unit:14.20, cat:'Production', uom:'ea' },
+      { name:'Beef Burger Patties 48pk',supplierItem:'Beef Burger Patties', supplierSku:'CK-PAT-048', qty:2,  unit:61.90, cat:'Production', uom:'pkg' },
+    ];
+    const REORDERS = {
+      '5510':[ {name:'Mixed Leaf 2kg',supplierItem:'Mixed Salad Leaves',supplierSku:'FP-MSL-2KG',qty:6,unit:9.00,cat:'Produce',uom:'bag'},{name:'Roma Tomatoes 5kg',supplierItem:'Roma Tomatoes Box',supplierSku:'FP-ROM-5KG',qty:4,unit:16.50,cat:'Produce',uom:'box'},{name:'Avocado (each)',supplierItem:'Avocado Grade A',supplierSku:'FP-AVO-EA',qty:30,unit:2.40,cat:'Produce',uom:'ea'} ],
+      '1030':[ {name:'Olive Oil 1L',supplierItem:'Extra Virgin Olive Oil 1L',supplierSku:'FP-OLV-1L',qty:6,unit:12.00,cat:'Dry goods',uom:'btl'},{name:'Sea Salt 1kg',supplierItem:'Sea Salt Flakes 1kg',supplierSku:'FP-SLT-1KG',qty:3,unit:5.50,cat:'Dry goods',uom:'pkg'},{name:'Plain Flour 5kg',supplierItem:'Plain Flour 5kg',supplierSku:'FP-FLR-5KG',qty:4,unit:8.00,cat:'Dry goods',uom:'pkg'} ],
+    };
+
+    /* ── Render item sources ── */
+    function renderOtto() {
+      document.getElementById('otto-list').innerHTML = OTTO.map((it,i) => `
+        <div class="item-row">
+          <input type="checkbox" class="item-check" id="otto-${i}" ${it.par?'checked':''}/>
+          <div><div class="item-name">${it.name} ${it.par?'<span class="below-par">· below par</span>':''}</div><div class="item-meta">$${it.unit.toFixed(2)} / ${it.uom||'unit'} · ${it.cat}</div></div>
+          <input type="number" class="qty-input" id="otto-qty-${i}" value="${it.qty}" min="0"/>
+          <span class="item-meta">est $${(it.qty*it.unit).toFixed(0)}</span>
+        </div>`).join('');
+    }
+    function renderMarket() {
+      document.getElementById('market-list').innerHTML = MARKET.map((it,i) => `
+        <div class="item-row">
+          <span></span>
+          <div><div class="item-name">${it.name}</div><div class="item-meta">$${it.unit.toFixed(2)} / ${it.uom||'unit'} · ${it.cat}</div></div>
+          <input type="number" class="qty-input" id="mkt-qty-${i}" value="${it.qty}" min="0"/>
+          <button class="add-btn" onclick="addMarket(${i}, this)"><i class="ti ti-plus"></i>Add</button>
+        </div>`).join('');
+    }
+
+    function addCheckedOtto() {
+      let n = 0;
+      OTTO.forEach((it,i) => {
+        if (document.getElementById('otto-'+i).checked) {
+          const qty = parseFloat(document.getElementById('otto-qty-'+i).value) || 0;
+          if (qty > 0) { addToBasket({ ...it, qty }); n++; }
+        }
+      });
+      noToast(n + ' item' + (n!==1?'s':'') + ' added from Otto');
+    }
+    function addMarket(i, btn) {
+      const it = MARKET[i];
+      const qty = parseFloat(document.getElementById('mkt-qty-'+i).value) || 0;
+      if (qty>0) { addToBasket({ ...it, qty }); btn.classList.add('added'); btn.innerHTML='<i class="ti ti-check"></i>Added'; }
+    }
+    function reorder(id, btn) {
+      REORDERS[id].forEach(it => addToBasket({...it}));
+      btn.classList.add('added'); btn.textContent='Added';
+      noToast(REORDERS[id].length + ' items added from past order');
+    }
+
+    function addToBasket(item) {
+      const existing = basket.find(b => b.name === item.name);
+      if (existing) existing.qty += item.qty; else basket.push(item);
+      renderBasket();
+      saveDraft();
+    }
+    function removeBasket(name) { basket = basket.filter(b => b.name !== name); renderBasket(); saveDraft(); }
+    function basketTotal() { return basket.reduce((s,b)=>s+b.qty*b.unit,0); }
+
+    function renderBasket() {
+      const wrap = document.getElementById('basket-items');
+      const countEl = document.getElementById('basket-count');
+      countEl.textContent = basket.length + ' item' + (basket.length!==1?'s':'');
+      if (!basket.length) {
+        wrap.innerHTML = '<div class="basket-empty">No items yet. Add from the sources on the left.</div>';
+        document.getElementById('basket-total-row').hidden = true;
+      } else {
+        // Group by supplier
+        const groups = {};
+        basket.forEach(b => {
+          const sup = CAT_SUPPLIER[b.cat] || 'Fresh Produce Co';
+          if (!groups[sup]) groups[sup] = [];
+          groups[sup].push(b);
+        });
+        wrap.innerHTML = Object.entries(groups).map(([sup, items]) => {
+          const nd = nextDelivery(sup);
+          const chip = nd
+            ? `<span class="delivery-chip${nd.cutoffPassed?' warn':''}"><i class="ti ti-calendar-event"></i>${nd.dateStr}</span>`
+            : '';
+          const schedNote = nd
+            ? (nd.cutoffPassed
+                ? `<div class="delivery-sched cutoff"><i class="ti ti-alert-triangle"></i>Cutoff passed — order pushed to ${nd.dateStr}</div>`
+                : `<div class="delivery-sched"><i class="ti ti-clock"></i>${nd.schedLabel}</div>`)
+            : '';
+          const itemsHtml = items.map(b =>
+            `<div class="basket-item">
+              <div>
+                <div style="font-weight:600;color:var(--text);">${b.supplierItem||b.name}</div>
+                ${b.supplierSku?'<div class="item-meta"><span style="font-family:\'IBM Plex Mono\',monospace;">'+b.supplierSku+'</span> · '+b.name+'</div>':''}
+                <div class="item-meta">${b.qty}${b.uom?' '+b.uom:''} × $${b.unit.toFixed(2)}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;font-feature-settings:'tnum' 1;">$${(b.qty*b.unit).toFixed(0)}</span><button class="basket-remove" aria-label="Remove ${b.name}" onclick="removeBasket(${JSON.stringify(b.name)})"><i class="ti ti-x"></i></button></div>
+            </div>`).join('');
+          return `<div class="basket-group">
+            <div class="basket-group-head"><span class="basket-supplier">${sup}</span>${chip}</div>
+            ${itemsHtml}
+            ${schedNote}
+          </div>`;
+        }).join('');
+        const tr = document.getElementById('basket-total-row'); tr.hidden = false;
+        document.getElementById('basket-total').textContent = '$'+basketTotal().toFixed(2);
+      }
+      updateFootEst();
+    }
+
+    /* ── Role + type ── */
+    function setRole(r) {
+      role = r;
+      document.getElementById('role-hq').classList.toggle('active', r==='hq');
+      document.getElementById('role-outlet').classList.toggle('active', r==='outlet');
+      const sel = document.getElementById('outlet-select');
+      const note = document.getElementById('outlet-note');
+      if (r==='outlet') { sel.value='Surry Hills'; sel.disabled=true; note.textContent='As an outlet user, orders are raised for your outlet (Surry Hills).'; }
+      else { sel.disabled=false; note.textContent='As HQ, you can raise this order on behalf of any outlet.'; }
+    }
+    function selectType(t) {
+      orderType = t;
+      document.getElementById('type-pr').classList.toggle('selected', t==='pr');
+      document.getElementById('type-po').classList.toggle('selected', t==='po');
+      saveDraft();
+    }
+    function srcTab(id) {
+      document.querySelectorAll('.src-panel').forEach(p=>p.classList.remove('active'));
+      document.getElementById('src-'+id).classList.add('active');
+      document.querySelectorAll('.src-tab').forEach(t=>t.classList.toggle('active', t.getAttribute('onclick').includes("'"+id+"'")));
+    }
+
+    /* ── Review step ── */
+    let routeSuppliers = {}; // category -> supplier
+    function buildReview() {
+      const outlet = document.getElementById('outlet-select').value;
+      const title = document.getElementById('review-title');
+      const sub = document.getElementById('review-sub');
+      const body = document.getElementById('review-body');
+      const total = basketTotal();
+
+      if (orderType === 'pr' && role === 'hq') {
+        // HQ routes the PR across suppliers, by category group
+        title.textContent = 'Review & route to suppliers';
+        sub.innerHTML = 'Requisition for <strong>'+outlet+'</strong> · '+basket.length+' items · est $'+total.toFixed(0)+'. Assign each line group to a supplier — this can create several POs.';
+        const cats = [...new Set(basket.map(b=>b.cat))];
+        routeSuppliers = {};
+        body.innerHTML = cats.map(cat => {
+          const items = basket.filter(b=>b.cat===cat);
+          const sum = items.reduce((s,b)=>s+b.qty*b.unit,0);
+          const def = CAT_SUPPLIER[cat] || 'Fresh Produce Co';
+          routeSuppliers[cat] = def;
+          const opts = [...new Set([def,'Fresh Produce Co','Harbour Meats','Green Farmers Market','Pacific Drinks Wholesale','Artisan Bakehouse','Sydney Central Kitchen'])];
+          return `<div class="route-group">
+            <div class="route-head"><span class="route-title">${cat} · ${items.length} item${items.length!==1?'s':''}</span><span class="item-meta">$${sum.toFixed(0)}</span></div>
+            <div class="route-items">${items.map(i=>`<div>${i.name} ×${i.qty}${i.uom?' '+i.uom:''}</div>`).join('')}</div>
+            <select class="select-input" style="max-width:none;margin-top:var(--space-sm);" data-cat="${cat}" onchange="onRouteChange(this)">${opts.map(o=>`<option ${o===def?'selected':''}>${o}${o===def?' — preferred':''}</option>`).join('')}</select>
+          </div>`;
+        }).join('') + '<div class="route-summary" id="route-summary"></div>';
+        updateRouteSummary();
+      } else if (orderType === 'pr') {
+        // Outlet raises PR → goes to HQ
+        title.textContent = 'Submit requisition to HQ';
+        sub.innerHTML = 'Requisition for <strong>'+outlet+'</strong> · '+basket.length+' items · est $'+total.toFixed(0)+'.';
+        body.innerHTML = '<div class="info-note"><i class="ti ti-info-circle"></i><div>This requisition will be sent to <strong>HQ</strong> for review. HQ decides which supplier(s) it is routed to — you’ll see the resulting purchase orders once approved.</div></div>';
+      } else {
+        // Direct PO → per-supplier groups with delivery date selector
+        title.textContent = 'Confirm purchase orders';
+        const poGroups = {};
+        basket.forEach(b => {
+          const sup = CAT_SUPPLIER[b.cat] || 'Fresh Produce Co';
+          if (!poGroups[sup]) poGroups[sup] = [];
+          poGroups[sup].push(b);
+        });
+        const poEntries = Object.entries(poGroups);
+        sub.innerHTML = 'Sending to <strong>'+poEntries.length+' supplier'+(poEntries.length!==1?'s':'')+'</strong> · '+basket.length+' items · est $'+total.toFixed(0)+'.';
+        body.innerHTML = poEntries.map(([sup, items]) => {
+          const v = items.reduce((s,b)=>s+b.qty*b.unit, 0);
+          const needsApproval = v > 500;
+          const safeId = 'del-' + sup.replace(/\W+/g,'-');
+          return `<div class="route-group">
+            <div class="sup-review-head">
+              <div class="po-init" data-sup="${sup}" style="width:44px;height:44px;font-size:13px;">${supInitials(sup)}</div>
+              <div style="flex:1;min-width:0;">
+                <div class="sup-review-name">${sup}</div>
+                <div class="sup-review-meta">${items.length} item${items.length!==1?'s':''} · $${Math.round(v)}</div>
+              </div>
+              ${needsApproval
+                ? '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:var(--status-warn-bg);color:var(--status-warn-fg);white-space:nowrap;"><i class="ti ti-user-check"></i> Needs approval</span>'
+                : '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:var(--status-ok-bg);color:var(--status-ok-fg);white-space:nowrap;"><i class="ti ti-bolt"></i> Auto-approved</span>'}
+            </div>
+            <div class="route-items" style="margin-bottom:var(--space-sm);">${items.map(i=>`<div>${i.name} ×${i.qty}${i.uom?' '+i.uom:''}</div>`).join('')}</div>
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <span style="font-size:12px;font-weight:600;color:var(--text-soft);white-space:nowrap;"><i class="ti ti-calendar-event"></i> Delivery</span>
+              <select class="select-input" id="${safeId}" style="max-width:none;flex:1;"
+                onchange="checkAddOn('${sup}', this.value, this.closest('.route-group'))">${buildDeliveryOptions(sup)}</select>
+            </div>
+          </div>`;
+        }).join('') + (poEntries.length > 1
+          ? '<div class="route-summary"><i class="ti ti-git-branch"></i> This will create '+poEntries.length+' purchase orders to '+poEntries.length+' suppliers</div>'
+          : '');
+
+        // Run add-on detection for each supplier's default (first) delivery date
+        addOnFlags.clear();
+        poEntries.forEach(([sup]) => {
+          const sel = document.getElementById('del-' + sup.replace(/\W+/g,'-'));
+          if (sel) checkAddOn(sup, sel.value, sel.closest('.route-group'));
+        });
+      }
+    }
+    function onRouteChange(sel) { routeSuppliers[sel.dataset.cat] = sel.value.replace(' — preferred',''); updateRouteSummary(); }
+    function updateRouteSummary() {
+      const n = new Set(Object.values(routeSuppliers)).size;
+      document.getElementById('route-summary').innerHTML = '<i class="ti ti-git-branch"></i> This requisition will create '+n+' purchase order'+(n!==1?'s':'')+' to '+n+' supplier'+(n!==1?'s':'');
+    }
+
+    /* ── Persist created orders so they appear in the Orders tables ── */
+    function saveOrders(records) {
+      try {
+        const key = 'nomni_new_orders';
+        const existing = JSON.parse(sessionStorage.getItem(key) || '[]');
+        sessionStorage.setItem(key, JSON.stringify(existing.concat(records)));
+      } catch (e) { /* sessionStorage unavailable — non-fatal for the demo */ }
+    }
+
+    /* ── Finish ── */
+    let prCounter = 1043, poCounter = 5522;
+    function finish() {
+      const done = document.getElementById('done-ids');
+      const sub = document.getElementById('done-sub');
+      const title = document.getElementById('done-title');
+      const total = basketTotal();
+      const outlet = document.getElementById('outlet-select').value;
+      const cats = [...new Set(basket.map(b=>b.cat))];
+      const itemsLabel = basket.length + ' items · ' + cats.join(', ').toLowerCase();
+      const raisedBy = role === 'outlet' ? 'Keith Tan' : (basket.some(()=>true) ? 'Keith Tan' : 'HQ');
+      const records = [];
+
+      if (orderType === 'pr' && role === 'hq') {
+        const suppliers = [...new Set(Object.values(routeSuppliers))];
+        const pr = 'PR-'+(prCounter++);
+        const bySupplier = {};
+        basket.forEach(b => { const s = routeSuppliers[b.cat] || 'Fresh Produce Co'; bySupplier[s] = (bySupplier[s]||0) + b.qty*b.unit; });
+        const pos = suppliers.map(()=>'PO-'+(poCounter++));
+        title.textContent = 'Requisition routed';
+        sub.innerHTML = pr+' created and split into '+pos.length+' purchase order'+(pos.length!==1?'s':'')+' across '+suppliers.length+' supplier'+(suppliers.length!==1?'s':'')+'.';
+        done.innerHTML = '<span class="nb-pill info"><i class="ti ti-clipboard-list"></i>'+pr+'</span>' + pos.map(p=>'<span class="nb-pill ok"><i class="ti ti-file-invoice"></i>'+p+'</span>').join('');
+        records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'routed', poCount:pos.length });
+        suppliers.forEach((s,i) => {
+          const v = Math.round(bySupplier[s]||0);
+          const expected = nextDelivery(s)?.shortStr || '—';
+          records.push({ kind:'po', id:pos[i], supplier:s, outlet, value:v, approval: v>500?'manager':'auto', delivery: v>500?'draft':'sent', expected });
+        });
+      } else if (orderType === 'pr') {
+        const pr = 'PR-'+(prCounter++);
+        title.textContent = 'Requisition submitted';
+        sub.innerHTML = pr+' was sent to HQ for review and supplier routing.';
+        done.innerHTML = '<span class="nb-pill warn"><i class="ti ti-clock"></i>'+pr+' · awaiting HQ</span>';
+        records.push({ kind:'pr', id:pr, outlet, itemsLabel, value:Math.round(total), raisedBy, status:'needs-review', poCount:0, expected:'—' });
+      } else {
+        const poGroups = {};
+        basket.forEach(b => {
+          const sup = CAT_SUPPLIER[b.cat] || 'Fresh Produce Co';
+          if (!poGroups[sup]) poGroups[sup] = [];
+          poGroups[sup].push(b);
+        });
+        const poEntries = Object.entries(poGroups);
+        const pos = poEntries.map(() => 'PO-'+(poCounter++));
+        const anyApproval = poEntries.some(([_,items]) => items.reduce((s,b)=>s+b.qty*b.unit,0) > 500);
+        title.textContent = anyApproval ? 'Orders submitted' : 'Orders sent';
+        sub.innerHTML = pos.length+' purchase order'+(pos.length!==1?'s':'')+' across '+poEntries.length+' supplier'+(poEntries.length!==1?'s':'');
+        // Build animated PO cards
+        const cardData = poEntries.map(([sup, items], i) => {
+          const v = Math.round(items.reduce((s,b)=>s+b.qty*b.unit,0));
+          const needsApproval = v > 500;
+          const safeId = 'del-' + sup.replace(/\W+/g,'-');
+          const expected = (document.getElementById(safeId)||{}).value || nextDelivery(sup)?.shortStr || '—';
+          records.push({ kind:'po', id:pos[i], supplier:sup, outlet, value:v, approval: needsApproval?'manager':'auto', delivery: needsApproval?'draft':'sent', expected });
+          return { id:pos[i], sup, v, needsApproval, delay: i*280 };
+        });
+        done.className = ''; // clear done-ids flex wrap for card layout
+        done.innerHTML = `<div class="po-cards-wrap">${cardData.map(d => {
+          const ao = addOnFlags.get(d.sup);
+          return `<div class="po-card-anim">
+            <div class="po-card-row">
+              <div class="po-init" data-sup="${d.sup}">${supInitials(d.sup)}</div>
+              <div class="po-card-info">
+                <div class="po-card-id">${d.id}</div>
+                <div class="po-card-sup">${d.sup} · $${d.v}</div>
+                ${ao ? `<div class="addon-done-tag"><i class="ti ti-plus" style="font-size:11px;"></i>Add-on · ${ao.parentId}</div>` : ''}
+              </div>
+              <span class="po-card-status sending" id="pcs-${d.delay}">Sending…</span>
+            </div>
+            <div class="po-progress-track">
+              <div class="po-progress-fill" style="animation-delay:${d.delay}ms;"></div>
+            </div>
+          </div>`;
+        }).join('')}</div>`;
+        // Transition each card to its final state after its progress bar finishes
+        cardData.forEach(d => {
+          setTimeout(() => {
+            const el = document.getElementById('pcs-'+d.delay);
+            if (!el) return;
+            el.className = 'po-card-status ' + (d.needsApproval ? 'warn' : 'ok');
+            el.innerHTML = d.needsApproval ? '<i class="ti ti-user-check"></i> Needs approval' : '<i class="ti ti-circle-check"></i> Sent';
+          }, d.delay + 1600);
+        });
+      }
+      saveOrders(records);
+      clearDraft(); // order complete — the in-progress draft is no longer needed
+    }
+
+    /* ── Stepper navigation ── */
+    function goStep(n) {
+      step = n;
+      document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+      document.getElementById('panel-'+n).classList.add('active');
+      document.querySelectorAll('.step').forEach(s=>{
+        const sn = +s.dataset.step;
+        s.classList.toggle('active', sn===n);
+        s.classList.toggle('done', sn<n);
+      });
+      document.getElementById('back-btn').style.visibility = (n===1||n===4) ? 'hidden' : 'visible';
+      const next = document.getElementById('next-btn');
+      if (n===3) next.innerHTML = (orderType==='pr' && role==='hq') ? 'Create purchase orders<i class="ti ti-send"></i>' : (orderType==='pr' ? 'Submit to HQ<i class="ti ti-send"></i>' : 'Confirm order<i class="ti ti-send"></i>');
+      else next.innerHTML = 'Continue<i class="ti ti-arrow-right"></i>';
+      next.style.visibility = (n===4) ? 'hidden' : 'visible';
+      document.getElementById('wizard-foot').style.display = 'flex';
+      window.scrollTo({top:0, behavior:'smooth'});
+      updateFootEst();
+      saveDraft();
+    }
+    function updateFootEst() {
+      const e = document.getElementById('foot-est');
+      e.textContent = (step>=2 && basket.length) ? (basket.length+' items · est $'+basketTotal().toFixed(0)) : '';
+    }
+    function nextStep() {
+      if (step===2 && !basket.length) { noToast('Add at least one item to continue'); return; }
+      if (step===3) { finish(); goStep(4); return; }
+      if (step===2) { buildReview(); }
+      goStep(step+1);
+    }
+    function prevStep() { if (step>1) goStep(step-1); }
+    function resetWizard() {
+      basket = []; renderBasket();
+      selectType('pr'); setRole('hq');
+      document.querySelectorAll('.add-btn.added').forEach(b=>{ b.classList.remove('added'); });
+      renderMarket();
+      goStep(1);
+      clearDraft();
+    }
+
+    /* ── Draft persistence (sessionStorage) ── */
+    const DRAFT_KEY = 'nomni_order_draft';
+    function saveDraft() {
+      try {
+        if (!basket.length || step === 4) { sessionStorage.removeItem(DRAFT_KEY); return; }
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+          basket,
+          orderType,
+          role,
+          outlet: document.getElementById('outlet-select').value,
+          step,
+        }));
+      } catch (e) { /* sessionStorage unavailable — non-fatal for the demo */ }
+    }
+    function clearDraft() {
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    }
+    function loadDraft() {
+      try {
+        const d = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
+        return (d && Array.isArray(d.basket) && d.basket.length) ? d : null;
+      } catch (e) { return null; }
+    }
+
+    let _pendingDraft = null;
+    function showDraftBanner() {
+      _pendingDraft = loadDraft();
+      if (!_pendingDraft) return;
+      const est = _pendingDraft.basket.reduce((s,b)=>s+b.qty*b.unit,0);
+      document.getElementById('draft-banner-text').textContent =
+        'Draft in progress — ' + _pendingDraft.basket.length + ' item' + (_pendingDraft.basket.length!==1?'s':'') + ' · est $' + est.toFixed(0);
+      document.getElementById('draft-banner').style.display = 'flex';
+    }
+    function resumeDraft() {
+      const d = _pendingDraft;
+      if (!d) return;
+      document.getElementById('draft-banner').style.display = 'none';
+      if (d.role && d.role !== role) setRole(d.role);
+      basket = d.basket;
+      selectType(d.orderType || 'pr');
+      if (d.outlet) document.getElementById('outlet-select').value = d.outlet;
+      renderBasket();
+      const target = Math.min(Math.max(d.step || 2, 1), 3);
+      if (target === 3) buildReview();
+      goStep(target);
+      _pendingDraft = null;
+      noToast('Draft resumed — ' + basket.length + ' item' + (basket.length!==1?'s':'') + ' restored');
+    }
+    function discardDraft() {
+      clearDraft();
+      _pendingDraft = null;
+      document.getElementById('draft-banner').style.display = 'none';
+      noToast('Draft discarded');
+    }
+    document.getElementById('outlet-select').addEventListener('change', saveDraft);
+
+    function noToast(msg) {
+      const wrap = document.getElementById('no-toast');
+      const t = document.createElement('div');
+      t.style.cssText='display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML='<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>'+msg;
+      wrap.appendChild(t); setTimeout(()=>t.remove(),2600);
+    }
+
+    renderOtto(); renderMarket(); renderBasket(); showDraftBanner();
+  </script>
+</body>
+</html>

@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Inventory — Nomni Supply</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-lg); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+    .seller-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); padding:4px 10px; border-radius:var(--radius-pill); margin-bottom:var(--space-sm); }
+    .seller-badge i { font-size:14px; }
+
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); }
+    .kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); }
+    .kpi-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
+    .kpi-value { font-size:26px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; letter-spacing:-0.02em; }
+    .kpi-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .kpi-sub.warn { color:var(--status-warn-fg); font-weight:600; }
+
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; flex-shrink:0; text-decoration:none; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--btn-primary-hover); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; text-decoration:none; }
+    .btn-ghost:hover { color:var(--text-accent); }
+
+    .inv-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .inv-table th { padding:var(--space-sm) var(--space-xl); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .inv-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .inv-table tbody tr:last-child td { border-bottom:none; }
+    .inv-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .item-name { font-weight:600; color:var(--text); }
+    .item-sku { font-size:11px; color:var(--text-soft); font-feature-settings:'tnum' 1; margin-top:1px; }
+    .used-in { font-size:12px; color:var(--text-soft); }
+    .col-num { text-align:right; font-feature-settings:'tnum' 1; font-weight:600; color:var(--text); }
+    .stock-low { color:var(--status-risk-fg); font-weight:700; }
+    .stock-ok { color:var(--text); }
+    .status-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .status-pill.ok  { color:var(--status-ok-fg); background:var(--status-ok-bg); }
+    .status-pill.low { color:var(--status-risk-fg); background:var(--status-risk-bg); }
+    .src-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .src-pill.produced      { color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); }
+    .src-pill.redistributed { color:#B05EC0; background:color-mix(in srgb, #B05EC0 10%, transparent); }
+    .row-actions { display:flex; gap:var(--space-xs); justify-content:flex-end; }
+
+    .agent-surface { border:1.5px solid var(--agent-border, var(--fern)); border-radius:var(--radius-lg); background:var(--surface); box-shadow:0 0 0 4px color-mix(in srgb, var(--fern) 7%, transparent); }
+    .agent-banner { display:flex; gap:var(--space-md); padding:var(--space-lg) var(--space-xl); }
+    .agent-avatar { width:36px; height:36px; border-radius:50%; background:var(--fern); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .agent-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-accent); margin-bottom:2px; }
+    .agent-headline { font-size:14px; font-weight:700; color:var(--text); margin-bottom:var(--space-xs); }
+    .agent-why { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .agent-actions { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-xl); border-top:1px solid var(--border); }
+
+    .note-strip { display:flex; gap:var(--space-sm); align-items:flex-start; padding:var(--space-md) var(--space-xl); background:var(--surface-soft); border-top:1px solid var(--border); font-size:12px; color:var(--text-soft); line-height:1.5; border-radius:0 0 var(--radius-lg) var(--radius-lg); }
+    .note-strip i { font-size:14px; color:var(--text-accent); flex-shrink:0; margin-top:1px; }
+    .note-strip a { color:var(--text-accent); font-weight:600; text-decoration:none; }
+    .note-strip a:hover { text-decoration:underline; }
+
+    .sel-checkbox { width:16px; height:16px; accent-color:var(--fern); cursor:pointer; }
+    .col-check { width:1%; white-space:nowrap; }
+
+    .bulk-bar { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(0); z-index:70; display:flex; align-items:center; gap:var(--space-lg); background:var(--surface-deep); color:var(--cream); padding:var(--space-md) var(--space-lg); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); }
+    .bulk-bar-count { font-size:13px; font-weight:600; white-space:nowrap; }
+    .bulk-bar .btn-ghost { color:var(--cream); opacity:0.85; }
+    .bulk-bar .btn-ghost:hover { color:#fff; opacity:1; }
+
+    .lists-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .lists-table th { padding:var(--space-sm) var(--space-xl); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .lists-table td { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .lists-table tbody tr:last-child td { border-bottom:none; }
+    .lists-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .list-name { font-weight:600; color:var(--text); }
+    .list-empty { padding:var(--space-2xl); text-align:center; color:var(--text-soft); font-size:13px; }
+
+    /* Drawers (shared form styling) */
+    .drawer-section { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-xl); }
+    .drawer-section:last-child { margin-bottom:0; }
+    .drawer-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin-bottom:2px; }
+    .form-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .form-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .form-input { height:40px; padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); width:100%; box-sizing:border-box; }
+    .form-input:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .form-select { height:40px; padding-inline:var(--space-md) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; width:100%; box-sizing:border-box; }
+    .form-select:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .form-textarea { min-height:64px; padding:var(--space-sm) var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); width:100%; box-sizing:border-box; resize:vertical; }
+    .form-textarea:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .picker-empty { font-size:13px; color:var(--text-soft); padding:var(--space-lg); text-align:center; border:1.5px dashed var(--border); border-radius:var(--radius-md); }
+
+    .list-pick-item { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; margin-bottom:var(--space-sm); }
+    .list-pick-item:hover { border-color:color-mix(in srgb,var(--fern) 55%,var(--border)); }
+    .list-pick-item.selected { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 5%,transparent); }
+    .list-pick-item input[type=radio] { accent-color:var(--fern); flex-shrink:0; }
+    .list-pick-name { font-size:14px; font-weight:600; color:var(--text); }
+    .list-pick-meta { font-size:12px; color:var(--text-soft); }
+
+    /* List detail drawer */
+    .list-item-row { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-sm) 0; border-bottom:1px solid var(--border); }
+    .list-item-row:last-child { border-bottom:none; }
+    .list-item-name { flex:1; font-size:13px; color:var(--text); font-weight:600; min-width:0; }
+    .list-item-sku { font-size:11px; color:var(--text-soft); font-weight:400; }
+    .list-item-kind { width:90px; flex-shrink:0; font-size:12px; color:var(--text-soft); }
+    .list-item-onhand { width:80px; flex-shrink:0; text-align:right; font-size:12px; color:var(--text-soft); font-feature-settings:'tnum' 1; }
+    .list-item-remove { background:none; border:none; color:var(--text-soft); cursor:pointer; padding:2px; display:flex; flex-shrink:0; }
+    .list-item-remove:hover { color:var(--status-risk-fg); }
+    .count-input { width:64px; flex-shrink:0; height:32px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; text-align:right; font-feature-settings:'tnum' 1; }
+    .count-input:focus { outline:none; border-color:var(--fern); }
+    .count-variance { width:56px; flex-shrink:0; text-align:right; font-size:12px; font-weight:600; font-feature-settings:'tnum' 1; }
+    .count-variance.match { color:var(--status-ok-fg); }
+    .count-variance.diff  { color:var(--status-risk-fg); }
+    .count-hint { font-size:12px; color:var(--text-soft); margin-bottom:var(--space-lg); line-height:1.5; }
+
+    /* Adjust-stock drawer */
+    .adjust-item-name { font-size:15px; font-weight:700; color:var(--text); }
+    .adjust-item-current { font-size:13px; color:var(--text-soft); margin-top:2px; }
+    .adj-delta { font-weight:700; }
+    .adj-delta.up   { color:var(--status-ok-fg); }
+    .adj-delta.down { color:var(--status-risk-fg); }
+    .adj-reason-pill { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:2px 8px; border-radius:var(--radius-pill); background:var(--surface-soft); border:1px solid var(--border); color:var(--text-soft); white-space:nowrap; }
+    .adj-note { font-size:12px; color:var(--text-soft); }
+    .adj-time { font-size:12px; color:var(--text-soft); white-space:nowrap; }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <div class="page-head">
+        <div>
+          <span class="seller-badge"><i class="ti ti-building-warehouse"></i>Sydney Central Kitchen · Seller workspace</span>
+          <h1 class="page-title">Inventory</h1>
+          <p class="page-desc">Raw ingredients bought from suppliers and consumed in production, plus on-hand stock of what you sell to outlets.</p>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Raw ingredients low</div>
+          <div class="kpi-value" id="kpi-raw-low">–</div>
+          <div class="kpi-sub" id="kpi-raw-low-sub">–</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Finished goods low</div>
+          <div class="kpi-value" id="kpi-fg-low">–</div>
+          <div class="kpi-sub" id="kpi-fg-low-sub">–</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Inventory value</div>
+          <div class="kpi-value" id="kpi-value">–</div>
+          <div class="kpi-sub">Raw ingredients + finished goods, at cost</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Next production run</div>
+          <div class="kpi-value" style="font-size:20px;">Tomorrow</div>
+          <div class="kpi-sub">Batch PB-0613 · Napoli Sauce &amp; Skewers</div>
+        </div>
+      </div>
+
+      <!-- Agent banner -->
+      <article class="agent-surface" id="ck-inv-agent-banner" aria-label="Vera stock summary">
+        <div class="agent-banner">
+          <div class="agent-avatar">Ve</div>
+          <div style="flex:1">
+            <div class="agent-label">Vera · Variance agent</div>
+            <div class="agent-headline">2 raw ingredients are short of par ahead of tomorrow's production run.</div>
+            <div class="agent-why">Crushed Tomatoes (14 on hand, par 20) and Chicken Thigh (3 on hand, par 6) won't fully cover tomorrow's Napoli Sauce and Skewers batch.</div>
+          </div>
+        </div>
+        <div class="agent-actions">
+          <a class="btn btn-primary btn-sm" href="orders.html"><i class="ti ti-shopping-cart"></i>Create purchase order</a>
+          <button class="btn btn-ghost btn-sm" onclick="dismissAgentBanner()">Dismiss</button>
+        </div>
+      </article>
+
+      <!-- SKU lists -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-list-check"></i>SKU lists</div>
+            <div class="card-desc">Group raw ingredients and finished goods by storage area or category — tick items below, or start a list from scratch. Use a list as a count sheet when it's time to do a stock count.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="openListPicker()"><i class="ti ti-plus"></i>New list</button>
+        </div>
+        <table class="lists-table" id="lists-table" style="display:none;">
+          <thead>
+            <tr><th>List</th><th style="text-align:right">Items</th><th>Mix</th><th>Last counted</th><th style="text-align:right">Actions</th></tr>
+          </thead>
+          <tbody id="lists-tbody"></tbody>
+        </table>
+        <div class="list-empty" id="lists-empty">No lists yet. Tick items in the tables below and add them to a new list.</div>
+      </div>
+
+      <!-- Raw ingredients -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-carrot"></i>Raw ingredients</div>
+            <div class="card-desc">Bought from your suppliers and consumed by production recipes. Par levels flag when it's time to reorder from Purchasing &gt; Orders.</div>
+          </div>
+          <a class="btn btn-outline btn-sm" href="suppliers.html"><i class="ti ti-truck"></i>Suppliers</a>
+        </div>
+        <table class="inv-table">
+          <thead>
+            <tr><th class="col-check"><input type="checkbox" class="sel-checkbox" id="raw-select-all" onchange="toggleSelectAllRaw(this.checked)" aria-label="Select all raw ingredients"/></th><th>Ingredient</th><th>Used in</th><th>Supplier</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+          </thead>
+          <tbody id="raw-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Recent stock adjustments -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-history"></i>Recent stock adjustments</div>
+            <div class="card-desc">Manual on-hand changes to raw ingredients — one-off corrections and stock-count updates — each with a reason.</div>
+          </div>
+        </div>
+        <table class="inv-table" id="adjustments-table" style="display:none;">
+          <thead>
+            <tr><th>Ingredient</th><th>Change</th><th>Reason</th><th>Note</th><th style="text-align:right">When</th></tr>
+          </thead>
+          <tbody id="adjustments-tbody"></tbody>
+        </table>
+        <div class="list-empty" id="adjustments-empty">No adjustments logged yet — use "Adjust" on a raw ingredient row above, or run a stock count from a list.</div>
+      </div>
+
+      <!-- Finished goods -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-box"></i>Finished goods</div>
+            <div class="card-desc">What's ready to sell to outlets right now — produced in-house or bulk-bought and redistributed.</div>
+          </div>
+          <a class="btn btn-outline btn-sm" href="seller-catalog.html"><i class="ti ti-list-details"></i>Catalog &amp; prices</a>
+        </div>
+        <table class="inv-table">
+          <thead>
+            <tr><th class="col-check"><input type="checkbox" class="sel-checkbox" id="fg-select-all" onchange="toggleSelectAllFinished(this.checked)" aria-label="Select all finished goods"/></th><th>Item</th><th>Source</th><th style="text-align:right">On hand</th><th style="text-align:right">Par level</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+          </thead>
+          <tbody id="fg-tbody"></tbody>
+        </table>
+        <div class="note-strip">
+          <i class="ti ti-info-circle"></i>
+          <span>On-hand quantities here match <a href="seller-catalog.html">Catalog &amp; prices</a> — this view is for stock monitoring, that one's for pricing and publishing to outlets. Tick items above to add them to a list.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Bulk selection bar -->
+<div class="bulk-bar" id="bulk-bar" style="display:none;">
+  <span class="bulk-bar-count" id="bulk-bar-count">0 selected</span>
+  <button class="btn-ghost btn-sm" onclick="clearSelection()">Clear</button>
+  <button class="btn btn-primary btn-sm" onclick="openListPicker()"><i class="ti ti-list-check"></i>Add to list</button>
+</div>
+
+<!-- Add-to-list drawer -->
+<div id="list-picker-scrim" class="nb-drawer-scrim" onclick="closeListPicker()"></div>
+<div id="list-picker-drawer" class="nb-drawer" role="dialog" aria-modal="true">
+  <div class="nb-drawer-head">
+    <div class="nb-drawer-title">Add to list</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeListPicker()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body">
+    <p id="list-picker-summary" style="font-size:13px;color:var(--text-soft);margin:0 0 var(--space-lg);"></p>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Existing lists</div>
+      <div id="existing-lists-picker"></div>
+      <div class="picker-empty" id="no-existing-lists" style="display:none;">No lists yet — create one below.</div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Or create a new list</div>
+      <input class="form-input" id="new-list-name" placeholder="e.g. Walk-in fridge" oninput="onNewListNameInput()"/>
+    </div>
+  </div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" onclick="closeListPicker()">Cancel</button>
+    <button class="btn btn-primary" onclick="submitListPicker()"><i class="ti ti-plus"></i>Add</button>
+  </div>
+</div>
+
+<!-- List detail / stock count drawer -->
+<div id="list-detail-scrim" class="nb-drawer-scrim" onclick="closeListDetail()"></div>
+<div id="list-detail-drawer" class="nb-drawer" role="dialog" aria-modal="true" style="width:min(560px,94vw);">
+  <div class="nb-drawer-head">
+    <div class="nb-drawer-title" id="list-detail-title">List</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeListDetail()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body" id="list-detail-body"></div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" id="list-detail-secondary"></button>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" id="list-detail-primary"></button>
+  </div>
+</div>
+
+<!-- Adjust stock drawer -->
+<div id="adjust-scrim" class="nb-drawer-scrim" onclick="closeAdjustDrawer()"></div>
+<div id="adjust-drawer" class="nb-drawer" role="dialog" aria-modal="true">
+  <div class="nb-drawer-head">
+    <div class="nb-drawer-title">Adjust stock</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeAdjustDrawer()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body">
+    <div class="drawer-section">
+      <div class="drawer-section-label">Ingredient</div>
+      <div class="adjust-item-name" id="adjust-item-name"></div>
+      <div class="adjust-item-current" id="adjust-item-current"></div>
+    </div>
+    <div class="drawer-section">
+      <div class="form-group">
+        <label class="form-label">Reason</label>
+        <select class="form-select" id="adjust-reason">
+          <option value="Stock take">Stock take / count correction</option>
+          <option value="Delivery received">Delivery received</option>
+          <option value="Waste">Waste / spoilage</option>
+          <option value="Production use">Used in production</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="form-group">
+        <label class="form-label">New on-hand quantity</label>
+        <input class="form-input" type="number" min="0" id="adjust-new-qty"/>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="form-group">
+        <label class="form-label">Note <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+        <textarea class="form-textarea" id="adjust-note" placeholder="e.g. Delivery arrived short by 2 units"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" onclick="closeAdjustDrawer()">Cancel</button>
+    <button class="btn btn-primary" onclick="submitAdjustment()"><i class="ti ti-check"></i>Save</button>
+  </div>
+</div>
+
+<div id="inv-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=12" data-active="seller-inventory"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Inventory');
+    NomniShell.initStagger();
+    renderRaw();
+    renderFinished();
+    renderKpis();
+    renderLists();
+    renderAgentBanner();
+    renderAdjustments();
+  });
+
+  // Raw ingredients — kept in sync by hand with the produced items in seller-catalog.html
+  // and the suppliers listed in suppliers.html (this prototype has no shared runtime).
+  const RAW = [
+    { name:'Crushed Tomatoes 3kg',    sku:'RAW-TOM-3KG', usedIn:'Napoli Sauce 5L',                    supplier:'Green Farmers Market',     onHand:14, par:20, cost:6.20  },
+    { name:'Brown Onions 5kg',        sku:'RAW-ONI-5KG', usedIn:'Napoli Sauce 5L, Demi-glace 2L',     supplier:'Green Farmers Market',     onHand:10, par:6,  cost:8.50  },
+    { name:'Garlic, Peeled 1kg',      sku:'RAW-GAR-1KG', usedIn:'Napoli Sauce 5L',                    supplier:'Green Farmers Market',     onHand:6,  par:4,  cost:9.80  },
+    { name:'Basil, Fresh (bunch)',    sku:'RAW-BAS-BCH', usedIn:'Napoli Sauce 5L',                    supplier:'Green Farmers Market',     onHand:18, par:10, cost:2.40  },
+    { name:'Beef Mince 80/20 5kg',    sku:'RAW-BMC-5KG', usedIn:'Beef Burger Patties 48pk',           supplier:'Sydney Butchers Co.',      onHand:9,  par:6,  cost:54.00 },
+    { name:'Breadcrumbs, Panko 2kg',  sku:'RAW-BRC-2KG', usedIn:'Beef Burger Patties 48pk',           supplier:'Artisan Bakehouse',        onHand:12, par:6,  cost:11.50 },
+    { name:'Chicken Thigh, Boneless 5kg', sku:'RAW-CTH-5KG', usedIn:'Marinated Chicken Skewers 50pk', supplier:'Harbour Meats',             onHand:3,  par:6,  cost:42.50 },
+    { name:'Bamboo Skewers 500pk',    sku:'RAW-SKW-500', usedIn:'Marinated Chicken Skewers 50pk',     supplier:'Clean Pack Solutions',     onHand:4,  par:3,  cost:14.90 },
+    { name:'Beef Stock Concentrate 5L', sku:'RAW-STK-5L', usedIn:'Demi-glace 2L',                     supplier:'Sydney Butchers Co.',      onHand:5,  par:4,  cost:28.00 },
+    { name:'Red Wine, Cooking 2L',    sku:'RAW-WIN-2L',  usedIn:'Demi-glace 2L',                      supplier:'Pacific Drinks Wholesale',  onHand:7,  par:4,  cost:16.20 },
+  ];
+
+  // Finished goods — mirrors seller-catalog.html's produced + redistributed tables.
+  const FINISHED = [
+    { name:'Napoli Sauce 5L',                sku:'CK-NAP-005', source:'produced',      onHand:8,  par:12, cost:14.20 },
+    { name:'Beef Burger Patties 48pk',       sku:'CK-PAT-048', source:'produced',      onHand:22, par:15, cost:61.90 },
+    { name:'Marinated Chicken Skewers 50pk', sku:'CK-SKW-050', source:'produced',      onHand:15, par:12, cost:48.75 },
+    { name:'Demi-glace 2L',                  sku:'CK-DEM-002', source:'produced',      onHand:11, par:8,  cost:22.40 },
+    { name:'Arabica Blend 1kg',              sku:'CK-COF-100', source:'redistributed', onHand:36, par:20, cost:32.50 },
+    { name:'Olive Oil 4L',                   sku:'CK-OIL-004', source:'redistributed', onHand:18, par:15, cost:41.00 },
+    { name:'Plain Flour 12.5kg',             sku:'CK-FLR-125', source:'redistributed', onHand:24, par:15, cost:18.60 },
+  ];
+
+  function statusHtml(onHand, par) {
+    return onHand < par
+      ? '<span class="status-pill low"><i class="ti ti-alert-triangle"></i>Low</span>'
+      : '<span class="status-pill ok"><i class="ti ti-circle-check"></i>OK</span>';
+  }
+
+  function renderRaw() {
+    document.getElementById('raw-tbody').innerHTML = RAW.map(r => `
+      <tr data-sku="${r.sku}">
+        <td class="col-check"><input type="checkbox" class="sel-checkbox row-select" data-key="raw:${r.sku}" onchange="toggleSelect('raw:${r.sku}', this.checked)" ${selected.has('raw:' + r.sku) ? 'checked' : ''} aria-label="Select ${r.name}"/></td>
+        <td><div class="item-name">${r.name}</div><div class="item-sku">${r.sku}</div></td>
+        <td class="used-in">${r.usedIn}</td>
+        <td>${r.supplier}</td>
+        <td class="col-num ${r.onHand < r.par ? 'stock-low' : 'stock-ok'}">${r.onHand}</td>
+        <td class="col-num">${r.par}</td>
+        <td>${statusHtml(r.onHand, r.par)}</td>
+        <td><div class="row-actions"><button class="btn-ghost btn-sm" onclick="openAdjustDrawer('${r.sku}')"><i class="ti ti-adjustments"></i>Adjust</button></div></td>
+      </tr>`).join('');
+  }
+
+  function renderFinished() {
+    document.getElementById('fg-tbody').innerHTML = FINISHED.map(f => `
+      <tr>
+        <td class="col-check"><input type="checkbox" class="sel-checkbox row-select" data-key="fg:${f.sku}" onchange="toggleSelect('fg:${f.sku}', this.checked)" ${selected.has('fg:' + f.sku) ? 'checked' : ''} aria-label="Select ${f.name}"/></td>
+        <td><div class="item-name">${f.name}</div><div class="item-sku">${f.sku}</div></td>
+        <td><span class="src-pill ${f.source}"><i class="ti ${f.source === 'produced' ? 'ti-flask' : 'ti-packages'}"></i>${f.source === 'produced' ? 'Produced' : 'Redistributed'}</span></td>
+        <td class="col-num ${f.onHand < f.par ? 'stock-low' : 'stock-ok'}">${f.onHand}</td>
+        <td class="col-num">${f.par}</td>
+        <td>${statusHtml(f.onHand, f.par)}</td>
+        <td><div class="row-actions"><a class="btn-ghost btn-sm" href="seller-catalog.html">Manage<i class="ti ti-chevron-right"></i></a></div></td>
+      </tr>`).join('');
+  }
+
+  function renderKpis() {
+    const rawLow = RAW.filter(r => r.onHand < r.par);
+    const fgLow = FINISHED.filter(f => f.onHand < f.par);
+    document.getElementById('kpi-raw-low').textContent = rawLow.length;
+    document.getElementById('kpi-raw-low-sub').textContent = rawLow.length ? rawLow.map(r => r.name.split(',')[0]).join(', ') : 'All above par';
+    document.getElementById('kpi-fg-low').textContent = fgLow.length;
+    document.getElementById('kpi-fg-low-sub').textContent = fgLow.length ? fgLow.map(f => f.name).join(', ') : 'All above par';
+
+    const value = RAW.reduce((sum, r) => sum + r.onHand * r.cost, 0) + FINISHED.reduce((sum, f) => sum + f.onHand * f.cost, 0);
+    document.getElementById('kpi-value').textContent = '$' + Math.round(value).toLocaleString('en-AU');
+  }
+
+  /* ── Agent banner (recomputed so it never goes stale after an adjustment) ── */
+  let agentBannerDismissed = false;
+
+  function renderAgentBanner() {
+    const banner = document.getElementById('ck-inv-agent-banner');
+    const low = RAW.filter(r => r.onHand < r.par);
+    if (agentBannerDismissed || !low.length) { banner.style.display = 'none'; return; }
+    banner.style.display = '';
+    banner.querySelector('.agent-headline').textContent =
+      low.length + ' raw ingredient' + (low.length === 1 ? ' is' : 's are') + ' short of par ahead of tomorrow\'s production run.';
+    banner.querySelector('.agent-why').textContent =
+      low.map(r => r.name.split(',')[0] + ' (' + r.onHand + ' on hand, par ' + r.par + ')').join(' and ') +
+      ' won\'t fully cover tomorrow\'s production batch.';
+  }
+
+  function dismissAgentBanner() {
+    agentBannerDismissed = true;
+    document.getElementById('ck-inv-agent-banner').style.display = 'none';
+  }
+
+  /* ── Item lookup by selection key ── */
+  function itemForKey(key) {
+    const [type, sku] = key.split(':');
+    if (type === 'raw') {
+      const r = RAW.find(x => x.sku === sku);
+      return r ? { key, sku, name: r.name, kind: 'Raw', onHand: r.onHand, par: r.par } : null;
+    }
+    const f = FINISHED.find(x => x.sku === sku);
+    return f ? { key, sku, name: f.name, kind: f.source === 'produced' ? 'Produced' : 'Redistributed', onHand: f.onHand, par: f.par } : null;
+  }
+
+  /* ── Selection state ── */
+  const selected = new Set();
+
+  function toggleSelect(key, checked) {
+    if (checked) selected.add(key); else selected.delete(key);
+    updateBulkBar();
+    document.getElementById('raw-select-all').checked = RAW.length > 0 && RAW.every(r => selected.has('raw:' + r.sku));
+    document.getElementById('fg-select-all').checked = FINISHED.length > 0 && FINISHED.every(f => selected.has('fg:' + f.sku));
+  }
+
+  function toggleSelectAllRaw(checked) {
+    RAW.forEach(r => checked ? selected.add('raw:' + r.sku) : selected.delete('raw:' + r.sku));
+    renderRaw();
+    updateBulkBar();
+  }
+
+  function toggleSelectAllFinished(checked) {
+    FINISHED.forEach(f => checked ? selected.add('fg:' + f.sku) : selected.delete('fg:' + f.sku));
+    renderFinished();
+    updateBulkBar();
+  }
+
+  function clearSelection() {
+    selected.clear();
+    renderRaw();
+    renderFinished();
+    updateBulkBar();
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulk-bar');
+    if (selected.size === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    document.getElementById('bulk-bar-count').textContent = selected.size + ' item' + (selected.size === 1 ? '' : 's') + ' selected';
+  }
+
+  /* ── SKU lists ── */
+  let LISTS = [];
+  let nextListId = 1;
+  let currentListId = null;
+  let countMode = false;
+  let pickedExistingListId = null;
+
+  function renderLists() {
+    const hasLists = LISTS.length > 0;
+    document.getElementById('lists-table').style.display = hasLists ? '' : 'none';
+    document.getElementById('lists-empty').style.display = hasLists ? 'none' : '';
+    document.getElementById('lists-tbody').innerHTML = LISTS.map(l => {
+      const items = l.itemKeys.map(itemForKey).filter(Boolean);
+      const rawCount = items.filter(i => i.kind === 'Raw').length;
+      const fgCount = items.length - rawCount;
+      return `<tr>
+        <td><div class="list-name">${l.name}</div></td>
+        <td class="col-num">${items.length}</td>
+        <td style="font-size:12px;color:var(--text-soft);">${rawCount} raw, ${fgCount} finished</td>
+        <td style="font-size:12px;color:var(--text-soft);">${l.lastCounted ? l.lastCounted.toLocaleDateString('en-AU') : 'Never counted'}</td>
+        <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="openListDetail(${l.id})">View<i class="ti ti-chevron-right"></i></button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openListPicker() {
+    document.getElementById('new-list-name').value = '';
+    document.getElementById('list-picker-summary').textContent = selected.size
+      ? selected.size + ' item' + (selected.size === 1 ? '' : 's') + ' selected — choose a list to add them to.'
+      : 'No items selected — this will create an empty list you can add to later.';
+
+    const wrap = document.getElementById('existing-lists-picker');
+    if (!LISTS.length) {
+      wrap.innerHTML = '';
+      document.getElementById('no-existing-lists').style.display = '';
+    } else {
+      document.getElementById('no-existing-lists').style.display = 'none';
+      wrap.innerHTML = LISTS.map(l => `
+        <label class="list-pick-item" data-id="${l.id}" onclick="selectExistingList(${l.id})">
+          <input type="radio" name="pick-existing-list"/>
+          <div>
+            <div class="list-pick-name">${l.name}</div>
+            <div class="list-pick-meta">${l.itemKeys.length} item${l.itemKeys.length === 1 ? '' : 's'}</div>
+          </div>
+        </label>`).join('');
+    }
+    pickedExistingListId = null;
+
+    document.getElementById('list-picker-scrim').classList.add('open');
+    document.getElementById('list-picker-drawer').classList.add('open');
+  }
+
+  function closeListPicker() {
+    document.getElementById('list-picker-scrim').classList.remove('open');
+    document.getElementById('list-picker-drawer').classList.remove('open');
+  }
+
+  function selectExistingList(id) {
+    pickedExistingListId = id;
+    document.getElementById('new-list-name').value = '';
+    document.querySelectorAll('.list-pick-item').forEach(el => {
+      const match = Number(el.dataset.id) === id;
+      el.classList.toggle('selected', match);
+      el.querySelector('input[type=radio]').checked = match;
+    });
+  }
+
+  function onNewListNameInput() {
+    if (document.getElementById('new-list-name').value.trim()) {
+      pickedExistingListId = null;
+      document.querySelectorAll('.list-pick-item').forEach(el => {
+        el.classList.remove('selected');
+        el.querySelector('input[type=radio]').checked = false;
+      });
+    }
+  }
+
+  function submitListPicker() {
+    const newName = document.getElementById('new-list-name').value.trim();
+    let list;
+
+    if (newName) {
+      list = { id: nextListId++, name: newName, itemKeys: [], lastCounted: null };
+      LISTS.push(list);
+    } else if (pickedExistingListId !== null) {
+      list = LISTS.find(l => l.id === pickedExistingListId);
+    } else {
+      invToast('Pick an existing list or name a new one.');
+      return;
+    }
+
+    let added = 0;
+    selected.forEach(key => {
+      if (list.itemKeys.includes(key)) return;
+      list.itemKeys.push(key);
+      added++;
+    });
+
+    selected.clear();
+    renderRaw();
+    renderFinished();
+    updateBulkBar();
+    renderLists();
+    closeListPicker();
+    invToast(added ? added + ' item' + (added === 1 ? '' : 's') + ' added to "' + list.name + '".' : '"' + list.name + '" created.');
+  }
+
+  function openListDetail(id) {
+    const list = LISTS.find(l => l.id === id);
+    if (!list) return;
+    currentListId = id;
+    countMode = false;
+    document.getElementById('list-detail-title').textContent = list.name;
+    renderListDetailBody(list);
+    renderListDetailFooter(list);
+    document.getElementById('list-detail-scrim').classList.add('open');
+    document.getElementById('list-detail-drawer').classList.add('open');
+  }
+
+  function renderListDetailFooter(list) {
+    const secondary = document.getElementById('list-detail-secondary');
+    const primary = document.getElementById('list-detail-primary');
+    if (countMode) {
+      secondary.innerHTML = 'Cancel';
+      secondary.onclick = () => { countMode = false; renderListDetailBody(list); renderListDetailFooter(list); };
+      primary.innerHTML = '<i class="ti ti-check"></i>Save count';
+      primary.onclick = () => saveCount(list.id);
+    } else {
+      secondary.innerHTML = '<i class="ti ti-trash"></i>Delete list';
+      secondary.onclick = deleteCurrentList;
+      primary.innerHTML = '<i class="ti ti-clipboard-check"></i>Start count';
+      primary.onclick = () => { countMode = true; renderListDetailBody(list); renderListDetailFooter(list); };
+    }
+  }
+
+  function renderListDetailBody(list) {
+    const body = document.getElementById('list-detail-body');
+    const items = list.itemKeys.map(itemForKey).filter(Boolean);
+    if (!items.length) {
+      body.innerHTML = '<div class="picker-empty">No items in this list yet. Close this drawer, tick items in the tables, and use "Add to list".</div>';
+      return;
+    }
+    const hint = countMode ? '<div class="count-hint">Enter the counted quantity for each item. Leave blank to skip. Saving updates on-hand to match and logs the change below.</div>' : '';
+    const rows = items.map(i => {
+      if (countMode) {
+        return `<div class="list-item-row" data-key="${i.key}">
+          <div class="list-item-name">${i.name}<span class="list-item-sku"> · ${i.sku}</span></div>
+          <div class="list-item-onhand">sys ${i.onHand}</div>
+          <input class="count-input" type="number" min="0" placeholder="${i.onHand}" data-onhand="${i.onHand}" oninput="onCountInput(this)"/>
+          <div class="count-variance" data-variance></div>
+        </div>`;
+      }
+      return `<div class="list-item-row" data-key="${i.key}">
+        <div class="list-item-name">${i.name}<span class="list-item-sku"> · ${i.sku}</span></div>
+        <div class="list-item-kind">${i.kind}</div>
+        <div class="list-item-onhand">${i.onHand} / par ${i.par}</div>
+        <button class="list-item-remove" onclick="removeFromList(${list.id}, '${i.key}')" aria-label="Remove"><i class="ti ti-x"></i></button>
+      </div>`;
+    }).join('');
+    body.innerHTML = hint + rows;
+  }
+
+  function onCountInput(input) {
+    const onHand = Number(input.dataset.onhand);
+    const varianceEl = input.closest('.list-item-row').querySelector('[data-variance]');
+    if (input.value === '') { varianceEl.textContent = ''; varianceEl.className = 'count-variance'; return; }
+    const variance = parseInt(input.value, 10) - onHand;
+    varianceEl.textContent = (variance > 0 ? '+' : '') + variance;
+    varianceEl.className = 'count-variance ' + (variance === 0 ? 'match' : 'diff');
+  }
+
+  function saveCount(listId) {
+    const list = LISTS.find(l => l.id === listId);
+    if (!list) return;
+    const rows = document.querySelectorAll('#list-detail-body .list-item-row');
+    let updated = 0, unchanged = 0;
+    rows.forEach(row => {
+      const input = row.querySelector('.count-input');
+      if (!input || input.value === '') return;
+      const counted = parseInt(input.value, 10);
+      if (isNaN(counted)) return;
+      const item = itemForKey(row.dataset.key);
+      if (!item) return;
+      if (counted === item.onHand) { unchanged++; return; }
+      applyCount(row.dataset.key, counted, list.name);
+      updated++;
+    });
+    list.lastCounted = new Date();
+    countMode = false;
+
+    renderRaw();
+    renderFinished();
+    renderKpis();
+    renderAgentBanner();
+    renderAdjustments();
+    renderLists();
+    renderListDetailBody(list);
+    renderListDetailFooter(list);
+    invToast('Count saved for "' + list.name + '" — ' + updated + ' updated, ' + unchanged + ' matched.');
+  }
+
+  function applyCount(key, counted, listName) {
+    const [type, sku] = key.split(':');
+    const source = type === 'raw' ? RAW : FINISHED;
+    const record = source.find(x => x.sku === sku);
+    if (!record) return;
+    const previous = record.onHand;
+    record.onHand = counted;
+    if (type === 'raw') {
+      ADJUSTMENTS.unshift({ name: record.name, from: previous, to: counted, reason: 'Stock count · ' + listName, note: '', at: new Date() });
+    }
+  }
+
+  function removeFromList(listId, key) {
+    const list = LISTS.find(l => l.id === listId);
+    if (!list) return;
+    list.itemKeys = list.itemKeys.filter(k => k !== key);
+    renderListDetailBody(list);
+    renderLists();
+  }
+
+  function closeListDetail() {
+    document.getElementById('list-detail-scrim').classList.remove('open');
+    document.getElementById('list-detail-drawer').classList.remove('open');
+    currentListId = null;
+    countMode = false;
+  }
+
+  function deleteCurrentList() {
+    const list = LISTS.find(l => l.id === currentListId);
+    if (!list) return;
+    LISTS = LISTS.filter(l => l.id !== currentListId);
+    renderLists();
+    closeListDetail();
+    invToast('"' + list.name + '" deleted.');
+  }
+
+  /* ── Adjust stock (single-item, raw ingredients only) ── */
+  const ADJUSTMENTS = [];
+  let adjustSku = null;
+
+  function openAdjustDrawer(sku) {
+    const r = RAW.find(x => x.sku === sku);
+    if (!r) return;
+    adjustSku = sku;
+    document.getElementById('adjust-item-name').textContent = r.name;
+    document.getElementById('adjust-item-current').textContent = 'Currently ' + r.onHand + ' on hand · par ' + r.par;
+    document.getElementById('adjust-reason').value = 'Stock take';
+    document.getElementById('adjust-new-qty').value = r.onHand;
+    document.getElementById('adjust-note').value = '';
+    document.getElementById('adjust-scrim').classList.add('open');
+    document.getElementById('adjust-drawer').classList.add('open');
+  }
+
+  function closeAdjustDrawer() {
+    document.getElementById('adjust-scrim').classList.remove('open');
+    document.getElementById('adjust-drawer').classList.remove('open');
+    adjustSku = null;
+  }
+
+  function submitAdjustment() {
+    const r = RAW.find(x => x.sku === adjustSku);
+    if (!r) return;
+    const newQty = Math.max(0, parseInt(document.getElementById('adjust-new-qty').value, 10));
+    if (isNaN(newQty)) { invToast('Enter a valid quantity.'); return; }
+    const reason = document.getElementById('adjust-reason').value;
+    const note = document.getElementById('adjust-note').value.trim();
+    const previousQty = r.onHand;
+
+    r.onHand = newQty;
+    ADJUSTMENTS.unshift({ name: r.name, from: previousQty, to: newQty, reason, note, at: new Date() });
+
+    renderRaw();
+    renderKpis();
+    renderAgentBanner();
+    renderAdjustments();
+    closeAdjustDrawer();
+    invToast(r.name + ' updated to ' + newQty + ' on hand (' + reason + ').');
+  }
+
+  function renderAdjustments() {
+    const hasAny = ADJUSTMENTS.length > 0;
+    document.getElementById('adjustments-table').style.display = hasAny ? '' : 'none';
+    document.getElementById('adjustments-empty').style.display = hasAny ? 'none' : '';
+    document.getElementById('adjustments-tbody').innerHTML = ADJUSTMENTS.slice(0, 8).map(a => {
+      const delta = a.to - a.from;
+      const deltaHtml = delta === 0
+        ? '<span style="color:var(--text-soft);">No change</span>'
+        : '<span class="adj-delta ' + (delta > 0 ? 'up' : 'down') + '">' + a.from + ' → ' + a.to + ' (' + (delta > 0 ? '+' : '') + delta + ')</span>';
+      return `<tr>
+        <td><div class="item-name">${a.name}</div></td>
+        <td>${deltaHtml}</td>
+        <td><span class="adj-reason-pill">${a.reason}</span></td>
+        <td class="adj-note">${a.note || '—'}</td>
+        <td class="adj-time" style="text-align:right">${a.at.toLocaleTimeString('en-AU', { hour:'numeric', minute:'2-digit' })}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function invToast(msg) {
+    const wrap = document.getElementById('inv-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;max-width:420px;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;flex-shrink:0;"></i><span>' + msg + '</span>';
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3200);
+  }
+</script>
+</body>
+</html>

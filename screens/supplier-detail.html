@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sydney Butchers Co. — Nomni HQ</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex; flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex; flex-direction: column;
+      gap: var(--space-2xl);
+    }
+
+    /* Back nav */
+    .back-nav {
+      font-size: 13px; font-weight: 600; color: var(--text-accent);
+      text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-nav:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap;
+    }
+    .page-header-left { display: flex; align-items: center; gap: var(--space-lg); }
+    .supplier-logo {
+      width: 56px; height: 56px; border-radius: var(--radius-md);
+      background: var(--surface-soft); border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: var(--text-accent);
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .page-header-text { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 28px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.02em; line-height: 1.1;
+      display: flex; align-items: center; gap: var(--space-sm);
+    }
+    .page-title-meta { display: flex; align-items: center; gap: var(--space-sm); margin-top: 2px; }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid transparent; font-family: inherit;
+      white-space: nowrap; text-decoration: none;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn-danger { background: var(--status-risk-bg); color: var(--status-risk-fg); border-color: transparent; }
+    .btn-danger:hover { background: var(--status-risk-fg); color: #fff; }
+    .btn-sm { height: 30px; padding-inline: var(--space-md); font-size: 13px; }
+    .btn i { font-size: 15px; }
+
+    /* Detail layout */
+    .detail-layout {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+    /* Profile tab gets its own 2-col layout */
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: var(--space-2xl);
+      align-items: start;
+    }
+    @media (max-width: 900px) { .profile-layout { grid-template-columns: 1fr; } }
+
+    /* Cards */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 15px; font-weight: 700; color: var(--text);
+      display: flex; align-items: center; gap: var(--space-sm);
+    }
+    .card-body { padding: var(--space-xl); }
+
+    /* Tab nav */
+    .tab-nav {
+      display: flex; gap: 2px; padding: 3px;
+      background: var(--surface-soft); border-radius: var(--radius-md);
+      border: 1px solid var(--border); align-self: flex-start;
+      flex-wrap: wrap;
+    }
+    .tab-nav-btn {
+      height: 32px; padding-inline: var(--space-lg);
+      border: none; background: none; border-radius: 6px;
+      font-size: 13px; font-weight: 600; color: var(--text-soft);
+      cursor: pointer; white-space: nowrap; font-family: inherit;
+      transition: background 0.12s, color 0.12s;
+    }
+    .tab-nav-btn:hover { color: var(--text); background: color-mix(in srgb, var(--surface) 60%, transparent); }
+    .tab-nav-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px color-mix(in srgb, var(--seaweed) 12%, transparent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Form fields */
+    .field-group { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .field-label .opt { font-weight: 400; color: var(--text-soft); font-size: 12px; }
+    .field-input {
+      height: var(--control-h); padding-inline: var(--space-md);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); outline: none; width: 100%; box-sizing: border-box;
+      transition: border-color 0.12s;
+    }
+    .field-input:focus { border-color: var(--border-focus); }
+    .field-select {
+      height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right var(--space-sm) center;
+      width: 100%; box-sizing: border-box;
+    }
+    .field-select:focus { border-color: var(--border-focus); }
+    .field-textarea {
+      padding: var(--space-md); border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); font-size: 14px; font-family: inherit;
+      background: var(--surface); color: var(--text); outline: none;
+      width: 100%; box-sizing: border-box; resize: vertical; min-height: 80px;
+    }
+    .field-textarea:focus { border-color: var(--border-focus); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .form-section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-soft);
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Category tags */
+    .cat-tags { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
+    .cat-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600; padding: 3px 10px;
+      border-radius: var(--radius-pill); background: var(--surface-soft);
+      border: 1.5px solid var(--border); color: var(--text-soft);
+    }
+    .cat-tag.selected { background: var(--mint); border-color: var(--fern); color: var(--spinach); }
+    .cat-tag { cursor: pointer; transition: background 0.12s, border-color 0.12s; }
+
+    /* Accordion toggle (trading account) */
+    .accordion-toggle {
+      display: flex; align-items: center; gap: var(--space-sm);
+      width: 100%; background: none; border: none; cursor: pointer;
+      padding: var(--space-md) 0; font-family: inherit;
+      font-size: 14px; font-weight: 600; color: var(--text-accent);
+    }
+    .accordion-toggle i { font-size: 15px; transition: transform 0.2s; }
+    .accordion-toggle.open i.chevron { transform: rotate(90deg); }
+    .accordion-body { display: none; padding-top: var(--space-sm); }
+    .accordion-body.open { display: flex; flex-direction: column; gap: var(--space-lg); }
+
+    /* Access tree (outlet assignment) */
+    .access-tree-wrap {
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .group-row {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none;
+    }
+    .group-row:last-child { border-bottom: none; }
+    .group-row:hover { background: var(--surface-soft); }
+    .group-chevron { font-size: 13px; color: var(--text-soft); transition: transform 0.18s; flex-shrink: 0; }
+    .group-chevron.open { transform: rotate(90deg); }
+    .group-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+    .group-outlet-count { font-size: 12px; color: var(--text-soft); }
+    .group-state-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-pill);
+    }
+    .group-state-none { background: var(--surface-soft); color: var(--text-soft); }
+    .group-state-all  { background: var(--mint); color: var(--spinach); }
+    .group-state-some { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .group-toggle { cursor: pointer; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--fern); }
+    .outlet-list { display: none; background: color-mix(in srgb, var(--mint) 15%, transparent); }
+    .outlet-list.open { display: block; }
+    .outlet-row {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg) var(--space-sm) calc(var(--space-lg) + 28px);
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    }
+    .outlet-row:last-child { border-bottom: none; }
+    .outlet-row:hover { background: color-mix(in srgb, var(--mint) 40%, transparent); }
+    .outlet-check { cursor: pointer; width: 15px; height: 15px; accent-color: var(--fern); flex-shrink: 0; }
+    .outlet-name { font-size: 13px; color: var(--text); flex: 1; }
+    .access-count-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-sm) 0; font-size: 13px; color: var(--text-soft);
+    }
+    #access-count-badge { font-weight: 600; color: var(--text-accent); }
+
+    /* Order history KPIs */
+    .order-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-md); }
+    @media (max-width: 700px) { .order-kpis { grid-template-columns: repeat(2,1fr); } }
+    .order-kpi {
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-lg);
+    }
+    .order-kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
+    .order-kpi-value { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; margin-top: 4px; }
+    .order-kpi-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+
+    /* Data table */
+    .table-card { border: 1px solid var(--border); border-radius: var(--radius-md); overflow-x: auto; }
+    .data-table { width: 100%; min-width: 540px; border-collapse: collapse; font-size: 14px; }
+    .data-table thead tr { border-bottom: 1px solid var(--border); background: var(--surface-soft); }
+    .data-table th {
+      padding: var(--space-md) var(--space-lg); text-align: left;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap;
+    }
+    .data-table th.num, .data-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
+    .data-table td {
+      padding: var(--space-md) var(--space-lg); color: var(--text);
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+
+    /* Status pills */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-pill);
+    }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.active   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
+    .status-pill.pending  { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .status-pill.pending::before { background: var(--status-warn-fg); }
+    .status-pill.sent     { background: var(--status-info-bg, #E6F4FF); color: var(--status-info-fg, #0872C3); }
+    .status-pill.sent::before { background: var(--status-info-fg, #0872C3); }
+
+    /* Aside cards */
+    .aside-stack { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .meta-kv { display: flex; flex-direction: column; gap: var(--space-md); }
+    .meta-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); }
+    .meta-row-label { font-size: 12px; color: var(--text-soft); }
+    .meta-row-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
+    .meta-row-val.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+    /* Rating stars */
+    .star-row { display: flex; align-items: center; gap: 3px; }
+    .star { font-size: 14px; color: var(--status-warn-fg); }
+
+    /* Activity timeline */
+    .activity-list { display: flex; flex-direction: column; gap: var(--space-md); }
+    .activity-item { display: flex; gap: var(--space-md); }
+    .activity-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--border);
+      flex-shrink: 0; margin-top: 5px;
+    }
+    .activity-dot.ok { background: var(--status-ok-fg); }
+    .activity-dot.warn { background: var(--status-warn-fg); }
+    .activity-text { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+    .activity-text strong { color: var(--text); font-weight: 600; }
+    .activity-time { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+
+    /* Danger zone */
+    .danger-zone {
+      border: 1.5px solid var(--status-risk-bg); border-radius: var(--radius-lg);
+      padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column; gap: var(--space-md);
+    }
+    .danger-title { font-size: 14px; font-weight: 700; color: var(--status-risk-fg); }
+    .danger-desc { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+
+    /* Info banner */
+    .info-banner {
+      display: flex; align-items: flex-start; gap: var(--space-md);
+      padding: var(--space-lg) var(--space-xl);
+      background: color-mix(in srgb, var(--sky, #3FC3FB) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--sky, #3FC3FB) 30%, transparent);
+      border-radius: var(--radius-md); font-size: 13px; color: var(--text);
+    }
+    .info-banner i { color: var(--sky, #3FC3FB); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Link style */
+    .link { font-size: 13px; font-weight: 600; color: var(--text-accent); text-decoration: none; }
+    .link:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* SKU table preferred badge */
+    .preferred-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600; padding: 2px 8px;
+      border-radius: var(--radius-pill); background: var(--mint);
+      color: var(--spinach); white-space: nowrap;
+    }
+
+    /* Nomni Supply connection */
+    .ns-supply-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      background: color-mix(in srgb, var(--fern) 12%, transparent);
+      color: var(--fern); border: 1px solid color-mix(in srgb, var(--fern) 25%, transparent);
+    }
+    .ns-connection-card {
+      background: var(--surface);
+      border: 1.5px solid color-mix(in srgb, var(--fern) 25%, transparent);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .ns-connection-head {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-md) var(--space-lg);
+      background: color-mix(in srgb, var(--fern) 8%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--fern) 15%, transparent);
+    }
+    .ns-connection-head i { color: var(--fern); font-size: 15px; }
+    .ns-connection-title { font-size: 13px; font-weight: 700; color: var(--text); }
+    .ns-connection-body { padding: var(--space-md) var(--space-lg); }
+
+    /* Locked fields (managed by supplier via Nomni Supply) */
+    .field-locked .field-input {
+      background: var(--surface-soft); color: var(--text-soft);
+      cursor: not-allowed; border-color: var(--border);
+    }
+    .field-locked .field-input:focus { border-color: var(--border); box-shadow: none; }
+    .field-lock-note {
+      display: flex; align-items: center; gap: 3px;
+      font-size: 11px; color: var(--text-soft); margin-top: 1px;
+    }
+    .field-lock-note i { font-size: 11px; }
+
+    /* Bank details NS notice */
+    .ns-bank-notice {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: color-mix(in srgb, var(--fern) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--fern) 20%, transparent);
+      border-radius: var(--radius-sm); font-size: 12px; color: var(--text-soft);
+      margin-bottom: var(--space-md);
+    }
+    .ns-bank-notice i { color: var(--fern); font-size: 13px; flex-shrink: 0; }
+
+    /* Toast */
+    #toast-wrap { position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center; }
+
+    /* ── Catalogue tab ── */
+    .cat-sync-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      background: color-mix(in srgb, var(--fern) 10%, transparent);
+      color: var(--fern); border: 1px solid color-mix(in srgb, var(--fern) 22%, transparent);
+    }
+    .cat-sync-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--fern);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+    .cat-sync-banner {
+      display: flex; align-items: flex-start; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      background: color-mix(in srgb, var(--fern) 6%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--fern) 14%, transparent);
+      font-size: 13px; color: var(--text-soft);
+    }
+    .cat-sync-banner i { color: var(--fern); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .cat-filter-bar {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      border-bottom: 1px solid var(--border);
+    }
+    .cat-search-wrap {
+      position: relative; flex: 1; max-width: 320px;
+    }
+    .cat-search-wrap i {
+      position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+      color: var(--text-soft); font-size: 14px; pointer-events: none;
+    }
+    .cat-search-input {
+      width: 100%; height: var(--control-h); padding: 0 var(--space-sm) 0 30px;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); color: var(--text); font-size: 13px;
+      outline: none;
+    }
+    .cat-search-input:focus { border-color: var(--border-focus); }
+    .cat-select {
+      height: var(--control-h); padding: 0 var(--space-sm);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); color: var(--text); font-size: 13px;
+      outline: none; cursor: pointer;
+    }
+    .cat-count { font-size: 12px; color: var(--text-soft); margin-left: auto; }
+    .sku-code {
+      font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+      color: var(--text-soft); white-space: nowrap;
+    }
+    .cat-prod-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cat-prod-sub { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .cat-source-ns {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 600;
+      color: var(--fern); white-space: nowrap;
+    }
+    .cat-source-own {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 600; color: var(--text-soft);
+    }
+    .cat-actions { display: flex; gap: var(--space-xs); align-items: center; }
+    .cat-edit-btn, .cat-del-btn {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: transparent; color: var(--text-soft); cursor: pointer;
+      font-size: 13px; transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .cat-edit-btn:hover { background: var(--surface-soft); color: var(--text); border-color: var(--border-focus); }
+    .cat-del-btn:hover { background: color-mix(in srgb, var(--status-risk-bg) 60%, transparent); color: var(--status-risk-fg); border-color: transparent; }
+    .cat-ml-callout {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-soft);
+    }
+    .cat-ml-callout i { color: var(--text-soft); font-size: 14px; flex-shrink: 0; }
+    /* inline add-row form */
+    .cat-add-row td { background: color-mix(in srgb, var(--mint) 35%, transparent); }
+    .cat-add-row input, .cat-add-row select {
+      width: 100%; padding: 4px 6px; font-size: 12px;
+      border: 1px solid var(--border-focus); border-radius: var(--radius-sm);
+      background: var(--surface); color: var(--text); outline: none;
+      font-family: inherit;
+    }
+    .cat-add-row input:focus, .cat-add-row select:focus { border-color: var(--fern); }
+    .cat-save-btn {
+      padding: 4px 10px; font-size: 12px; font-weight: 600;
+      border-radius: var(--radius-sm); border: none;
+      background: var(--fern); color: #fff; cursor: pointer;
+    }
+    .cat-cancel-btn {
+      padding: 4px 10px; font-size: 12px; font-weight: 600;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: transparent; color: var(--text-soft); cursor: pointer;
+    }
+    /* "More" link in action column */
+    .cat-more-btn {
+      padding: 0 6px; font-size: 12px; font-weight: 600; color: var(--text-accent);
+      background: none; border: none; cursor: pointer; font-family: inherit;
+      white-space: nowrap; text-decoration: underline; text-underline-offset: 2px;
+    }
+    .cat-more-btn:hover { color: var(--spinach); }
+
+    /* ── Upload CSV modal ── */
+    .cat-upload-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+    }
+    .cat-upload-dialog {
+      background: var(--surface); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl); width: 480px; max-width: calc(100vw - 32px);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .cat-upload-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border);
+    }
+    .cat-upload-head h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 0; }
+    .cat-upload-close {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border: none; background: none; color: var(--text-soft); cursor: pointer;
+      border-radius: var(--radius-md); font-size: 16px;
+    }
+    .cat-upload-close:hover { background: var(--surface-soft); color: var(--text); }
+    .cat-upload-body { padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); }
+    .cat-upload-mode { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .cat-upload-mode-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cat-upload-radio-group { display: flex; gap: var(--space-md); }
+    .cat-upload-radio {
+      flex: 1; border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      padding: var(--space-md); cursor: pointer; display: flex; align-items: flex-start;
+      gap: var(--space-sm); transition: border-color 0.12s, background 0.12s;
+    }
+    .cat-upload-radio.selected { border-color: var(--fern); background: color-mix(in srgb, var(--fern) 6%, transparent); }
+    .cat-upload-radio input[type=radio] { margin-top: 2px; flex-shrink: 0; accent-color: var(--fern); }
+    .cat-upload-radio-text strong { font-size: 13px; font-weight: 700; color: var(--text); display: block; margin-bottom: 2px; }
+    .cat-upload-radio-text span { font-size: 11px; color: var(--text-soft); }
+    .cat-upload-dropzone {
+      border: 2px dashed var(--border); border-radius: var(--radius-md);
+      padding: var(--space-xl); text-align: center; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s; position: relative;
+    }
+    .cat-upload-dropzone:hover { border-color: var(--fern); background: color-mix(in srgb, var(--fern) 4%, transparent); }
+    .cat-upload-dropzone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .cat-upload-dropzone i { font-size: 28px; color: var(--text-soft); display: block; margin-bottom: var(--space-sm); }
+    .cat-upload-dropzone-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cat-upload-dropzone-sub { font-size: 12px; color: var(--text-soft); margin-top: 4px; }
+    .cat-upload-file-chosen { font-size: 12px; color: var(--fern); font-weight: 600; margin-top: var(--space-sm); display: none; }
+    .cat-upload-template {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md); background: var(--surface-soft);
+      border-radius: var(--radius-md); font-size: 12px; color: var(--text-soft);
+    }
+    .cat-upload-template a { color: var(--text-accent); font-weight: 600; text-decoration: none; }
+    .cat-upload-template a:hover { text-decoration: underline; }
+    .cat-upload-foot {
+      padding: var(--space-md) var(--space-xl); border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: var(--space-sm);
+    }
+
+    /* ── SKU detail drawer ── */
+    .sku-drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.2);
+      z-index: 150; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .sku-drawer-overlay.open { opacity: 1; pointer-events: all; }
+    .sku-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: 480px; max-width: 96vw;
+      background: var(--surface); z-index: 151; display: flex; flex-direction: column;
+      transform: translateX(100%); transition: transform 0.22s ease;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.10);
+    }
+    .sku-drawer.open { transform: translateX(0); }
+    .sku-drawer-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border);
+      gap: var(--space-md); flex-shrink: 0;
+    }
+    .sku-drawer-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .sku-drawer-subtitle { font-size: 12px; color: var(--text-soft); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+    .sku-drawer-close {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border: none; background: none; color: var(--text-soft); cursor: pointer;
+      border-radius: var(--radius-md); font-size: 16px; flex-shrink: 0;
+    }
+    .sku-drawer-close:hover { background: var(--surface-soft); color: var(--text); }
+    .sku-drawer-body {
+      flex: 1; overflow-y: auto; padding: var(--space-xl);
+      display: flex; flex-direction: column; gap: var(--space-xl);
+    }
+    .sku-drawer-ns-notice {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: color-mix(in srgb, var(--fern) 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--fern) 18%, transparent);
+      border-radius: var(--radius-md); font-size: 12px; color: var(--text-soft);
+    }
+    .sku-drawer-ns-notice i { color: var(--fern); font-size: 14px; flex-shrink: 0; }
+    .sku-section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-soft); margin-bottom: var(--space-sm);
+    }
+    .sku-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+    .sku-field { display: flex; flex-direction: column; gap: 4px; }
+    .sku-field.full { grid-column: 1 / -1; }
+    .sku-field label { font-size: 12px; font-weight: 600; color: var(--text-soft); }
+    .sku-field .field-val { font-size: 13px; color: var(--text); font-weight: 500; }
+    .sku-field input, .sku-field select, .sku-field textarea {
+      width: 100%; padding: 7px 10px; font-size: 13px;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface-soft); color: var(--text); outline: none;
+      font-family: inherit; transition: border-color 0.12s;
+    }
+    .sku-field input:focus, .sku-field select:focus, .sku-field textarea:focus {
+      border-color: var(--fern);
+    }
+    .sku-field textarea { resize: vertical; min-height: 72px; }
+    .sku-field input[readonly], .sku-field select[disabled], .sku-field textarea[readonly] {
+      background: var(--surface); color: var(--text-soft); cursor: default;
+    }
+    .sku-allergen-wrap {
+      display: flex; flex-wrap: wrap; gap: var(--space-xs);
+    }
+    .sku-allergen-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 10px; border-radius: var(--radius-pill);
+      font-size: 11px; font-weight: 600;
+      background: color-mix(in srgb, var(--status-warn-bg) 60%, transparent);
+      color: var(--status-warn-fg); border: 1px solid color-mix(in srgb, var(--status-warn-fg) 20%, transparent);
+    }
+    .sku-allergen-chip.removable { cursor: pointer; }
+    .sku-allergen-chip.removable:hover { background: var(--status-warn-bg); }
+    .sku-allergen-chip .rm { font-size: 10px; opacity: 0.7; }
+    .sku-img-placeholder {
+      border: 2px dashed var(--border); border-radius: var(--radius-md);
+      padding: var(--space-lg); text-align: center; color: var(--text-soft);
+      font-size: 12px; cursor: pointer; transition: border-color 0.15s;
+    }
+    .sku-img-placeholder:hover { border-color: var(--fern); }
+    .sku-img-placeholder i { font-size: 24px; display: block; margin-bottom: var(--space-xs); }
+    .sku-drawer-foot {
+      padding: var(--space-md) var(--space-xl); border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="content">
+
+    <!-- Back nav -->
+    <a class="back-nav" href="suppliers.html"><i class="ti ti-arrow-left"></i>Back to Suppliers</a>
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="supplier-logo" id="sup-logo">SB</div>
+        <div class="page-header-text">
+          <span class="page-eyebrow">Supplier</span>
+          <h1 class="page-title">
+            <span id="sup-name">Sydney Butchers Co.</span>
+            <i class="ti ti-rosette-discount-check-filled" title="Verified supplier" style="color:var(--text-accent);font-size:18px;"></i>
+          </h1>
+          <div class="page-title-meta">
+            <span class="status-pill active">Active</span>
+            <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-map-pin" style="font-size:12px;"></i><span id="sup-location">Sydney, NSW</span></span>
+            <span class="nb-pill neutral" style="font-size:12px;"><i class="ti ti-tag" style="font-size:12px;"></i><span id="sup-category">Meat &amp; Seafood</span></span>
+            <span id="sup-ns-pill" class="ns-supply-pill"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span>
+            <span id="sup-internal-pill" class="ns-supply-pill" style="display:none;background:color-mix(in srgb, #3F8AFB 12%, transparent);color:#3F8AFB;border-color:color-mix(in srgb, #3F8AFB 25%, transparent);"><i class="ti ti-building-warehouse" style="font-size:10px;"></i>Internal · own seller workspace</span>
+          </div>
+        </div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" id="sup-rfq-btn" onclick="showToast('Opening RFQ…')"><i class="ti ti-file-dollar"></i>New RFQ</button>
+        <button class="btn btn-primary" onclick="showToast('Changes saved.')"><i class="ti ti-device-floppy"></i>Save changes</button>
+      </div>
+    </div>
+
+    <!-- Tabs + content -->
+    <div class="detail-layout">
+      <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+
+        <!-- Tab nav -->
+        <div class="tab-nav">
+          <button class="tab-nav-btn active" data-tab="profile"     onclick="switchTab('profile')"><i class="ti ti-building" style="font-size:13px;margin-right:4px;"></i>Profile</button>
+          <button class="tab-nav-btn"        data-tab="outlets"     onclick="switchTab('outlets')"><i class="ti ti-building-store" style="font-size:13px;margin-right:4px;"></i>Outlet assignments</button>
+          <button class="tab-nav-btn"        data-tab="orders"      onclick="switchTab('orders')"><i class="ti ti-receipt" style="font-size:13px;margin-right:4px;"></i>Order history</button>
+          <button class="tab-nav-btn"        data-tab="skus"        onclick="switchTab('skus')"><i class="ti ti-book-2" style="font-size:13px;margin-right:4px;"></i>Catalogue</button>
+        </div>
+
+        <!-- ── Profile tab ── -->
+        <div id="tab-profile" class="tab-panel active">
+          <div class="profile-layout">
+          <div style="display:flex;flex-direction:column;gap:var(--space-xl);">
+
+            <!-- Company details -->
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title"><i class="ti ti-building"></i>Company details</span>
+              </div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                  <div class="form-row">
+                    <div class="field-group">
+                      <label class="field-label">Supplier name <span style="color:var(--status-risk-fg);">*</span></label>
+                      <input class="field-input" type="text" value="Sydney Butchers Co."/>
+                    </div>
+                    <div class="field-group field-locked">
+                      <label class="field-label">ABN <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                      <input class="field-input" type="text" value="54 321 987 654" readonly style="font-family:'IBM Plex Mono',monospace;"/>
+                      <div class="field-lock-note"><i class="ti ti-lock"></i>Verified by supplier on Nomni Supply</div>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="field-group">
+                      <label class="field-label">Contact email <span style="color:var(--status-risk-fg);">*</span></label>
+                      <input class="field-input" type="email" value="orders@sydneybutchers.com.au"/>
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Phone <span class="opt">(optional)</span></label>
+                      <input class="field-input" type="tel" value="+61 2 9000 1234"/>
+                    </div>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Address <span class="opt">(optional)</span></label>
+                    <input class="field-input" type="text" value="12 Abattoir Rd, Homebush NSW 2140" placeholder="Street address"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Website <span class="opt">(optional)</span></label>
+                    <input class="field-input" type="url" value="https://sydneybutchers.com.au" placeholder="https://…"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Notes <span class="opt">(optional)</span></label>
+                    <textarea class="field-textarea" placeholder="Internal notes about this supplier…">Preferred supplier for meat across CBD outlets. Early morning deliveries by 5am. Min order $250.</textarea>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Categories</label>
+                    <div class="cat-tags" id="cat-tags">
+                      <span class="cat-tag selected" onclick="toggleCat(this)"><i class="ti ti-check" style="font-size:11px;"></i>Meat &amp; Seafood</span>
+                      <span class="cat-tag" onclick="toggleCat(this)">Produce</span>
+                      <span class="cat-tag" onclick="toggleCat(this)">Dairy</span>
+                      <span class="cat-tag" onclick="toggleCat(this)">Dry Goods</span>
+                      <span class="cat-tag" onclick="toggleCat(this)">Beverages</span>
+                      <span class="cat-tag" onclick="toggleCat(this)">Bakery</span>
+                      <span class="cat-tag" onclick="toggleCat(this)">Packaging</span>
+                      <span class="cat-tag" onclick="toggleCat(this)">Cleaning</span>
+                      <span class="cat-tag" onclick="toggleCat(this)">Equipment</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trading account (accordion) -->
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title"><i class="ti ti-credit-card"></i>Trading account</span>
+                <span style="font-size:12px;color:var(--text-soft);">All fields optional</span>
+              </div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                  <div class="form-row">
+                    <div class="field-group">
+                      <label class="field-label">Account number <span class="opt">(optional)</span></label>
+                      <input class="field-input" type="text" value="SBC-00841" placeholder="e.g. SBC-00841" style="font-family:'IBM Plex Mono',monospace;"/>
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Payment terms <span class="opt">(optional)</span></label>
+                      <select class="field-select">
+                        <option>COD – Cash on Delivery</option>
+                        <option selected>Net 7</option>
+                        <option>Net 14</option>
+                        <option>Net 30</option>
+                        <option>Net 60</option>
+                        <option>EOM – End of Month</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="field-group">
+                      <label class="field-label">Credit limit <span class="opt">(optional)</span></label>
+                      <div style="position:relative;">
+                        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);">$</span>
+                        <input class="field-input" type="text" value="5,000" placeholder="0.00" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+                      </div>
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Currency</label>
+                      <select class="field-select">
+                        <option selected>AUD — Australian Dollar</option>
+                        <option>USD — US Dollar</option>
+                        <option>NZD — New Zealand Dollar</option>
+                        <option>SGD — Singapore Dollar</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="border-top:1px solid var(--border);padding-top:var(--space-lg);">
+                    <div class="form-section-title" style="margin-bottom:var(--space-md);">Bank details <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(for remittance advice)</span></div>
+                    <div class="ns-bank-notice"><i class="ti ti-plug-connected"></i>Managed by Sydney Butchers Co. on Nomni Supply — read-only here.</div>
+                    <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                      <div class="form-row">
+                        <div class="field-group field-locked">
+                          <label class="field-label">Bank name <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                          <input class="field-input" type="text" value="Commonwealth Bank of Australia" readonly/>
+                        </div>
+                        <div class="field-group field-locked">
+                          <label class="field-label">BSB <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                          <input class="field-input" type="text" value="062-000" readonly style="font-family:'IBM Plex Mono',monospace;"/>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <div class="field-group field-locked">
+                          <label class="field-label">Account number <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                          <input class="field-input" type="text" value="1234 5678" readonly style="font-family:'IBM Plex Mono',monospace;"/>
+                        </div>
+                        <div class="field-group field-locked">
+                          <label class="field-label">Account name <i class="ti ti-lock" style="font-size:11px;color:var(--text-soft);margin-left:2px;vertical-align:-1px;"></i></label>
+                          <input class="field-input" type="text" value="Sydney Butchers Co. Pty Ltd" readonly/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /profile left col -->
+
+          <!-- Profile right col (was global aside) -->
+          <aside class="aside-stack">
+
+            <!-- Nomni Supply connection card -->
+            <div id="sup-ns-card" class="ns-connection-card">
+              <div class="ns-connection-head">
+                <i class="ti ti-plug-connected"></i>
+                <span class="ns-connection-title">Nomni Supply</span>
+                <span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--fern);">Connected</span>
+              </div>
+              <div class="ns-connection-body">
+                <div class="meta-kv">
+                  <div class="meta-row">
+                    <span class="meta-row-label">Connected since</span>
+                    <span class="meta-row-val">Mar 2024</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Last sync</span>
+                    <span class="meta-row-val">Today · 6:00am</span>
+                  </div>
+                </div>
+                <p style="font-size:11px;color:var(--text-soft);margin-top:var(--space-sm);line-height:1.5;">ABN and bank details are managed by the supplier directly on Nomni Supply.</p>
+              </div>
+            </div>
+
+            <!-- Status card -->
+            <div class="card">
+              <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Supplier status</span></div>
+              <div class="card-body">
+                <div class="meta-kv">
+                  <div class="meta-row">
+                    <span class="meta-row-label">Status</span>
+                    <span class="status-pill active" style="font-size:11px;">Active</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Verification</span>
+                    <span style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--spinach);"><i class="ti ti-rosette-discount-check-filled" style="font-size:14px;"></i>Verified</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Rating</span>
+                    <div style="display:flex;align-items:center;gap:4px;">
+                      <div class="star-row">
+                        <i class="ti ti-star-filled star"></i>
+                        <i class="ti ti-star-filled star"></i>
+                        <i class="ti ti-star-filled star"></i>
+                        <i class="ti ti-star-filled star"></i>
+                        <i class="ti ti-star-half-filled star"></i>
+                      </div>
+                      <span style="font-size:12px;font-weight:600;color:var(--text);">4.7</span>
+                    </div>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Delivery</span>
+                    <span class="meta-row-val">Next-day · Sydney metro</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Min. order</span>
+                    <span class="meta-row-val" style="font-feature-settings:'tnum' 1;">$250.00</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Outlets</span>
+                    <span class="meta-row-val">8 outlets</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-row-label">Added</span>
+                    <span class="meta-row-val">14 Mar 2024</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price benchmark -->
+            <div class="card">
+              <div class="card-head"><span class="card-title"><i class="ti ti-chart-histogram"></i>Price benchmark</span></div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+                  <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                    <span class="nb-pill ok" style="font-size:12px;"><i class="ti ti-arrow-down"></i>4% below</span>
+                    <span style="font-size:12px;color:var(--text-soft);">network median</span>
+                  </div>
+                  <p style="font-size:12px;color:var(--text-soft);line-height:1.6;">Across Meat &amp; Seafood, NSW — compared against 12 other suppliers in the Nomni network.</p>
+                  <button class="btn btn-outline btn-sm" onclick="showToast('Opening full benchmark report…')"><i class="ti ti-external-link"></i>Full benchmark</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent activity -->
+            <div class="card">
+              <div class="card-head"><span class="card-title"><i class="ti ti-activity"></i>Recent activity</span></div>
+              <div class="card-body">
+                <div class="activity-list">
+                  <div class="activity-item">
+                    <div class="activity-dot ok"></div>
+                    <div>
+                      <div class="activity-text"><strong>Order received</strong> — PO-2026-0887 fully received by Harbour Kitchen</div>
+                      <div class="activity-time">10 Jun 2026 · 08:42am</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-dot ok"></div>
+                    <div>
+                      <div class="activity-text"><strong>New order sent</strong> — PO-2026-0914 dispatched to Sydney Butchers Co.</div>
+                      <div class="activity-time">12 Jun 2026 · 07:15am</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-dot warn"></div>
+                    <div>
+                      <div class="activity-text"><strong>Price change</strong> — Beef Scotch Fillet updated from $39.50/kg to $42.00/kg</div>
+                      <div class="activity-time">1 Jun 2026 · 02:10pm</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-dot ok"></div>
+                    <div>
+                      <div class="activity-text"><strong>Assigned to outlet</strong> — Parramatta Table added by Keith Tan</div>
+                      <div class="activity-time">20 May 2026 · 11:30am</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Danger zone -->
+            <div class="danger-zone">
+              <div class="danger-title"><i class="ti ti-alert-triangle" style="font-size:14px;"></i> Danger zone</div>
+              <div class="danger-desc">Deactivating this supplier will prevent new orders from being raised across all outlets. Existing open orders will not be affected.</div>
+              <button class="btn btn-danger btn-sm" onclick="confirmDeactivate()"><i class="ti ti-circle-off"></i>Deactivate supplier</button>
+            </div>
+
+          </aside>
+          </div><!-- /profile-layout -->
+        </div><!-- /tab-profile -->
+
+        <!-- ── Outlet assignments tab ── -->
+        <div id="tab-outlets" class="tab-panel">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-building-store"></i>Outlet assignments</span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Saving outlet assignments…')"><i class="ti ti-device-floppy"></i>Save assignments</button>
+            </div>
+            <div class="card-body">
+              <p style="font-size:13px;color:var(--text-soft);margin-bottom:var(--space-lg);line-height:1.6;">
+                Select which outlet groups or specific outlets this supplier is approved to supply. Outlet-level users will see this supplier in their Market Lists and be able to raise orders against it.
+              </p>
+              <div class="access-count-row">
+                <span style="font-size:13px;color:var(--text-soft);">Currently approved for</span>
+                <span id="access-count-badge" style="font-size:13px;font-weight:600;color:var(--text-accent);">8 outlets</span>
+              </div>
+              <div class="access-tree-wrap" id="access-tree"></div>
+            </div>
+          </div>
+        </div><!-- /tab-outlets -->
+
+        <!-- ── Order history tab ── -->
+        <div id="tab-orders" class="tab-panel">
+          <div style="display:flex;flex-direction:column;gap:var(--space-xl);">
+
+            <!-- KPI strip -->
+            <div class="order-kpis">
+              <div class="order-kpi">
+                <div class="order-kpi-label">Spend YTD</div>
+                <div class="order-kpi-value">$84,720</div>
+                <div class="order-kpi-sub">Jan – Jun 2026</div>
+              </div>
+              <div class="order-kpi">
+                <div class="order-kpi-label">Avg order value</div>
+                <div class="order-kpi-value">$2,180</div>
+                <div class="order-kpi-sub">Per order, this year</div>
+              </div>
+              <div class="order-kpi">
+                <div class="order-kpi-label">Last order</div>
+                <div class="order-kpi-value" style="font-size:16px;">12 Jun 2026</div>
+                <div class="order-kpi-sub">2 days ago</div>
+              </div>
+              <div class="order-kpi">
+                <div class="order-kpi-label">Open POs</div>
+                <div class="order-kpi-value">3</div>
+                <div class="order-kpi-sub">Awaiting delivery</div>
+              </div>
+            </div>
+
+            <!-- Recent orders table -->
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title"><i class="ti ti-receipt"></i>Recent orders</span>
+                <a href="orders.html?supplier=sydney-butchers" class="link" style="font-size:13px;display:flex;align-items:center;gap:4px;">View all in Orders <i class="ti ti-arrow-right" style="font-size:12px;"></i></a>
+              </div>
+              <div class="table-card" style="border:none;border-radius:0;margin:0;">
+                <table class="data-table" aria-label="Recent orders from Sydney Butchers Co.">
+                  <thead>
+                    <tr>
+                      <th>Order #</th>
+                      <th>Outlet</th>
+                      <th>Date</th>
+                      <th class="num">Value</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">PO-2026-0914</span></td>
+                      <td>Darling St Bistro</td>
+                      <td>12 Jun 2026</td>
+                      <td class="num">$1,840.00</td>
+                      <td><span class="status-pill sent">Sent</span></td>
+                    </tr>
+                    <tr>
+                      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">PO-2026-0887</span></td>
+                      <td>Harbour Kitchen</td>
+                      <td>10 Jun 2026</td>
+                      <td class="num">$3,210.50</td>
+                      <td><span class="status-pill active">Received</span></td>
+                    </tr>
+                    <tr>
+                      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">PO-2026-0851</span></td>
+                      <td>The CBD Rooftop</td>
+                      <td>7 Jun 2026</td>
+                      <td class="num">$2,095.00</td>
+                      <td><span class="status-pill active">Received</span></td>
+                    </tr>
+                    <tr>
+                      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">PO-2026-0822</span></td>
+                      <td>Bondi Rooftop</td>
+                      <td>5 Jun 2026</td>
+                      <td class="num">$1,560.00</td>
+                      <td><span class="status-pill active">Received</span></td>
+                    </tr>
+                    <tr>
+                      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">PO-2026-0799</span></td>
+                      <td>Manly Wharf Bar</td>
+                      <td>3 Jun 2026</td>
+                      <td class="num">$988.00</td>
+                      <td><span class="status-pill pending">Pending</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);display:flex;justify-content:center;">
+                <a href="orders.html?supplier=sydney-butchers" class="link" style="display:flex;align-items:center;gap:4px;">View all orders &amp; invoices from this supplier <i class="ti ti-arrow-right" style="font-size:12px;"></i></a>
+              </div>
+            </div>
+
+          </div>
+        </div><!-- /tab-orders -->
+
+        <!-- ── Catalogue tab ── -->
+        <div id="tab-skus" class="tab-panel">
+          <div class="card" style="overflow:visible;">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-book-2"></i>Product catalogue</span>
+              <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                <span id="cat-ns-pill" class="cat-sync-pill"><span class="cat-sync-dot"></span>Synced · Nomni Supply</span>
+                <button class="btn btn-outline btn-sm" onclick="catOpenUpload()"><i class="ti ti-upload"></i>Upload CSV</button>
+                <button class="btn btn-primary btn-sm" onclick="catAddRow()"><i class="ti ti-plus"></i>Add SKU</button>
+              </div>
+            </div>
+            <!-- Nomni Supply sync notice (NS-connected suppliers only) -->
+            <div id="cat-ns-banner" class="cat-sync-banner">
+              <i class="ti ti-plug-connected"></i>
+              <span>This supplier's catalogue is kept up to date by <strong id="cat-ns-supplier-name">Sydney Butchers Co.</strong> on Nomni Supply. You can also add your own SKUs below — they'll only be visible to your account.</span>
+            </div>
+            <!-- Non-NS notice (shown for suppliers not on Nomni Supply) -->
+            <div id="cat-non-ns-banner" class="info-banner" style="margin:var(--space-sm) var(--space-lg);display:none;">
+              <i class="ti ti-info-circle"></i>
+              <span>This supplier isn't on Nomni Supply, so you manage this catalogue manually. Add the SKUs they sell and set pricing in <strong>Market Lists</strong>.</span>
+            </div>
+            <!-- Search + filter bar -->
+            <div class="cat-filter-bar">
+              <div class="cat-search-wrap">
+                <i class="ti ti-search"></i>
+                <input class="cat-search-input" type="search" placeholder="Search SKU or product name…" oninput="catFilter(this.value)" aria-label="Search catalogue"/>
+              </div>
+              <select class="cat-select" onchange="catFilterCat(this.value)" aria-label="Filter by category">
+                <option value="">All categories</option>
+                <option>Poultry</option>
+                <option>Beef</option>
+                <option>Pork</option>
+                <option>Lamb</option>
+              </select>
+              <span class="cat-count" id="cat-count">6 SKUs</span>
+            </div>
+            <div class="table-card" style="border:none;border-radius:0;border-top:1px solid var(--border);">
+              <table class="data-table" id="cat-table" aria-label="Supplier product catalogue">
+                <thead>
+                  <tr>
+                    <th>SKU code</th>
+                    <th>Product name</th>
+                    <th>Category</th>
+                    <th>Pack size</th>
+                    <th>UOM</th>
+                    <th class="num">Lead time</th>
+                    <th class="num">MOQ</th>
+                    <th>Source</th>
+                    <th style="width:80px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="cat-tbody">
+                  <tr data-sku="SBC-CHK-500" data-cat="Poultry">
+                    <td><span class="sku-code">SBC-CHK-500</span></td>
+                    <td><div class="cat-prod-name">Premium Chicken Breast</div><div class="cat-prod-sub">Skin-off, individually frozen</div></td>
+                    <td>Poultry</td>
+                    <td>5 kg</td>
+                    <td>Carton</td>
+                    <td class="num">1 day</td>
+                    <td class="num">1 carton</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-more-btn" onclick="catOpenDetail(this)">More</button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-CHK-810" data-cat="Poultry">
+                    <td><span class="sku-code">SBC-CHK-810</span></td>
+                    <td><div class="cat-prod-name">Free Range Chicken Thigh</div><div class="cat-prod-sub">Bone-in, fresh</div></td>
+                    <td>Poultry</td>
+                    <td>4 kg</td>
+                    <td>Carton</td>
+                    <td class="num">1 day</td>
+                    <td class="num">1 carton</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-more-btn" onclick="catOpenDetail(this)">More</button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-BEF-220" data-cat="Beef">
+                    <td><span class="sku-code">SBC-BEF-220</span></td>
+                    <td><div class="cat-prod-name">Premium Beef Mince 80/20</div><div class="cat-prod-sub">Fresh, grass-fed</div></td>
+                    <td>Beef</td>
+                    <td>2 kg</td>
+                    <td>Pack</td>
+                    <td class="num">1 day</td>
+                    <td class="num">2 packs</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-more-btn" onclick="catOpenDetail(this)">More</button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-BEF-700" data-cat="Beef">
+                    <td><span class="sku-code">SBC-BEF-700</span></td>
+                    <td><div class="cat-prod-name">Grain Fed Scotch Fillet</div><div class="cat-prod-sub">200 g portions, vac-packed</div></td>
+                    <td>Beef</td>
+                    <td>200 g</td>
+                    <td>Portion</td>
+                    <td class="num">1 day</td>
+                    <td class="num">10 portions</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-more-btn" onclick="catOpenDetail(this)">More</button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-PRK-300" data-cat="Pork">
+                    <td><span class="sku-code">SBC-PRK-300</span></td>
+                    <td><div class="cat-prod-name">Pork Sausage Traditional</div><div class="cat-prod-sub">Thick, 8 per kg</div></td>
+                    <td>Pork</td>
+                    <td>3 kg</td>
+                    <td>Pack</td>
+                    <td class="num">2 days</td>
+                    <td class="num">1 pack</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-more-btn" onclick="catOpenDetail(this)">More</button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                  <tr data-sku="SBC-LMB-410" data-cat="Lamb">
+                    <td><span class="sku-code">SBC-LMB-410</span></td>
+                    <td><div class="cat-prod-name">French Trimmed Lamb Rack</div><div class="cat-prod-sub">~1.2 kg, 8 bone</div></td>
+                    <td>Lamb</td>
+                    <td>~1.2 kg</td>
+                    <td>Rack</td>
+                    <td class="num">2 days</td>
+                    <td class="num">2 racks</td>
+                    <td><span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span></td>
+                    <td class="cat-actions"><button class="cat-more-btn" onclick="catOpenDetail(this)">More</button><button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- Market list callout -->
+            <div class="cat-ml-callout">
+              <i class="ti ti-tag"></i>
+              <span>Pricing is not stored here. To set your prices and link catalogue SKUs to your internal items, go to <a class="link" href="market-list.html">Market Lists</a>.</span>
+            </div>
+          </div>
+        </div><!-- /tab-skus -->
+
+      </div><!-- /main column -->
+
+      <!-- OLD ASIDE REMOVED — content moved into Profile tab -->
+      <aside class="aside-stack" style="display:none;">
+        <div id="sup-ns-card-old" class="ns-connection-card">
+          <div class="ns-connection-head">
+            <i class="ti ti-plug-connected"></i>
+            <span class="ns-connection-title">Nomni Supply</span>
+            <span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--fern);">Connected</span>
+          </div>
+          <div class="ns-connection-body">
+            <div class="meta-kv">
+              <div class="meta-row">
+                <span class="meta-row-label">Connected since</span>
+                <span class="meta-row-val">Mar 2024</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row-label">Last sync</span>
+                <span class="meta-row-val">Today · 6:00am</span>
+              </div>
+            </div>
+            <p style="font-size:11px;color:var(--text-soft);margin-top:var(--space-sm);line-height:1.5;">ABN and bank details are managed by the supplier directly on Nomni Supply.</p>
+          </div>
+        </div>
+
+        <!-- Status card -->
+        <div class="card">
+          <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Supplier status</span></div>
+          <div class="card-body">
+            <div class="meta-kv">
+              <div class="meta-row">
+                <span class="meta-row-label">Status</span>
+                <span class="status-pill active" style="font-size:11px;">Active</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row-label">Verification</span>
+                <span style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--spinach);"><i class="ti ti-rosette-discount-check-filled" style="font-size:14px;"></i>Verified</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row-label">Rating</span>
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <div class="star-row">
+                    <i class="ti ti-star-filled star"></i>
+                    <i class="ti ti-star-filled star"></i>
+                    <i class="ti ti-star-filled star"></i>
+                    <i class="ti ti-star-filled star"></i>
+                    <i class="ti ti-star-half-filled star"></i>
+                  </div>
+                  <span style="font-size:12px;font-weight:600;color:var(--text);">4.7</span>
+                </div>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row-label">Delivery</span>
+                <span class="meta-row-val">Next-day · Sydney metro</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row-label">Min. order</span>
+                <span class="meta-row-val" style="font-feature-settings:'tnum' 1;">$250.00</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row-label">Outlets</span>
+                <span class="meta-row-val">8 outlets</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row-label">Added</span>
+                <span class="meta-row-val">14 Mar 2024</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price benchmark -->
+        <div class="card">
+          <div class="card-head"><span class="card-title"><i class="ti ti-chart-histogram"></i>Price benchmark</span></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+              <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                <span class="nb-pill ok" style="font-size:12px;"><i class="ti ti-arrow-down"></i>4% below</span>
+                <span style="font-size:12px;color:var(--text-soft);">network median</span>
+              </div>
+              <p style="font-size:12px;color:var(--text-soft);line-height:1.6;">Across Meat &amp; Seafood, NSW — compared against 12 other suppliers in the Nomni network.</p>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Opening full benchmark report…')"><i class="ti ti-external-link"></i>Full benchmark</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="card">
+          <div class="card-head"><span class="card-title"><i class="ti ti-activity"></i>Recent activity</span></div>
+          <div class="card-body">
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot ok"></div>
+                <div>
+                  <div class="activity-text"><strong>Order received</strong> — PO-2026-0887 fully received by Harbour Kitchen</div>
+                  <div class="activity-time">10 Jun 2026 · 08:42am</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot ok"></div>
+                <div>
+                  <div class="activity-text"><strong>New order sent</strong> — PO-2026-0914 dispatched to Sydney Butchers Co.</div>
+                  <div class="activity-time">12 Jun 2026 · 07:15am</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot warn"></div>
+                <div>
+                  <div class="activity-text"><strong>Price change</strong> — Beef Scotch Fillet updated from $39.50/kg to $42.00/kg</div>
+                  <div class="activity-time">1 Jun 2026 · 02:10pm</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot ok"></div>
+                <div>
+                  <div class="activity-text"><strong>Assigned to outlet</strong> — Parramatta Table added by Keith Tan</div>
+                  <div class="activity-time">20 May 2026 · 11:30am</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="danger-zone">
+          <div class="danger-title"><i class="ti ti-alert-triangle" style="font-size:14px;"></i> Danger zone</div>
+          <div class="danger-desc">Deactivating this supplier will prevent new orders from being raised across all outlets. Existing open orders will not be affected.</div>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeactivate()"><i class="ti ti-circle-off"></i>Deactivate supplier</button>
+        </div>
+
+      </aside>
+    </div>
+
+  </div><!-- /.napp-canvas -->
+</div><!-- /.page-body -->
+
+<!-- ── Upload CSV modal ── -->
+<div id="cat-upload-overlay" class="cat-upload-overlay" style="display:none;" onclick="if(event.target===this)catCloseUpload()">
+  <div class="cat-upload-dialog">
+    <div class="cat-upload-head">
+      <h3><i class="ti ti-upload" style="font-size:15px;margin-right:6px;vertical-align:-2px;color:var(--text-accent);"></i>Upload catalogue CSV</h3>
+      <button class="cat-upload-close" onclick="catCloseUpload()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cat-upload-body">
+      <div class="cat-upload-mode">
+        <div class="cat-upload-mode-label">Import mode</div>
+        <div class="cat-upload-radio-group">
+          <label class="cat-upload-radio selected" onclick="catUploadRadio('append')">
+            <input type="radio" name="cat-upload-mode" id="cat-upload-radio-append" value="append" checked/>
+            <div class="cat-upload-radio-text">
+              <strong>Append</strong>
+              <span>Add new SKUs without removing existing ones</span>
+            </div>
+          </label>
+          <label class="cat-upload-radio" onclick="catUploadRadio('overwrite')">
+            <input type="radio" name="cat-upload-mode" id="cat-upload-radio-overwrite" value="overwrite"/>
+            <div class="cat-upload-radio-text">
+              <strong>Overwrite</strong>
+              <span>Replace entire catalogue with this file</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="cat-upload-dropzone" onclick="document.getElementById('cat-upload-file').click()">
+        <input type="file" id="cat-upload-file" accept=".csv,.xlsx" onchange="catUploadFileChosen(this)" style="display:none;"/>
+        <i class="ti ti-file-spreadsheet"></i>
+        <div class="cat-upload-dropzone-label">Click to choose a file</div>
+        <div class="cat-upload-dropzone-sub">CSV or Excel (.xlsx) · Max 5 MB</div>
+        <div id="cat-upload-file-chosen" class="cat-upload-file-chosen"></div>
+      </div>
+      <div class="cat-upload-template">
+        <i class="ti ti-download" style="font-size:14px;flex-shrink:0;"></i>
+        <span>Need the right format? <a href="#" onclick="catDownloadTemplate();return false;">Download CSV template</a> to get started.</span>
+      </div>
+    </div>
+    <div class="cat-upload-foot">
+      <button class="btn btn-outline btn-sm" onclick="catCloseUpload()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="catDoUpload()"><i class="ti ti-upload"></i>Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SKU detail drawer ── -->
+<div id="sku-drawer-overlay" class="sku-drawer-overlay" onclick="catCloseDetail()"></div>
+<div id="sku-drawer" class="sku-drawer">
+  <div class="sku-drawer-head">
+    <div>
+      <div id="sku-drawer-title" class="sku-drawer-title">Product name</div>
+      <div id="sku-drawer-subtitle" class="sku-drawer-subtitle">SKU-CODE</div>
+    </div>
+    <button class="sku-drawer-close" onclick="catCloseDetail()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="sku-drawer-body">
+    <!-- NS read-only notice -->
+    <div id="sku-drawer-ns-notice" class="sku-drawer-ns-notice" style="display:none;">
+      <i class="ti ti-plug-connected"></i>
+      <span>This SKU is managed by <strong>Sydney Butchers Co.</strong> on Nomni Supply. Core fields are read-only. You can still add extended details like allergens, storage info, and images.</span>
+    </div>
+
+    <!-- Core fields (always read-only — edit inline in table) -->
+    <div>
+      <div class="sku-section-label">Core details</div>
+      <div class="sku-field-grid">
+        <div class="sku-field"><label>SKU code</label><input id="sku-d-sku" readonly/></div>
+        <div class="sku-field"><label>Category</label><input id="sku-d-cat" readonly/></div>
+        <div class="sku-field full"><label>Product name</label><input id="sku-d-name" readonly/></div>
+        <div class="sku-field"><label>Pack size</label><input id="sku-d-pack" readonly/></div>
+        <div class="sku-field"><label>UOM</label><input id="sku-d-uom" readonly/></div>
+        <div class="sku-field"><label>Lead time</label><input id="sku-d-lead" readonly/></div>
+        <div class="sku-field"><label>MOQ</label><input id="sku-d-moq" readonly/></div>
+      </div>
+    </div>
+
+    <!-- Extended fields (editable) -->
+    <div>
+      <div class="sku-section-label">Extended details</div>
+      <div class="sku-field-grid">
+        <div class="sku-field"><label>GTIN / Barcode</label><input id="sku-d-gtin" placeholder="e.g. 9300675012345"/></div>
+        <div class="sku-field"><label>Country of origin</label><input id="sku-d-origin" placeholder="e.g. Australia"/></div>
+        <div class="sku-field"><label>Shelf life</label><input id="sku-d-shelf" placeholder="e.g. 7 days refrigerated"/></div>
+        <div class="sku-field"><label>Storage instructions</label><input id="sku-d-storage" placeholder="e.g. Keep below 4°C"/></div>
+        <div class="sku-field full"><label>Certifications</label><input id="sku-d-certs" placeholder="e.g. HACCP, Halal, MSC"/></div>
+        <div class="sku-field full"><label>Product description / notes</label><textarea id="sku-d-desc" placeholder="Additional notes about this product…"></textarea></div>
+      </div>
+    </div>
+
+    <!-- Allergens -->
+    <div>
+      <div class="sku-section-label">Allergens</div>
+      <div id="sku-allergen-chips" class="sku-allergen-wrap" style="margin-bottom:var(--space-sm);"></div>
+      <div id="sku-drawer-allergen-input-row" style="display:flex;gap:var(--space-sm);">
+        <input id="sku-allergen-input" class="sku-field" style="flex:1;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-soft);outline:none;font-family:inherit;" placeholder="Add allergen (e.g. Gluten, Soy…)" onkeydown="if(event.key==='Enter'){event.preventDefault();addAllergen();}"/>
+        <button class="btn btn-outline btn-sm" onclick="addAllergen()">Add</button>
+      </div>
+    </div>
+
+    <!-- Images -->
+    <div>
+      <div class="sku-section-label">Product images</div>
+      <div class="sku-img-placeholder" onclick="showToast('Image upload coming soon.')">
+        <i class="ti ti-photo-plus"></i>
+        Click to upload product images
+        <div style="font-size:11px;margin-top:4px;">PNG, JPG up to 5 MB each</div>
+      </div>
+    </div>
+  </div>
+  <div id="sku-drawer-foot" class="sku-drawer-foot">
+    <span id="sku-drawer-readonly-note" style="display:none;font-size:12px;color:var(--text-soft);"><i class="ti ti-lock" style="font-size:12px;margin-right:4px;"></i>Core fields managed by Nomni Supply</span>
+    <span style="flex:1;"></span>
+    <button class="btn btn-outline btn-sm" onclick="catCloseDetail()">Close</button>
+    <button class="btn btn-primary btn-sm" onclick="catSaveDetail()"><i class="ti ti-device-floppy"></i>Save details</button>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script src="../shared/shell.js?v=12" data-active="suppliers"></script>
+<script>
+  // ─── Supplier data map ────────────────────────────────────────────────────────
+  const SUPPLIERS = {
+    'sydney-butchers': {
+      name: 'Sydney Butchers Co.',
+      initials: 'SB',
+      location: 'Sydney, NSW',
+      category: 'Meat &amp; Seafood',
+      nsConnected: true,
+    },
+    'artisan-bakehouse': {
+      name: 'Artisan Bakehouse',
+      initials: 'AB',
+      location: 'Melbourne, VIC',
+      category: 'Bakery · Dry Goods',
+      nsConnected: false,
+    },
+    'green-farmers': {
+      name: 'Green Farmers Market',
+      initials: 'GF',
+      location: 'Sydney, NSW',
+      category: 'Produce · Fresh',
+      nsConnected: true,
+    },
+    'pacific-drinks': {
+      name: 'Pacific Drinks Wholesale',
+      initials: 'PD',
+      location: 'Sydney, NSW',
+      category: 'Beverages',
+      nsConnected: true,
+    },
+    'nsw-seafood': {
+      name: 'NSW Seafood Direct',
+      initials: 'NS',
+      location: 'Sydney, NSW',
+      category: 'Seafood',
+      nsConnected: false,
+    },
+    'clean-pack': {
+      name: 'Clean Pack Solutions',
+      initials: 'CP',
+      location: 'Brisbane, QLD',
+      category: 'Packaging',
+      nsConnected: false,
+    },
+    'sydney-central-kitchen': {
+      name: 'Sydney Central Kitchen',
+      initials: 'CK',
+      location: 'Alexandria, Sydney NSW',
+      category: 'Production',
+      nsConnected: false,
+      internal: true,
+    },
+  };
+
+  const _urlId = new URLSearchParams(window.location.search).get('id') || 'sydney-butchers';
+  const SUPPLIER = SUPPLIERS[_urlId] || SUPPLIERS['sydney-butchers'];
+  NomniShell.init(SUPPLIER.name);
+
+  // ─── Tab switching ────────────────────────────────────────────────────────────
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    document.querySelector('[data-tab="' + tabId + '"]').classList.add('active');
+  }
+
+  // ─── Category tag toggle ─────────────────────────────────────────────────────
+  function toggleCat(el) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) {
+      el.innerHTML = '<i class="ti ti-check" style="font-size:11px;"></i>' + el.textContent.trim();
+    } else {
+      el.innerHTML = el.textContent.trim().replace(/^\s*/, '');
+    }
+  }
+
+  // ─── Outlet access tree ──────────────────────────────────────────────────────
+  const GROUPS = [
+    { id: 'g1', name: 'CBD Cluster',  outlets: ['Harbour Kitchen', 'Darling St Bistro', 'The CBD Rooftop', 'Central Brasserie'] },
+    { id: 'g2', name: 'Beachside',    outlets: ['Bondi Rooftop', 'Manly Wharf Bar', 'Coogee Bay Dining'] },
+    { id: 'g3', name: 'Suburban',     outlets: ['Parramatta Table', 'Surry Hills Social', 'Newtown Kitchen', 'Leichhardt Trattoria'] },
+  ];
+
+  // Supplier currently assigned to: all CBD, Bondi Rooftop + Manly Wharf Bar, Parramatta Table
+  const accessState = {
+    g1: new Set(['Harbour Kitchen', 'Darling St Bistro', 'The CBD Rooftop', 'Central Brasserie']),
+    g2: new Set(['Bondi Rooftop', 'Manly Wharf Bar']),
+    g3: new Set(['Parramatta Table', 'Surry Hills Social']),
+  };
+  const expandedGroups = new Set(['g1']);
+
+  function renderAccessTree() {
+    const tree = document.getElementById('access-tree');
+    tree.innerHTML = '';
+    GROUPS.forEach(group => {
+      const isExpanded = expandedGroups.has(group.id);
+      const selected = accessState[group.id];
+      const total = group.outlets.length;
+      const selectedCount = selected.size;
+
+      let stateLabel, stateClass;
+      if (selectedCount === 0) {
+        stateLabel = 'None'; stateClass = 'group-state-none';
+      } else if (selectedCount === total) {
+        stateLabel = 'All outlets'; stateClass = 'group-state-all';
+      } else {
+        stateLabel = 'Custom'; stateClass = 'group-state-some';
+      }
+
+      const groupRow = document.createElement('div');
+      groupRow.className = 'group-row';
+      groupRow.innerHTML = `
+        <i class="ti ti-chevron-right group-chevron ${isExpanded ? 'open' : ''}"></i>
+        <span class="group-name">${group.name}</span>
+        <span class="group-outlet-count">${total} outlets</span>
+        <span class="group-state-label ${stateClass}">${stateLabel}</span>
+        <input type="checkbox" class="group-toggle" id="gtoggle-${group.id}"
+          aria-label="Select all outlets in ${group.name}"
+          ${selectedCount === total ? 'checked' : ''}
+          onclick="handleGroupToggle(event, '${group.id}')"/>
+      `;
+      groupRow.addEventListener('click', e => {
+        if (e.target.classList.contains('group-toggle')) return;
+        toggleGroupExpand(group.id);
+      });
+      tree.appendChild(groupRow);
+
+      const cb = groupRow.querySelector(`#gtoggle-${group.id}`);
+      if (selectedCount > 0 && selectedCount < total) cb.indeterminate = true;
+
+      const outletList = document.createElement('div');
+      outletList.className = `outlet-list ${isExpanded ? 'open' : ''}`;
+      outletList.id = `outlets-${group.id}`;
+      group.outlets.forEach(outletName => {
+        const row = document.createElement('div');
+        row.className = 'outlet-row';
+        row.innerHTML = `
+          <input type="checkbox" class="outlet-check"
+            id="outlet-${group.id}-${outletName.replace(/\s+/g,'-')}"
+            aria-label="${outletName}"
+            ${selected.has(outletName) ? 'checked' : ''}
+            onchange="handleOutletToggle('${group.id}', '${outletName}', this)"/>
+          <label class="outlet-name" for="outlet-${group.id}-${outletName.replace(/\s+/g,'-')}" style="cursor:pointer;">${outletName}</label>
+        `;
+        outletList.appendChild(row);
+      });
+      tree.appendChild(outletList);
+    });
+    updateAccessCount();
+  }
+
+  function toggleGroupExpand(groupId) {
+    expandedGroups.has(groupId) ? expandedGroups.delete(groupId) : expandedGroups.add(groupId);
+    renderAccessTree();
+  }
+
+  function handleGroupToggle(e, groupId) {
+    e.stopPropagation();
+    const group = GROUPS.find(g => g.id === groupId);
+    accessState[groupId] = e.target.checked ? new Set(group.outlets) : new Set();
+    renderAccessTree();
+  }
+
+  function handleOutletToggle(groupId, outletName, cb) {
+    cb.checked ? accessState[groupId].add(outletName) : accessState[groupId].delete(outletName);
+    renderAccessTree();
+    if (expandedGroups.has(groupId)) {
+      const list = document.getElementById(`outlets-${groupId}`);
+      if (list) list.classList.add('open');
+    }
+  }
+
+  function updateAccessCount() {
+    let total = 0;
+    Object.values(accessState).forEach(set => { total += set.size; });
+    const badge = document.getElementById('access-count-badge');
+    if (badge) badge.textContent = total + (total === 1 ? ' outlet' : ' outlets');
+  }
+
+  // ─── Danger zone ─────────────────────────────────────────────────────────────
+  function confirmDeactivate() {
+    if (confirm('Deactivate Sydney Butchers Co.? This will prevent new orders from being raised. Existing open POs will not be affected.')) {
+      showToast('Sydney Butchers Co. deactivated.');
+    }
+  }
+
+  // ─── Catalogue tab ───────────────────────────────────────────────────────────
+  function catFilter(q) {
+    const rows = document.querySelectorAll('#cat-tbody tr[data-sku]');
+    const lq = q.toLowerCase();
+    let visible = 0;
+    rows.forEach(r => {
+      const match = r.dataset.sku.toLowerCase().includes(lq) ||
+        r.querySelector('.cat-prod-name').textContent.toLowerCase().includes(lq);
+      r.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    document.getElementById('cat-count').textContent = visible + ' SKU' + (visible !== 1 ? 's' : '');
+  }
+
+  function catFilterCat(cat) {
+    const rows = document.querySelectorAll('#cat-tbody tr[data-sku]');
+    let visible = 0;
+    rows.forEach(r => {
+      const match = !cat || r.dataset.cat === cat;
+      r.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    document.getElementById('cat-count').textContent = visible + ' SKU' + (visible !== 1 ? 's' : '');
+  }
+
+  function catAddRow() {
+    // remove any existing add-row first
+    const existing = document.querySelector('.cat-add-row');
+    if (existing) existing.remove();
+
+    const tbody = document.getElementById('cat-tbody');
+    const tr = document.createElement('tr');
+    tr.className = 'cat-add-row';
+    tr.innerHTML = `
+      <td><input id="cat-new-sku" placeholder="SKU code" style="font-family:'IBM Plex Mono',monospace;font-size:12px;"/></td>
+      <td><input id="cat-new-name" placeholder="Product name"/></td>
+      <td>
+        <select id="cat-new-cat">
+          <option value="">Category</option>
+          <option>Poultry</option><option>Beef</option>
+          <option>Pork</option><option>Lamb</option>
+          <option>Seafood</option><option>Dairy</option>
+          <option>Produce</option><option>Dry goods</option>
+        </select>
+      </td>
+      <td><input id="cat-new-packsize" placeholder="e.g. 5 kg"/></td>
+      <td>
+        <select id="cat-new-uom">
+          <option value="">UOM</option>
+          <option>Carton</option><option>Pack</option>
+          <option>Each</option><option>Portion</option>
+          <option>Rack</option><option>Bag</option>
+          <option>Box</option><option>kg</option>
+          <option>L</option>
+        </select>
+      </td>
+      <td><input id="cat-new-lead" placeholder="1 day" style="width:70px;"/></td>
+      <td><input id="cat-new-moq" placeholder="1 unit" style="width:70px;"/></td>
+      <td></td>
+      <td class="cat-actions">
+        <button class="cat-save-btn" onclick="catConfirmAdd()">Save</button>
+        <button class="cat-cancel-btn" onclick="document.querySelector('.cat-add-row').remove()">Cancel</button>
+      </td>`;
+    tbody.insertBefore(tr, tbody.firstChild);
+    document.getElementById('cat-new-sku').focus();
+  }
+
+  function catConfirmAdd() {
+    const sku      = document.getElementById('cat-new-sku').value.trim();
+    const name     = document.getElementById('cat-new-name').value.trim();
+    const cat      = document.getElementById('cat-new-cat').value;
+    const packsize = document.getElementById('cat-new-packsize').value.trim();
+    const uom      = document.getElementById('cat-new-uom').value;
+    const lead     = document.getElementById('cat-new-lead').value.trim();
+    const moq      = document.getElementById('cat-new-moq').value.trim();
+    if (!sku || !name) { showToast('SKU code and product name are required.'); return; }
+
+    document.querySelector('.cat-add-row').remove();
+    const tbody = document.getElementById('cat-tbody');
+    const tr = document.createElement('tr');
+    tr.dataset.sku = sku;
+    tr.dataset.cat = cat;
+    tr.innerHTML = `
+      <td><span class="sku-code">${sku}</span></td>
+      <td><div class="cat-prod-name">${name}</div></td>
+      <td>${cat || '—'}</td>
+      <td>${packsize || '—'}</td>
+      <td>${uom || '—'}</td>
+      <td class="num">${lead || '—'}</td>
+      <td class="num">${moq || '—'}</td>
+      <td><span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span></td>
+      <td class="cat-actions">
+        <button class="cat-more-btn" onclick="catOpenDetail(this)">More</button>
+        <button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button>
+      </td>`;
+    tbody.insertBefore(tr, tbody.firstChild);
+
+    // update count
+    const total = tbody.querySelectorAll('tr[data-sku]').length;
+    document.getElementById('cat-count').textContent = total + ' SKU' + (total !== 1 ? 's' : '');
+    showToast(sku + ' added to catalogue.');
+  }
+
+  function catEditRow(btn) {
+    const tr = btn.closest('tr');
+    const cells = tr.querySelectorAll('td');
+    const skuVal      = cells[0].querySelector('.sku-code').textContent;
+    const nameVal     = cells[1].querySelector('.cat-prod-name').textContent;
+    const catVal      = cells[2].textContent.trim();
+    const packsizeVal = cells[3].textContent.trim();
+    const uomVal      = cells[4].textContent.trim();
+    const leadVal     = cells[5].textContent.trim();
+    const moqVal      = cells[6].textContent.trim();
+
+    tr.dataset.origHtml = tr.innerHTML;
+    tr.className = 'cat-add-row';
+    const catOptions = ['Poultry','Beef','Pork','Lamb','Seafood','Dairy','Produce','Dry goods']
+      .map(c => `<option${c===catVal?' selected':''}>${c}</option>`).join('');
+    const uomOptions = ['Carton','Pack','Each','Portion','Rack','Bag','Box','kg','L']
+      .map(u => `<option${u===uomVal?' selected':''}>${u}</option>`).join('');
+
+    tr.innerHTML = `
+      <td><input class="cat-edit-sku" value="${skuVal}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;"/></td>
+      <td><input class="cat-edit-name" value="${nameVal}"/></td>
+      <td><select class="cat-edit-cat"><option value="">Category</option>${catOptions}</select></td>
+      <td><input class="cat-edit-packsize" value="${packsizeVal}"/></td>
+      <td><select class="cat-edit-uom"><option value="">UOM</option>${uomOptions}</select></td>
+      <td><input class="cat-edit-lead" value="${leadVal}" style="width:70px;"/></td>
+      <td><input class="cat-edit-moq" value="${moqVal}" style="width:70px;"/></td>
+      <td></td>
+      <td class="cat-actions">
+        <button class="cat-save-btn" onclick="catSaveEdit(this)">Save</button>
+        <button class="cat-cancel-btn" onclick="catCancelEdit(this)">Cancel</button>
+      </td>`;
+  }
+
+  function catSaveEdit(btn) {
+    const tr = btn.closest('tr');
+    const sku      = tr.querySelector('.cat-edit-sku').value.trim();
+    const name     = tr.querySelector('.cat-edit-name').value.trim();
+    const cat      = tr.querySelector('.cat-edit-cat').value;
+    const packsize = tr.querySelector('.cat-edit-packsize').value.trim();
+    const uom      = tr.querySelector('.cat-edit-uom').value;
+    const lead     = tr.querySelector('.cat-edit-lead').value.trim();
+    const moq      = tr.querySelector('.cat-edit-moq').value.trim();
+    if (!sku || !name) { showToast('SKU code and product name are required.'); return; }
+
+    tr.className = '';
+    tr.dataset.sku = sku;
+    tr.dataset.cat = cat;
+    const origSource = (tr.dataset.origHtml || '').includes('cat-source-ns')
+      ? `<span class="cat-source-ns"><i class="ti ti-plug-connected" style="font-size:10px;"></i>Nomni Supply</span>`
+      : `<span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span>`;
+    tr.innerHTML = `
+      <td><span class="sku-code">${sku}</span></td>
+      <td><div class="cat-prod-name">${name}</div></td>
+      <td>${cat || '—'}</td>
+      <td>${packsize || '—'}</td>
+      <td>${uom || '—'}</td>
+      <td class="num">${lead || '—'}</td>
+      <td class="num">${moq || '—'}</td>
+      <td>${origSource}</td>
+      <td class="cat-actions">
+        <button class="cat-more-btn" onclick="catOpenDetail(this)">More</button>
+        <button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button>
+      </td>`;
+    showToast(sku + ' updated.');
+  }
+
+  function catCancelEdit(btn) {
+    const tr = btn.closest('tr');
+    tr.outerHTML = tr.dataset.origHtml || '';
+  }
+
+  function catDeleteRow(btn) {
+    const tr = btn.closest('tr');
+    const sku = tr.dataset.sku;
+    tr.remove();
+    const total = document.querySelectorAll('#cat-tbody tr[data-sku]').length;
+    document.getElementById('cat-count').textContent = total + ' SKU' + (total !== 1 ? 's' : '');
+    showToast(sku + ' removed from catalogue.');
+  }
+
+  // ─── Upload CSV ──────────────────────────────────────────────────────────────
+  function catOpenUpload() {
+    document.getElementById('cat-upload-overlay').style.display = 'flex';
+    // reset state
+    document.getElementById('cat-upload-file').value = '';
+    document.getElementById('cat-upload-file-chosen').style.display = 'none';
+    document.getElementById('cat-upload-file-chosen').textContent = '';
+    document.querySelectorAll('.cat-upload-radio').forEach(r => r.classList.remove('selected'));
+    document.getElementById('cat-upload-radio-append').closest('.cat-upload-radio').classList.add('selected');
+    document.getElementById('cat-upload-radio-append').checked = true;
+  }
+  function catCloseUpload() {
+    document.getElementById('cat-upload-overlay').style.display = 'none';
+  }
+  function catUploadRadio(val) {
+    document.querySelectorAll('.cat-upload-radio').forEach(r => r.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+  }
+  function catUploadFileChosen(input) {
+    const el = document.getElementById('cat-upload-file-chosen');
+    if (input.files.length) {
+      el.textContent = input.files[0].name;
+      el.style.display = 'block';
+    }
+  }
+  function catDoUpload() {
+    const file = document.getElementById('cat-upload-file').files[0];
+    if (!file) { showToast('Please select a CSV file.'); return; }
+    const mode = document.querySelector('input[name="cat-upload-mode"]:checked').value;
+    catCloseUpload();
+    if (mode === 'overwrite') {
+      document.getElementById('cat-tbody').innerHTML = '';
+    }
+    // simulate 3 rows added from CSV
+    const demoRows = [
+      { sku: 'SBC-LAM-999', name: 'Lamb Shoulder Bone-In', cat: 'Lamb', pack: '2 kg', uom: 'Pack', lead: '2 days', moq: '2 packs' },
+      { sku: 'SBC-BEF-101', name: 'Eye Fillet Whole', cat: 'Beef', pack: '1.8 kg', uom: 'Each', lead: '1 day', moq: '1 each' },
+    ];
+    const tbody = document.getElementById('cat-tbody');
+    demoRows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.dataset.sku = r.sku; tr.dataset.cat = r.cat;
+      tr.innerHTML = `
+        <td><span class="sku-code">${r.sku}</span></td>
+        <td><div class="cat-prod-name">${r.name}</div></td>
+        <td>${r.cat}</td><td>${r.pack}</td><td>${r.uom}</td>
+        <td class="num">${r.lead}</td><td class="num">${r.moq}</td>
+        <td><span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span></td>
+        <td class="cat-actions">
+          <button class="cat-more-btn" onclick="catOpenDetail(this)">More</button>
+          <button class="cat-edit-btn" onclick="catEditRow(this)" title="Edit"><i class="ti ti-pencil"></i></button>
+          <button class="cat-del-btn" onclick="catDeleteRow(this)" title="Remove"><i class="ti ti-trash"></i></button>
+        </td>`;
+      tbody.insertBefore(tr, tbody.firstChild);
+    });
+    const total = tbody.querySelectorAll('tr[data-sku]').length;
+    document.getElementById('cat-count').textContent = total + ' SKU' + (total !== 1 ? 's' : '');
+    showToast(mode === 'overwrite' ? 'Catalogue replaced with ' + demoRows.length + ' SKUs from CSV.' : demoRows.length + ' SKUs added from CSV.');
+  }
+  function catDownloadTemplate() {
+    const csv = 'SKU Code,Product Name,Category,Pack Size,UOM,Lead Time,MOQ\nSBC-XXX-000,Example Product,Beef,2 kg,Pack,1 day,2 packs\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'catalogue_template.csv'; a.click();
+  }
+
+  // ─── SKU detail drawer ────────────────────────────────────────────────────────
+  let _drawerTr = null;
+  function catOpenDetail(btn) {
+    const tr = btn.closest('tr');
+    _drawerTr = tr;
+    const cells = tr.querySelectorAll('td');
+    const skuCode  = cells[0].querySelector('.sku-code').textContent;
+    const prodName = cells[1].querySelector('.cat-prod-name').textContent;
+    const isNsRow  = tr.querySelector('.cat-source-ns') !== null;
+
+    document.getElementById('sku-drawer-title').textContent  = prodName;
+    document.getElementById('sku-drawer-subtitle').textContent = skuCode;
+
+    const notice = document.getElementById('sku-drawer-ns-notice');
+    notice.style.display = isNsRow ? 'flex' : 'none';
+
+    // populate read-only summary fields
+    document.getElementById('sku-d-sku').value      = skuCode;
+    document.getElementById('sku-d-name').value     = prodName;
+    document.getElementById('sku-d-cat').value      = cells[2].textContent.trim();
+    document.getElementById('sku-d-pack').value     = cells[3].textContent.trim();
+    document.getElementById('sku-d-uom').value      = cells[4].textContent.trim();
+    document.getElementById('sku-d-lead').value     = cells[5].textContent.trim();
+    document.getElementById('sku-d-moq').value      = cells[6].textContent.trim();
+
+    // extended fields from data attributes (persist across opens)
+    document.getElementById('sku-d-gtin').value     = tr.dataset.gtin       || '';
+    document.getElementById('sku-d-origin').value   = tr.dataset.origin     || '';
+    document.getElementById('sku-d-storage').value  = tr.dataset.storage    || '';
+    document.getElementById('sku-d-shelf').value    = tr.dataset.shelf      || '';
+    document.getElementById('sku-d-desc').value     = tr.dataset.desc       || '';
+    document.getElementById('sku-d-certs').value    = tr.dataset.certs      || '';
+
+    // allergens chips
+    const allergens = tr.dataset.allergens ? tr.dataset.allergens.split(',').filter(Boolean) : [];
+    renderAllergenChips(allergens, isNsRow);
+
+    // readonly for NS rows
+    const editableFields = ['sku-d-gtin','sku-d-origin','sku-d-storage','sku-d-shelf','sku-d-desc','sku-d-certs'];
+    editableFields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.readOnly = isNsRow; el.disabled = isNsRow && el.tagName === 'SELECT'; }
+    });
+    document.getElementById('sku-drawer-allergen-input-row').style.display = isNsRow ? 'none' : '';
+    const foot = document.getElementById('sku-drawer-foot');
+    foot.querySelector('.btn-primary').style.display = isNsRow ? 'none' : '';
+    foot.querySelector('#sku-drawer-readonly-note').style.display = isNsRow ? '' : 'none';
+
+    document.getElementById('sku-drawer-overlay').classList.add('open');
+    document.getElementById('sku-drawer').classList.add('open');
+  }
+  function catCloseDetail() {
+    document.getElementById('sku-drawer-overlay').classList.remove('open');
+    document.getElementById('sku-drawer').classList.remove('open');
+    _drawerTr = null;
+  }
+  function renderAllergenChips(allergens, readonly) {
+    const wrap = document.getElementById('sku-allergen-chips');
+    wrap.innerHTML = allergens.map(a =>
+      readonly
+        ? `<span class="sku-allergen-chip">${a}</span>`
+        : `<span class="sku-allergen-chip removable" onclick="removeAllergen(this,'${a}')">${a} <span class="rm">✕</span></span>`
+    ).join('');
+  }
+  function addAllergen() {
+    const input = document.getElementById('sku-allergen-input');
+    const val = input.value.trim();
+    if (!val) return;
+    input.value = '';
+    const tr = _drawerTr;
+    const existing = tr.dataset.allergens ? tr.dataset.allergens.split(',').filter(Boolean) : [];
+    if (!existing.includes(val)) existing.push(val);
+    tr.dataset.allergens = existing.join(',');
+    renderAllergenChips(existing, false);
+  }
+  function removeAllergen(chip, val) {
+    const tr = _drawerTr;
+    const existing = (tr.dataset.allergens || '').split(',').filter(a => a && a !== val);
+    tr.dataset.allergens = existing.join(',');
+    renderAllergenChips(existing, false);
+  }
+  function catSaveDetail() {
+    if (!_drawerTr) return;
+    const tr = _drawerTr;
+    tr.dataset.gtin     = document.getElementById('sku-d-gtin').value.trim();
+    tr.dataset.origin   = document.getElementById('sku-d-origin').value.trim();
+    tr.dataset.storage  = document.getElementById('sku-d-storage').value.trim();
+    tr.dataset.shelf    = document.getElementById('sku-d-shelf').value.trim();
+    tr.dataset.desc     = document.getElementById('sku-d-desc').value.trim();
+    tr.dataset.certs    = document.getElementById('sku-d-certs').value.trim();
+    catCloseDetail();
+    showToast('SKU details saved.');
+  }
+
+  // ─── Toast ───────────────────────────────────────────────────────────────────
+  function showToast(msg) {
+    const wrap = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  // ─── Init ─────────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    // ── Apply supplier data from URL param ────────────────────────────────────
+    document.title = SUPPLIER.name + ' — Nomni HQ';
+    document.getElementById('sup-logo').textContent    = SUPPLIER.initials;
+    document.getElementById('sup-name').textContent    = SUPPLIER.name;
+    document.getElementById('sup-location').textContent = SUPPLIER.location;
+    document.getElementById('sup-category').innerHTML  = SUPPLIER.category;
+    document.getElementById('sup-rfq-btn').onclick = () =>
+      showToast('Opening RFQ for ' + SUPPLIER.name + '…');
+
+    const nsHeaderPill = document.getElementById('sup-ns-pill');
+    const nsCard       = document.getElementById('sup-ns-card');
+    if (!SUPPLIER.nsConnected) {
+      if (nsHeaderPill) nsHeaderPill.style.display = 'none';
+      if (nsCard)       nsCard.style.display       = 'none';
+    }
+
+    const internalPill = document.getElementById('sup-internal-pill');
+    if (SUPPLIER.internal) {
+      if (internalPill) internalPill.style.display = '';
+      const rfqBtn = document.getElementById('sup-rfq-btn');
+      if (rfqBtn) {
+        rfqBtn.innerHTML = '<i class="ti ti-list-details"></i>Manage in seller workspace';
+        rfqBtn.onclick = () => { window.location.href = 'seller-catalog.html'; };
+      }
+    }
+
+    renderAccessTree();
+
+    // Clickable order history rows
+    document.querySelectorAll('#tab-orders .data-table tbody tr').forEach(tr => {
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', () => {
+        window.location.href = 'orders.html?supplier=' + _urlId;
+      });
+    });
+
+    // ── Catalogue tab: NS vs non-NS rendering ──────────────────────────────────
+    const syncBanner  = document.getElementById('cat-ns-banner');
+    const syncPill    = document.getElementById('cat-ns-pill');
+    const nonNsBanner = document.getElementById('cat-non-ns-banner');
+    const nsNameEl    = document.getElementById('cat-ns-supplier-name');
+    if (nsNameEl) nsNameEl.textContent = SUPPLIER.name;
+
+    if (SUPPLIER.nsConnected) {
+      if (syncBanner)  syncBanner.style.display  = '';
+      if (syncPill)    syncPill.style.display     = '';
+      if (nonNsBanner) nonNsBanner.style.display  = 'none';
+    } else {
+      if (syncBanner)  syncBanner.style.display   = 'none';
+      if (syncPill)    syncPill.style.display      = 'none';
+      if (nonNsBanner) nonNsBanner.style.display   = '';
+      // For non-NS suppliers: all rows are "My account", show no NS source badges
+      document.querySelectorAll('#cat-tbody .cat-source-ns').forEach(el => {
+        el.outerHTML = '<span class="cat-source-own"><i class="ti ti-user" style="font-size:10px;"></i>My account</span>';
+      });
+    }
+  });
+</script>
+</body>
+</html>

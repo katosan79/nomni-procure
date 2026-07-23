@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Hollandaise Sauce — Nomni HQ</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display: flex; flex-direction: column; padding-block: var(--space-2xl); }
+    .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-xl); }
+    .back-nav { font-size: 13px; font-weight: 600; color: var(--text-accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .back-nav:hover { color: var(--spinach); text-decoration: underline; }
+    .recipe-type-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 3px 10px; border-radius: var(--radius-pill); }
+    .recipe-type-badge.finished  { background: color-mix(in srgb, var(--sky,#3FC3FB) 12%, transparent); color: #0872C3; border: 1px solid color-mix(in srgb, var(--sky,#3FC3FB) 28%, transparent); }
+    .recipe-type-badge.prep      { background: color-mix(in srgb, #B05EC0 10%, transparent); color: #7A3D87; border: 1px solid color-mix(in srgb, #B05EC0 22%, transparent); }
+    .recipe-type-badge.production { background: color-mix(in srgb, #17B3A3 10%, transparent); color: #0E7A6F; border: 1px solid color-mix(in srgb, #17B3A3 22%, transparent); }
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap; }
+    .page-title { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
+    .page-title-meta { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-top: 2px; }
+    .recipe-img-wrap { position: relative; width: 96px; height: 96px; border-radius: var(--radius-lg); overflow: hidden; flex-shrink: 0; cursor: pointer; }
+    .recipe-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .recipe-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .recipe-img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+    .recipe-img-wrap:hover .recipe-img-overlay { opacity: 1; }
+    .recipe-img-overlay i { font-size: 18px; color: #fff; }
+    .recipe-img-overlay span { font-size: 11px; font-weight: 600; color: #fff; }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+    .btn { display: inline-flex; align-items: center; gap: var(--space-xs); height: var(--control-h); padding-inline: var(--space-lg); border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; font-family: inherit; white-space: nowrap; text-decoration: none; transition: background 0.12s, color 0.12s, border-color 0.12s; }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-ghost { background: none; border-color: transparent; color: var(--text-soft); }
+    .btn-ghost:hover { background: var(--surface-soft); color: var(--text); }
+    .btn-danger { background: var(--status-risk-bg); color: var(--status-risk-fg); border-color: transparent; }
+    .btn-sm { height: 30px; padding-inline: var(--space-md); font-size: 13px; }
+    .btn i { font-size: 15px; }
+
+    /* KPI strip — 4 tiles */
+    .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-md); }
+    @media (max-width: 700px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); }
+    .kpi-tile-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
+    .kpi-tile-value { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; margin-top: 4px; }
+    .kpi-tile-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+    /* Prep accent: magenta tint on Used-In tile */
+    .kpi-tile.accent-prep { border-color: color-mix(in srgb, #B05EC0 30%, transparent); background: color-mix(in srgb, #B05EC0 4%, transparent); }
+    .kpi-tile.accent-prep .kpi-tile-value { color: #7A3D87; }
+
+    .detail-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-2xl); align-items: start; }
+    @media (max-width: 900px) { .detail-layout { grid-template-columns: 1fr; } }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: var(--space-sm); }
+    .card-body { padding: var(--space-xl); }
+    .tab-nav { display: flex; gap: 2px; padding: 3px; background: var(--surface-soft); border-radius: var(--radius-md); border: 1px solid var(--border); align-self: flex-start; flex-wrap: wrap; }
+    .tab-nav-btn { height: 32px; padding-inline: var(--space-lg); border: none; background: none; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-soft); cursor: pointer; white-space: nowrap; font-family: inherit; transition: background 0.12s, color 0.12s; display: inline-flex; align-items: center; gap: 5px; }
+    .tab-nav-btn:hover { color: var(--text); background: color-mix(in srgb, var(--surface) 60%, transparent); }
+    .tab-nav-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px color-mix(in srgb, var(--seaweed) 12%, transparent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .field-group { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .field-label .opt { font-weight: 400; color: var(--text-soft); font-size: 12px; }
+    .field-input { height: var(--control-h); padding-inline: var(--space-md); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; width: 100%; box-sizing: border-box; }
+    .field-select { height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-sm) center; width: 100%; box-sizing: border-box; }
+    .field-textarea { padding: var(--space-md); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; width: 100%; box-sizing: border-box; resize: vertical; min-height: 100px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); }
+    .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border); }
+    .ing-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .ing-table thead tr { border-bottom: 1px solid var(--border); background: var(--surface-soft); }
+    .ing-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap; }
+    .ing-table th.num, .ing-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
+    .ing-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+    .ing-table tbody tr:last-child td { border-bottom: none; }
+    .ing-table tbody tr:hover td { background: var(--surface-soft); }
+    .ing-table tfoot td { padding: var(--space-md) var(--space-lg); border-top: 2px solid var(--border); font-size: 14px; background: var(--surface-soft); }
+    .ing-table .total-label { color: var(--text-soft); font-weight: 600; }
+    .ing-table .total-val { text-align: right; font-weight: 700; color: var(--text); font-size: 15px; font-feature-settings: 'tnum' 1; }
+    .cost-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-md) 0; border-bottom: 1px solid var(--border); }
+    .cost-row:last-child { border-bottom: none; }
+    .cost-row-label { font-size: 14px; color: var(--text); }
+    .cost-row-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .cost-row-val { font-size: 15px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; white-space: nowrap; }
+    .cost-row-val.muted { font-size: 14px; font-weight: 500; color: var(--text-soft); }
+    .cost-total-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-lg) var(--space-xl); background: color-mix(in srgb, var(--seaweed) 4%, transparent); border-radius: var(--radius-md); border: 1.5px solid var(--border); }
+    .cost-total-label { font-size: 15px; font-weight: 700; color: var(--text); }
+    .cost-total-val { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
+    .labor-row { display: grid; grid-template-columns: 1fr auto 90px auto 80px; gap: var(--space-md); align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
+    .labor-row:last-child { border-bottom: none; }
+    .labor-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .labor-sep { font-size: 13px; color: var(--text-soft); }
+    .labor-cost { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; font-feature-settings: 'tnum' 1; }
+
+    /* Prep-specific: no-sell-price notice */
+    .no-price-notice { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-lg) var(--space-xl); background: color-mix(in srgb, #B05EC0 6%, transparent); border: 1px solid color-mix(in srgb, #B05EC0 22%, transparent); border-radius: var(--radius-md); }
+    .no-price-notice i { color: #7A3D87; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .no-price-notice-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+    .no-price-notice-text strong { color: #7A3D87; }
+
+    /* Cost per portion table */
+    .portion-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .portion-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); background: var(--surface-soft); border-bottom: 1px solid var(--border); }
+    .portion-table th.num, .portion-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
+    .portion-table td { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+    .portion-table tbody tr:last-child td { border-bottom: none; }
+    .portion-table tbody tr:hover td { background: var(--surface-soft); }
+    .portion-table .highlight td { background: color-mix(in srgb, #B05EC0 5%, transparent); font-weight: 600; }
+
+    /* Used-in table */
+    .used-in-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .used-in-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); background: var(--surface-soft); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .used-in-table th.num, .used-in-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
+    .used-in-table td { padding: 0 var(--space-lg); height: 52px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+    .used-in-table tbody tr:last-child td { border-bottom: none; }
+    .used-in-table tbody tr { cursor: pointer; }
+    .used-in-table tbody tr:hover td { background: var(--surface-soft); }
+    .recipe-link { font-weight: 600; color: var(--text-accent); text-decoration: none; font-size: 14px; }
+    .recipe-link:hover { color: var(--spinach); text-decoration: underline; }
+
+    .version-list { display: flex; flex-direction: column; gap: 0; }
+    .version-item { display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--border); gap: var(--space-lg); }
+    .version-item:last-child { border-bottom: none; }
+    .version-meta { display: flex; flex-direction: column; gap: 2px; }
+    .version-tag { display: inline-flex; align-items: center; height: 20px; padding-inline: var(--space-sm); border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .version-tag.current { background: var(--mint); color: var(--spinach); }
+    .version-tag.old { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .version-name { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 2px; }
+    .version-by { font-size: 12px; color: var(--text-soft); }
+    .version-desc { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .activity-list { display: flex; flex-direction: column; gap: var(--space-md); }
+    .activity-item { display: flex; gap: var(--space-md); }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; margin-top: 5px; }
+    .activity-dot.ok { background: var(--status-ok-fg); }
+    .activity-dot.warn { background: var(--status-warn-fg); }
+    .activity-text { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+    .activity-text strong { color: var(--text); font-weight: 600; }
+    .activity-time { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .access-tree-wrap { border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .group-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); background: var(--surface); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .group-row:last-child { border-bottom: none; }
+    .group-row:hover { background: var(--surface-soft); }
+    .group-chevron { font-size: 13px; color: var(--text-soft); transition: transform 0.18s; flex-shrink: 0; }
+    .group-chevron.open { transform: rotate(90deg); }
+    .group-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+    .group-outlet-count { font-size: 12px; color: var(--text-soft); }
+    .group-state-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-pill); }
+    .group-state-none { background: var(--surface-soft); color: var(--text-soft); }
+    .group-state-all  { background: var(--mint); color: var(--spinach); }
+    .group-state-some { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .group-toggle { cursor: pointer; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--fern); }
+    .outlet-list { display: none; background: color-mix(in srgb, var(--mint) 15%, transparent); }
+    .outlet-list.open { display: block; }
+    .outlet-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-sm) var(--space-lg) var(--space-sm) calc(var(--space-lg) + 28px); border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+    .outlet-row:last-child { border-bottom: none; }
+    .outlet-row:hover { background: color-mix(in srgb, var(--mint) 40%, transparent); }
+    .outlet-check { cursor: pointer; width: 15px; height: 15px; accent-color: var(--fern); flex-shrink: 0; }
+    .outlet-name { font-size: 13px; color: var(--text); flex: 1; }
+    .info-banner { display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-md) var(--space-lg); background: color-mix(in srgb, var(--sky,#3FC3FB) 8%, transparent); border: 1px solid color-mix(in srgb, var(--sky,#3FC3FB) 22%, transparent); border-radius: var(--radius-md); font-size: 13px; color: var(--text); line-height: 1.5; }
+    .info-banner i { color: #0872C3; font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .allergen-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: var(--space-md); }
+    .allergen-item { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; color: var(--text); cursor: pointer; user-select: none; }
+    .allergen-item input[type="checkbox"] { accent-color: var(--fern); width: 15px; height: 15px; flex-shrink: 0; }
+    .allergen-item.inherited { color: var(--text-soft); }
+    .tag-input-wrap { display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:100%; min-height:36px; padding:6px var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); box-sizing:border-box; cursor:text; }
+    .tag-input-wrap:focus-within { border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 12%,transparent); }
+    .tag-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px 2px 10px; border-radius:var(--radius-pill); font-size:12px; font-weight:600; background:color-mix(in srgb,var(--fern) 12%,transparent); color:var(--spinach); white-space:nowrap; }
+    .tag-chip .tag-rm { cursor:pointer; opacity:0.6; display:flex; align-items:center; font-size:11px; }
+    .tag-chip .tag-rm:hover { opacity:1; }
+    .tag-input { flex:1; min-width:120px; border:none; outline:none; background:transparent; font-family:inherit; font-size:13px; color:var(--text); }
+    .aside-stack { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .meta-kv { display: flex; flex-direction: column; gap: var(--space-md); }
+    .meta-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); }
+    .meta-label { font-size: 12px; color: var(--text-soft); }
+    .meta-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-pill); }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
+    .nb-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: var(--radius-pill); }
+    .nb-pill.neutral { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .danger-zone { border: 1.5px solid var(--status-risk-bg); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-md); }
+    .danger-title { font-size: 14px; font-weight: 700; color: var(--status-risk-fg); }
+    .danger-desc { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+
+    /* "Used in" mini list in aside */
+    .used-in-mini { display: flex; flex-direction: column; gap: 2px; }
+    .used-in-mini-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) 0; font-size: 12px; color: var(--text); }
+    .used-in-mini-item a { font-size: 12px; font-weight: 600; color: var(--text-accent); text-decoration: none; }
+    .used-in-mini-item a:hover { color: var(--spinach); text-decoration: underline; }
+    .used-in-mini-qty { font-size: 11px; color: var(--text-soft); margin-left: auto; font-feature-settings: 'tnum' 1; }
+
+    #toast-wrap { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 80; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .period-btn { display:inline-flex;align-items:center;height:26px;padding-inline:var(--space-md);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-soft);font-family:inherit;transition:background 0.1s,color 0.1s; }
+    .period-btn:hover { background:var(--surface-soft);color:var(--text); }
+    .period-btn.active { background:var(--mint);color:var(--spinach);border-color:color-mix(in srgb,var(--fern) 20%,transparent); }
+  </style>
+</head>
+<body>
+<script src="../shared/shell.js?v=12" data-active="recipes"></script>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="content">
+
+    <a class="back-nav" href="recipes.html"><i class="ti ti-arrow-left"></i>Recipe library</a>
+
+    <!-- Page header — prep item has no "Push to outlets" -->
+    <div class="page-header">
+      <div style="display:flex;align-items:flex-start;gap:var(--space-lg);">
+        <div class="recipe-img-wrap" onclick="showToast('Image upload coming soon…')">
+          <div class="recipe-img-placeholder" style="background:#FAF5FF;color:#B05EC0"><i class="ti ti-droplet" aria-hidden="true"></i></div>
+          <div class="recipe-img-overlay"><i class="ti ti-camera" aria-hidden="true"></i><span>Edit photo</span></div>
+        </div>
+        <div>
+        <span class="recipe-type-badge prep"><i class="ti ti-git-fork" style="font-size:10px;"></i>Prep item</span>
+        <h1 class="page-title" style="margin-top:var(--space-xs);">Hollandaise Sauce</h1>
+        <div class="page-title-meta">
+          <span class="status-pill active">Active</span>
+          <span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>Sauces &amp; Condiments</span>
+          <span class="nb-pill neutral"><i class="ti ti-layers-intersect" style="font-size:11px;"></i>Used in 4 recipes</span>
+          <span id="header-tags" style="display:contents;"></span>
+        </div>
+        </div><!-- /.inner title col -->
+      </div><!-- /.flex header-left -->
+      <div class="page-actions">
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Opening version history…')"><i class="ti ti-history"></i>v2</button>
+        <button class="btn btn-outline" onclick="showToast('Recipe duplicated.')"><i class="ti ti-copy"></i>Duplicate</button>
+        <button class="btn btn-primary" onclick="showToast('Changes saved.')"><i class="ti ti-device-floppy"></i>Save changes</button>
+      </div>
+    </div>
+
+    <!-- KPI strip — Prep item: batch yield, cost/batch, cost/portion, used-in count -->
+    <!-- NO selling price. NO margin. -->
+    <div class="kpi-strip">
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Batch yield</div>
+        <div class="kpi-tile-value">1,000 mL</div>
+        <div class="kpi-tile-sub">Per production run</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Cost per batch</div>
+        <div class="kpi-tile-value">$10.50</div>
+        <div class="kpi-tile-sub">Ingredients + labour</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Cost per 30 mL</div>
+        <div class="kpi-tile-value">$0.32</div>
+        <div class="kpi-tile-sub">Standard portion size</div>
+      </div>
+      <div class="kpi-tile accent-prep">
+        <div class="kpi-tile-label">Used in</div>
+        <div class="kpi-tile-value">4 recipes</div>
+        <div class="kpi-tile-sub">Across 2 brands</div>
+      </div>
+    </div>
+
+    <!-- No selling price / no margin notice -->
+    <div class="no-price-notice">
+      <i class="ti ti-git-fork"></i>
+      <div class="no-price-notice-text">
+        <strong>Prep item — no selling price or margin.</strong> This is an intermediate preparation used inside other recipes. Its cost rolls up into any finished recipe that includes it as an ingredient. To see margin impact, open a finished recipe that uses this prep.
+      </div>
+    </div>
+
+    <!-- Detail layout -->
+    <div class="detail-layout">
+      <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+
+        <!-- Tab nav -->
+        <div class="tab-nav">
+          <button class="tab-nav-btn active" onclick="switchTab('ingredients')"><i class="ti ti-list-details"></i>Ingredients</button>
+          <button class="tab-nav-btn" onclick="switchTab('costing')"><i class="ti ti-calculator"></i>Costing</button>
+          <button class="tab-nav-btn" onclick="switchTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
+          <button class="tab-nav-btn" onclick="switchTab('used-in')"><i class="ti ti-layers-intersect"></i>Used in <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:color-mix(in srgb,#B05EC0 15%,transparent);color:#7A3D87;border-radius:50%;font-size:10px;font-weight:700;margin-left:2px;">4</span></button>
+          <button class="tab-nav-btn" onclick="switchTab('settings')"><i class="ti ti-settings"></i>Settings</button>
+        </div>
+
+        <!-- ── Ingredients tab ── -->
+        <div id="tab-ingredients" class="tab-panel active">
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Basic details</span></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div class="form-row">
+                  <div class="field-group">
+                    <label class="field-label">Preparation name</label>
+                    <input class="field-input" type="text" value="Hollandaise Sauce"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Category</label>
+                    <select class="field-select"><option selected>Sauces &amp; Condiments</option><option>Bases &amp; Stocks</option><option>Pastry &amp; Dough</option><option>Dressings</option></select>
+                  </div>
+                </div>
+                <div class="form-row-3">
+                  <div class="field-group">
+                    <label class="field-label">Batch yield</label>
+                    <input class="field-input" type="number" value="1000" style="font-feature-settings:'tnum' 1;"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Yield unit</label>
+                    <select class="field-select"><option selected>mL</option><option>g</option><option>L</option><option>kg</option><option>each</option></select>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Standard portion size</label>
+                    <input class="field-input" type="number" value="30" style="font-feature-settings:'tnum' 1;" placeholder="e.g. 30 mL"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-list-details"></i>Ingredient list <span style="font-size:12px;font-weight:400;color:var(--text-soft);margin-left:4px;">— batch quantities (makes 1,000 mL)</span></span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Add ingredient row…')"><i class="ti ti-plus"></i>Add line</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="ing-table" aria-label="Ingredient list">
+                <thead><tr><th>Ingredient</th><th class="num">Qty</th><th>Unit</th><th class="num">Yield %</th><th class="num">Unit cost</th><th class="num">Subtotal</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><div style="font-weight:600;">Egg yolks</div><div style="font-size:12px;color:var(--text-soft);">Dairy &amp; Eggs</div></td>
+                    <td class="num">8</td><td>each</td>
+                    <td class="num">—</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.35</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$2.80</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Unsalted butter (clarified)</div><div style="font-size:12px;color:var(--text-soft);">Dairy · clarified/ghee</div></td>
+                    <td class="num">500</td><td>g</td>
+                    <td class="num">—</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.014</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$7.00</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Lemon juice (fresh)</div><div style="font-size:12px;color:var(--text-soft);">Produce</div></td>
+                    <td class="num">60</td><td>mL</td>
+                    <td class="num">—</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.008</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.48</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">White wine vinegar</div><div style="font-size:12px;color:var(--text-soft);">Pantry</div></td>
+                    <td class="num">30</td><td>mL</td>
+                    <td class="num">—</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.006</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.18</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Salt &amp; white pepper</div><div style="font-size:12px;color:var(--text-soft);">Seasoning</div></td>
+                    <td class="num">5</td><td>g</td>
+                    <td class="num">—</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.008</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.04</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr><td colspan="5" class="total-label">Ingredient cost total (batch)</td><td class="total-val">$10.50</td><td></td></tr>
+                </tfoot>
+              </table>
+            </div>
+            <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);display:flex;gap:var(--space-sm);">
+              <button class="btn btn-ghost btn-sm" onclick="showToast('Searching ingredients…')"><i class="ti ti-search"></i>Add ingredient</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-notes"></i>Method &amp; instructions</span></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div class="field-group">
+                  <label class="field-label">Method</label>
+                  <textarea class="field-textarea" rows="5">1. Combine egg yolks and white wine vinegar in a bowl over a bain-marie. Whisk until ribbon stage (tripled in volume).
+2. Remove from heat. Slowly drizzle clarified butter while whisking continuously to emulsify.
+3. Season with lemon juice, salt and white pepper. Adjust consistency with a splash of warm water if needed.
+4. Hold at 55–60°C in a bain-marie. Discard after 4 hours. Do not refrigerate after preparation.</textarea>
+                </div>
+                <div class="form-row">
+                  <div class="field-group">
+                    <label class="field-label">Yield / storage note</label>
+                    <input class="field-input" type="text" value="1,000 mL · holds 4 hours at 55–60°C"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Shelf life after prep</label>
+                    <input class="field-input" type="text" value="4 hours (warm hold) · do not refrigerate"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /tab-ingredients -->
+
+        <!-- ── Costing tab ── NO selling price, NO margin calculator -->
+        <div id="tab-costing" class="tab-panel">
+          <!-- ── Cost movement chart ── -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-chart-line"></i>Cost movement</span>
+              <div style="display:flex;gap:4px;">
+                <button class="period-btn active" data-period="6" onclick="setCostPeriod(this)">6M</button>
+                <button class="period-btn" data-period="12" onclick="setCostPeriod(this)">12M</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding-top:var(--space-md);padding-bottom:var(--space-lg);">
+              <div style="position:relative;" id="chart-wrap">
+                <svg id="cost-chart" width="100%" height="200" viewBox="0 0 600 200" style="display:block;overflow:visible;"></svg>
+                <div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--surface-deep);color:var(--chrome-fg);font-size:12px;font-weight:500;padding:6px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,0.15);line-height:1.6;"></div>
+              </div>
+              <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:20px;height:2px;background:var(--fern);border-radius:2px;vertical-align:middle;"></span>
+                  Cost per batch (1,000 mL)
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F5C219;vertical-align:middle;"></span>
+                  Price change event
+                </div>
+                <div id="chart-delta" style="font-size:12px;color:var(--text-soft);margin-left:auto;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-list-details"></i>Ingredient cost breakdown</span><span style="font-size:12px;color:var(--text-soft);">Per batch (1,000 mL)</span></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div>
+                  <div class="cost-row"><div><div class="cost-row-label">Egg yolks <span style="color:var(--text-soft);font-weight:400;">× 8 each</span></div><div class="cost-row-sub">$0.35/each</div></div><div class="cost-row-val">$2.80</div></div>
+                  <div class="cost-row"><div><div class="cost-row-label">Unsalted butter (clarified) <span style="color:var(--text-soft);font-weight:400;">× 500g</span></div><div class="cost-row-sub">$0.014/g</div></div><div class="cost-row-val">$7.00</div></div>
+                  <div class="cost-row"><div><div class="cost-row-label">Lemon juice <span style="color:var(--text-soft);font-weight:400;">× 60mL</span></div><div class="cost-row-sub">$0.008/mL</div></div><div class="cost-row-val">$0.48</div></div>
+                  <div class="cost-row"><div><div class="cost-row-label">White wine vinegar <span style="color:var(--text-soft);font-weight:400;">× 30mL</span></div><div class="cost-row-sub">$0.006/mL</div></div><div class="cost-row-val">$0.18</div></div>
+                  <div class="cost-row"><div><div class="cost-row-label">Salt &amp; white pepper <span style="color:var(--text-soft);font-weight:400;">× 5g</span></div><div class="cost-row-sub">$0.008/g</div></div><div class="cost-row-val">$0.04</div></div>
+                </div>
+                <div class="cost-total-row"><span class="cost-total-label">Ingredient cost (batch)</span><span class="cost-total-val">$10.50</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-clock"></i>Labour cost</span>
+              <span style="font-size:12px;color:var(--text-soft);">Per batch · active time only</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+                <div class="labor-row">
+                  <div><div class="labor-label">Prep &amp; clarify butter</div><div style="font-size:11px;color:var(--text-soft);">Separating eggs, clarifying butter</div></div>
+                  <span class="labor-sep">×</span>
+                  <input class="field-input" type="number" id="prep-min" value="10" min="0" oninput="calcLabour()" style="height:32px;font-size:13px;text-align:right;font-feature-settings:'tnum' 1;padding-right:var(--space-sm);"/>
+                  <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">min @ $<span id="prep-rate">24</span>/hr</span>
+                  <div class="labor-cost" id="prep-cost">$4.00</div>
+                </div>
+                <div class="labor-row">
+                  <div><div class="labor-label">Emulsification</div><div style="font-size:11px;color:var(--text-soft);">Bain-marie + whisking</div></div>
+                  <span class="labor-sep">×</span>
+                  <input class="field-input" type="number" id="cook-min" value="15" min="0" oninput="calcLabour()" style="height:32px;font-size:13px;text-align:right;font-feature-settings:'tnum' 1;padding-right:var(--space-sm);"/>
+                  <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">min @ $<span id="cook-rate">24</span>/hr</span>
+                  <div class="labor-cost" id="cook-cost">$6.00</div>
+                </div>
+              </div>
+              <div style="margin-top:var(--space-lg);">
+                <div class="cost-total-row"><span class="cost-total-label">Labour cost (batch)</span><span class="cost-total-val" id="labour-total">$10.00</span></div>
+              </div>
+              <div style="margin-top:var(--space-md);">
+                <div class="field-group" style="max-width:200px;">
+                  <label class="field-label">Hourly wage rate</label>
+                  <div style="position:relative;">
+                    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-soft);">$</span>
+                    <input class="field-input" type="number" id="hourly-rate" value="24" min="0" step="0.5" oninput="calcLabour()" style="padding-left:26px;font-feature-settings:'tnum' 1;"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total batch cost + cost per portion breakdown — prep-specific -->
+          <div class="card" style="border-color:color-mix(in srgb,#B05EC0 20%,transparent);">
+            <div class="card-head" style="background:color-mix(in srgb,#B05EC0 4%,transparent);border-color:color-mix(in srgb,#B05EC0 15%,transparent);">
+              <span class="card-title" style="color:#7A3D87;"><i class="ti ti-coins"></i>Total batch cost &amp; cost-per-portion</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+                <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+                  <div class="cost-row"><div class="cost-row-label">Ingredient cost</div><div class="cost-row-val muted" id="out-ing">$10.50</div></div>
+                  <div class="cost-row"><div class="cost-row-label">Labour cost</div><div class="cost-row-val muted" id="out-labour">$10.00</div></div>
+                </div>
+                <div class="cost-total-row" style="background:color-mix(in srgb,#B05EC0 6%,transparent);border-color:color-mix(in srgb,#B05EC0 20%,transparent);">
+                  <span class="cost-total-label" style="color:#7A3D87;">Total batch cost</span>
+                  <span class="cost-total-val" style="color:#7A3D87;" id="out-total">$20.50</span>
+                </div>
+                <div>
+                  <div class="section-title" style="margin-bottom:var(--space-md);">Cost per portion size</div>
+                  <table class="portion-table">
+                    <thead><tr><th>Portion size</th><th>Portions per batch</th><th class="num">Cost per portion</th></tr></thead>
+                    <tbody>
+                      <tr class="highlight">
+                        <td><strong>30 mL</strong> <span style="font-size:11px;color:#7A3D87;margin-left:4px;">★ standard</span></td>
+                        <td>33 portions</td>
+                        <td class="num" style="color:#7A3D87;font-weight:700;" id="cost-per-30">$0.62</td>
+                      </tr>
+                      <tr>
+                        <td>50 mL</td><td>20 portions</td>
+                        <td class="num" id="cost-per-50">$1.03</td>
+                      </tr>
+                      <tr>
+                        <td>100 mL</td><td>10 portions</td>
+                        <td class="num" id="cost-per-100">$2.05</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /tab-costing -->
+
+        <!-- ── Outlets tab ── -->
+        <div id="tab-outlets" class="tab-panel">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-building-store"></i>Outlet assignment</span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Outlet assignments saved.')"><i class="ti ti-device-floppy"></i>Save</button>
+            </div>
+            <div class="card-body">
+              <p style="font-size:13px;color:var(--text-soft);line-height:1.6;margin-bottom:var(--space-lg);">Select which outlets can prepare or use this preparation. No selling price applies — this only controls which outlets see it in their recipe/prep list.</p>
+              <div class="access-tree-wrap" id="outlet-tree"></div>
+            </div>
+          </div>
+        </div><!-- /tab-outlets -->
+
+        <!-- ── Used In tab ── prep-specific -->
+        <div id="tab-used-in" class="tab-panel">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-layers-intersect"></i>Recipes using this preparation</span>
+              <span style="font-size:12px;color:var(--text-soft);">4 recipes across 2 brands</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="used-in-table" aria-label="Recipes using Hollandaise Sauce">
+                <thead>
+                  <tr>
+                    <th>Recipe</th>
+                    <th>Brand</th>
+                    <th>Type</th>
+                    <th class="num">Qty used</th>
+                    <th class="num">Cost contribution</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr onclick="showToast('Opening Avocado Toast v3…')">
+                    <td>
+                      <div><a class="recipe-link" href="recipe-detail.html">Avocado Toast v3</a></div>
+                      <div style="font-size:12px;color:var(--text-soft);">Breakfast</div>
+                    </td>
+                    <td><span style="font-size:13px;color:var(--text);">The Burger Co</span></td>
+                    <td><span class="recipe-type-badge finished" style="font-size:10px;padding:2px 7px;"><i class="ti ti-chef-hat" style="font-size:9px;"></i>Finished</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">30 mL</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.62</td>
+                    <td><a href="recipe-detail.html" class="btn btn-ghost btn-sm" style="text-decoration:none;"><i class="ti ti-arrow-right" style="font-size:14px;"></i></a></td>
+                  </tr>
+                  <tr onclick="showToast('Opening Eggs Benedict…')">
+                    <td>
+                      <div><a class="recipe-link" href="#">Eggs Benedict</a></div>
+                      <div style="font-size:12px;color:var(--text-soft);">Breakfast</div>
+                    </td>
+                    <td><span style="font-size:13px;color:var(--text);">The Burger Co</span></td>
+                    <td><span class="recipe-type-badge finished" style="font-size:10px;padding:2px 7px;"><i class="ti ti-chef-hat" style="font-size:9px;"></i>Finished</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">50 mL</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$1.03</td>
+                    <td><a href="#" class="btn btn-ghost btn-sm" style="text-decoration:none;"><i class="ti ti-arrow-right" style="font-size:14px;"></i></a></td>
+                  </tr>
+                  <tr onclick="showToast('Opening Salmon on Toast…')">
+                    <td>
+                      <div><a class="recipe-link" href="#">Salmon on Toast</a></div>
+                      <div style="font-size:12px;color:var(--text-soft);">Breakfast · Mains</div>
+                    </td>
+                    <td><span style="font-size:13px;color:var(--text);">The Burger Co</span></td>
+                    <td><span class="recipe-type-badge finished" style="font-size:10px;padding:2px 7px;"><i class="ti ti-chef-hat" style="font-size:9px;"></i>Finished</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">30 mL</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.62</td>
+                    <td><a href="#" class="btn btn-ghost btn-sm" style="text-decoration:none;"><i class="ti ti-arrow-right" style="font-size:14px;"></i></a></td>
+                  </tr>
+                  <tr onclick="showToast('Opening Fish of the Day…')">
+                    <td>
+                      <div><a class="recipe-link" href="#">Fish of the Day</a></div>
+                      <div style="font-size:12px;color:var(--text-soft);">Mains</div>
+                    </td>
+                    <td><span style="font-size:13px;color:var(--text);">Pasta Palace</span></td>
+                    <td><span class="recipe-type-badge finished" style="font-size:10px;padding:2px 7px;"><i class="ti ti-chef-hat" style="font-size:9px;"></i>Finished</span></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">50 mL</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$1.03</td>
+                    <td><a href="#" class="btn btn-ghost btn-sm" style="text-decoration:none;"><i class="ti ti-arrow-right" style="font-size:14px;"></i></a></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);font-size:12px;color:var(--text-soft);">
+              <i class="ti ti-info-circle" style="font-size:13px;vertical-align:-2px;margin-right:4px;"></i>
+              Cost contribution shown per recipe portion. Changing this prep's cost will automatically update the ingredient cost in all recipes above.
+            </div>
+          </div>
+        </div><!-- /tab-used-in -->
+
+        <!-- ── Settings tab ── -->
+        <div id="tab-settings" class="tab-panel">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-alert-circle"></i>Allergens</span>
+              <span style="font-size:12px;color:var(--text-soft);">Auto-inherited from ingredients</span>
+            </div>
+            <div class="card-body">
+              <div class="allergen-grid">
+                <label class="allergen-item inherited"><input type="checkbox" checked/> Eggs <span style="font-size:10px;color:var(--text-soft);">(inherited)</span></label>
+                <label class="allergen-item inherited"><input type="checkbox" checked/> Dairy <span style="font-size:10px;color:var(--text-soft);">(inherited)</span></label>
+                <label class="allergen-item"><input type="checkbox"/> Gluten</label>
+                <label class="allergen-item"><input type="checkbox"/> Nuts</label>
+                <label class="allergen-item"><input type="checkbox"/> Soy</label>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-tags"></i>Tags</span></div>
+            <div class="card-body">
+              <div class="tag-input-wrap" id="recipe-tag-wrap" onclick="document.getElementById('recipe-tag-input').focus()">
+                <input type="text" id="recipe-tag-input" class="tag-input" placeholder="Add a tag and press Enter…" onkeydown="if(event.key==='Enter'){event.preventDefault();addRecipeTag(this);}"/>
+              </div>
+              <p style="font-size:12px;color:var(--text-soft);margin-top:var(--space-sm);">An additional way to identify and search for this recipe.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-history"></i>Version history</span></div>
+            <div class="version-list">
+              <div class="version-item">
+                <div class="version-meta">
+                  <span class="version-tag current">v2 · Current</span>
+                  <div class="version-name">Hollandaise Sauce</div>
+                  <div class="version-by">Updated by Sarah Chen · 3 May 2026</div>
+                  <div class="version-desc">Increased butter from 400g to 500g for richer texture. Yield updated to 1,000mL.</div>
+                </div>
+              </div>
+              <div class="version-item">
+                <div class="version-meta">
+                  <span class="version-tag old">v1</span>
+                  <div class="version-name">Hollandaise Sauce</div>
+                  <div class="version-by">Created by Keith Tan · 20 Jan 2026</div>
+                  <div class="version-desc">Initial preparation recipe. 400g butter, ~800mL yield.</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="showToast('Restoring v1…')"><i class="ti ti-restore"></i>Restore</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-activity"></i>Activity log</span></div>
+            <div class="card-body">
+              <div class="activity-list">
+                <div class="activity-item">
+                  <div class="activity-dot warn"></div>
+                  <div><div class="activity-text"><strong>Ingredient price updated</strong> — Unsalted butter: $0.012/g → $0.014/g (invoice sync from Westside Dairy)</div><div class="activity-time">8 Jun 2026 · 10:15am</div></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot ok"></div>
+                  <div><div class="activity-text"><strong>Updated to v2</strong> by Sarah Chen — butter quantity increased; yield revised</div><div class="activity-time">3 May 2026 · 11:00am</div></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot ok"></div>
+                  <div><div class="activity-text"><strong>Added to Fish of the Day</strong> (Pasta Palace) — 50mL portion size</div><div class="activity-time">22 Mar 2026 · 09:30am</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /tab-settings -->
+
+      </div><!-- /main col -->
+
+      <!-- Aside — no margin agent, no POS mapping -->
+      <aside class="aside-stack">
+        <div class="card">
+          <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Prep item info</span></div>
+          <div class="card-body">
+            <div class="meta-kv">
+              <div class="meta-row"><span class="meta-label">Type</span><span class="recipe-type-badge prep" style="font-size:10px;padding:2px 7px;"><i class="ti ti-git-fork" style="font-size:9px;"></i>Prep item</span></div>
+              <div class="meta-row"><span class="meta-label">Status</span><span class="status-pill active" style="font-size:11px;">Active</span></div>
+              <div class="meta-row"><span class="meta-label">Batch yield</span><span class="meta-val">1,000 mL</span></div>
+              <div class="meta-row"><span class="meta-label">Std portion</span><span class="meta-val">30 mL</span></div>
+              <div class="meta-row"><span class="meta-label">Used in</span><span class="meta-val">4 recipes</span></div>
+              <div class="meta-row"><span class="meta-label">Assigned outlets</span><a href="#" onclick="switchTab('outlets');return false;" class="meta-val" style="color:var(--text-accent);text-decoration:none;">4 outlets</a></div>
+              <div class="meta-row"><span class="meta-label">Selling price</span><span style="font-size:12px;color:var(--text-soft);font-style:italic;">None — prep item</span></div>
+              <div class="meta-row"><span class="meta-label">Version</span><span class="meta-val">v2 (current)</span></div>
+              <div class="meta-row"><span class="meta-label">Last updated</span><span class="meta-val">3 May 2026</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Used-in quick list -->
+        <div class="card">
+          <div class="card-head"><span class="card-title" style="color:#7A3D87;"><i class="ti ti-layers-intersect" style="color:#7A3D87;"></i>Used in</span><button class="btn btn-ghost btn-sm" onclick="switchTab('used-in')"><i class="ti ti-arrow-right"></i></button></div>
+          <div style="padding:var(--space-md) var(--space-xl);">
+            <div class="used-in-mini">
+              <div class="used-in-mini-item">
+                <i class="ti ti-chef-hat" style="font-size:12px;color:#0872C3;flex-shrink:0;"></i>
+                <a href="recipe-detail.html">Avocado Toast v3</a>
+                <span class="used-in-mini-qty">30 mL</span>
+              </div>
+              <div class="used-in-mini-item">
+                <i class="ti ti-chef-hat" style="font-size:12px;color:#0872C3;flex-shrink:0;"></i>
+                <a href="#">Eggs Benedict</a>
+                <span class="used-in-mini-qty">50 mL</span>
+              </div>
+              <div class="used-in-mini-item">
+                <i class="ti ti-chef-hat" style="font-size:12px;color:#0872C3;flex-shrink:0;"></i>
+                <a href="#">Salmon on Toast</a>
+                <span class="used-in-mini-qty">30 mL</span>
+              </div>
+              <div class="used-in-mini-item">
+                <i class="ti ti-chef-hat" style="font-size:12px;color:#0872C3;flex-shrink:0;"></i>
+                <a href="#">Fish of the Day</a>
+                <span class="used-in-mini-qty">50 mL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="danger-zone">
+          <div class="danger-title"><i class="ti ti-alert-triangle" style="font-size:14px;"></i> Danger zone</div>
+          <div class="danger-desc">Archiving this prep item will remove it from the ingredient list of <strong>4 recipes</strong>. Those recipes' costing will be incomplete until a replacement is set.</div>
+          <button class="btn btn-danger btn-sm" onclick="showToast('Cannot archive — used in 4 active recipes.')"><i class="ti ti-archive"></i>Archive prep item</button>
+        </div>
+      </aside>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script src="../shared/shell.js?v=12" data-active="recipes"></script>
+<script>
+  const ING_COST_BATCH = 10.50;
+  const BATCH_YIELD_ML = 1000;
+
+  NomniShell.init('Hollandaise Sauce');
+
+  function switchTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    document.querySelectorAll('.tab-nav-btn').forEach(b => {
+      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
+    });
+  }
+
+  function calcLabour() {
+    const rate = parseFloat(document.getElementById('hourly-rate').value) || 0;
+    const prep = parseFloat(document.getElementById('prep-min').value) || 0;
+    const cook = parseFloat(document.getElementById('cook-min').value) || 0;
+    document.getElementById('prep-rate').textContent = rate.toFixed(0);
+    document.getElementById('cook-rate').textContent = rate.toFixed(0);
+    const prepCost = (prep / 60) * rate;
+    const cookCost = (cook / 60) * rate;
+    const labourTotal = prepCost + cookCost;
+    document.getElementById('prep-cost').textContent = '$' + prepCost.toFixed(2);
+    document.getElementById('cook-cost').textContent = '$' + cookCost.toFixed(2);
+    document.getElementById('labour-total').textContent = '$' + labourTotal.toFixed(2);
+    const total = ING_COST_BATCH + labourTotal;
+    document.getElementById('out-ing').textContent    = '$' + ING_COST_BATCH.toFixed(2);
+    document.getElementById('out-labour').textContent = '$' + labourTotal.toFixed(2);
+    document.getElementById('out-total').textContent  = '$' + total.toFixed(2);
+    document.getElementById('cost-per-30').textContent  = '$' + (total / (BATCH_YIELD_ML / 30)).toFixed(2);
+    document.getElementById('cost-per-50').textContent  = '$' + (total / (BATCH_YIELD_ML / 50)).toFixed(2);
+    document.getElementById('cost-per-100').textContent = '$' + (total / (BATCH_YIELD_ML / 100)).toFixed(2);
+  }
+
+  function showToast(msg) {
+    const wrap = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;white-space:nowrap;';
+    t.innerHTML = `<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>${msg}`;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  // ── Outlet assignment (which outlets can prepare/use this prep item) ──
+  const OUTLET_GROUPS = [
+    { id:'g1', name:'CBD Cluster',  outlets:['Harbour Kitchen','Darling St Bistro','The CBD Rooftop'] },
+    { id:'g2', name:'Beachside',    outlets:['Bondi Rooftop','Manly Wharf Bar'] },
+    { id:'g3', name:'Suburban',     outlets:['Parramatta Table','Surry Hills Social'] },
+  ];
+  const outletAccess = { g1: new Set(['Harbour Kitchen','Darling St Bistro','The CBD Rooftop']), g2: new Set(['Bondi Rooftop']), g3: new Set() };
+  const outletExpanded = new Set();
+
+  function renderOutletTree() {
+    const tree = document.getElementById('outlet-tree');
+    if (!tree) return;
+    tree.innerHTML = '';
+    OUTLET_GROUPS.forEach(group => {
+      const isExpanded = outletExpanded.has(group.id);
+      const sel = outletAccess[group.id], total = group.outlets.length, count = sel.size;
+      let stateLabel, stateClass;
+      if (count === 0) { stateLabel = 'None'; stateClass = 'group-state-none'; }
+      else if (count === total) { stateLabel = 'All outlets'; stateClass = 'group-state-all'; }
+      else { stateLabel = 'Custom'; stateClass = 'group-state-some'; }
+      const groupRow = document.createElement('div');
+      groupRow.className = 'group-row';
+      groupRow.innerHTML = `<i class="ti ti-chevron-right group-chevron ${isExpanded ? 'open' : ''}"></i><span class="group-name">${group.name}</span><span class="group-outlet-count">${total} outlets</span><span class="group-state-label ${stateClass}">${stateLabel}</span><input type="checkbox" class="group-toggle" id="gcb-${group.id}" ${count === total ? 'checked' : ''} onclick="groupToggle(event,'${group.id}')"/>`;
+      groupRow.addEventListener('click', e => { if (e.target.classList.contains('group-toggle')) return; outletExpanded.has(group.id) ? outletExpanded.delete(group.id) : outletExpanded.add(group.id); renderOutletTree(); });
+      tree.appendChild(groupRow);
+      const cb = groupRow.querySelector(`#gcb-${group.id}`);
+      if (count > 0 && count < total) cb.indeterminate = true;
+      const outletList = document.createElement('div');
+      outletList.className = `outlet-list ${isExpanded ? 'open' : ''}`;
+      group.outlets.forEach(name => {
+        const row = document.createElement('div'); row.className = 'outlet-row';
+        const slug = name.replace(/\s+/g,'-');
+        row.innerHTML = `<input type="checkbox" class="outlet-check" id="oc-${slug}" ${sel.has(name) ? 'checked' : ''} onchange="outletToggle('${group.id}','${name}',this)"/><label class="outlet-name" for="oc-${slug}" style="cursor:pointer;">${name}</label>`;
+        outletList.appendChild(row);
+      });
+      tree.appendChild(outletList);
+    });
+  }
+  function groupToggle(e, gid) { e.stopPropagation(); const g = OUTLET_GROUPS.find(g => g.id === gid); outletAccess[gid] = e.target.checked ? new Set(g.outlets) : new Set(); renderOutletTree(); }
+  function outletToggle(gid, name, cb) { cb.checked ? outletAccess[gid].add(name) : outletAccess[gid].delete(name); renderOutletTree(); if (outletExpanded.has(gid)) outletExpanded.add(gid); }
+
+  // ── Tags ────────────────────────────────────────────────
+  let recipeTags = ['Rich', 'French classic'];
+
+  function renderRecipeTags() {
+    const wrap  = document.getElementById('recipe-tag-wrap');
+    const input = document.getElementById('recipe-tag-input');
+    wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+    recipeTags.forEach(t => {
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${t}<span class="tag-rm" onclick="removeRecipeTag('${t}')"><i class="ti ti-x" aria-hidden="true"></i></span>`;
+      wrap.insertBefore(chip, input);
+    });
+    const headerEl = document.getElementById('header-tags');
+    if (headerEl) headerEl.innerHTML = recipeTags.map(t => `<span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>${t}</span>`).join('');
+  }
+
+  function addRecipeTag(input) {
+    const val = input.value.trim();
+    if (!val) return;
+    if (!recipeTags.includes(val)) { recipeTags.push(val); renderRecipeTags(); showToast('Tag added.'); }
+    input.value = '';
+  }
+
+  function removeRecipeTag(val) {
+    recipeTags = recipeTags.filter(t => t !== val);
+    renderRecipeTags();
+  }
+
+  // ── Cost movement chart ──
+  const COST_HISTORY = [
+    { l:"Jul '25", s:'Jul', v:9.20 },
+    { l:"Aug '25", s:'Aug', v:9.20 },
+    { l:"Sep '25", s:'Sep', v:9.78, ev:'Egg prices +6%' },
+    { l:"Oct '25", s:'Oct', v:9.78 },
+    { l:"Nov '25", s:'Nov', v:9.95 },
+    { l:"Dec '25", s:'Dec', v:9.95 },
+    { l:"Jan '26", s:'Jan', v:10.10 },
+    { l:"Feb '26", s:'Feb', v:10.50, ev:'Butter +7%' },
+    { l:"Mar '26", s:'Mar', v:10.50 },
+    { l:"Apr '26", s:'Apr', v:10.50 },
+    { l:"May '26", s:'May', v:10.50 },
+    { l:"Jun '26", s:'Jun', v:10.50 },
+  ];
+  const CHART_LINE_COLOR = '#129B41';
+  const CHART_UNIT = '/batch';
+  let _cPeriod = 6;
+
+  function setCostPeriod(btn) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _cPeriod = parseInt(btn.dataset.period);
+    renderCostChart();
+  }
+
+  function renderCostChart() {
+    const data = COST_HISTORY.slice(-_cPeriod);
+    const svg = document.getElementById('cost-chart');
+    if (!svg) return;
+    const W = 600, H = 200, P = { t:16, r:16, b:36, l:54 };
+    const cW = W - P.l - P.r, cH = H - P.t - P.b;
+    const vals = data.map(d => d.v);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const span = hi - lo || 0.5;
+    const yLo = lo - span * 0.25, yHi = hi + span * 0.35;
+    const xS = i => P.l + (data.length < 2 ? cW / 2 : (i / (data.length - 1)) * cW);
+    const yS = v => P.t + cH - ((v - yLo) / (yHi - yLo)) * cH;
+    function makePath(pts) {
+      let d = `M${pts[0][0]},${pts[0][1]}`;
+      for (let i = 1; i < pts.length; i++) {
+        const cpx = (pts[i-1][0] + pts[i][0]) / 2;
+        d += ` C${cpx},${pts[i-1][1]} ${cpx},${pts[i][1]} ${pts[i][0]},${pts[i][1]}`;
+      }
+      return d;
+    }
+    const pts = data.map((d, i) => [xS(i), yS(d.v)]);
+    const line = makePath(pts);
+    const lp = pts[pts.length - 1];
+    const area = `${line} L${lp[0]},${P.t + cH} L${pts[0][0]},${P.t + cH}Z`;
+    let grid = '';
+    for (let i = 0; i <= 4; i++) {
+      const v = yLo + (yHi - yLo) * i / 4;
+      const y = yS(v);
+      grid += `<line x1="${P.l}" y1="${y.toFixed(1)}" x2="${W-P.r}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`;
+      grid += `<text x="${P.l-6}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--text-soft)" font-family="Hanken Grotesk,sans-serif" font-feature-settings="'tnum' 1">$${v.toFixed(2)}</text>`;
+    }
+    let xlabels = '';
+    data.forEach((d, i) => {
+      if (data.length > 6 && i % 2 !== 0 && i !== data.length - 1) return;
+      xlabels += `<text x="${xS(i).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="10" fill="var(--text-soft)" font-family="Hanken Grotesk,sans-serif">${d.s}</text>`;
+    });
+    let events = '';
+    data.forEach((d, i) => {
+      if (!d.ev) return;
+      const x = xS(i), y = yS(d.v);
+      events += `<line x1="${x.toFixed(1)}" y1="${P.t}" x2="${x.toFixed(1)}" y2="${(P.t+cH).toFixed(1)}" stroke="#F5C219" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>`;
+      events += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#F5C219"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="#F5C219" opacity="0.15"/>`;
+    });
+    let hits = '';
+    data.forEach((d, i) => { hits += `<circle cx="${xS(i).toFixed(1)}" cy="${yS(d.v).toFixed(1)}" r="14" fill="transparent" class="chart-hit" data-i="${i}"/>`; });
+    svg.innerHTML = `<defs><linearGradient id="cg${_cPeriod}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${CHART_LINE_COLOR}" stop-opacity="0.18"/><stop offset="100%" stop-color="${CHART_LINE_COLOR}" stop-opacity="0.01"/></linearGradient></defs>${grid}<path d="${area}" fill="url(#cg${_cPeriod})"/><path d="${line}" fill="none" stroke="${CHART_LINE_COLOR}" stroke-width="2" stroke-linecap="round"/>${events}<circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="4" fill="${CHART_LINE_COLOR}"/><circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="9" fill="${CHART_LINE_COLOR}" opacity="0.18"/>${xlabels}${hits}`;
+    const tt = document.getElementById('chart-tooltip');
+    const wrap = document.getElementById('chart-wrap');
+    svg.querySelectorAll('.chart-hit').forEach(el => {
+      const d = data[parseInt(el.dataset.i)];
+      el.addEventListener('mouseenter', () => { tt.innerHTML = `<strong style="font-feature-settings:'tnum' 1">$${d.v.toFixed(2)}${CHART_UNIT}</strong> &nbsp;${d.l}${d.ev ? `<br><span style="color:#F5C219;font-size:11px;">⬆ ${d.ev}</span>` : ''}`; tt.style.display = 'block'; });
+      el.addEventListener('mousemove', e => { const r = wrap.getBoundingClientRect(); let lx = e.clientX-r.left+14, ly = e.clientY-r.top-52; if (lx+180>r.width) lx=e.clientX-r.left-180; tt.style.left=lx+'px'; tt.style.top=Math.max(0,ly)+'px'; });
+      el.addEventListener('mouseleave', () => tt.style.display = 'none');
+    });
+    const delta = document.getElementById('chart-delta');
+    if (delta) {
+      const chg = data[data.length-1].v - data[0].v, pct = chg/data[0].v*100;
+      const col = chg > 0 ? 'var(--status-risk-fg)' : 'var(--status-ok-fg)';
+      delta.innerHTML = `<span style="color:${col};font-weight:600;font-feature-settings:'tnum' 1">${chg>=0?'+':''}$${chg.toFixed(2)} (${pct>=0?'+':''}${pct.toFixed(1)}%)</span> over ${_cPeriod}M`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => { calcLabour(); renderCostChart(); renderOutletTree(); renderRecipeTags(); });
+</script>
+</body>
+</html>

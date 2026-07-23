@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Harbour Meats — Spend detail · Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { padding-block: var(--space-2xl); }
+    .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-2xl); }
+
+    .breadcrumb { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; color: var(--text-soft); }
+    .breadcrumb a { color: var(--text-link); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { opacity: 0.45; }
+
+    /* Supplier header */
+    .sup-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xl); }
+    .sup-header-left { display: flex; align-items: center; gap: var(--space-xl); }
+    .sup-logo { width: 56px; height: 56px; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: white; flex-shrink: 0; }
+    .sup-meta { display: flex; flex-direction: column; gap: 4px; }
+    .sup-name { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
+    .sup-tags { display: flex; align-items: center; gap: var(--space-sm); margin-top: 4px; }
+    .sup-tag { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: var(--radius-pill); border: 1px solid var(--border); color: var(--text-soft); background: var(--surface); }
+    .sup-tag.primary { background: color-mix(in srgb, var(--fern) 8%, transparent); color: var(--text-accent); border-color: color-mix(in srgb, var(--fern) 25%, transparent); }
+    .sup-header-right { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Controls */
+    .controls-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; }
+    .controls-left  { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+    .controls-right { display: flex; align-items: center; gap: var(--space-sm); }
+    .period-picker { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 3px; gap: 2px; }
+    .period-btn { padding: 5px var(--space-md); border-radius: calc(var(--radius-md) - 2px); font-size: 13px; font-weight: 500; color: var(--text-soft); background: none; border: none; cursor: pointer; white-space: nowrap; transition: background var(--dur-1), color var(--dur-1); display: flex; align-items: center; gap: 4px; }
+    .period-btn:hover { color: var(--text); background: var(--surface-soft); }
+    .period-btn.active { background: var(--seaweed); color: var(--cream); font-weight: 600; }
+    .custom-range { display: flex; align-items: center; gap: var(--space-sm); animation: row-in var(--dur-3) var(--ease-emphasized); }
+    .date-input { height: var(--control-h); padding-inline: var(--space-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; }
+    .date-input:focus { border-color: var(--text-accent); }
+    .range-sep { font-size: 13px; color: var(--text-soft); }
+    .filter-select { height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-sm) center; transition: border-color var(--dur-1); }
+    .filter-select:focus { border-color: var(--text-accent); }
+
+    /* KPI strip */
+    .kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: var(--space-lg); }
+    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm); transition: box-shadow var(--dur-1) var(--ease-standard); }
+    .kpi-tile:hover { box-shadow: var(--shadow-md); }
+    .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; font-feature-settings: 'tnum' 1; }
+    .kpi-value sup { font-size: 16px; font-weight: 600; }
+    .kpi-context { font-size: 12px; font-weight: 500; color: var(--text-soft); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+    .kpi-context .ok   { color: var(--status-ok-fg); font-weight: 600; }
+    .kpi-context .warn { color: var(--status-warn-fg); font-weight: 600; }
+    .kpi-context .risk { color: var(--status-risk-fg); font-weight: 600; }
+
+    /* Tabs */
+    .tab-nav { display: flex; border-bottom: 1.5px solid var(--border); gap: 0; }
+    .tab-btn { padding: var(--space-sm) var(--space-xl); font-size: 14px; font-weight: 500; color: var(--text-soft); background: none; border: none; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; transition: color var(--dur-1), border-color var(--dur-1); display: flex; align-items: center; gap: var(--space-xs); white-space: nowrap; }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--text); font-weight: 600; border-bottom-color: var(--spinach); }
+    .tab-panel { display: none; flex-direction: column; gap: var(--space-2xl); }
+    .tab-panel.active { display: flex; }
+
+    /* Panel / cards */
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border); }
+    .panel-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .panel-meta  { font-size: 12px; color: var(--text-soft); }
+    .panel-body  { padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); }
+
+    /* Area chart */
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); }
+    .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; }
+    .chart-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .chart-legend { display: flex; align-items: center; gap: var(--space-lg); }
+    .leg-item { display: flex; align-items: center; gap: var(--space-xs); font-size: 11px; color: var(--text-soft); }
+    .leg-line { width: 18px; height: 2px; border-radius: 2px; }
+    .leg-dash { width: 18px; border-top: 2px dashed; }
+
+    .svg-wrap { width: 100%; }
+    .svg-wrap svg { display: block; width: 100%; height: auto; }
+
+    /* Two-column layout */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); align-items: start; }
+
+    /* Bar list */
+    .bar-list { display: flex; flex-direction: column; gap: var(--space-md); }
+    .bar-row { display: grid; grid-template-columns: 140px 1fr 72px; align-items: center; gap: var(--space-sm); }
+    .bar-label { font-size: 12px; font-weight: 500; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { height: 22px; background: color-mix(in srgb, var(--border) 70%, transparent); border-radius: 3px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 3px; background: color-mix(in srgb, var(--fern) 55%, transparent); }
+    .bar-fill.teal { background: color-mix(in srgb, #17B3A3 55%, transparent); }
+    .bar-fill.muted { background: color-mix(in srgb, var(--border) 150%, transparent); }
+    .bar-val  { font-size: 12px; font-weight: 600; color: var(--text); text-align: right; font-feature-settings: 'tnum' 1; }
+    .bar-val.soft { color: var(--text-soft); }
+
+    /* Data table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table thead { background: var(--surface-soft); }
+    .data-table th { text-align: left; padding: var(--space-sm) var(--space-lg); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .data-table th.r, .data-table td.r { text-align: right; font-feature-settings: 'tnum' 1; }
+    .data-table td { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr.clickable { cursor: pointer; transition: background var(--dur-1); }
+    .data-table tbody tr.clickable:hover td { background: var(--surface-soft); }
+    .td-name { font-weight: 500; }
+    .td-sub  { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+
+    /* Pills */
+    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .pill.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .pill.warn { background: var(--status-warn-bg);  color: var(--status-warn-fg); }
+    .pill.risk { background: var(--status-risk-bg);  color: var(--status-risk-fg); }
+    .pill.info { background: color-mix(in srgb,#3F8AFB 10%,transparent); color: #3F8AFB; }
+    .pill.soft { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+
+    /* Link action (inline table button) */
+    .link-action { font-size: 13px; font-weight: 600; color: var(--text-accent); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* Panel action link */
+    .panel-action { font-size: 12px; font-weight: 500; color: var(--text-link); text-decoration: none; }
+    .panel-action:hover { text-decoration: underline; }
+
+    /* Supplier scorecard */
+    .scorecard-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-lg); }
+    .score-cell { display: flex; flex-direction: column; gap: var(--space-xs); padding: var(--space-lg); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); text-decoration: none; }
+    a.score-cell { cursor: pointer; transition: box-shadow var(--dur-1) var(--ease-standard), border-color var(--dur-1); }
+    a.score-cell:hover { box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--status-risk-fg) 35%, var(--border)); }
+    .score-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .score-value { font-size: 23px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.15; font-feature-settings: 'tnum' 1; display: flex; align-items: baseline; gap: var(--space-sm); flex-wrap: wrap; }
+    .score-value.ok   { color: var(--status-ok-fg); }
+    .score-value.warn { color: var(--status-warn-fg); }
+    .score-value.risk { color: var(--status-risk-fg); }
+    .score-trend { font-size: 12px; font-weight: 600; }
+    .score-trend.ok { color: var(--status-ok-fg); }
+    .score-sub { font-size: 12px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    @media (max-width:1100px) { .scorecard-grid { grid-template-columns: 1fr 1fr; } }
+
+    /* Status filter row (Orders tab) */
+    .status-filter { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--border); background: var(--surface); }
+    .status-filter-btn { padding: 4px var(--space-md); border-radius: var(--radius-pill); font-size: 12px; font-weight: 600; color: var(--text-soft); background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-family: inherit; white-space: nowrap; transition: background var(--dur-1), color var(--dur-1), border-color var(--dur-1); }
+    .status-filter-btn:hover { color: var(--text); background: var(--surface-soft); }
+    .status-filter-btn.active { background: var(--seaweed); color: var(--cream); border-color: var(--seaweed); }
+
+    /* Empty state (Orders tab filter) */
+    .empty-state { padding: var(--space-3xl); text-align: center; }
+    .empty-state i { font-size: 32px; color: var(--text-soft); display: block; margin-bottom: var(--space-md); }
+    .empty-state-text { font-size: 13px; color: var(--text-soft); }
+
+    /* Items tab helpers */
+    .price-cell { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-md); }
+    .price-cell svg { display: block; flex-shrink: 0; }
+    .mono-ref { font-family: var(--font-mono, monospace); font-size: 12px; }
+    a.mono-ref { color: var(--text-link); text-decoration: none; }
+    a.mono-ref:hover { text-decoration: underline; }
+
+    /* Exception callout */
+    .exception-row { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) var(--space-lg); background: var(--status-risk-bg); border-radius: var(--radius-sm); }
+    .exception-row i { color: var(--status-risk-fg); font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+    .exception-text { font-size: 13px; color: var(--status-risk-fg); line-height: 1.45; }
+    .exception-text strong { font-weight: 700; }
+
+    /* Toast */
+    .toast-wrap { position: fixed; bottom: var(--space-xl); left: 50%; transform: translateX(-50%); z-index: 60; pointer-events: none; }
+    .toast { display: flex; align-items: center; gap: var(--space-sm); background: var(--surface-deep); color: var(--cream); padding: var(--space-md) var(--space-xl); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 500; animation: toastin var(--dur-3) var(--ease-emphasized); }
+    .toast i { color: var(--spring); }
+    @keyframes toastin { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+
+    @media (max-width:1100px) { .kpi-strip { grid-template-columns: repeat(3,1fr); } .two-col { grid-template-columns: 1fr; } }
+    @media (max-width:768px) { .sup-name { font-size: 22px; } .kpi-strip { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12" data-active="reporting"></script>
+
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="reporting.html">Reporting</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="spend-by-supplier.html">Spend by supplier</a>
+        <span class="breadcrumb-sep">›</span>
+        <span id="bc-name">Harbour Meats</span>
+      </nav>
+
+      <!-- Supplier header -->
+      <div class="sup-header">
+        <div class="sup-header-left">
+          <div class="sup-logo" id="sup-logo" style="background:#17B3A3;">HM</div>
+          <div class="sup-meta">
+            <div class="sup-name" id="sup-name">Harbour Meats</div>
+            <div class="sup-tags">
+              <span class="sup-tag primary">Primary supplier</span>
+              <span class="sup-tag">Proteins</span>
+              <span class="sup-tag">Sydney, NSW</span>
+              <span class="sup-tag">Last order: 24 Jun 2026</span>
+            </div>
+          </div>
+        </div>
+        <div class="sup-header-right">
+          <button class="nb-btn" onclick="showToast('Exporting Harbour Meats spend to XLSX…')"><i class="ti ti-file-spreadsheet"></i>Export</button>
+          <a class="nb-btn" href="suppliers.html"><i class="ti ti-building-store"></i>Supplier profile</a>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-bar">
+        <div class="controls-left">
+          <div class="period-picker">
+            <button class="period-btn active" onclick="setPeriod(this)">Last 30d</button>
+            <button class="period-btn" onclick="setPeriod(this)">This month</button>
+            <button class="period-btn" onclick="setPeriod(this)">Last quarter</button>
+            <button class="period-btn" onclick="setPeriod(this)">YTD</button>
+            <button class="period-btn" id="custom-btn" onclick="toggleCustom()"><i class="ti ti-calendar" style="font-size:13px;"></i>Custom</button>
+          </div>
+          <div class="custom-range" id="custom-range" style="display:none;">
+            <input type="date" class="date-input" id="date-from" value="2026-05-26">
+            <span class="range-sep">to</span>
+            <input type="date" class="date-input" id="date-to" value="2026-06-25">
+            <button class="nb-btn" onclick="applyCustom()">Apply</button>
+          </div>
+        </div>
+        <div class="controls-right">
+          <select class="filter-select" onchange="showToast('Outlet: ' + this.value)">
+            <option>All outlets (124)</option>
+            <option>Surry Hills</option>
+            <option>Bondi Beach</option>
+            <option>Newtown</option>
+            <option>CBD</option>
+            <option>Parramatta</option>
+            <option>Richmond</option>
+            <option>St Kilda</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- KPI strip -->
+      <div class="kpi-strip">
+        <div class="kpi-tile">
+          <div class="kpi-label">Spend this period</div>
+          <div class="kpi-value"><sup>$</sup>142k</div>
+          <div class="kpi-context"><span class="warn">▲ +12% vs prior period</span></div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Prior period</div>
+          <div class="kpi-value"><sup>$</sup>127k</div>
+          <div class="kpi-context">Comparison baseline</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Orders</div>
+          <div class="kpi-value">89</div>
+          <div class="kpi-context"><span class="ok">▲ +9% vs prior period</span></div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Avg order value</div>
+          <div class="kpi-value"><sup>$</sup>1,596</div>
+          <div class="kpi-context"><span class="warn">▲ +3% vs prior</span></div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">On-time delivery</div>
+          <div class="kpi-value" style="color:var(--status-ok-fg);">94<sup style="font-size:14px">%</sup></div>
+          <div class="kpi-context"><span class="ok">▲ +2pts vs prior</span></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <nav class="tab-nav" role="tablist">
+        <button class="tab-btn active" role="tab" onclick="switchTab('overview')"><i class="ti ti-chart-area"></i>Overview</button>
+        <button class="tab-btn" role="tab" onclick="switchTab('orders')"><i class="ti ti-file-invoice"></i>Orders</button>
+        <button class="tab-btn" role="tab" onclick="switchTab('items')"><i class="ti ti-package"></i>Items</button>
+      </nav>
+
+      <!-- ── TAB: OVERVIEW ── -->
+      <div class="tab-panel active" id="tab-overview">
+
+        <!-- Price exception alert -->
+        <div class="exception-row">
+          <i class="ti ti-alert-triangle"></i>
+          <div class="exception-text">
+            <strong>2 price exceptions this period.</strong>
+            Chicken Breast 500g invoiced at $8.92/kg vs market list $8.40/kg (+6.2%) · Salmon Fillet 200g invoiced at $38.40/kg vs market list $32.20/kg (+19.3%) · both on <a href="invoice-detail.html?id=INV-00889" style="color:inherit;text-decoration:underline;font-family:var(--font-mono,monospace);font-size:12px;">INV-00889</a>.
+            <a href="invoice-detail.html?id=INV-00889" style="color:inherit;text-decoration:underline;margin-left:6px;font-weight:600;">Review invoice →</a>
+          </div>
+        </div>
+
+        <!-- Spend over time chart -->
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Monthly spend · Jan – Jun 2026</div>
+            <div class="chart-legend">
+              <div class="leg-item"><div class="leg-line" style="background:#17B3A3;"></div>Spend</div>
+              <div class="leg-item"><div class="leg-dash" style="border-color:#17B3A3;opacity:0.5;"></div>Jun MTD</div>
+            </div>
+          </div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 600 190" xmlns="http://www.w3.org/2000/svg" style="font-family:inherit;">
+              <!-- Grid lines — y = 150 - (val/30)*120 -->
+              <line x1="48" y1="30"  x2="580" y2="30"  stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="48" y1="70"  x2="580" y2="70"  stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="48" y1="110" x2="580" y2="110" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="48" y1="150" x2="580" y2="150" stroke="var(--border)" stroke-width="1"/>
+              <!-- Y labels -->
+              <text x="42" y="34"  text-anchor="end" font-size="13" fill="currentColor" opacity="0.45">$30k</text>
+              <text x="42" y="74"  text-anchor="end" font-size="13" fill="currentColor" opacity="0.45">$20k</text>
+              <text x="42" y="114" text-anchor="end" font-size="13" fill="currentColor" opacity="0.45">$10k</text>
+              <text x="42" y="154" text-anchor="end" font-size="13" fill="currentColor" opacity="0.45">$0</text>
+              <!-- Area gradient -->
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stop-color="#17B3A3" stop-opacity="0.18"/>
+                  <stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Data: Jan=$18k→y=78, Feb=$21k→y=66, Mar=$24k→y=54, Apr=$22k→y=62, May=$27k→y=42, Jun=$30k→y=30 -->
+              <path d="M 82,150 L 82,78 L 178,66 L 274,54 L 370,62 L 466,42 L 562,30 L 562,150 Z" fill="url(#areaGrad)"/>
+              <!-- Confirmed line Jan–May -->
+              <polyline points="82,78 178,66 274,54 370,62 466,42" fill="none" stroke="#17B3A3" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <!-- Jun MTD dashed -->
+              <line x1="466" y1="42" x2="562" y2="30" stroke="#17B3A3" stroke-width="2" stroke-dasharray="5,3"/>
+              <!-- Data dots Jan–May -->
+              <circle cx="82"  cy="78" r="4" fill="#17B3A3" stroke="var(--surface)" stroke-width="2"/>
+              <circle cx="178" cy="66" r="4" fill="#17B3A3" stroke="var(--surface)" stroke-width="2"/>
+              <circle cx="274" cy="54" r="4" fill="#17B3A3" stroke="var(--surface)" stroke-width="2"/>
+              <circle cx="370" cy="62" r="4" fill="#17B3A3" stroke="var(--surface)" stroke-width="2"/>
+              <circle cx="466" cy="42" r="4" fill="#17B3A3" stroke="var(--surface)" stroke-width="2"/>
+              <!-- Jun MTD dot (open) -->
+              <circle cx="562" cy="30" r="4" fill="var(--surface)" stroke="#17B3A3" stroke-width="2"/>
+              <!-- Value labels -->
+              <text x="82"  y="70" text-anchor="middle" font-size="10" fill="#17B3A3" font-weight="600">$18k</text>
+              <text x="178" y="58" text-anchor="middle" font-size="10" fill="#17B3A3" font-weight="600">$21k</text>
+              <text x="274" y="46" text-anchor="middle" font-size="10" fill="#17B3A3" font-weight="600">$24k</text>
+              <text x="370" y="54" text-anchor="middle" font-size="10" fill="#17B3A3" font-weight="600">$22k</text>
+              <text x="466" y="34" text-anchor="middle" font-size="10" fill="#17B3A3" font-weight="600">$27k</text>
+              <text x="562" y="22" text-anchor="middle" font-size="10" fill="#17B3A3" font-weight="600">$30k</text>
+              <!-- X labels -->
+              <text x="82"  y="170" text-anchor="middle" font-size="13" fill="currentColor" opacity="0.5">Jan</text>
+              <text x="178" y="170" text-anchor="middle" font-size="13" fill="currentColor" opacity="0.5">Feb</text>
+              <text x="274" y="170" text-anchor="middle" font-size="13" fill="currentColor" opacity="0.5">Mar</text>
+              <text x="370" y="170" text-anchor="middle" font-size="13" fill="currentColor" opacity="0.5">Apr</text>
+              <text x="466" y="170" text-anchor="middle" font-size="13" fill="currentColor" opacity="0.5">May</text>
+              <text x="562" y="170" text-anchor="middle" font-size="13" fill="#17B3A3" font-weight="600" opacity="0.8">Jun MTD</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Spend by outlet + Top items -->
+        <div class="two-col">
+
+          <!-- Spend by outlet -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Spend by outlet</span>
+              <span class="panel-meta">$142k · 124 outlets</span>
+            </div>
+            <div class="panel-body">
+              <div class="bar-list">
+                <div class="bar-row">
+                  <span class="bar-label">Surry Hills</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:100%;"></div></div>
+                  <span class="bar-val">$28k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Bondi Beach</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:79%;"></div></div>
+                  <span class="bar-val">$22k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">CBD</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:68%;"></div></div>
+                  <span class="bar-val">$19k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Newtown</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:57%;"></div></div>
+                  <span class="bar-val">$16k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Parramatta</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:50%;"></div></div>
+                  <span class="bar-val">$14k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">St Kilda</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:43%;"></div></div>
+                  <span class="bar-val">$12k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label" style="color:var(--text-soft);">Others (118)</span>
+                  <div class="bar-track"><div class="bar-fill muted" style="width:39%;"></div></div>
+                  <span class="bar-val soft">$31k</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top items -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Top items by spend</span>
+              <span class="panel-meta">This period</span>
+            </div>
+            <div class="panel-body">
+              <div class="bar-list">
+                <div class="bar-row">
+                  <span class="bar-label">Chicken Breast 500g</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:100%;"></div></div>
+                  <span class="bar-val">$42k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Beef Mince 500g</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:74%;"></div></div>
+                  <span class="bar-val">$31k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Pork Loin 1kg</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:60%;"></div></div>
+                  <span class="bar-val">$25k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Lamb Rack</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:43%;"></div></div>
+                  <span class="bar-val">$18k</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Salmon Fillet 200g</span>
+                  <div class="bar-track"><div class="bar-fill teal" style="width:31%;"></div></div>
+                  <span class="bar-val">$13k <span style="font-size:10px;color:var(--status-risk-fg);font-weight:700;">⚠ exception</span></span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label" style="color:var(--text-soft);">Others</span>
+                  <div class="bar-track"><div class="bar-fill muted" style="width:31%;"></div></div>
+                  <span class="bar-val soft">$13k</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /two-col -->
+
+        <!-- Supplier scorecard -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Supplier scorecard</span>
+            <span class="panel-meta">This period · 89 orders</span>
+          </div>
+          <div class="panel-body">
+            <div class="scorecard-grid">
+              <div class="score-cell">
+                <div class="score-label">On-time delivery</div>
+                <div class="score-value ok">94% <span class="score-trend ok">▲ +2pts</span></div>
+                <div class="score-sub">5 late of 89 · avg delay 1.2 days</div>
+              </div>
+              <div class="score-cell">
+                <div class="score-label">Order accuracy</div>
+                <div class="score-value ok">96.6%</div>
+                <div class="score-sub">3 discrepancy GRNs · 89 orders</div>
+              </div>
+              <a class="score-cell" href="invoice-detail.html?id=INV-00889" aria-label="Price vs market list: 2 open exceptions — review INV-00889">
+                <div class="score-label">Price vs market list</div>
+                <div class="score-value risk"><i class="ti ti-alert-triangle" style="font-size:16px;"></i>2 open exceptions</div>
+                <div class="score-sub">$170 in dispute · INV-00889</div>
+              </a>
+              <div class="score-cell">
+                <div class="score-label">Dispute rate</div>
+                <div class="score-value warn">2.2%</div>
+                <div class="score-sub">2 of 89 orders disputed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent POs -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Recent orders · last 30 days</span>
+            <a class="panel-action" href="#" onclick="switchTab('orders');return false;">View all 89 →</a>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>PO number</th>
+                <th>Date</th>
+                <th>Outlet</th>
+                <th class="r">Items</th>
+                <th class="r">Value</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="clickable" onclick="location.href='order-detail.html?id=PO-5521'">
+                <td><div class="td-name">PO-5521</div></td>
+                <td style="color:var(--text-soft);">24 Jun 2026</td>
+                <td>Surry Hills</td>
+                <td class="r" style="color:var(--text-soft);">8</td>
+                <td class="r" style="font-weight:600;">$1,842</td>
+                <td><span class="pill info"><i class="ti ti-send"></i>Sent</span></td>
+                <td><button class="link-action" onclick="event.stopPropagation();location.href='order-detail.html?id=PO-5521'">Review</button></td>
+              </tr>
+              <tr class="clickable" onclick="showToast('Opening PO-5516…')">
+                <td><div class="td-name">PO-5516</div></td>
+                <td style="color:var(--text-soft);">22 Jun 2026</td>
+                <td>Bondi Beach</td>
+                <td class="r" style="color:var(--text-soft);">5</td>
+                <td class="r" style="font-weight:600;">$1,240</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td><button class="link-action" onclick="event.stopPropagation();showToast('Opening PO-5516…')">View</button></td>
+              </tr>
+              <tr class="clickable" onclick="showToast('Opening PO-5512…')">
+                <td><div class="td-name">PO-5512</div></td>
+                <td style="color:var(--text-soft);">20 Jun 2026</td>
+                <td>Newtown</td>
+                <td class="r" style="color:var(--text-soft);">6</td>
+                <td class="r" style="font-weight:600;">$1,580</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td><button class="link-action" onclick="event.stopPropagation();showToast('Opening PO-5512…')">View</button></td>
+              </tr>
+              <tr class="clickable" onclick="showToast('Opening PO-5508…')">
+                <td><div class="td-name">PO-5508</div></td>
+                <td style="color:var(--text-soft);">18 Jun 2026</td>
+                <td>CBD</td>
+                <td class="r" style="color:var(--text-soft);">12</td>
+                <td class="r" style="font-weight:600;">$2,350</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td><button class="link-action" onclick="event.stopPropagation();showToast('Opening PO-5508…')">View</button></td>
+              </tr>
+              <tr class="clickable" onclick="showToast('Opening PO-5503…')">
+                <td><div class="td-name">PO-5503</div></td>
+                <td style="color:var(--text-soft);">17 Jun 2026</td>
+                <td>Parramatta</td>
+                <td class="r" style="color:var(--text-soft);">4</td>
+                <td class="r" style="font-weight:600;">$890</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td><button class="link-action" onclick="event.stopPropagation();showToast('Opening PO-5503…')">View</button></td>
+              </tr>
+              <tr class="clickable" onclick="showToast('Opening PO-5498…')">
+                <td><div class="td-name">PO-5498</div></td>
+                <td style="color:var(--text-soft);">15 Jun 2026</td>
+                <td>Richmond</td>
+                <td class="r" style="color:var(--text-soft);">7</td>
+                <td class="r" style="font-weight:600;">$1,720</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td><button class="link-action" onclick="event.stopPropagation();showToast('Opening PO-5498…')">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /tab-overview -->
+
+      <!-- ── TAB: ORDERS ── -->
+      <div class="tab-panel" id="tab-orders">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Orders</span>
+            <span class="panel-meta">89 orders this period · showing latest 10</span>
+          </div>
+          <div class="status-filter" role="group" aria-label="Filter orders by status">
+            <button class="status-filter-btn active" onclick="filterOrders(this,'all')">All</button>
+            <button class="status-filter-btn" onclick="filterOrders(this,'sent')">Sent</button>
+            <button class="status-filter-btn" onclick="filterOrders(this,'confirmed')">Confirmed</button>
+            <button class="status-filter-btn" onclick="filterOrders(this,'received')">Received</button>
+            <button class="status-filter-btn" onclick="filterOrders(this,'discrepancy')">Discrepancy</button>
+          </div>
+          <table class="data-table" id="orders-table">
+            <thead>
+              <tr>
+                <th>PO #</th>
+                <th>Date</th>
+                <th>Outlet</th>
+                <th class="r">Items</th>
+                <th class="r">Total</th>
+                <th>Status</th>
+                <th>Invoice</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr class="clickable" data-status="sent" onclick="location.href='order-detail.html?id=PO-5521'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5521</span></td>
+                <td style="color:var(--text-soft);">24 Jun 2026</td>
+                <td>Surry Hills</td>
+                <td class="r" style="color:var(--text-soft);">8</td>
+                <td class="r" style="font-weight:600;">$1,842</td>
+                <td><span class="pill info"><i class="ti ti-send"></i>Sent</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="confirmed" onclick="location.href='order-detail.html?id=PO-5519'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5519</span></td>
+                <td style="color:var(--text-soft);">23 Jun 2026</td>
+                <td>Bondi Beach</td>
+                <td class="r" style="color:var(--text-soft);">6</td>
+                <td class="r" style="font-weight:600;">$1,315</td>
+                <td><span class="pill soft"><i class="ti ti-circle-check"></i>Confirmed</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="sent" onclick="location.href='order-detail.html?id=PO-5517'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5517</span></td>
+                <td style="color:var(--text-soft);">23 Jun 2026</td>
+                <td>St Kilda</td>
+                <td class="r" style="color:var(--text-soft);">5</td>
+                <td class="r" style="font-weight:600;">$1,088</td>
+                <td><span class="pill info"><i class="ti ti-send"></i>Sent</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5516'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5516</span></td>
+                <td style="color:var(--text-soft);">22 Jun 2026</td>
+                <td>Bondi Beach</td>
+                <td class="r" style="color:var(--text-soft);">5</td>
+                <td class="r" style="font-weight:600;">$1,240</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="discrepancy" onclick="location.href='order-detail.html?id=PO-5514'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5514</span></td>
+                <td style="color:var(--text-soft);">21 Jun 2026</td>
+                <td>Surry Hills</td>
+                <td class="r" style="color:var(--text-soft);">9</td>
+                <td class="r" style="font-weight:600;">$2,104</td>
+                <td><span class="pill risk"><i class="ti ti-alert-triangle"></i>Discrepancy</span></td>
+                <td><a class="mono-ref" href="invoice-detail.html?id=INV-00889" onclick="event.stopPropagation();">INV-00889</a></td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5512'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5512</span></td>
+                <td style="color:var(--text-soft);">20 Jun 2026</td>
+                <td>Newtown</td>
+                <td class="r" style="color:var(--text-soft);">6</td>
+                <td class="r" style="font-weight:600;">$1,580</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td><a class="mono-ref" href="invoice-detail.html?id=INV-00887" onclick="event.stopPropagation();">INV-00887</a></td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5508'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5508</span></td>
+                <td style="color:var(--text-soft);">18 Jun 2026</td>
+                <td>CBD</td>
+                <td class="r" style="color:var(--text-soft);">12</td>
+                <td class="r" style="font-weight:600;">$2,350</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="confirmed" onclick="location.href='order-detail.html?id=PO-5505'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5505</span></td>
+                <td style="color:var(--text-soft);">17 Jun 2026</td>
+                <td>Richmond</td>
+                <td class="r" style="color:var(--text-soft);">3</td>
+                <td class="r" style="font-weight:600;">$705</td>
+                <td><span class="pill soft"><i class="ti ti-circle-check"></i>Confirmed</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5503'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5503</span></td>
+                <td style="color:var(--text-soft);">17 Jun 2026</td>
+                <td>Parramatta</td>
+                <td class="r" style="color:var(--text-soft);">4</td>
+                <td class="r" style="font-weight:600;">$890</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+              <tr class="clickable" data-status="received" onclick="location.href='order-detail.html?id=PO-5498'">
+                <td><span class="mono-ref" style="font-weight:600;color:var(--text);">PO-5498</span></td>
+                <td style="color:var(--text-soft);">15 Jun 2026</td>
+                <td>Richmond</td>
+                <td class="r" style="color:var(--text-soft);">7</td>
+                <td class="r" style="font-weight:600;">$1,720</td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Received</span></td>
+                <td style="color:var(--text-soft);">—</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="empty-state" id="orders-empty" style="display:none;">
+            <i class="ti ti-filter-off"></i>
+            <div class="empty-state-text">No orders match this filter</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB: ITEMS ── -->
+      <div class="tab-panel" id="tab-items">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Top items by spend</span>
+            <span class="panel-meta">Top 8 of 24 items · this period</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th class="r">Volume</th>
+                <th class="r">Spend</th>
+                <th class="r">Avg price · 6-mo trend</th>
+                <th>vs Market list</th>
+                <th>Market list coverage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="td-name">Chicken Breast 500g</div></td>
+                <td style="color:var(--text-soft);">Poultry</td>
+                <td class="r" style="color:var(--text-soft);">4,708 kg</td>
+                <td class="r" style="font-weight:600;">$42k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$8.92/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,18 L16,17 L32,15 L48,14 L64,9 L80,4 L80,24 L0,24Z" fill="url(#ig1)"/><polyline points="0,18 16,17 32,15 48,14 64,9 80,4" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill risk"><i class="ti ti-alert-triangle"></i>+6.2%</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Beef Mince 500g</div></td>
+                <td style="color:var(--text-soft);">Beef</td>
+                <td class="r" style="color:var(--text-soft);">2,214 kg</td>
+                <td class="r" style="font-weight:600;">$31k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$14.00/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,13 L16,12 L32,14 L48,11 L64,12 L80,10 L80,24 L0,24Z" fill="url(#ig2)"/><polyline points="0,13 16,12 32,14 48,11 64,12 80,10" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill ok">On list</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Pork Loin 1kg</div></td>
+                <td style="color:var(--text-soft);">Pork</td>
+                <td class="r" style="color:var(--text-soft);">1,543 kg</td>
+                <td class="r" style="font-weight:600;">$25k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$16.20/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,15 L16,14 L32,12 L48,13 L64,11 L80,12 L80,24 L0,24Z" fill="url(#ig3)"/><polyline points="0,15 16,14 32,12 48,13 64,11 80,12" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill ok">On list</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Lamb Rack</div></td>
+                <td style="color:var(--text-soft);">Lamb</td>
+                <td class="r" style="color:var(--text-soft);">412 kg</td>
+                <td class="r" style="font-weight:600;">$18k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$43.70/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,16 L16,13 L32,14 L48,11 L64,10 L80,8 L80,24 L0,24Z" fill="url(#ig4)"/><polyline points="0,16 16,13 32,14 48,11 64,10 80,8" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill ok">On list</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Salmon Fillet 200g</div></td>
+                <td style="color:var(--text-soft);">Seafood</td>
+                <td class="r" style="color:var(--text-soft);">339 kg</td>
+                <td class="r" style="font-weight:600;">$13k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$38.40/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,19 L16,17 L32,16 L48,12 L64,7 L80,3 L80,24 L0,24Z" fill="url(#ig5)"/><polyline points="0,19 16,17 32,16 48,12 64,7 80,3" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill risk"><i class="ti ti-alert-triangle"></i>+19.3%</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Duck Breast 300g</div></td>
+                <td style="color:var(--text-soft);">Poultry</td>
+                <td class="r" style="color:var(--text-soft);">187 kg</td>
+                <td class="r" style="font-weight:600;">$6.2k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$33.20/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,12 L16,13 L32,11 L48,13 L64,12 L80,11 L80,24 L0,24Z" fill="url(#ig6)"/><polyline points="0,12 16,13 32,11 48,13 64,12 80,11" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill ok">On list</span></td>
+                <td><span class="pill ok"><i class="ti ti-check"></i>Yes</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Chorizo Sausage 250g</div></td>
+                <td style="color:var(--text-soft);">Smallgoods</td>
+                <td class="r" style="color:var(--text-soft);">215 kg</td>
+                <td class="r" style="font-weight:600;">$4.1k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$19.10/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig7" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,14 L16,15 L32,13 L48,14 L64,12 L80,13 L80,24 L0,24Z" fill="url(#ig7)"/><polyline points="0,14 16,15 32,13 48,14 64,12 80,13" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill soft">—</span></td>
+                <td><span class="pill soft">No</span></td>
+              </tr>
+              <tr>
+                <td><div class="td-name">Beef Bones 1kg</div></td>
+                <td style="color:var(--text-soft);">Beef</td>
+                <td class="r" style="color:var(--text-soft);">520 kg</td>
+                <td class="r" style="font-weight:600;">$2.6k</td>
+                <td class="r"><div class="price-cell"><span style="font-weight:600;">$5.00/kg</span><svg viewBox="0 0 80 24" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig8" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#17B3A3" stop-opacity=".18"/><stop offset="100%" stop-color="#17B3A3" stop-opacity="0"/></linearGradient></defs><path d="M0,13 L16,13 L32,12 L48,13 L64,13 L80,12 L80,24 L0,24Z" fill="url(#ig8)"/><polyline points="0,13 16,13 32,12 48,13 64,13 80,12" fill="none" stroke="#17B3A3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div></td>
+                <td><span class="pill soft">—</span></td>
+                <td><span class="pill soft">No</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toast-wrap"></div>
+
+  <script>
+    NomniShell.init('Reporting');
+
+    /* Tab switching */
+    function switchTab(id) {
+      document.querySelectorAll('.tab-btn').forEach((b,i) => {
+        const ids = ['overview','orders','items'];
+        b.classList.toggle('active', ids[i] === id);
+      });
+      document.querySelectorAll('.tab-panel').forEach(p => {
+        p.classList.toggle('active', p.id === 'tab-' + id);
+      });
+    }
+
+    /* Orders tab — status filter */
+    function filterOrders(btn, status) {
+      document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+      let visible = 0;
+      document.querySelectorAll('#orders-tbody tr').forEach(tr => {
+        const show = status === 'all' || tr.dataset.status === status;
+        tr.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('orders-table').style.display = visible ? '' : 'none';
+      document.getElementById('orders-empty').style.display = visible ? 'none' : 'block';
+    }
+
+    /* Period picker */
+    function setPeriod(btn) {
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('custom-range').style.display = 'none';
+    }
+    function toggleCustom() {
+      const el  = document.getElementById('custom-range');
+      const btn = document.getElementById('custom-btn');
+      const on  = el.style.display !== 'none';
+      el.style.display = on ? 'none' : 'flex';
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      if (!on) btn.classList.add('active');
+    }
+    function applyCustom() {
+      const from = document.getElementById('date-from').value;
+      const to   = document.getElementById('date-to').value;
+      if (!from || !to) return;
+      const fmt = d => new Date(d + 'T00:00:00').toLocaleDateString('en-AU', { day:'numeric', month:'short' });
+      showToast(fmt(from) + ' – ' + fmt(to) + ' applied');
+    }
+
+    /* Toast */
+    let _t;
+    function showToast(msg) {
+      const w = document.getElementById('toast-wrap');
+      w.innerHTML = `<div class="toast"><i class="ti ti-check"></i>${msg}</div>`;
+      clearTimeout(_t);
+      _t = setTimeout(() => { w.innerHTML = ''; }, 3000);
+    }
+
+    /* Resolve supplier from URL param */
+    const SUPPLIERS = {
+      'harbour-meats':    { name:'Harbour Meats',        initials:'HM', color:'#17B3A3', cat:'Proteins',   primary:true  },
+      'fresh-produce-co': { name:'Fresh Produce Co',     initials:'FP', color:'#129B41', cat:'Produce',    primary:true  },
+      'italian-food-co':  { name:'Italian Food Co',      initials:'IF', color:'#B05EC0', cat:'Dry goods',  primary:true  },
+      'dairy-australia':  { name:'Dairy Australia',      initials:'DA', color:'#3F8AFB', cat:'Dairy',      primary:true  },
+      'pacific-seafood':  { name:'Pacific Seafood',      initials:'PS', color:'#EE4B87', cat:'Proteins',   primary:false },
+      'espresso-union':   { name:'Espresso Union',       initials:'EU', color:'#B07800', cat:'Beverages',  primary:true  },
+      'green-farmers':    { name:'Green Farmers Market', initials:'GF', color:'#076715', cat:'Produce',    primary:false },
+      'veg-fresh':        { name:'Veg Fresh',            initials:'VF', color:'#60A5D4', cat:'Produce',    primary:false },
+      'bakery-direct':    { name:'Bakery Direct',        initials:'BD', color:'#F5890A', cat:'Bakery',     primary:true  },
+      'aussie-farms':     { name:'Aussie Farms',         initials:'AF', color:'#6B7280', cat:'Produce',    primary:false },
+    };
+
+    const slug = new URLSearchParams(location.search).get('s') || 'harbour-meats';
+    const sup  = SUPPLIERS[slug] || SUPPLIERS['harbour-meats'];
+    document.getElementById('bc-name').textContent  = sup.name;
+    document.getElementById('sup-name').textContent = sup.name;
+    document.getElementById('sup-logo').textContent  = sup.initials;
+    document.getElementById('sup-logo').style.background = sup.color;
+    document.title = sup.name + ' — Spend detail · Nomni HQ';
+  </script>
+</body>
+</html>

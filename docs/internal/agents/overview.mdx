@@ -1,0 +1,119 @@
+---
+title: Agent Layer Overview
+description: The five AI agents, the shared event bus, guardrails, and audit model.
+---
+
+## Design principle
+
+> **Agents execute, humans govern.**
+
+Every agent action is:
+- **Attributable** — every action logged with agent identity and rationale
+- **Auditable** — written to the Activity Timeline; queryable and exportable
+- **Reversible** — Undo window on every auto-applied action (duration varies by value)
+- **Permission-scoped** — an agent running for Outlet A cannot read or act on Outlet B's data
+
+## Agent directory
+
+| Agent | ID | Triggered by | Acts on |
+|---|---|---|---|
+| **Otto** | `ordering-agent` | Schedule, par alert, manual | Drafts POs per outlet |
+| **Vera** | `variance-agent` | Stock count submitted, schedule | Actual vs theoretical variance |
+| **Sloan** | `governance-agent` | Price file upload, POS sync, schedule | Market list + POS mapping |
+| **Mara** | `invoice-agent` | New invoice (any source) | Extract, match, auto-post |
+| **Cyrus** | `margin-agent` | `price_changed` event | Recipe margin recalc |
+
+## Cross-agent event bus
+
+Agents communicate via typed events. They never call each other directly.
+
+```typescript
+// Invoice Agent → Margin Agent
+interface PriceChangedEvent {
+  type: 'invoice.price_changed';
+  internalItemId: string;
+  previousUnitPrice: number;
+  newUnitPrice: number;
+  invoiceId: string;
+  supplierId: string;
+  effectiveDate: string;
+}
+
+// Governance Agent → all outlets
+interface MarketListPropagatedEvent {
+  type: 'market_list.propagated';
+  draftId: string;
+  outletId: string;
+  changesApplied: number;
+  propagatedAt: string;
+}
+
+// Stock count submitted → Variance Agent
+interface StockCountSubmittedEvent {
+  type: 'stock_count.submitted';
+  countId: string;
+  outletId: string;
+  quality: 'full' | 'partial' | 'estimated';
+  submittedAt: string;
+}
+```
+
+## Shared guardrails
+
+| ID | Rule |
+|---|---|
+| AG-6 | An agent cannot act on behalf of an outlet it doesn't have permission for |
+| AG-7 | Auto-apply threshold: actions below `autoApplyThreshold` ($ value) are applied with an undo window; actions above require explicit approval |
+| AG-8 | Undo window: 15 min for ordering, 120 min for invoices. During this window, a human can reverse without trace |
+| AG-9 | Per-agent on/off switch, scoped per outlet group |
+| AG-10 | Token budget monitoring — alert when agent compute approaches monthly limit |
+
+## Audit log schema
+
+Every agent action writes to the audit log:
+
+```typescript
+interface AgentAuditEntry {
+  entryId: string;
+  agentId: 'ordering-agent' | 'invoice-agent' | 'margin-agent' | 'variance-agent' | 'governance-agent';
+  runId: string;
+  outletId: string | null;          // null for governance agent (HQ-scoped)
+  groupId: string | null;
+  actorId: string;                  // agent identity string
+  triggeredBy: string;              // event type | 'manual' | 'schedule'
+  actionType: string;               // e.g. 'order_draft_created'
+  rationaleeSummary: string;        // human-readable: why the agent took this action
+  inputDataRefs: string[];          // IDs of data consumed
+  outputRefs: string[];             // IDs of records created/modified
+  autoApplied: boolean;
+  undoWindowExpiresAt: string | null;
+  undoneAt: string | null;
+  undoneBy: string | null;
+  timestamp: string;
+}
+```
+
+## Operating mode matrix
+
+| Mode | Otto | Mara | Cyrus | Vera | Sloan |
+|---|---|---|---|---|---|
+| Standalone | Outlet par + preferred supplier | Same | Alerts → outlet | Outlet-scoped | N/A |
+| HQ Mode | HQ-templated par; outlet approves | Same | HQ recipes: alerts → HQ; outlet recipes → outlet | Same, HQ sees all | HQ only |
+| Hybrid | HQ items follow HQ rules; local exceptions follow outlet rules | Same | HQ rules for locked; outlet rules for exceptions | Same | HQ only; conflicts flagged |
+
+## Buyer-primary implications for agents
+
+All agents work against `InternalItem` (not supplier SKUs):
+
+- Use `internalItemId` as the join key across all agent operations
+- Cost calculations use the **weighted average cost** of the `InternalItem` (computed by Mara from recent invoices)
+- Preferred supplier for ordering is the `SupplierSkuLink` with `isPreferred: true` for the outlet's group
+- An `InternalItem` with no `SupplierSkuLink` can exist (in-house / CK items) — handle gracefully: Otto skips with exception, Vera uses CK transfer cost
+
+## Individual agent specs
+
+- [Otto — Ordering Agent](/internal/agents/ordering-agent)
+- [Mara — Invoice Agent](/internal/agents/invoice-agent)
+- [Cyrus — Margin Agent](/internal/agents/margin-agent)
+- [Vera — Variance Agent](/internal/agents/variance-agent)
+- [Sloan — Governance Agent](/internal/agents/governance-agent)

@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en" data-role="hq" data-tier="hq">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Invoices — Nomni Procure</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { padding-block: var(--space-2xl) var(--space-5xl); }
+
+    /* ── KPI tiles ── */
+    .kpi-row { display:flex; gap:var(--space-md); flex-wrap:wrap; margin-bottom:var(--space-xl); }
+    .kpi-tile { flex:1; min-width:130px; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-md) var(--space-xl); cursor:pointer; transition:border-color var(--dur-1) var(--ease-standard),background var(--dur-1) var(--ease-standard); }
+    .kpi-tile:hover { border-color:var(--text-accent); }
+    .kpi-tile.active { border-color:var(--text-accent); background:var(--mint); }
+    .kpi-tile.risk.active { background:var(--status-risk-bg); border-color:var(--status-risk-fg); }
+    .kpi-tile.warn.active { background:var(--status-warn-bg); border-color:rgba(245,194,25,0.6); }
+    .kpi-value { font-size:28px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; line-height:1.1; }
+    .kpi-label { font-size:11px; color:var(--text-soft); margin-top:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; }
+    .kpi-tile.risk  .kpi-value { color:var(--status-risk-fg); }
+    .kpi-tile.warn  .kpi-value { color:#7A5000; }
+    .kpi-tile.ok    .kpi-value { color:var(--status-ok-fg); }
+    .kpi-tile.agent .kpi-value { color:var(--text-accent); }
+
+    /* ── Trend strip ── */
+    .trend-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); margin-bottom:var(--space-lg); }
+    .trend-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xs); }
+    .trend-head { display:flex; align-items:center; justify-content:space-between; }
+    .trend-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .trend-badge.ok   { background:var(--status-ok-bg);   color:var(--status-ok-fg); }
+    .trend-badge.warn { background:var(--status-warn-bg); color:#7A5000; }
+    .trend-badge.risk { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .trend-value { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.02em; font-feature-settings:'tnum' 1; }
+    .sparkline { width:100%; height:36px; overflow:visible; display:block; margin-block:var(--space-sm); }
+    .trend-range { font-size:11px; color:var(--text-soft); }
+    @media (max-width:1024px) { .trend-strip { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:480px)  { .trend-strip { grid-template-columns:1fr; } }
+
+    /* ── Filter bar ── */
+    .filter-bar { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; margin-bottom:var(--space-sm); }
+    /* Active filter chip bar */
+    .chip-bar { display:none; align-items:center; gap:var(--space-xs); flex-wrap:wrap; margin-bottom:var(--space-md); }
+    .chip-bar.has-chips { display:flex; }
+    .filter-chip {
+      display:inline-flex; align-items:center; gap:5px;
+      height:28px; padding-inline:var(--space-md) var(--space-sm);
+      background:color-mix(in srgb, var(--fern) 10%, transparent);
+      border:1px solid color-mix(in srgb, var(--fern) 30%, transparent);
+      border-radius:var(--radius-pill); font-size:12px; font-weight:600;
+      color:var(--spinach); white-space:nowrap;
+    }
+    .filter-chip button {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:16px; height:16px; border-radius:50%; border:none;
+      background:color-mix(in srgb, var(--fern) 20%, transparent);
+      color:var(--spinach); cursor:pointer; font-size:10px; padding:0; line-height:1;
+    }
+    .filter-chip button:hover { background:color-mix(in srgb, var(--fern) 35%, transparent); }
+    .chip-reset { font-size:12px; color:var(--text-soft); background:none; border:none; cursor:pointer; padding:2px var(--space-xs); text-decoration:underline; }
+    .chip-reset:hover { color:var(--text); }
+    .search-input { height:var(--control-h); padding-inline:var(--space-lg); border:1px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:14px; background:var(--surface); color:var(--text); min-width:200px; }
+    .search-input:focus { outline:none; border-color:var(--text-accent); }
+    .filter-sel { height:var(--control-h); padding-inline:var(--space-md) var(--space-2xl); border:1px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:13px; background:var(--surface); color:var(--text); cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; }
+
+    /* ── Bulk action bar ── */
+    .bulk-bar { display:none; align-items:center; gap:var(--space-md); padding:var(--space-sm) var(--space-xl); background:var(--mint); border:1px solid rgba(42,200,100,0.4); border-radius:var(--radius-lg); margin-bottom:var(--space-md); }
+    .bulk-bar.show { display:flex; }
+
+    /* ── Invoice table ── */
+    .inv-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; overflow-x:auto; }
+    .inv-table { width:100%; min-width:860px; border-collapse:collapse; table-layout:fixed; }
+    .inv-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); padding:var(--space-sm) var(--space-sm); background:var(--surface-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .inv-table td { font-size:13px; padding:8px var(--space-sm); border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden; }
+    .inv-table tr:last-child td { border-bottom:none; }
+    .inv-table tbody tr { cursor:pointer; }
+    .inv-table tbody tr:hover td { background:rgba(42,200,100,0.05); }
+    .inv-table tbody tr.row-selected td { background:rgba(42,200,100,0.07); }
+    /* Column widths — explicit layout avoids overflow clipping */
+    .col-check  { width:32px; }
+    .col-inv    { width:112px; }
+    .col-sup    { width:150px; }
+    .col-outlet { width:110px; }
+    .col-date   { width:70px; }
+    .col-amt    { width:76px; }
+    .col-src    { display:none; }
+    .col-status { width:110px; }
+    .col-match  { width:196px; }
+    .col-act    { width:152px; }
+    .num { text-align:right; font-feature-settings:'tnum' 1; }
+    .cell-id { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; }
+    .cell-sub { font-size:11px; color:var(--text-soft); margin-top:2px; white-space:nowrap; }
+    .cell-sup { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cell-outlet { font-size:13px; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .link-btn { background:none; border:none; color:var(--text-link); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:2px 4px; border-radius:var(--radius-sm); white-space:nowrap; }
+    .link-btn:hover { text-decoration:underline; }
+    .action-sep { display:block; height:0; overflow:hidden; }
+    .inv-table td.col-act { white-space:normal; overflow:visible; line-height:1.8; }
+
+    /* ── Source badge ── */
+    .src-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .src-badge.email   { background:var(--status-info-bg); color:var(--status-info-fg); }
+    .src-badge.upload  { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); }
+    .src-badge.nomni   { background:var(--mint); color:var(--spinach); }
+
+    /* ── Match badge ── */
+    .match-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .match-badge.pass     { color:var(--status-ok-fg); }
+    .match-badge.fail     { color:var(--status-risk-fg); }
+    .match-badge.pending  { color:var(--text-soft); }
+    .match-badge.unlinked { color:var(--status-warn-fg); }
+    /* Ensure all nb-pill status badges never wrap */
+    .nb-pill { white-space:nowrap; }
+
+    /* ── Unlinked PO suggestion card (inside drawer) ── */
+    .suggestion-card { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-md) var(--space-lg); background:color-mix(in srgb,var(--agent-cyrus,var(--fern)) 6%,transparent); border:1.5px solid var(--agent-border,rgba(42,200,100,0.4)); border-radius:var(--radius-md); margin-bottom:var(--space-lg); }
+    .suggestion-card .agent-avatar { width:28px; height:28px; font-size:12px; }
+    .suggestion-po { font-size:15px; font-weight:700; color:var(--text); font-family:'IBM Plex Mono',monospace; }
+    .suggestion-reason { font-size:13px; color:var(--text-soft); margin-top:2px; line-height:1.5; }
+    .confidence-chip { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill); margin-top:var(--space-xs); }
+    .confidence-chip.high { background:var(--mint); color:var(--spinach); }
+    .confidence-chip.medium { background:var(--status-warn-bg); color:#7A5000; }
+    .no-suggestion-card { padding:var(--space-md) var(--space-lg); background:var(--status-warn-bg); border:1px solid rgba(245,194,25,0.4); border-radius:var(--radius-md); margin-bottom:var(--space-lg); font-size:13px; color:#5A3A00; line-height:1.5; }
+    .link-po-input { display:flex; gap:var(--space-sm); margin-top:var(--space-md); }
+    .link-po-input input { flex:1; height:var(--control-h); padding-inline:var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text); background:var(--surface); }
+    .link-po-input input:focus { outline:none; border-color:var(--text-accent); }
+    .link-po-input button { height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); border:none; background:var(--btn-primary-bg); color:#fff; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+
+    /* ── Variance chip ── */
+    .var-chip { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:var(--radius-pill); }
+    .var-chip.over { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .var-chip.exact { background:var(--status-ok-bg); color:var(--status-ok-fg); }
+
+    /* ── Empty state ── */
+    .empty-state { text-align:center; padding:var(--space-5xl) var(--space-2xl); color:var(--text-soft); font-size:14px; }
+
+    /* ── Accounting integration chip ── */
+    .acct-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 30px; padding: 0 var(--space-md) 0 var(--space-sm);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); font-size: 12px; color: var(--text-soft);
+      white-space: nowrap; text-decoration: none;
+    }
+    .acct-logo {
+      width: 18px; height: 18px; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .acct-logo.xero { background: #13B5EA; }
+    .acct-logo.xero svg { width: 10px; height: 10px; }
+    .acct-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--status-ok-fg); flex-shrink: 0;
+    }
+    .acct-sep { color: var(--border); margin: 0 1px; }
+    .acct-settings-link {
+      color: var(--text-link); font-weight: 600; font-size: 12px;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 3px;
+    }
+    .acct-settings-link:hover { text-decoration: underline; }
+
+    /* ── Period switcher ── */
+    .period-bar { display:flex; align-items:center; gap:var(--space-xs); margin-bottom:var(--space-xl); }
+    .period-label { font-size:12px; font-weight:600; color:var(--text-soft); margin-right:var(--space-xs); text-transform:uppercase; letter-spacing:0.06em; }
+    .period-btn { height:30px; padding-inline:var(--space-md); border-radius:var(--radius-pill); border:1.5px solid var(--border); background:var(--surface); font-family:inherit; font-size:12px; font-weight:700; color:var(--text-soft); cursor:pointer; transition:border-color var(--dur-1),background var(--dur-1),color var(--dur-1); }
+    .period-btn:hover { border-color:var(--text-accent); color:var(--text); }
+    .period-btn.active { border-color:var(--text-accent); background:var(--mint); color:var(--spinach); }
+
+    /* ── Cyrus agent surface — extends shared .agent-surface from components.css ── */
+    #cyrus-card { padding:var(--space-lg) var(--space-xl); margin-bottom:var(--space-xl); }
+    .cyrus-body { flex:1; min-width:0; }
+    .cyrus-head { display:flex; align-items:center; gap:var(--space-md); margin-bottom:var(--space-md); }
+    .cyrus-dismiss { margin-left:auto; background:none; border:none; font-size:16px; color:var(--text-soft); cursor:pointer; padding:4px; line-height:1; flex-shrink:0; }
+    .cyrus-summary { font-size:14px; color:var(--text); font-weight:400; line-height:1.6; margin-bottom:var(--space-md); }
+    .cyrus-summary strong { font-weight:600; }
+    .cyrus-chips { display:flex; flex-wrap:wrap; gap:var(--space-xs); margin-bottom:var(--space-md); }
+    .cyrus-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; padding:4px 12px; border-radius:var(--radius-pill); cursor:pointer; transition:opacity var(--dur-1); border:none; font-family:inherit; }
+    .cyrus-chip:hover { opacity:0.8; }
+    .cyrus-chip.risk   { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .cyrus-chip.warn   { background:var(--status-warn-bg); color:#7A5000; }
+    .cyrus-chip.ok     { background:var(--mint); color:var(--spinach); }
+    .cyrus-chip.info   { background:var(--status-info-bg); color:var(--status-info-fg); }
+
+
+    /* ── Match drawer ── */
+    .drawer-scrim { position:fixed; inset:0; background:rgba(14,55,39,0.35); z-index:100; display:none; }
+    .drawer-scrim.open { display:block; }
+    .match-drawer { position:fixed; top:0; right:0; bottom:0; width:min(700px,95vw); background:var(--surface); border-left:1px solid var(--border); z-index:101; display:flex; flex-direction:column; transform:translateX(100%); transition:transform 0.22s var(--ease-standard); overflow:hidden; }
+    .match-drawer.open { transform:translateX(0); }
+    .drawer-head { display:flex; align-items:center; justify-content:space-between; padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); flex-shrink:0; }
+    .drawer-title { font-size:18px; font-weight:700; color:var(--text); }
+    .drawer-body { flex:1; overflow-y:auto; padding:var(--space-xl); }
+    .drawer-foot { padding:var(--space-md) var(--space-xl); border-top:1px solid var(--border); display:flex; gap:var(--space-sm); flex-wrap:wrap; background:var(--surface); flex-shrink:0; }
+
+    /* ── 3-way match table ── */
+    .match-result-banner { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-md) var(--space-lg); border-radius:var(--radius-md); margin-bottom:var(--space-lg); }
+    .match-result-banner.pass { background:var(--status-ok-bg); border:1px solid rgba(42,200,100,0.35); }
+    .match-result-banner.fail { background:var(--status-risk-bg); border:1px solid rgba(238,75,135,0.35); }
+    .match-result-banner.pending { background:var(--status-info-bg); border:1px solid rgba(63,195,251,0.35); }
+    .match-icon { font-size:22px; flex-shrink:0; margin-top:1px; }
+    .match-icon.pass { color:var(--status-ok-fg); }
+    .match-icon.fail { color:var(--status-risk-fg); }
+    .match-icon.pending { color:var(--status-info-fg); }
+
+    .three-way { width:100%; border-collapse:collapse; font-size:12px; margin-top:var(--space-md); }
+    .three-way th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); padding:var(--space-xs) var(--space-sm); background:var(--surface-soft); border:1px solid var(--border); text-align:right; white-space:nowrap; }
+    .three-way th:first-child { text-align:left; }
+    .three-way td { padding:var(--space-sm); border:1px solid var(--border); text-align:right; vertical-align:middle; font-feature-settings:'tnum' 1; }
+    .three-way td:first-child { text-align:left; font-weight:600; color:var(--text); }
+    .three-way tr.line-pass td { background:rgba(42,200,100,0.04); }
+    .three-way tr.line-fail td { background:rgba(238,75,135,0.04); }
+    .three-way tr.line-pending td { background:var(--surface-soft); color:var(--text-soft); }
+    .three-way td.fail-val { color:var(--status-risk-fg); font-weight:700; }
+    .three-way td.pass-val { color:var(--status-ok-fg); }
+    .three-way td.soft-val { color:var(--text-soft); font-style:italic; }
+
+    /* ── KV list in drawer ── */
+    .dkv-list { margin-bottom:var(--space-xl); }
+    .dkv { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); font-size:13px; padding:var(--space-xs) 0; border-bottom:1px solid var(--border); }
+    .dkv:last-child { border-bottom:none; }
+    .dkv-label { color:var(--text-soft); flex-shrink:0; }
+    .dkv-value { font-weight:600; color:var(--text); text-align:right; }
+
+    /* ── Section heading in drawer ── */
+    .drawer-section-head { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin:var(--space-xl) 0 var(--space-sm); }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12"></script>
+
+  <main class="main">
+    <div class="page-body">
+      <div class="napp-canvas" data-measure="wide">
+
+        <!-- Page header -->
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-xl);flex-wrap:wrap;margin-bottom:var(--space-xl);">
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-accent);margin-bottom:var(--space-xs);">Finance &middot; Accounts Payable</div>
+            <h1 style="font-size:35px;font-weight:700;color:var(--text);letter-spacing:-0.025em;line-height:1.1;margin:0;">Invoices</h1>
+            <p style="font-size:14px;color:var(--text-soft);margin:var(--space-sm) 0 0;">Digitised supplier invoices &middot; 3-way matched against PO and GRN &middot; ready for export</p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-sm);">
+            <button onclick="toast('Upload invoice — take a photo or attach a file · PDF, JPG, PNG')" style="display:inline-flex;align-items:center;gap:var(--space-xs);height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);"><i class="ti ti-upload"></i> Upload invoice</button>
+            <div class="acct-chip">
+              <span class="acct-logo xero" aria-label="Xero">
+                <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </span>
+              <span class="acct-dot" title="Connected"></span>
+              <span style="font-size:12px;font-weight:600;color:var(--text);">Xero</span>
+              <span class="acct-sep">·</span>
+              <span class="acct-sync">Last export 2h ago</span>
+              <span class="acct-sep">·</span>
+              <a class="acct-settings-link" href="#settings/accounting" onclick="toast('Settings → Accounting integrations · CoA mapping, API key, export rules')"><i class="ti ti-settings" style="font-size:11px;"></i> Settings</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Period switcher -->
+        <div class="period-bar">
+          <span class="period-label">Showing</span>
+          <button class="period-btn" data-days="7"  onclick="setPeriod(7)">Last 7 days</button>
+          <button class="period-btn active" data-days="30" onclick="setPeriod(30)">Last 30 days</button>
+          <button class="period-btn" data-days="90" onclick="setPeriod(90)">Last 90 days</button>
+          <button class="period-btn" data-days="0"  onclick="setPeriod(0)">All time</button>
+        </div>
+
+        <!-- KPI tiles -->
+        <div class="kpi-row" id="kpi-row"></div>
+
+        <!-- Trend strip -->
+        <div class="trend-strip">
+
+          <!-- Invoice spend this month -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">Invoice spend · June</span>
+              <span class="trend-badge warn">↑ 12% vs May</span>
+            </div>
+            <span class="trend-value">$284,400</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="12" width="120" height="18" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="12" x2="120" y2="12" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,27 17,25 34,22 51,20 68,18 85,15 102,13 119,8"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="8" r="3" fill="#D97706"/>
+            </svg>
+            <span class="trend-range">Normal $220K – $260K · 8-week avg</span>
+          </div>
+
+          <!-- Avg days to approve -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">Avg days to approve</span>
+              <span class="trend-badge ok">Within target</span>
+            </div>
+            <span class="trend-value">2.4 days</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="14" width="120" height="16" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="14" x2="120" y2="14" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="30" x2="120" y2="30" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,19 17,22 34,17 51,20 68,16 85,18 102,21 119,19"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="19" r="3" fill="var(--status-ok-fg)"/>
+            </svg>
+            <span class="trend-range">Target &lt; 3 days · 8-week avg</span>
+          </div>
+
+          <!-- 3-way match rate -->
+          <div class="trend-tile">
+            <div class="trend-head">
+              <span class="kpi-label">3-way match rate</span>
+              <span class="trend-badge risk">4 failed this week</span>
+            </div>
+            <span class="trend-value" style="color:var(--status-risk-fg)">84%</span>
+            <svg class="sparkline" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="8" width="120" height="20" fill="var(--mint)" opacity="0.8"/>
+              <line x1="0" y1="8" x2="120" y2="8" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <line x1="0" y1="28" x2="120" y2="28" stroke="var(--fern)" stroke-width="0.75" stroke-dasharray="3,2" opacity="0.5"/>
+              <polyline points="0,11 17,10 34,12 51,10 68,11 85,10 102,14 119,26"
+                fill="none" stroke="var(--spinach)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="119" cy="26" r="3" fill="var(--status-risk-fg)"/>
+            </svg>
+            <span class="trend-range">Target &gt; 92% · 8-week avg</span>
+          </div>
+
+        </div>
+
+        <!-- Cyrus agent summary -->
+        <div class="agent-surface" id="cyrus-card">
+          <div class="cyrus-head">
+            <span class="agent-avatar" data-agent="cyrus" aria-hidden="true">Cy</span>
+            <span class="agent-id">
+              <span class="agent-name">Cyrus</span>
+              <span class="agent-role">Invoice &amp; spend agent</span>
+            </span>
+            <span class="agent-state needs-you" id="cyrus-state" style="display:none;"><i class="ti ti-alert-triangle"></i>Needs you</span>
+            <button class="cyrus-dismiss" onclick="document.getElementById('cyrus-card').style.display='none'" title="Dismiss" aria-label="Dismiss"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="cyrus-summary" id="cyrus-summary"></div>
+          <div class="cyrus-chips" id="cyrus-chips"></div>
+        </div>
+
+        <!-- Bulk action bar -->
+        <div class="bulk-bar" id="bulk-bar">
+          <span id="bulk-label" style="font-size:13px;font-weight:700;color:var(--spinach);white-space:nowrap;"></span>
+          <button id="bulk-approve-btn" onclick="bulkApprove()" style="display:none;height:34px;padding-inline:var(--space-md);border-radius:var(--radius-md);border:none;background:var(--btn-primary-bg);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;"><i class="ti ti-circle-check"></i> Approve selected</button>
+          <button id="bulk-export-btn" onclick="bulkExport()" style="display:none;height:34px;padding-inline:var(--space-md);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;"><i class="ti ti-send"></i> Export to Xero</button>
+          <button onclick="clearSel()" style="margin-left:auto;background:none;border:none;font-size:18px;color:var(--text-soft);cursor:pointer;line-height:1;"><i class="ti ti-x"></i></button>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+          <input type="search" class="search-input" id="q" placeholder="Search invoice # or supplier…" oninput="renderTable()"/>
+          <select class="filter-sel" id="f-supplier" onchange="renderTable()">
+            <option value="">All suppliers</option>
+            <option>Harbour Meats</option>
+            <option>Green Farmers Market</option>
+            <option>Pacific Drinks Wholesale</option>
+            <option>Fresh Produce Co</option>
+            <option>Sydney Butchers Co.</option>
+            <option>Metro Bakery Supplies</option>
+          </select>
+          <select class="filter-sel" id="f-status" onchange="renderTable()">
+            <option value="">All statuses</option>
+            <option value="unlinked">No PO linked</option>
+            <option value="pending">Pending match</option>
+            <option value="matched">Matched</option>
+            <option value="failed">Failed</option>
+            <option value="approved">Approved</option>
+            <option value="exported">Exported</option>
+          </select>
+          <span style="margin-left:auto;font-size:13px;color:var(--text-soft);" id="result-count"></span>
+        </div>
+        <!-- Active filter chips -->
+        <div class="chip-bar" id="chip-bar"></div>
+
+        <!-- Table -->
+        <div class="inv-wrap">
+          <table class="inv-table">
+            <thead>
+              <tr>
+                <th class="col-check" style="padding-inline:var(--space-md);"><input type="checkbox" id="sel-all" onchange="toggleAll(this.checked)" style="cursor:pointer;accent-color:var(--fern);"/></th>
+                <th class="col-inv">Invoice</th>
+                <th class="col-sup">Supplier</th>
+                <th class="col-outlet">Outlet</th>
+                <th class="col-date">Received</th>
+                <th class="col-amt num">Amount</th>
+                <th class="col-src">Source</th>
+                <th class="col-status">Status</th>
+                <th class="col-match">3-way match</th>
+                <th class="col-act"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="inv-tbody"></tbody>
+          </table>
+          <div id="empty-state" class="empty-state" style="display:none;"><i class="ti ti-file-search" style="font-size:32px;margin-bottom:var(--space-md);display:block;"></i>No invoices match your filters</div>
+        </div>
+
+      </div><!-- /napp-canvas -->
+    </div><!-- /page-body -->
+  </main>
+
+  <!-- 3-way match drawer -->
+  <div class="drawer-scrim" id="drawer-scrim" onclick="closeDrawer()"></div>
+  <aside class="match-drawer" id="match-drawer" aria-label="Invoice match detail" aria-hidden="true">
+    <div class="drawer-head">
+      <span class="drawer-title" id="drawer-title">Invoice match detail</span>
+      <button onclick="closeDrawer()" style="background:none;border:none;font-size:20px;color:var(--text-soft);cursor:pointer;padding:4px;" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+    <div class="drawer-foot" id="drawer-foot"></div>
+  </aside>
+
+  <div id="toast-wrap" style="position:fixed;bottom:var(--space-xl);left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Invoices'));
+
+    /* ── Invoice demo data ── */
+    const INV_DATA = [
+      {
+        id:'INV-00895', po:'PO-5515', supplier:'Sydney Butchers Co.', outlet:'Bondi Beach',
+        date:'12 Jun 2026', source:'email', amount:310, status:'pending',
+        agentNote:'Received via supplier email · Cyrus is extracting and matching',
+        lines:[
+          { name:'Chicken Thigh 2kg',  uom:'pkg', poQty:8,  grnQty:null, invQty:8,  poPrice:11.50, invPrice:11.50 },
+          { name:'Beef Mince 500g',    uom:'pkg', poQty:10, grnQty:null, invQty:10, poPrice:9.80,  invPrice:9.80 },
+          { name:'Pork Sausages 500g', uom:'pkg', poQty:12, grnQty:null, invQty:12, poPrice:7.50,  invPrice:7.50 },
+          { name:'Duck Breast (each)', uom:'ea',  poQty:4,  grnQty:null, invQty:4,  poPrice:7.50,  invPrice:7.50 },
+        ]
+      },
+      {
+        id:'INV-00892', po:'PO-5519', supplier:'Green Farmers Market', outlet:'Newtown',
+        date:'11 Jun 2026', source:'upload', amount:1180, status:'pending',
+        agentNote:'Uploaded by outlet staff during receiving · matching in progress',
+        lines:[
+          { name:'Mixed Leaf 2kg',       uom:'bag',   poQty:12, grnQty:null, invQty:12, poPrice:9.00,  invPrice:9.00 },
+          { name:'Avocado (each)',        uom:'ea',    poQty:80, grnQty:null, invQty:80, poPrice:2.40,  invPrice:2.40 },
+          { name:'Roma Tomatoes 5kg',    uom:'box',   poQty:10, grnQty:null, invQty:10, poPrice:16.50, invPrice:16.50 },
+          { name:'Baby Spinach 1kg',     uom:'bag',   poQty:16, grnQty:null, invQty:16, poPrice:12.00, invPrice:12.00 },
+          { name:'Broccolini bunch',     uom:'bunch', poQty:24, grnQty:null, invQty:24, poPrice:4.50,  invPrice:4.50 },
+        ]
+      },
+      {
+        id:'INV-00891', po:'PO-5510', supplier:'Green Farmers Market', outlet:'Parramatta Table',
+        date:'9 Jun 2026', source:'upload', amount:890, status:'matched',
+        agentNote:'Auto-matched by Cyrus · 3-way match passed on all 7 lines',
+        lines:[
+          { name:'Mixed Leaf 2kg',       uom:'bag',   poQty:16, grnQty:16, invQty:16, poPrice:9.00,  invPrice:9.00 },
+          { name:'Avocado (each)',        uom:'ea',    poQty:60, grnQty:60, invQty:60, poPrice:2.40,  invPrice:2.40 },
+          { name:'Roma Tomatoes 5kg',    uom:'box',   poQty:10, grnQty:10, invQty:10, poPrice:16.50, invPrice:16.50 },
+          { name:'Baby Spinach 1kg',     uom:'bag',   poQty:12, grnQty:12, invQty:12, poPrice:12.00, invPrice:12.00 },
+          { name:'Broccolini bunch',     uom:'bunch', poQty:30, grnQty:30, invQty:30, poPrice:4.50,  invPrice:4.50 },
+          { name:'Continental Cucumber', uom:'ea',    poQty:50, grnQty:50, invQty:50, poPrice:2.50,  invPrice:2.50 },
+          { name:'Capsicum Red 500g',    uom:'bag',   poQty:20, grnQty:20, invQty:20, poPrice:6.00,  invPrice:6.00 },
+        ]
+      },
+      {
+        id:'INV-00884', po:'PO-5518', supplier:'Pacific Drinks Wholesale', outlet:'Melbourne CBD',
+        date:'14 Jun 2026', source:'nomni', amount:520, status:'matched',
+        agentNote:'Received electronically via Nomni Supply · auto-matched on receipt',
+        lines:[
+          { name:'Sparkling Water 1L',  uom:'btl', poQty:48, grnQty:48, invQty:48, poPrice:1.80, invPrice:1.80 },
+          { name:'Cold Brew Coffee 250ml', uom:'btl', poQty:36, grnQty:36, invQty:36, poPrice:3.50, invPrice:3.50 },
+          { name:'Kombucha Original 330ml', uom:'btl', poQty:24, grnQty:24, invQty:24, poPrice:4.20, invPrice:4.20 },
+          { name:'Orange Juice 1L',    uom:'btl', poQty:20, grnQty:20, invQty:20, poPrice:3.80, invPrice:3.80 },
+        ]
+      },
+      {
+        id:'INV-00889', po:'PO-5509', supplier:'Harbour Meats', outlet:'Bondi Beach',
+        date:'9 Jun 2026', source:'email', amount:1386, status:'failed',
+        failReason:'Chicken Breast invoiced at $8.92/kg vs market list $8.40/kg (+6.2%) and Salmon Fillet at $38.40/kg vs $32.20/kg (+19.3%) · $170 overbilled',
+        agentNote:'Cyrus flagged 2 lines invoiced above the agreed market list rate · no approved price amendment on file for either item — dispute or accept the new price into the market list',
+        lines:[
+          { name:'Chicken Breast 500g', uom:'kg', poQty:40, grnQty:40, invQty:40, poPrice:8.40,  invPrice:8.92  },
+          { name:'Salmon Fillet 200g',  uom:'kg', poQty:24, grnQty:24, invQty:24, poPrice:32.20, invPrice:38.40 },
+          { name:'Pork Belly 1kg',      uom:'kg', poQty:6,  grnQty:6,  invQty:6,  poPrice:18.00, invPrice:18.00 },
+        ]
+      },
+      {
+        id:'INV-00887', po:'PO-5508', supplier:'Harbour Meats', outlet:'Newtown',
+        date:'8 Jun 2026', source:'email', amount:470, status:'failed',
+        failReason:'Supplier invoiced for 12 × Beef Short Rib and 6 × Lamb Rack · GRN confirms only 8 and 4 were received · $106 overbilled',
+        agentNote:'Cyrus flagged 2 lines with quantity variance · invoice amount exceeds GRN by $106',
+        lines:[
+          { name:'Chicken Breast 500g', uom:'pkg', poQty:20, grnQty:20, invQty:20, poPrice:7.15,  invPrice:7.15 },
+          { name:'Beef Short Rib 500g', uom:'pkg', poQty:12, grnQty:8,  invQty:12, poPrice:12.50, invPrice:12.50 },
+          { name:'Lamb Rack (each)',    uom:'ea',  poQty:6,  grnQty:4,  invQty:6,  poPrice:28.00, invPrice:28.00 },
+          { name:'Pork Belly 1kg',     uom:'pkg', poQty:5,  grnQty:5,  invQty:5,  poPrice:18.00, invPrice:18.00 },
+        ]
+      },
+      {
+        id:'INV-00885', po:'PO-5507', supplier:'Green Farmers Market', outlet:'Surry Hills',
+        date:'7 Jun 2026', source:'email', amount:745, status:'failed',
+        failReason:'Avocado (each) invoiced at $2.80 vs agreed PO rate of $2.40 · $24 price variance · no pre-approved price increase on file',
+        agentNote:'Cyrus detected a unit price variance on 1 line · no approved price change for avocados in current period',
+        lines:[
+          { name:'Mixed Leaf 2kg',   uom:'bag', poQty:10, grnQty:10, invQty:10, poPrice:9.00,  invPrice:9.00 },
+          { name:'Avocado (each)',   uom:'ea',  poQty:60, grnQty:60, invQty:60, poPrice:2.40,  invPrice:2.80 },
+          { name:'Roma Tomatoes 5kg',uom:'box', poQty:8,  grnQty:8,  invQty:8,  poPrice:16.50, invPrice:16.50 },
+          { name:'Baby Spinach 1kg', uom:'bag', poQty:12, grnQty:12, invQty:12, poPrice:12.00, invPrice:12.00 },
+        ]
+      },
+      {
+        id:'INV-00880', po:'PO-5502', supplier:'Fresh Produce Co', outlet:'Surry Hills',
+        date:'5 Jun 2026', source:'upload', amount:320, status:'approved',
+        agentNote:'Auto-matched by Cyrus · approved by Keith Tan · 5 Jun 2026',
+        lines:[
+          { name:'Cherry Tomatoes 250g', uom:'punnet', poQty:20, grnQty:20, invQty:20, poPrice:3.50, invPrice:3.50 },
+          { name:'Spinach 1kg',           uom:'bag',    poQty:8,  grnQty:8,  invQty:8,  poPrice:12.00, invPrice:12.00 },
+          { name:'Cucumber (each)',       uom:'ea',     poQty:30, grnQty:30, invQty:30, poPrice:2.20,  invPrice:2.20 },
+        ]
+      },
+      {
+        id:'INV-00876', po:'PO-5499', supplier:'Sydney Butchers Co.', outlet:'Bondi Beach',
+        date:'1 Jun 2026', source:'email', amount:290, status:'exported',
+        exportedTo:'Xero', exportedAt:'2 Jun 2026',
+        agentNote:'Auto-matched and exported to Xero · reference XR-20260602-044',
+        lines:[
+          { name:'Chicken Breast 500g', uom:'pkg', poQty:12, grnQty:12, invQty:12, poPrice:7.15, invPrice:7.15 },
+          { name:'Beef Mince 500g',     uom:'pkg', poQty:8,  grnQty:8,  invQty:8,  poPrice:9.80, invPrice:9.80 },
+          { name:'Pork Sausages 500g',  uom:'pkg', poQty:10, grnQty:10, invQty:10, poPrice:7.50, invPrice:7.50 },
+        ]
+      },
+      {
+        // Cyrus has a confident PO suggestion
+        id:'INV-00897', po:null, supplier:'Harbour Meats', outlet:null,
+        date:'12 Jun 2026', source:'email', amount:364, status:'unlinked',
+        agentNote:'Invoice arrived with no PO reference · Cyrus identified a likely match based on supplier, amount, and timing',
+        suggestion:{ po:'PO-5512', supplier:'Harbour Meats', amount:360, date:'10 Jun 2026', confidence:'high', reason:'Same supplier · invoice amount within 1% of PO value ($364 vs $360) · received 2 days after PO was sent' },
+        lines:[]
+      },
+      {
+        // Cyrus cannot suggest — unknown supplier
+        id:'INV-00894', po:null, supplier:'Metro Bakery Supplies', outlet:null,
+        date:'10 Jun 2026', source:'email', amount:145, status:'unlinked',
+        agentNote:'Invoice arrived from a supplier not found in the system · no matching PO could be identified · manual review required',
+        suggestion:null,
+        lines:[]
+      },
+    ];
+
+    /* ── Date helpers (today = 12 Jun 2026 per prototype) ── */
+    const TODAY_DAYS = 20260612; // YYYYMMDD integer for comparison
+    function parseDateDaysAgo(dateStr) {
+      // dateStr like "12 Jun 2026"
+      const months = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+      const p = dateStr.split(' ');
+      const d = parseInt(p[0]), m = months[p[1]], y = parseInt(p[2]);
+      // days since that date relative to today (12 Jun 2026 = day 0)
+      const todayMs = new Date(2026, 5, 12).getTime();
+      const invMs   = new Date(y, m-1, d).getTime();
+      return Math.round((todayMs - invMs) / 86400000);
+    }
+    INV_DATA.forEach(inv => { inv.daysAgo = parseDateDaysAgo(inv.date); });
+
+    /* ── State ── */
+    let _selected = new Set();
+    let _activeFilter = '';
+    let _period = 30; // default: last 30 days
+
+    /* ── Status config ── */
+    const STATUS_CFG = {
+      unlinked: { label:'No PO linked',  pill:'<span class="nb-pill warn"><i class="ti ti-unlink"></i>No PO linked</span>' },
+      pending:  { label:'Pending match', pill:'<span class="nb-pill info"><i class="ti ti-loader-2"></i>Pending match</span>' },
+      matched:  { label:'Matched',       pill:'<span class="nb-pill ok"><i class="ti ti-circle-check"></i>Matched</span>' },
+      failed:   { label:'Match failed',  pill:'<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Match failed</span>' },
+      approved: { label:'Approved',      pill:'<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Approved</span>' },
+      exported: { label:'Exported',      pill:'<span class="nb-pill" style="background:var(--surface-soft);border:1px solid var(--border);color:var(--text-soft);"><i class="ti ti-send"></i>Exported</span>' },
+    };
+
+    /* ── Period filter helper ── */
+    function periodData() {
+      if (!_period) return INV_DATA;
+      return INV_DATA.filter(inv => inv.daysAgo <= _period);
+    }
+
+    function setPeriod(days) {
+      _period = days;
+      document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.days) === days);
+      });
+      renderKPIs();
+      renderTable();
+      buildCyrusInsights();
+    }
+
+    /* ── KPI tiles ── */
+    function renderKPIs() {
+      const counts = { all:0, unlinked:0, pending:0, failed:0, approved:0, exported:0, matched:0 };
+      let totalAP = 0, failedAmt = 0;
+      periodData().forEach(inv => {
+        counts.all++;
+        counts[inv.status] = (counts[inv.status]||0) + 1;
+        totalAP += inv.amount;
+        if (inv.status === 'failed') failedAmt += inv.amount;
+      });
+      const tiles = [
+        { key:'',         cls:'',      val: counts.all,      label:'All invoices',   sub:'$'+totalAP.toLocaleString()+' total AP' },
+        { key:'unlinked', cls:'warn',  val: counts.unlinked, label:'No PO linked',   sub:'Needs review' },
+        { key:'pending',  cls:'',      val: counts.pending,  label:'Pending match',  sub:'Cyrus matching' },
+        { key:'failed',   cls:'risk',  val: counts.failed,   label:'Match failed',   sub:'$'+failedAmt.toLocaleString()+' in dispute' },
+        { key:'approved', cls:'ok',    val: counts.approved, label:'Approved',       sub:'Ready to export' },
+        { key:'exported', cls:'agent', val: counts.exported, label:'Exported',       sub:'This month' },
+      ];
+      document.getElementById('kpi-row').innerHTML = tiles.map(t =>
+        `<div class="kpi-tile ${t.cls}${_activeFilter===t.key?' active':''}" onclick="setFilter('${t.key}')">
+          <div class="kpi-value">${t.val}</div>
+          <div class="kpi-label">${t.label}</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${t.sub}</div>
+        </div>`
+      ).join('');
+    }
+
+    function setFilter(key) {
+      _activeFilter = key;
+      document.getElementById('f-status').value = key;
+      renderKPIs();
+      renderTable();
+    }
+
+    /* ── Match logic ── */
+    function lineMatch(l) {
+      if (l.grnQty === null) return 'pending';
+      const qtyOk = l.grnQty === l.invQty;
+      const priceOk = Math.abs(l.poPrice - l.invPrice) < 0.001;
+      return (qtyOk && priceOk) ? 'pass' : 'fail';
+    }
+
+    function invMatchSummary(inv) {
+      if (inv.status === 'pending') return { result:'pending', passCount:0, failCount:0, variance:0 };
+      let pass=0, fail=0, variance=0;
+      inv.lines.forEach(l => {
+        const r = lineMatch(l);
+        if (r === 'pass') pass++;
+        else if (r === 'fail') {
+          fail++;
+          const qtyDiff = (l.invQty - (l.grnQty||l.invQty)) * l.invPrice;
+          const priceDiff = (l.invPrice - l.poPrice) * l.invQty;
+          variance += Math.abs(qtyDiff) + Math.abs(priceDiff);
+        }
+      });
+      return { result: fail>0?'fail':'pass', passCount:pass, failCount:fail, variance };
+    }
+
+    /* ── Source badge ── */
+    function srcBadge(src) {
+      if (src==='nomni') return '<span class="src-badge nomni"><i class="ti ti-plug-connected"></i>Nomni Supply</span>';
+      if (src==='email') return '<span class="src-badge email"><i class="ti ti-mail"></i>Supplier email</span>';
+      return '<span class="src-badge upload"><i class="ti ti-upload"></i>Outlet upload</span>';
+    }
+
+    /* ── Match badge (table cell) ── */
+    function matchBadge(inv) {
+      if (inv.status==='unlinked') return '<span class="match-badge unlinked"><i class="ti ti-lock"></i>Blocked — no PO</span>';
+      const s = invMatchSummary(inv);
+      if (s.result==='pending') return '<span class="match-badge pending"><i class="ti ti-clock"></i>Pending</span>';
+      if (s.result==='pass') return `<span class="match-badge pass"><i class="ti ti-circle-check"></i>${inv.lines.length}/${inv.lines.length} lines passed</span>`;
+      const varStr = s.variance > 0 ? ' · <span class="var-chip over">$'+s.variance.toFixed(0)+' overbilled</span>' : '';
+      return `<span class="match-badge fail"><i class="ti ti-alert-hexagon"></i>${s.failCount} line${s.failCount!==1?'s':''} failed${varStr}</span>`;
+    }
+
+    /* ── Row actions ── */
+    function rowActions(inv) {
+      if (inv.status==='unlinked') {
+        if (inv.suggestion) {
+          return `<button class="link-btn" style="color:var(--text-accent);" onclick="location.href='invoice-detail.html?id=${inv.id}'"><i class="ti ti-sparkles" style="font-size:11px;"></i> ${inv.suggestion.po}</button><span class="action-sep">·</span><button class="link-btn" onclick="location.href='invoice-detail.html?id=${inv.id}'" style="color:var(--text-soft);">Review</button>`;
+        }
+        return `<button class="link-btn" onclick="location.href='invoice-detail.html?id=${inv.id}'">Link PO</button>`;
+      }
+      const parts = [`<button class="link-btn" onclick="location.href='invoice-detail.html?id=${inv.id}'">View match</button>`];
+      if (inv.status==='matched')  parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="approveInv('${inv.id}',this)">Approve</button>`);
+      if (inv.status==='failed')   parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="location.href='invoice-detail.html?id=${inv.id}'" style="color:var(--status-risk-fg);">Raise credit note</button>`);
+      if (inv.status==='approved') parts.push(`<span class="action-sep">·</span><button class="link-btn" onclick="exportInv('${inv.id}',this)" style="color:var(--text-accent);">Export to Xero</button>`);
+      return parts.join('');
+    }
+
+    /* ── Active filter chips ── */
+    const SUPPLIER_LABELS = {
+      'Harbour Meats':'Harbour Meats','Green Farmers Market':'Green Farmers Market',
+      'Pacific Drinks Wholesale':'Pacific Drinks Wholesale','Fresh Produce Co':'Fresh Produce Co',
+      'Sydney Butchers Co.':'Sydney Butchers Co.','Metro Bakery Supplies':'Metro Bakery Supplies'
+    };
+    const STATUS_LABELS = {
+      unlinked:'No PO linked', pending:'Pending match', matched:'Matched',
+      failed:'Match failed', approved:'Approved', exported:'Exported'
+    };
+    function renderChips() {
+      const fs = document.getElementById('f-supplier').value;
+      const fst = document.getElementById('f-status').value || _activeFilter;
+      const chips = [];
+      if (fs) chips.push({ label:`Supplier: ${fs}`, clear(){ document.getElementById('f-supplier').value=''; renderTable(); } });
+      if (fst) chips.push({ label:`Status: ${STATUS_LABELS[fst]||fst}`, clear(){ document.getElementById('f-status').value=''; _activeFilter=''; renderKPIs(); renderTable(); } });
+      const bar = document.getElementById('chip-bar');
+      bar.classList.toggle('has-chips', chips.length > 0);
+      bar.innerHTML = chips.map((c,i) =>
+        `<span class="filter-chip">${c.label}<button onclick="clearChip(${i})" aria-label="Remove filter"><i class="ti ti-x"></i></button></span>`
+      ).join('') + (chips.length > 1 ? `<button class="chip-reset" onclick="clearAllChips()">Reset all</button>` : '');
+      window._chips = chips;
+    }
+    function clearChip(i) { window._chips[i].clear(); }
+    function clearAllChips() {
+      document.getElementById('f-supplier').value = '';
+      document.getElementById('f-status').value = '';
+      _activeFilter = '';
+      renderKPIs(); renderTable();
+    }
+
+    /* ── Table ── */
+    function filteredData() {
+      const q  = document.getElementById('q').value.trim().toLowerCase();
+      const fs = document.getElementById('f-supplier').value;
+      const fst= document.getElementById('f-status').value || _activeFilter;
+      return periodData().filter(inv => {
+        if (q && !inv.id.toLowerCase().includes(q) && !inv.supplier.toLowerCase().includes(q)) return false;
+        if (fs && inv.supplier !== fs) return false;
+        if (fst && inv.status !== fst) return false;
+        return true;
+      });
+    }
+
+    function renderTable() {
+      renderChips();
+      const rows = filteredData();
+      const tbody = document.getElementById('inv-tbody');
+      const empty = document.getElementById('empty-state');
+      document.getElementById('result-count').textContent = rows.length + ' invoice' + (rows.length!==1?'s':'');
+
+      if (!rows.length) {
+        tbody.innerHTML = '';
+        empty.style.display = '';
+        return;
+      }
+      empty.style.display = 'none';
+
+      tbody.innerHTML = rows.map(inv => {
+        const sel = _selected.has(inv.id);
+        // Short date: "12 Jun" (drop year — all same year in context)
+        const shortDate = inv.date.replace(/ \d{4}$/, '');
+        return `<tr class="${sel?'row-selected':''}" id="row-${inv.id}" style="cursor:pointer;" onclick="rowClick(event,'${inv.id}')">
+          <td class="col-check" style="padding-inline:var(--space-md);"><input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${inv.id}',this.checked)" style="cursor:pointer;accent-color:var(--fern);" onclick="event.stopPropagation()"/></td>
+          <td class="col-inv">
+            <div class="cell-id">${inv.id}</div>
+            ${inv.po
+              ? `<div class="cell-sub"><a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);text-decoration:none;" onclick="event.stopPropagation()">${inv.po}</a></div>`
+              : `<div class="cell-sub" style="color:var(--status-warn-fg);"><i class="ti ti-unlink" style="font-size:10px;"></i> No PO</div>`}
+          </td>
+          <td class="col-sup" title="${inv.supplier}"><div class="cell-sup">${inv.supplier}</div></td>
+          <td class="col-outlet" title="${inv.outlet||''}"><div class="cell-outlet">${inv.outlet||'—'}</div></td>
+          <td class="col-date"><span style="font-size:13px;color:var(--text-soft);white-space:nowrap;">${shortDate}</span></td>
+          <td class="col-amt num"><strong style="font-feature-settings:'tnum' 1;">$${inv.amount.toLocaleString()}</strong></td>
+          <td class="col-src">${srcBadge(inv.source)}</td>
+          <td class="col-status">
+            ${STATUS_CFG[inv.status]?.pill||''}
+            ${inv.status==='exported' ? `<div class="cell-sub" style="margin-top:2px;">to ${inv.exportedTo||'Xero'} · by Keith Tan</div>` : ''}
+            ${inv.status==='approved' ? `<div class="cell-sub" style="margin-top:2px;">by Keith Tan</div>` : ''}
+          </td>
+          <td class="col-match">${matchBadge(inv)}</td>
+          <td class="col-act" onclick="event.stopPropagation()">${rowActions(inv)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* ── Row click → detail page (actions column and checkbox stop propagation) ── */
+    function rowClick(e, id) {
+      window.location.href = 'invoice-detail.html?id=' + id;
+    }
+
+    /* ── Selection ── */
+    function toggleRow(id, checked) {
+      if (checked) _selected.add(id); else _selected.delete(id);
+      const row = document.getElementById('row-'+id);
+      if (row) row.classList.toggle('row-selected', checked);
+      updateBulkBar();
+    }
+
+    function toggleAll(checked) {
+      filteredData().forEach(inv => {
+        if (checked) _selected.add(inv.id); else _selected.delete(inv.id);
+        const row = document.getElementById('row-'+inv.id);
+        if (row) row.classList.toggle('row-selected', checked);
+      });
+      updateBulkBar();
+    }
+
+    function clearSel() {
+      _selected.clear();
+      document.getElementById('sel-all').checked = false;
+      document.querySelectorAll('#inv-tbody input[type=checkbox]').forEach(c => c.checked = false);
+      document.querySelectorAll('#inv-tbody tr').forEach(r => r.classList.remove('row-selected'));
+      updateBulkBar();
+    }
+
+    function updateBulkBar() {
+      const bar = document.getElementById('bulk-bar');
+      const n = _selected.size;
+      if (!n) { bar.classList.remove('show'); return; }
+      bar.classList.add('show');
+      document.getElementById('bulk-label').textContent = n + ' invoice' + (n!==1?'s':'') + ' selected';
+      const selData = INV_DATA.filter(i => _selected.has(i.id));
+      const canApprove = selData.some(i => i.status==='matched');
+      const canExport  = selData.some(i => i.status==='approved');
+      document.getElementById('bulk-approve-btn').style.display = canApprove ? '' : 'none';
+      document.getElementById('bulk-export-btn').style.display  = canExport  ? '' : 'none';
+    }
+
+    /* ── Approve / Export — with 8-second undo window ── */
+    // Snapshot the status fields of the affected invoices before mutation,
+    // so Undo can restore them exactly and re-render.
+    function snapshotInvoices(invoices) {
+      return invoices.map(inv => ({ inv, status: inv.status, exportedTo: inv.exportedTo, exportedAt: inv.exportedAt }));
+    }
+    function restoreSnapshot(snap) {
+      snap.forEach(s => { s.inv.status = s.status; s.inv.exportedTo = s.exportedTo; s.inv.exportedAt = s.exportedAt; });
+      renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
+    function approveInv(id, btn) {
+      const inv = INV_DATA.find(i => i.id===id);
+      if (!inv) return;
+      const snap = snapshotInvoices([inv]);
+      inv.status = 'approved';
+      toastUndo(id + ' approved · ready for export to Xero', () => restoreSnapshot(snap));
+      renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
+    function exportInv(id, btn) {
+      const inv = INV_DATA.find(i => i.id===id);
+      if (!inv) return;
+      const snap = snapshotInvoices([inv]);
+      inv.status = 'exported'; inv.exportedTo = 'Xero'; inv.exportedAt = 'Today';
+      toastUndo(id + ' exported to Xero', () => restoreSnapshot(snap));
+      renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
+    function bulkApprove() {
+      const affected = INV_DATA.filter(i => _selected.has(i.id) && i.status==='matched');
+      if (!affected.length) return;
+      const snap = snapshotInvoices(affected);
+      affected.forEach(inv => { inv.status = 'approved'; });
+      const n = affected.length;
+      toastUndo(n + ' invoice' + (n!==1?'s':'') + ' approved', () => restoreSnapshot(snap));
+      clearSel(); renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
+    function bulkExport() {
+      const affected = INV_DATA.filter(i => _selected.has(i.id) && i.status==='approved');
+      if (!affected.length) return;
+      const snap = snapshotInvoices(affected);
+      let total = 0;
+      affected.forEach(inv => { inv.status='exported'; inv.exportedTo='Xero'; total += inv.amount; });
+      const n = affected.length;
+      toastUndo(n + ' invoice' + (n!==1?'s':'') + ' · $' + total.toLocaleString() + ' exported to Xero', () => restoreSnapshot(snap));
+      clearSel(); renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
+    /* ── Unlinked invoice actions ── */
+    function confirmPOLink(id, po) {
+      if (!po) { toast('Please enter a PO number'); return; }
+      const inv = INV_DATA.find(i => i.id===id);
+      if (!inv) return;
+      inv.po = po;
+      inv.status = 'pending';
+      if (!inv.outlet) inv.outlet = '—';
+      closeDrawer();
+      toast(id + ' linked to ' + po + ' · Cyrus will begin matching');
+      renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
+    function rejectInvoice(id) {
+      const inv = INV_DATA.find(i => i.id===id);
+      if (!inv) return;
+      inv.status = 'failed';
+      inv.failReason = 'Invoice rejected — no matching PO found';
+      closeDrawer();
+      toast(id + ' rejected · supplier will be notified');
+      renderTable(); renderKPIs(); buildCyrusInsights();
+    }
+
+    /* ── 3-way match drawer ── */
+    function openDrawer(id) {
+      const inv = INV_DATA.find(i => i.id===id);
+      if (!inv) return;
+      document.getElementById('drawer-title').textContent = inv.id + ' · ' + inv.supplier;
+      document.getElementById('drawer-body').innerHTML = buildDrawerBody(inv);
+      document.getElementById('drawer-foot').innerHTML = buildDrawerFoot(inv);
+      document.getElementById('drawer-scrim').classList.add('open');
+      document.getElementById('match-drawer').classList.add('open');
+      document.getElementById('match-drawer').setAttribute('aria-hidden','false');
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer-scrim').classList.remove('open');
+      document.getElementById('match-drawer').classList.remove('open');
+      document.getElementById('match-drawer').setAttribute('aria-hidden','true');
+    }
+
+    /* ── Unlinked invoice drawer ── */
+    function buildUnlinkedDrawerBody(inv) {
+      const agentLine = `<div class="agent-byline" style="margin-bottom:var(--space-lg);"><i class="ti ti-sparkles spark"></i>${inv.agentNote}</div>`;
+      const kvRows = [
+        ['Invoice ref', inv.id],
+        ['Supplier', `<strong>${inv.supplier}</strong>`],
+        ['Date received', inv.date],
+        ['Source', srcBadge(inv.source)],
+        ['Invoice amount', '<strong>$'+inv.amount.toLocaleString()+'</strong>'],
+        ['Purchase order', '<span style="color:var(--status-warn-fg);"><i class="ti ti-unlink"></i> Not linked</span>'],
+      ].map(([l,v]) => `<div class="dkv"><span class="dkv-label">${l}</span><span class="dkv-value">${v}</span></div>`).join('');
+
+      let bodyExtra = '';
+      if (inv.suggestion) {
+        const s = inv.suggestion;
+        bodyExtra = `
+          <div class="drawer-section-head">Cyrus suggestion</div>
+          <div class="suggestion-card">
+            <span class="agent-avatar" data-agent="cyrus" aria-hidden="true" style="width:28px;height:28px;font-size:12px;flex-shrink:0;">Cy</span>
+            <div>
+              <div class="suggestion-po">${s.po}</div>
+              <div class="suggestion-reason">${s.reason}</div>
+              <span class="confidence-chip ${s.confidence}"><i class="ti ti-${s.confidence==='high'?'circle-check':'adjustments-horizontal'}"></i> ${s.confidence.charAt(0).toUpperCase()+s.confidence.slice(1)} confidence</span>
+            </div>
+          </div>
+          <div class="dkv-list">
+            <div class="dkv"><span class="dkv-label">PO number</span><span class="dkv-value"><a href="order-detail.html?id=${s.po}" style="color:var(--text-link);font-weight:600;">${s.po}</a></span></div>
+            <div class="dkv"><span class="dkv-label">Supplier</span><span class="dkv-value">${s.supplier}</span></div>
+            <div class="dkv"><span class="dkv-label">PO amount</span><span class="dkv-value">$${s.amount.toLocaleString()}</span></div>
+            <div class="dkv"><span class="dkv-label">PO date</span><span class="dkv-value">${s.date}</span></div>
+          </div>`;
+      } else {
+        bodyExtra = `
+          <div class="drawer-section-head">Link purchase order</div>
+          <div class="no-suggestion-card">
+            <i class="ti ti-info-circle" style="margin-right:4px;"></i>
+            Cyrus could not identify a matching PO for this invoice. <strong>${inv.supplier}</strong> may not be registered in the system, or no open PO matches this amount and date.
+          </div>
+          <div class="link-po-input">
+            <input id="link-po-field" type="text" placeholder="Enter PO number e.g. PO-5520" />
+            <button onclick="confirmPOLink('${inv.id}', document.getElementById('link-po-field').value.trim())">Link PO</button>
+          </div>`;
+      }
+      return `${agentLine}<div class="dkv-list">${kvRows}</div>${bodyExtra}`;
+    }
+
+    function buildDrawerBody(inv) {
+      if (inv.status === 'unlinked') return buildUnlinkedDrawerBody(inv);
+      const s = invMatchSummary(inv);
+
+      /* Result banner */
+      let bannerCls, bannerIcon, bannerTitle, bannerSub;
+      if (s.result === 'pending') {
+        bannerCls='pending'; bannerIcon='ti-loader-2'; bannerTitle='Match in progress';
+        bannerSub = 'Cyrus is extracting invoice details and matching against PO. GRN not yet submitted — quantity match will complete once goods are received.';
+      } else if (s.result === 'pass') {
+        bannerCls='pass'; bannerIcon='ti-circle-check'; bannerTitle='3-way match passed · all ' + inv.lines.length + ' lines verified';
+        bannerSub = 'Invoice quantities and prices match PO and GRN. Ready to approve.';
+      } else {
+        bannerCls='fail'; bannerIcon='ti-alert-hexagon'; bannerTitle='Match failed · ' + s.failCount + ' line' + (s.failCount!==1?'s':'') + ' with variance';
+        bannerSub = inv.failReason || 'Review highlighted lines below.';
+      }
+
+      const banner = `<div class="match-result-banner ${bannerCls}">
+        <i class="ti ${bannerIcon} match-icon ${bannerCls}" style="font-size:24px;"></i>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">${bannerTitle}</div>
+          <div style="font-size:12px;color:var(--text-soft);margin-top:4px;line-height:1.5;">${bannerSub}</div>
+        </div>
+      </div>`;
+
+      /* Cyrus byline */
+      const agentLine = `<div class="agent-byline" style="margin-bottom:var(--space-lg);"><i class="ti ti-sparkles spark"></i>${inv.agentNote}</div>`;
+
+      /* Invoice KV header */
+      const kvRows = [
+        ['Invoice ref', inv.id],
+        ['Purchase order', `<a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);font-weight:600;">${inv.po}</a>`],
+        ['Supplier', inv.supplier],
+        ['Outlet', inv.outlet],
+        ['Date received', inv.date],
+        ['Source', srcBadge(inv.source)],
+        ['Invoice amount', '<strong>$'+inv.amount.toLocaleString()+'</strong>'],
+        ['Status', STATUS_CFG[inv.status]?.pill||''],
+      ].map(([l,v]) => `<div class="dkv"><span class="dkv-label">${l}</span><span class="dkv-value">${v}</span></div>`).join('');
+
+      /* 3-way match table */
+      const thdr = `<tr>
+        <th style="text-align:left;min-width:160px;">Item</th>
+        <th>UoM</th>
+        <th>PO qty</th>
+        <th>GRN qty</th>
+        <th>Inv qty</th>
+        <th>PO price</th>
+        <th>Inv price</th>
+        <th>Variance</th>
+        <th>Result</th>
+      </tr>`;
+
+      const trows = inv.lines.map(l => {
+        const res = lineMatch(l);
+        const cls = res==='pass' ? 'line-pass' : res==='fail' ? 'line-fail' : 'line-pending';
+
+        const qtyOk    = l.grnQty===null ? null : l.grnQty===l.invQty;
+        const priceOk  = Math.abs(l.poPrice-l.invPrice) < 0.001;
+
+        const grnCell  = l.grnQty===null ? '<td class="soft-val">—</td>' : `<td class="${qtyOk?'pass-val':'fail-val'}">${l.grnQty}</td>`;
+        const invQCell = l.grnQty===null ? `<td>${l.invQty}</td>` : `<td class="${qtyOk?'pass-val':'fail-val'}">${l.invQty}</td>`;
+        const priceCell= `<td class="${priceOk?'pass-val':'fail-val'}">$${l.invPrice.toFixed(2)}</td>`;
+
+        let variance = '—';
+        let varCls = '';
+        if (res==='fail') {
+          const qVar = l.grnQty!==null ? (l.invQty - l.grnQty) * l.invPrice : 0;
+          const pVar = (l.invPrice - l.poPrice) * l.invQty;
+          const total = qVar + pVar;
+          if (total !== 0) {
+            variance = (total>0?'+$':'-$') + Math.abs(total).toFixed(2);
+            varCls = 'fail-val';
+          }
+        }
+
+        const resultIcon = res==='pass'
+          ? '<span style="color:var(--status-ok-fg);font-weight:700;"><i class="ti ti-check"></i> Pass</span>'
+          : res==='fail'
+          ? '<span style="color:var(--status-risk-fg);font-weight:700;"><i class="ti ti-x"></i> Fail</span>'
+          : '<span style="color:var(--text-soft);">Pending</span>';
+
+        return `<tr class="${cls}">
+          <td>${l.name}</td>
+          <td>${l.uom}</td>
+          <td>${l.poQty}</td>
+          ${grnCell}
+          ${invQCell}
+          <td>$${l.poPrice.toFixed(2)}</td>
+          ${priceCell}
+          <td class="${varCls}">${variance}</td>
+          <td>${resultIcon}</td>
+        </tr>`;
+      }).join('');
+
+      return `${banner}${agentLine}
+        <div class="dkv-list">${kvRows}</div>
+        <div class="drawer-section-head">3-way match &mdash; PO vs GRN vs Invoice</div>
+        <div style="overflow-x:auto;"><table class="three-way">${thdr}<tbody>${trows}</tbody></table></div>`;
+    }
+
+    function buildDrawerFoot(inv) {
+      if (inv.status === 'unlinked') {
+        const parts = [
+          `<button onclick="closeDrawer()" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);">Close</button>`,
+          `<button onclick="toast('${inv.id} flagged for manual follow-up');closeDrawer();" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);"><i class="ti ti-flag"></i> Flag for follow-up</button>`,
+          `<button onclick="rejectInvoice('${inv.id}')" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid rgba(238,75,135,0.25);background:var(--status-risk-bg);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--status-risk-fg);"><i class="ti ti-trash"></i> Reject</button>`,
+        ];
+        if (inv.suggestion) {
+          parts.unshift(`<button onclick="confirmPOLink('${inv.id}','${inv.suggestion.po}')" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:none;background:var(--btn-primary-bg);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;"><i class="ti ti-link"></i> Confirm ${inv.suggestion.po}</button>`);
+        }
+        return parts.join('');
+      }
+      const parts = [`<button onclick="closeDrawer()" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);">Close</button>`];
+      if (inv.status==='matched') {
+        parts.unshift(`<button onclick="approveInv('${inv.id}');closeDrawer();" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:none;background:var(--btn-primary-bg);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;"><i class="ti ti-circle-check"></i> Approve invoice</button>`);
+      }
+      if (inv.status==='failed') {
+        parts.unshift(
+          `<button onclick="toast('Raising credit note for ${inv.id} — supplier will be notified');closeDrawer();" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:none;background:var(--btn-primary-bg);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;"><i class="ti ti-receipt-refund"></i> Raise credit note</button>`,
+          `<button onclick="toast('${inv.id} flagged for supplier follow-up');closeDrawer();" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);"><i class="ti ti-flag"></i> Flag for follow-up</button>`
+        );
+      }
+      if (inv.status==='approved') {
+        parts.unshift(`<button onclick="exportInv('${inv.id}');closeDrawer();" style="height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:none;background:var(--btn-primary-bg);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;"><i class="ti ti-send"></i> Export to Xero</button>`);
+      }
+      return parts.join('');
+    }
+
+    /* ── Toast ── */
+    function toast(msg) {
+      const el = document.createElement('div');
+      el.style.cssText = 'background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.18);pointer-events:none;white-space:nowrap;max-width:420px;text-align:center;';
+      el.textContent = msg;
+      document.getElementById('toast-wrap').appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    /* ── Toast with inline Undo link (8-second window) ── */
+    function toastUndo(msg, undoFn) {
+      const el = document.createElement('div');
+      // pointer-events:auto — the wrap is pointer-events:none, but the Undo link must stay clickable
+      el.style.cssText = 'background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.18);pointer-events:auto;white-space:nowrap;max-width:460px;text-align:center;';
+      const txt = document.createElement('span');
+      txt.textContent = msg + ' · ';
+      const undo = document.createElement('a');
+      undo.href = '#';
+      undo.textContent = 'Undo';
+      undo.style.cssText = 'color:#fff;font-weight:700;text-decoration:underline;cursor:pointer;';
+      undo.addEventListener('click', e => {
+        e.preventDefault();
+        clearTimeout(timer);
+        el.remove();
+        undoFn();
+        toast('Undone — invoices restored to their previous status');
+      });
+      el.appendChild(txt); el.appendChild(undo);
+      document.getElementById('toast-wrap').appendChild(el);
+      const timer = setTimeout(() => el.remove(), 8000);
+    }
+
+    /* ── Cyrus agent insights ── */
+    function buildCyrusInsights() {
+      const scope    = periodData();
+      const failed   = scope.filter(i => i.status === 'failed');
+      const pending  = scope.filter(i => i.status === 'pending');
+      const approved = scope.filter(i => i.status === 'approved');
+      const unlinked = scope.filter(i => i.status === 'unlinked');
+      const total    = scope.reduce((s,i) => s + i.amount, 0);
+
+      const failedVariance = failed.reduce((s,inv) => {
+        const m = invMatchSummary(inv); return s + m.variance;
+      }, 0);
+      const failedSuppliers = [...new Set(failed.map(i => i.supplier))];
+
+      // Build summary sentence
+      let summary = '';
+      const periodLabel = _period ? `last ${_period} days` : 'all time';
+      if (scope.length === 0) {
+        summary = `No invoices received in the ${periodLabel}.`;
+      } else if (failed.length === 0 && pending.length === 0 && unlinked.length === 0) {
+        summary = `All ${scope.length} invoices in the ${periodLabel} are matched and clear — nothing needs your attention.`;
+      } else {
+        const parts = [];
+        if (unlinked.length > 0) {
+          const hasSuggestions = unlinked.filter(i => i.suggestion).length;
+          const noSuggestions  = unlinked.length - hasSuggestions;
+          const detail = hasSuggestions && noSuggestions
+            ? `${hasSuggestions} with a suggested PO, ${noSuggestions} need manual review`
+            : hasSuggestions
+            ? `Cyrus has suggested a PO for ${hasSuggestions === 1 ? 'one' : hasSuggestions}`
+            : 'manual review needed';
+          parts.push(`<strong>${unlinked.length} invoice${unlinked.length>1?'s':''} arrived without a PO reference</strong> — ${detail}`);
+        }
+        if (failed.length > 0) {
+          parts.push(`<strong>${failed.length} invoice${failed.length>1?'s':''} failed the 3-way match</strong> with $${failedVariance.toLocaleString(undefined,{maximumFractionDigits:0})} in dispute across ${failedSuppliers.join(' and ')}`);
+        }
+        if (pending.length > 0) {
+          parts.push(`<strong>${pending.length} invoice${pending.length>1?'s':''} pending match</strong> — Cyrus is processing`);
+        }
+        if (approved.length > 0) {
+          const approvedTotal = approved.reduce((s,i)=>s+i.amount,0);
+          parts.push(`<strong>${approved.length} approved</strong> ($${approvedTotal.toLocaleString()}) ready to export to Xero`);
+        }
+        summary = parts.join(' · ') + '.';
+      }
+
+      // Build action chips
+      const chips = [];
+      if (unlinked.length > 0) {
+        chips.push(`<button class="cyrus-chip warn" onclick="filterByStatus('unlinked')"><i class="ti ti-unlink"></i> ${unlinked.length} unlinked — review</button>`);
+      }
+      if (failed.length > 0) {
+        chips.push(`<button class="cyrus-chip risk" onclick="filterByStatus('failed')"><i class="ti ti-alert-triangle"></i> ${failed.length} match failed — review</button>`);
+      }
+      if (approved.length > 0) {
+        const approvedTotal = approved.reduce((s,i)=>s+i.amount,0);
+        chips.push(`<button class="cyrus-chip ok" onclick="filterByStatus('approved')"><i class="ti ti-send"></i> $${approvedTotal.toLocaleString()} ready to export</button>`);
+      }
+      if (pending.length > 0) {
+        chips.push(`<button class="cyrus-chip info" onclick="filterByStatus('pending')"><i class="ti ti-loader"></i> ${pending.length} matching in progress</button>`);
+      }
+      if (total > 0) {
+        chips.push(`<span class="cyrus-chip" style="background:var(--surface-soft);color:var(--text-soft);cursor:default;"><i class="ti ti-database"></i> $${total.toLocaleString()} total AP</span>`);
+      }
+
+      document.getElementById('cyrus-summary').innerHTML = summary;
+      document.getElementById('cyrus-chips').innerHTML = chips.join('');
+
+      // Agent state badge
+      const stateEl = document.getElementById('cyrus-state');
+      if (failed.length > 0 || unlinked.length > 0) {
+        stateEl.className = 'agent-state needs-you';
+        stateEl.innerHTML = '<i class="ti ti-alert-triangle"></i>Needs you';
+        stateEl.style.display = '';
+      } else if (approved.length > 0) {
+        stateEl.className = 'agent-state proposed';
+        stateEl.innerHTML = '<i class="ti ti-send"></i>Ready to export';
+        stateEl.style.display = '';
+      } else if (pending.length > 0) {
+        stateEl.className = 'agent-state stepped-back';
+        stateEl.innerHTML = '<i class="ti ti-loader"></i>Matching…';
+        stateEl.style.display = '';
+      } else {
+        stateEl.className = 'agent-state done';
+        stateEl.innerHTML = '<i class="ti ti-circle-check"></i>All clear';
+        stateEl.style.display = '';
+      }
+
+      // show card if previously dismissed on period change
+      document.getElementById('cyrus-card').style.display = '';
+    }
+
+    function filterByStatus(status) {
+      _activeFilter = status;
+      const sel = document.getElementById('f-status');
+      if (sel) sel.value = status;
+      renderKPIs();
+      renderTable();
+    }
+
+    /* ── Init ── */
+    renderKPIs();
+    renderTable();
+    buildCyrusInsights();
+  </script>
+</body>
+</html>

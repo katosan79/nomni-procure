@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Order inbox — Nomni Supply</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-lg); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+
+    .seller-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text-accent); background:color-mix(in srgb, var(--fern) 10%, transparent); padding:4px 10px; border-radius:var(--radius-pill); margin-bottom:var(--space-sm); }
+    .seller-badge i { font-size:14px; }
+
+    /* KPI row */
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); }
+    .kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); }
+    .kpi-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
+    .kpi-value { font-size:26px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; letter-spacing:-0.02em; }
+    .kpi-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .kpi-sub.warn { color:var(--status-warn-fg); font-weight:600; }
+
+    /* Cards */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; white-space:nowrap; flex-shrink:0; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--btn-primary-hover); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-ghost:hover { color:var(--text-accent); }
+
+    /* Orders table */
+    .orders-table-wrap { overflow-x:auto; }
+    .orders-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .orders-table th { padding:var(--space-sm) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+    .orders-table td { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .orders-table th:first-child, .orders-table td:first-child { padding-left:var(--space-xl); }
+    .orders-table th:last-child, .orders-table td:last-child { padding-right:var(--space-xl); }
+    .orders-table tbody tr:last-child td { border-bottom:none; }
+    .orders-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .orders-table tbody tr.row-clickable { cursor:pointer; }
+    .orders-table td:first-child { white-space:nowrap; }
+    .po-id { font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; white-space:nowrap; }
+    .po-agent { font-size:11px; color:var(--text-soft); display:flex; align-items:center; gap:4px; margin-top:1px; white-space:nowrap; }
+    .po-id-link { text-decoration:none; }
+    .po-id-link:hover .po-id { color:var(--text-accent); }
+    .from-outlet { font-weight:600; color:var(--text); white-space:nowrap; }
+    .from-group { font-size:11px; color:var(--text-soft); white-space:nowrap; }
+    .col-num { text-align:right; font-feature-settings:'tnum' 1; font-weight:600; color:var(--text); }
+    .status-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+    .status-pill.new       { color:var(--status-info-fg); background:var(--status-info-bg); }
+    .status-pill.confirmed { color:var(--status-ok-fg); background:var(--status-ok-bg); }
+    .status-pill.picking   { color:var(--status-warn-fg); background:var(--status-warn-bg); }
+    .status-pill.dispatched{ color:var(--text-soft); background:var(--surface-soft); border:1px solid var(--border); }
+    .status-pill.shortfall { color:var(--status-risk-fg); background:var(--status-risk-bg); }
+    .row-actions { display:flex; gap:var(--space-xs); justify-content:flex-end; }
+    .due-today { font-size:11px; font-weight:700; color:var(--status-warn-fg); }
+
+    /* Agent banner */
+    .agent-surface { border:1.5px solid var(--agent-border, var(--fern)); border-radius:var(--radius-lg); background:var(--surface); box-shadow:0 0 0 4px color-mix(in srgb, var(--fern) 7%, transparent); }
+    .agent-banner { display:flex; gap:var(--space-md); padding:var(--space-lg) var(--space-xl); }
+    .agent-avatar { width:36px; height:36px; border-radius:50%; background:var(--fern); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .agent-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-accent); margin-bottom:2px; }
+    .agent-headline { font-size:14px; font-weight:700; color:var(--text); margin-bottom:var(--space-xs); }
+    .agent-why { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .agent-actions { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-xl); border-top:1px solid var(--border); }
+
+    /* View switch */
+    .view-switch { display:inline-flex; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; flex-shrink:0; }
+    .view-btn { padding:0 var(--space-md); height:var(--control-h); background:var(--surface); border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-soft); display:inline-flex; align-items:center; gap:6px; transition:background var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard); }
+    .view-btn:not(.active):hover { background:var(--surface-soft); color:var(--text); }
+    .view-btn.active { background:var(--surface-deep); color:var(--cream); }
+    .view-btn i { font-size:15px; }
+
+    /* Delivery calendar */
+    .cal-wrap { padding:var(--space-xl); overflow-x:auto; }
+    .cal-grid { display:grid; grid-template-columns:90px repeat(7,minmax(110px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .cal-head { background:var(--surface-soft); padding:var(--space-sm) var(--space-xs); font-size:12px; text-align:center; color:var(--text-soft); }
+    .cal-head.today, .cal-head.tomorrow { font-weight:700; color:var(--text); }
+    .cal-row-label { background:var(--surface-soft); padding:var(--space-sm) var(--space-md); font-size:11px; color:var(--text-soft); display:flex; align-items:center; white-space:nowrap; }
+    .cal-cell { background:var(--surface); padding:6px; display:flex; flex-direction:column; gap:4px; min-height:58px; }
+    .cal-chip { display:flex; flex-direction:column; gap:1px; padding:5px 7px; border-radius:var(--radius-sm); font-size:11px; font-weight:700; cursor:pointer; border:none; text-align:left; font-family:inherit; }
+    .cal-chip-status { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.02em; opacity:.85; }
+    .cal-chip.new        { background:var(--status-info-bg); color:var(--status-info-fg); }
+    .cal-chip.confirmed  { background:var(--status-ok-bg); color:var(--status-ok-fg); }
+    .cal-chip.picking    { background:var(--status-warn-bg); color:var(--status-warn-fg); }
+    .cal-chip.shortfall  { background:var(--status-risk-bg); color:var(--status-risk-fg); }
+    .cal-chip.dispatched { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); opacity:.75; }
+    .cal-legend { display:flex; gap:var(--space-lg); flex-wrap:wrap; padding:0 var(--space-xl) var(--space-xl); font-size:12px; color:var(--text-soft); }
+    .cal-legend-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
+    .row-flash { animation: row-flash 1.6s ease-out; }
+    @keyframes row-flash { 0% { background: color-mix(in srgb, var(--fern) 16%, transparent); } 100% { background: transparent; } }
+
+    /* Filter bar */
+    .filter-bar { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; padding:var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border); }
+    .search-wrap { position:relative; flex:1; min-width:200px; }
+    .search-wrap i { position:absolute; left:var(--space-md); top:50%; transform:translateY(-50%); color:var(--text-soft); font-size:15px; pointer-events:none; }
+    .search-input { width:100%; height:var(--control-h); padding-inline:var(--space-3xl) var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; }
+    .search-input:focus { border-color:var(--fern); }
+    .filter-select { height:var(--control-h); padding-inline:var(--space-md) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); cursor:pointer; outline:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; }
+    .filter-select:focus { border-color:var(--fern); }
+
+    /* Pagination */
+    .pagination-bar { display:flex; align-items:center; justify-content:space-between; padding:var(--space-lg) var(--space-xl); border-top:1px solid var(--border); }
+    .pagination-info { font-size:13px; color:var(--text-soft); }
+    .pagination-controls { display:flex; align-items:center; gap:var(--space-sm); }
+    .page-btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:32px; padding-inline:var(--space-md); border-radius:var(--radius-sm); font-size:13px; font-weight:500; cursor:pointer; background:none; border:1px solid var(--border); color:var(--text); font-family:inherit; transition:background 0.1s; }
+    .page-btn:hover:not(:disabled) { background:var(--surface-soft); }
+    .page-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .page-btn i { font-size:14px; }
+
+    /* Calendar overflow chip */
+    .cal-chip-more { font-size:11px; font-weight:600; color:var(--text-accent); background:none; border:1px dashed var(--border); border-radius:var(--radius-sm); padding:4px 7px; cursor:pointer; font-family:inherit; text-align:left; }
+    .cal-chip-more:hover { border-color:var(--fern); }
+    .empty-row td { padding:var(--space-2xl) var(--space-xl) !important; text-align:center; color:var(--text-soft); }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <div class="page-head">
+        <div>
+          <span class="seller-badge"><i class="ti ti-building-warehouse"></i>Sydney Central Kitchen · Seller workspace</span>
+          <h1 class="page-title">Order inbox</h1>
+          <p class="page-desc">Incoming orders from your outlets. Confirm to reserve stock and queue for fulfilment — the outlet's PO and your incoming order are the same record.</p>
+        </div>
+        <button class="btn btn-outline" onclick="soToast('Exporting order list…')"><i class="ti ti-download"></i>Export</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">New orders</div>
+          <div class="kpi-value" id="kpi-new">–</div>
+          <div class="kpi-sub">awaiting confirmation</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">To fulfil today</div>
+          <div class="kpi-value" id="kpi-today">–</div>
+          <div class="kpi-sub" id="kpi-today-sub">–</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Fulfilled this week</div>
+          <div class="kpi-value">14</div>
+          <div class="kpi-sub">across 6 outlets</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Order value MTD</div>
+          <div class="kpi-value">$28,410</div>
+          <div class="kpi-sub">at transfer price</div>
+        </div>
+      </div>
+
+      <!-- Agent banner -->
+      <article class="agent-surface" id="ck-agent-banner" aria-label="Otto order intake summary">
+        <div class="agent-banner">
+          <div class="agent-avatar">Ot</div>
+          <div style="flex:1">
+            <div class="agent-label">Otto · Ordering agent</div>
+            <div class="agent-headline">3 outlet orders arrived overnight — 2 are fully coverable from CK stock, 1 has a shortfall.</div>
+            <div class="agent-why">Bondi Beach and Surry Hills can be confirmed as-is. Parramatta's order includes 12 × Napoli Sauce 5L but only 8 are on hand — tomorrow's production run covers the gap, so I suggest confirming with a split delivery.</div>
+          </div>
+        </div>
+        <div class="agent-actions">
+          <button class="btn btn-primary btn-sm" onclick="confirmCoverable()"><i class="ti ti-checks"></i>Confirm the 2 coverable orders</button>
+          <a class="btn btn-outline btn-sm" href="seller-order-detail.html?po=PO-01249">Review Parramatta split</a>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ck-agent-banner').style.display='none'">Dismiss</button>
+        </div>
+      </article>
+
+      <!-- Incoming orders — List view -->
+      <div class="card" id="view-list">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-inbox"></i>Incoming orders</div>
+            <div class="card-desc">Orders placed by outlets against your catalog. Confirming reserves stock and moves the order to the fulfilment queue.</div>
+          </div>
+          <div class="view-switch" role="group" aria-label="Order inbox view">
+            <button class="view-btn" data-view="list" onclick="setView('list')"><i class="ti ti-list"></i>List</button>
+            <button class="view-btn" data-view="cal" onclick="setView('cal')"><i class="ti ti-calendar-week"></i>Calendar</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <i class="ti ti-search" aria-hidden="true"></i>
+            <input class="search-input" type="search" id="filter-search" placeholder="Search by order or outlet…" oninput="setFilterSearch(this.value)"/>
+          </div>
+          <select class="filter-select" id="filter-status" aria-label="Filter by status" onchange="setFilterStatus(this.value)">
+            <option value="all">All statuses</option>
+            <option value="new">New</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="picking">Picking</option>
+            <option value="shortfall">Stock shortfall</option>
+            <option value="dispatched">Dispatched</option>
+          </select>
+        </div>
+        <div class="orders-table-wrap">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Order</th><th>From</th><th style="text-align:right">Lines</th><th>Requested delivery</th><th style="text-align:right">Value</th><th>Status</th><th style="text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody"></tbody>
+        </table>
+        </div>
+        <div class="pagination-bar">
+          <p class="pagination-info" id="pg-info"></p>
+          <div class="pagination-controls">
+            <button class="page-btn" id="pg-prev" onclick="pgPrev()" aria-label="Previous page"><i class="ti ti-chevron-left" aria-hidden="true"></i>Prev</button>
+            <button class="page-btn" id="pg-next" onclick="pgNext()" aria-label="Next page">Next<i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery calendar view -->
+      <div class="card" id="view-cal" style="display:none">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-calendar-week"></i>Delivery calendar</div>
+            <div class="card-desc">Workload across the next 7 days, grouped by delivery run. Click an order to jump to it in the list.</div>
+          </div>
+          <div class="view-switch" role="group" aria-label="Order inbox view">
+            <button class="view-btn" data-view="list" onclick="setView('list')"><i class="ti ti-list"></i>List</button>
+            <button class="view-btn" data-view="cal" onclick="setView('cal')"><i class="ti ti-calendar-week"></i>Calendar</button>
+          </div>
+        </div>
+        <div class="cal-wrap">
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div class="cal-legend">
+          <span><span class="cal-legend-dot" style="background:var(--status-info-fg)"></span>New</span>
+          <span><span class="cal-legend-dot" style="background:var(--status-ok-fg)"></span>Confirmed</span>
+          <span><span class="cal-legend-dot" style="background:var(--status-warn-fg)"></span>Picking</span>
+          <span><span class="cal-legend-dot" style="background:var(--status-risk-fg)"></span>Shortfall</span>
+          <span><span class="cal-legend-dot" style="background:var(--text-soft)"></span>Dispatched</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div id="so-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=12" data-active="seller-orders"></script>
+<script>
+  /* ── Data ── */
+  const DAYS = ['yesterday','today','tomorrow','thu','fri','sat','sun'];
+  const DAY_LABELS = { yesterday:'Yesterday', today:'Today', tomorrow:'Tomorrow', thu:'Thu', fri:'Fri', sat:'Sat', sun:'Sun' };
+  const WINDOWS = ['7-9am','2-4pm'];
+  const STATUS_LABEL = { new:'New', confirmed:'Confirmed', picking:'Picking', shortfall:'Shortfall', dispatched:'Dispatched' };
+  const CAL_CAP = 2;
+  const PAGE_SIZE = 5;
+
+  const ORDERS = [
+    { po:'PO-01247', agent:true,  outlet:'Bondi Beach',   group:'Beachside',   items:3, day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:1284.50, status:'new' },
+    { po:'PO-01248', agent:true,  outlet:'Surry Hills',   group:'CBD Cluster', items:3, day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am', note:'confirm by 3pm', value:742.00,  status:'new' },
+    { po:'PO-01249', agent:false, outlet:'Parramatta',    group:'CBD Cluster', items:4, day:'thu',      window:'7-9am', deliveryText:'Thu, 7–9am',                             value:1918.75, status:'shortfall' },
+    { po:'PO-01244', agent:false, outlet:'Circular Quay', group:'CBD Cluster', items:3, day:'today',    window:'2-4pm', deliveryText:'Today, 2–4pm',                           value:963.20,  status:'picking' },
+    { po:'PO-01243', agent:true,  outlet:'Newtown',       group:'Inner West',  items:2, day:'today',    window:'2-4pm', deliveryText:'Today, 2–4pm',                           value:518.40,  status:'confirmed' },
+    { po:'PO-01241', agent:false, outlet:'Manly',         group:'Beachside',   items:3, day:'yesterday',window:'7-9am', deliveryText:'Delivered yesterday',                    value:1102.00, status:'dispatched', transferRef:'TRF-1041' },
+    { po:'PO-01256', agent:false, outlet:'Parramatta',    group:'CBD Cluster', items:2, day:'tomorrow', window:'7-9am', deliveryText:'Tomorrow, 7–9am',                        value:720.00,  status:'new' },
+    { po:'PO-01238', agent:false, outlet:'Newtown',       group:'Inner West',  items:3, day:'today',    window:'7-9am', deliveryText:'Today, 7–9am',                           value:990.00,  status:'confirmed' },
+    { po:'PO-01239', agent:false, outlet:'Surry Hills',   group:'CBD Cluster', items:3, day:'today',    window:'7-9am', deliveryText:'Today, 7–9am',                           value:650.00,  status:'picking' },
+    { po:'PO-01242', agent:false, outlet:'Bondi Beach',   group:'Beachside',   items:3, day:'yesterday',window:'2-4pm', deliveryText:'Delivered yesterday',                    value:845.00,  status:'dispatched', transferRef:'TRF-1040' },
+    { po:'PO-01250', agent:true,  outlet:'Bondi Beach',   group:'Beachside',   items:2, day:'fri',      window:'7-9am', deliveryText:'Fri, 7–9am',                             value:410.00,  status:'new' },
+    { po:'PO-01251', agent:false, outlet:'Surry Hills',   group:'CBD Cluster', items:3, day:'fri',      window:'7-9am', deliveryText:'Fri, 7–9am',                             value:1560.00, status:'new' },
+    { po:'PO-01252', agent:true,  outlet:'Circular Quay', group:'CBD Cluster', items:2, day:'fri',      window:'2-4pm', deliveryText:'Fri, 2–4pm',                             value:780.00,  status:'new' },
+    { po:'PO-01253', agent:false, outlet:'Newtown',       group:'Inner West',  items:2, day:'sat',      window:'2-4pm', deliveryText:'Sat, 2–4pm',                             value:295.00,  status:'new' },
+    { po:'PO-01254', agent:true,  outlet:'Parramatta',    group:'CBD Cluster', items:3, day:'sat',      window:'7-9am', deliveryText:'Sat, 7–9am',                             value:1340.00, status:'new' },
+    { po:'PO-01255', agent:false, outlet:'Manly',         group:'Beachside',   items:2, day:'sun',      window:'7-9am', deliveryText:'Sun, 7–9am',                             value:670.00,  status:'new' },
+  ];
+
+  let filterStatus = 'all';
+  let filterSearch = '';
+  let currentPage = 1;
+  const calExpanded = new Set();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Order inbox');
+    NomniShell.initStagger();
+    setView('list');
+    renderKpis();
+    renderList();
+    renderCalendar();
+  });
+
+  /* ── View switch ── */
+  function setView(view) {
+    document.getElementById('view-list').style.display = view === 'list' ? '' : 'none';
+    document.getElementById('view-cal').style.display  = view === 'cal'  ? '' : 'none';
+    document.querySelectorAll('.view-btn').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.view === view));
+  }
+
+  /* ── KPIs ── */
+  function renderKpis() {
+    const newCount = ORDERS.filter(o => o.status === 'new').length;
+    const todayOrders = ORDERS.filter(o => o.day === 'today');
+    const todayShortfalls = todayOrders.filter(o => o.status === 'shortfall').length;
+    document.getElementById('kpi-new').textContent = newCount;
+    document.getElementById('kpi-today').textContent = todayOrders.length;
+    const sub = document.getElementById('kpi-today-sub');
+    if (todayShortfalls > 0) {
+      sub.textContent = todayShortfalls + ' has a stock shortfall';
+      sub.classList.add('warn');
+    } else {
+      sub.textContent = 'on track for today\'s runs';
+      sub.classList.remove('warn');
+    }
+  }
+
+  /* ── List view ── */
+  function filteredOrders() {
+    return ORDERS.filter(o => {
+      if (filterStatus !== 'all' && o.status !== filterStatus) return false;
+      if (filterSearch) {
+        const q = filterSearch.toLowerCase();
+        if (!o.po.toLowerCase().includes(q) && !o.outlet.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function statusPillHtml(o) {
+    if (o.status === 'dispatched') return '<span class="status-pill dispatched"><i class="ti ti-truck"></i>Dispatched' + (o.transferRef ? ' · ' + o.transferRef : '') + '</span>';
+    if (o.status === 'shortfall') return '<span class="status-pill shortfall"><i class="ti ti-alert-triangle"></i>Stock shortfall</span>';
+    if (o.status === 'picking')   return '<span class="status-pill picking"><i class="ti ti-basket"></i>Picking</span>';
+    if (o.status === 'confirmed') return '<span class="status-pill confirmed"><i class="ti ti-circle-check"></i>Confirmed</span>';
+    return '<span class="status-pill new"><i class="ti ti-mail"></i>New</span>';
+  }
+
+  function actionsHtml(o) {
+    if (o.status === 'new')       return '<button class="btn btn-primary btn-sm" onclick="confirmOrder(\'' + o.po + '\')"><i class="ti ti-check"></i>Confirm</button><a class="btn-ghost btn-sm" href="seller-order-detail.html?po=' + o.po + '">View</a>';
+    if (o.status === 'shortfall') return '<a class="btn btn-outline btn-sm" href="seller-order-detail.html?po=' + o.po + '">Resolve</a>';
+    if (o.status === 'dispatched')return '<a class="btn-ghost btn-sm" href="seller-dispatch.html">Transfer</a>';
+    return '<a class="btn-ghost btn-sm" href="seller-dispatch.html">Fulfilment</a>';
+  }
+
+  function renderList() {
+    const rows = filteredOrders();
+    const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    currentPage = Math.min(Math.max(1, currentPage), totalPages);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageRows = rows.slice(start, start + PAGE_SIZE);
+
+    const tbody = document.getElementById('orders-tbody');
+    tbody.innerHTML = pageRows.length ? pageRows.map(o => `
+      <tr data-po="${o.po}" class="row-clickable" onclick="goToOrderRow(event,'${o.po}')">
+        <td><a class="po-id-link" href="seller-order-detail.html?po=${o.po}"><div class="po-id">${o.po}</div></a>${o.agent ? '<div class="po-agent"><i class="ti ti-sparkles"></i>Drafted by Otto</div>' : ''}</td>
+        <td><div class="from-outlet">${o.outlet}</div><div class="from-group">${o.group}</div></td>
+        <td class="col-num">${o.items}</td>
+        <td>${o.deliveryText}${o.note ? ' <span class="due-today">· ' + o.note + '</span>' : ''}</td>
+        <td class="col-num">$${o.value.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td>${statusPillHtml(o)}</td>
+        <td><div class="row-actions">${actionsHtml(o)}</div></td>
+      </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="7">No orders match your filters.</td></tr>';
+
+    document.getElementById('pg-info').innerHTML = rows.length
+      ? 'Showing <strong>' + (start + 1) + '–' + (start + pageRows.length) + '</strong> of <strong>' + rows.length + '</strong> orders'
+      : 'No orders found';
+    document.getElementById('pg-prev').disabled = currentPage <= 1;
+    document.getElementById('pg-next').disabled = currentPage >= totalPages;
+  }
+
+  function goToOrderRow(e, po) {
+    if (e.target.closest('a,button,select,input')) return;
+    window.location.href = 'seller-order-detail.html?po=' + po;
+  }
+
+  function setFilterSearch(v) { filterSearch = v; currentPage = 1; renderList(); }
+  function setFilterStatus(v) { filterStatus = v; currentPage = 1; renderList(); }
+  function pgPrev() { if (currentPage > 1) { currentPage--; renderList(); } }
+  function pgNext() {
+    const totalPages = Math.max(1, Math.ceil(filteredOrders().length / PAGE_SIZE));
+    if (currentPage < totalPages) { currentPage++; renderList(); }
+  }
+
+  function jumpToOrder(poId) {
+    setView('list');
+    filterStatus = 'all'; filterSearch = '';
+    document.getElementById('filter-status').value = 'all';
+    document.getElementById('filter-search').value = '';
+    const idx = filteredOrders().findIndex(o => o.po === poId);
+    if (idx < 0) return;
+    currentPage = Math.floor(idx / PAGE_SIZE) + 1;
+    renderList();
+    requestAnimationFrame(() => {
+      const row = document.querySelector('tr[data-po="' + poId + '"]');
+      if (!row) return;
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.remove('row-flash');
+      requestAnimationFrame(() => row.classList.add('row-flash'));
+    });
+  }
+
+  /* ── Calendar view ── */
+  function renderCalendar() {
+    let html = '<div class="cal-head"></div>' + DAYS.map(d =>
+      '<div class="cal-head' + (d === 'today' || d === 'tomorrow' ? ' ' + d : '') + '">' + DAY_LABELS[d] + '</div>').join('');
+
+    WINDOWS.forEach(win => {
+      html += '<div class="cal-row-label">' + win.replace('-', '–') + '</div>';
+      DAYS.forEach(day => {
+        const key = day + '|' + win;
+        const cellOrders = ORDERS.filter(o => o.day === day && o.window === win);
+        const expanded = calExpanded.has(key);
+        const visible = expanded ? cellOrders : cellOrders.slice(0, CAL_CAP);
+        const hidden = cellOrders.length - visible.length;
+        let cellHtml = visible.map(o =>
+          '<button class="cal-chip ' + o.status + '" onclick="jumpToOrder(\'' + o.po + '\')">' + o.outlet + '<span class="cal-chip-status">' + STATUS_LABEL[o.status] + '</span></button>').join('');
+        if (hidden > 0) {
+          cellHtml += '<button class="cal-chip-more" onclick="toggleCalExpand(\'' + key + '\')">+' + hidden + ' more</button>';
+        } else if (expanded && cellOrders.length > CAL_CAP) {
+          cellHtml += '<button class="cal-chip-more" onclick="toggleCalExpand(\'' + key + '\')">Show less</button>';
+        }
+        html += '<div class="cal-cell">' + cellHtml + '</div>';
+      });
+    });
+    document.getElementById('cal-grid').innerHTML = html;
+  }
+
+  function toggleCalExpand(key) {
+    if (calExpanded.has(key)) calExpanded.delete(key); else calExpanded.add(key);
+    renderCalendar();
+  }
+
+  /* ── Actions ── */
+  function confirmOrder(poId) {
+    const order = ORDERS.find(o => o.po === poId);
+    if (!order) return;
+    order.status = 'confirmed';
+    renderKpis(); renderList(); renderCalendar();
+    soToast('Order confirmed — stock reserved and queued for fulfilment.');
+  }
+
+  function confirmCoverable() {
+    ['PO-01247', 'PO-01248'].forEach(po => {
+      const o = ORDERS.find(x => x.po === po);
+      if (o) o.status = 'confirmed';
+    });
+    renderKpis(); renderList(); renderCalendar();
+    document.getElementById('ck-agent-banner').style.display = 'none';
+    soToast('2 orders confirmed — stock reserved. Parramatta still needs review.');
+  }
+
+  function soToast(msg) {
+    const wrap = document.getElementById('so-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;white-space:nowrap;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>

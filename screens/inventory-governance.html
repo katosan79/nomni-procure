@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Inventory · Governance — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body { display: flex; flex-direction: column; gap: var(--space-3xl); padding-block: var(--space-2xl); }
+    .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-2xl); }
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); }
+    .page-title { font-size: 32px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+
+    /* Agent strip */
+    .agent-strip { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .agent-strip .agent-surface.resolved { opacity: 0.62; }
+    .agent-strip .agent-surface.resolved .agent-actions { display: none; }
+    @media (max-width: 768px) { .agent-strip { grid-template-columns: 1fr; } }
+
+    /* Section card */
+    .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .section-header { padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: var(--space-md); }
+    .section-header-left { display: flex; flex-direction: column; gap: 2px; }
+    .section-header-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .section-header-sub { font-size: 12px; color: var(--text-soft); }
+    .section-body { padding: var(--space-xl); }
+    .section-empty { padding: var(--space-2xl); text-align: center; color: var(--text-soft); font-size: 14px; }
+
+    /* Template cards */
+    .template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    @media (max-width: 900px) { .template-grid { grid-template-columns: 1fr; } }
+    .template-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .template-card-header { padding: var(--space-lg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); }
+    .template-card-name  { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .template-card-group { font-size: 12px; color: var(--text-soft); }
+    .template-card-body  { padding: var(--space-sm) var(--space-lg); }
+    .tpl-sheet-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .tpl-sheet-row:last-child { border-bottom: none; }
+    .tpl-sheet-name  { font-weight: 500; color: var(--text); display: flex; align-items: center; gap: var(--space-xs); }
+    .tpl-required-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: var(--mint); color: var(--spinach); padding: 1px 5px; border-radius: var(--radius-xs); }
+    .tpl-cadence-tag  { font-size: 11px; color: var(--text-soft); }
+    .template-card-footer { padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); background: var(--surface-soft); display: flex; align-items: center; justify-content: space-between; }
+
+    /* Par override cards */
+    .override-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-md); }
+    .override-card:last-child { margin-bottom: 0; }
+    .override-card-head { padding: var(--space-md) var(--space-lg); display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); border-bottom: 1px solid var(--border); }
+    .override-item-name  { font-size: 14px; font-weight: 700; color: var(--text); }
+    .override-outlet     { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .override-card-body  { padding: var(--space-md) var(--space-lg); }
+    .override-comparison { display: flex; align-items: center; gap: var(--space-lg); margin-bottom: var(--space-sm); }
+    .override-col        { display: flex; flex-direction: column; gap: 2px; }
+    .override-col-label  { font-size: 11px; color: var(--text-soft); font-weight: 500; }
+    .override-col-val    { font-size: 18px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; }
+    .override-col-val.requested { color: var(--status-warn-fg); }
+    .override-arrow      { font-size: 18px; color: var(--text-soft); }
+    .override-reason     { font-size: 13px; color: var(--text-soft); font-style: italic; margin-bottom: var(--space-xs); }
+    .override-requestor  { font-size: 12px; color: var(--text-soft); }
+    .override-card-footer { padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); background: var(--surface-soft); display: flex; gap: var(--space-sm); justify-content: flex-end; }
+
+    /* Par item badges */
+    .par-item { display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) var(--space-md); background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .par-group { font-size: 13px; color: var(--text); font-weight: 500; }
+    .par-value { font-size: 13px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; }
+    .par-item-v2 { display: flex; flex-direction: column; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .par-item-head { display: flex; justify-content: space-between; align-items: center; }
+    .par-hq-tag { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); background: var(--surface); border: 1px solid var(--border); padding: 1px 5px; border-radius: var(--radius-xs); }
+    .par-override-row { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+    .par-override-tag { font-size: 10px; font-weight: 700; color: var(--status-warn-fg); background: var(--status-warn-bg); padding: 1px 5px; border-radius: var(--radius-xs); white-space: nowrap; }
+    .par-below-tag { font-size: 10px; font-weight: 700; color: var(--status-warn-fg); background: var(--status-warn-bg); padding: 1px 5px; border-radius: var(--radius-xs); display: inline-flex; align-items: center; gap: 2px; }
+    .par-override-actions { display: flex; gap: var(--space-xs); }
+    .par-override-actions button { height: 22px; padding: 0 var(--space-sm); font-size: 11px; font-weight: 600; border-radius: var(--radius-xs); border: 1px solid; cursor: pointer; font-family: inherit; }
+    .par-approve-btn { background: var(--mint); color: var(--spinach); border-color: color-mix(in srgb, var(--fern) 30%, transparent); }
+    .par-reject-btn  { background: var(--surface); color: var(--text-soft); border-color: var(--border); }
+    .par-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+
+    /* Confirm / action buttons */
+    .confirm-btn { height: 26px; padding: 0 var(--space-md); font-size: 12px; font-weight: 600; border-radius: var(--radius-xs); border: 1px solid color-mix(in srgb, var(--fern) 35%, transparent); background: var(--mint); color: var(--spinach); cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+    .confirm-btn:hover { background: color-mix(in srgb, var(--mint) 80%, var(--fern)); }
+
+    /* Item drawer */
+    .item-drawer-backdrop { position: fixed; inset: 0; background: rgba(14,55,39,0.25); z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.22s; }
+    .item-drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .item-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 520px; max-width: 95vw; background: var(--surface); border-left: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 61; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.22s ease; overflow: hidden; }
+    .item-drawer.open { transform: translateX(0); }
+    .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-xl) var(--space-2xl); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: var(--space-md); }
+    .drawer-head-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .drawer-internal-id { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .drawer-item-name { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.2; }
+    .drawer-item-meta { font-size: 13px; color: var(--text-soft); }
+    .drawer-close { width: 32px; height: 32px; flex-shrink: 0; border-radius: var(--radius-sm); background: none; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-soft); font-size: 16px; }
+    .drawer-close:hover { background: var(--surface-soft); color: var(--text); }
+    .drawer-body { flex: 1; overflow-y: auto; padding: var(--space-xl) var(--space-2xl); display: flex; flex-direction: column; gap: var(--space-2xl); }
+    .drawer-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); margin-bottom: var(--space-md); }
+    .drawer-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-sm) var(--space-md); }
+    .drawer-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--space-xs); }
+    .drawer-field .field-val { font-size: 14px; font-weight: 500; color: var(--text); }
+    .drawer-field-full { grid-column: 1 / -1; }
+    .drawer-desc { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+    .drawer-footer { padding: var(--space-lg) var(--space-2xl); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--space-sm); flex-shrink: 0; }
+    .sku-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .sku-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); padding: var(--space-sm); text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .sku-table td { padding: var(--space-md) var(--space-sm); border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+    .sku-table tbody tr:last-child td { border-bottom: none; }
+    .sku-preferred-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: var(--text-accent); background: var(--mint); border: 1px solid color-mix(in srgb, var(--fern) 25%, transparent); border-radius: var(--radius-pill); padding: 1px var(--space-sm); }
+    .sku-code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-soft); }
+    .sku-price { font-feature-settings: 'tnum' 1; font-weight: 600; }
+    .sku-add-btn { display: inline-flex; align-items: center; gap: var(--space-xs); margin-top: var(--space-md); font-size: 13px; font-weight: 600; color: var(--text-accent); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+    .sku-add-btn:hover { color: var(--spinach); text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12" data-active="inventory-governance"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <!-- Page header -->
+      <header class="page-header">
+        <div class="page-header-left">
+          <span class="page-eyebrow">Inventory · <a href="inventory.html" style="color:inherit;text-decoration:none;">Operations</a> › Governance</span>
+          <h1 class="page-title">Inventory Governance</h1>
+        </div>
+        <div class="page-actions hq-only">
+          <button class="nb-btn" onclick="window.location='inventory.html'"><i class="ti ti-arrow-left"></i>Operations</button>
+          <button class="nb-btn primary" onclick="invToast('New template created')"><i class="ti ti-plus"></i>New template</button>
+        </div>
+      </header>
+
+      <!-- Agent strip: Sloan + Otto -->
+      <div class="agent-strip">
+        <article class="agent-surface" id="sloan-card" data-agent-fn="governance">
+          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+            <div class="agent-card-head">
+              <span class="agent-avatar" data-agent="sloan" aria-hidden="true">Sl</span>
+              <span class="agent-id"><span class="agent-name">Sloan</span><span class="agent-role">Governance agent</span></span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state done"><i class="ti ti-shield-check" aria-hidden="true"></i>Monitoring</span>
+            </div>
+            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">2 items have par levels 40%+ below the network average — SA Metro is the outlier</p>
+            <p class="agent-why">Feta Cheese at SA Metro (2 kg par) is 50% below the network average of 4 kg. Roma Tomatoes at QLD Metro also flagged. Unlogged waste or consistent under-ordering likely. Raising par levels reduces stockout risk.</p>
+            <div class="agent-actions">
+              <button class="nb-btn primary" onclick="document.getElementById('par-overrides-section').scrollIntoView({behavior:'smooth'})"><i class="ti ti-adjustments" aria-hidden="true"></i>Review par levels</button>
+              <button class="nb-btn" onclick="resolveAgent('sloan-card','Sloan will keep monitoring par levels')">Dismiss</button>
+            </div>
+          </div>
+        </article>
+        <article class="agent-surface" id="otto-gov-card" data-agent-fn="ordering">
+          <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+            <div class="agent-card-head">
+              <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
+              <span class="agent-id"><span class="agent-name">Otto</span><span class="agent-role">Ordering agent</span></span>
+              <span class="agent-card-spacer"></span>
+              <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+            </div>
+            <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">4 par levels are out of step with 4-week sales cadence</p>
+            <p class="agent-why">Rolling 4-week usage data suggests Chicken Breast, Avocado, Feta Cheese, and Mixed Leaf have par levels that no longer reflect real demand. Otto has calculated updated par levels using: (avg daily usage × lead time days) + safety stock buffer.</p>
+            <div class="agent-actions">
+              <button class="nb-btn primary" onclick="document.getElementById('dynamic-par-section').scrollIntoView({behavior:'smooth'})"><i class="ti ti-chart-line" aria-hidden="true"></i>Review suggestions</button>
+              <button class="nb-btn" onclick="resolveAgent('otto-gov-card','Dismissed — Otto recalculates next Monday')">Dismiss</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- ── HQ Count Templates ── -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-header-left">
+            <div class="section-header-title">HQ Count Templates</div>
+            <div class="section-header-sub">Define which count sheets outlets must complete and how often. Templates are pushed to outlet groups.</div>
+          </div>
+          <button class="nb-btn hq-only" onclick="invToast('Edit template — coming soon')"><i class="ti ti-plus"></i>New template</button>
+        </div>
+        <div class="section-body">
+          <div class="template-grid">
+
+            <!-- NSW Metro template -->
+            <div class="template-card">
+              <div class="template-card-header">
+                <div>
+                  <div class="template-card-name">Standard Weekly Count</div>
+                  <div class="template-card-group"><i class="ti ti-map-pin" style="font-size:11px;"></i> NSW Metro · 8 outlets</div>
+                </div>
+                <span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span>
+              </div>
+              <div class="template-card-body">
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><span class="tpl-required-tag">Req</span>Dry Store</span>
+                  <span class="tpl-cadence-tag">Weekly</span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><span class="tpl-required-tag">Req</span>Freezer</span>
+                  <span class="tpl-cadence-tag">Weekly</span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><span class="tpl-required-tag">Req</span>Bar</span>
+                  <span class="tpl-cadence-tag">Weekly</span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name" style="color:var(--text-soft);">FOH</span>
+                  <span class="tpl-cadence-tag">Monthly</span>
+                </div>
+              </div>
+              <div class="template-card-footer">
+                <span style="font-size:12px;color:var(--text-soft);">Last pushed 3 Jun</span>
+                <button class="nb-btn hq-only" onclick="invToast('Template pushed to NSW Metro outlets')"><i class="ti ti-send"></i>Push to group</button>
+              </div>
+            </div>
+
+            <!-- VIC Metro template -->
+            <div class="template-card">
+              <div class="template-card-header">
+                <div>
+                  <div class="template-card-name">Fortnightly Full Count</div>
+                  <div class="template-card-group"><i class="ti ti-map-pin" style="font-size:11px;"></i> VIC Metro · 5 outlets</div>
+                </div>
+                <span class="nb-pill ok"><i class="ti ti-circle-check"></i>Active</span>
+              </div>
+              <div class="template-card-body">
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><span class="tpl-required-tag">Req</span>Dry Store</span>
+                  <span class="tpl-cadence-tag">Fortnightly</span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><span class="tpl-required-tag">Req</span>Freezer</span>
+                  <span class="tpl-cadence-tag">Fortnightly</span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name"><span class="tpl-required-tag">Req</span>Bar</span>
+                  <span class="tpl-cadence-tag">Fortnightly</span>
+                </div>
+                <div class="tpl-sheet-row">
+                  <span class="tpl-sheet-name" style="color:var(--text-soft);">FOH</span>
+                  <span class="tpl-cadence-tag">Monthly</span>
+                </div>
+              </div>
+              <div class="template-card-footer">
+                <span style="font-size:12px;color:var(--text-soft);">Last pushed 1 Jun</span>
+                <button class="nb-btn hq-only" onclick="invToast('Template pushed to VIC Metro outlets')"><i class="ti ti-send"></i>Push to group</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Par Override Requests ── -->
+      <div class="section-card" id="par-overrides-section">
+        <div class="section-header">
+          <div class="section-header-left">
+            <div class="section-header-title">Par Override Requests <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--status-warn-fg);color:var(--porcelain);font-size:10px;font-weight:700;margin-left:6px;">2</span></div>
+            <div class="section-header-sub">Outlets requesting exceptions to HQ baseline par levels. Review before approving.</div>
+          </div>
+        </div>
+        <div class="section-body">
+
+          <!-- Chicken Breast override -->
+          <div class="override-card" id="override-chicken">
+            <div class="override-card-head">
+              <div>
+                <div class="override-item-name">Chicken Breast 500g</div>
+                <div class="override-outlet">NSW Metro · Requested by Sarah Kim · 20 Jun</div>
+              </div>
+              <button class="nb-btn" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-external-link"></i>View item</button>
+            </div>
+            <div class="override-card-body">
+              <div class="override-comparison">
+                <div class="override-col">
+                  <span class="override-col-label">HQ par</span>
+                  <span class="override-col-val">10 kg</span>
+                </div>
+                <div class="override-arrow"><i class="ti ti-arrow-right"></i></div>
+                <div class="override-col">
+                  <span class="override-col-label">Requested</span>
+                  <span class="override-col-val requested">14 kg</span>
+                </div>
+              </div>
+              <div class="override-reason">"High weekend turnover — run out 2× last month"</div>
+              <div class="override-requestor">Requested by Sarah Kim · NSW Metro Outlet Manager</div>
+            </div>
+            <div class="override-card-footer">
+              <button class="nb-btn" onclick="rejectOverrideCard('override-chicken','Chicken Breast NSW Metro override rejected')">Reject</button>
+              <button class="nb-btn primary" onclick="approveOverrideCard('override-chicken','Chicken Breast 500g NSW Metro par updated to 14 kg')"><i class="ti ti-check"></i>Approve 14 kg</button>
+            </div>
+          </div>
+
+          <!-- Avocado override -->
+          <div class="override-card" id="override-avocado">
+            <div class="override-card-head">
+              <div>
+                <div class="override-item-name">Avocado</div>
+                <div class="override-outlet">NSW Metro · Requested by Jake Chen · 18 Jun</div>
+              </div>
+              <button class="nb-btn" onclick="openItemDrawer('avocado')"><i class="ti ti-external-link"></i>View item</button>
+            </div>
+            <div class="override-card-body">
+              <div class="override-comparison">
+                <div class="override-col">
+                  <span class="override-col-label">HQ par</span>
+                  <span class="override-col-val">50 each</span>
+                </div>
+                <div class="override-arrow"><i class="ti ti-arrow-right"></i></div>
+                <div class="override-col">
+                  <span class="override-col-label">Requested</span>
+                  <span class="override-col-val requested">70 each</span>
+                </div>
+              </div>
+              <div class="override-reason">"Beach crowd — summer season demand spike"</div>
+              <div class="override-requestor">Requested by Jake Chen · NSW Metro Outlet Manager</div>
+            </div>
+            <div class="override-card-footer">
+              <button class="nb-btn" onclick="rejectOverrideCard('override-avocado','Avocado NSW Metro override rejected')">Reject</button>
+              <button class="nb-btn primary" onclick="approveOverrideCard('override-avocado','Avocado NSW Metro par updated to 70 each')"><i class="ti ti-check"></i>Approve 70 each</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Dynamic Par Recommendations (Otto) ── -->
+      <div class="section-card" id="dynamic-par-section">
+        <div class="section-header">
+          <div class="section-header-left">
+            <div class="section-header-title">Dynamic Par Recommendations</div>
+            <div class="section-header-sub">Otto recalculates weekly from rolling 4-week sales. Formula: (avg daily usage × lead time days) + safety stock buffer.</div>
+          </div>
+          <span style="font-size:12px;color:var(--text-soft);">Last run: Monday 16 Jun</span>
+        </div>
+        <!-- Otto agent inline -->
+        <div style="margin:var(--space-lg);background:var(--surface-soft);border:1px solid var(--agent-border);border-radius:var(--radius-md);box-shadow:var(--agent-glow);padding:var(--space-lg);display:flex;align-items:flex-start;gap:var(--space-md);">
+          <span class="agent-avatar" data-agent="otto" aria-hidden="true" style="flex-shrink:0;">Ot</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Otto — Par level analysis complete</div>
+            <div style="font-size:13px;color:var(--text-soft);">4 suggestions ready. I used a 4-week rolling average against current lead times and safety stock buffers. Apply each individually or review first — par changes take effect immediately for all outlets in the group.</div>
+          </div>
+        </div>
+        <div id="otto-par-list">
+          <!-- rendered by renderOttoParSection() -->
+        </div>
+      </div>
+
+      <!-- Activity timeline -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-header-title">Recent governance activity</div>
+        </div>
+        <div class="section-body timeline" style="display:flex;flex-direction:column;gap:var(--space-sm);">
+          <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">Sloan flagged <strong>Feta Cheese at SA Metro</strong> — par 50% below network average · <span style="font-size:11px;">Today 6:30am</span></div>
+          <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">Par override requested — <strong>Chicken Breast</strong> NSW Metro → 14 kg by Sarah Kim · <span style="font-size:11px;">20 Jun</span></div>
+          <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">Par override requested — <strong>Avocado</strong> NSW Metro → 70 each by Jake Chen · <span style="font-size:11px;">18 Jun</span></div>
+          <div style="font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;">Standard Weekly Count template pushed to NSW Metro (8 outlets) by HQ Administrator · <span style="font-size:11px;">3 Jun</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /page-body -->
+
+  <!-- Item drawer -->
+  <div class="item-drawer-backdrop" id="drawer-backdrop" onclick="closeItemDrawer()"></div>
+  <aside class="item-drawer" id="item-drawer" aria-label="Item details" role="dialog" aria-modal="true">
+    <div class="drawer-head">
+      <div class="drawer-head-left">
+        <span class="drawer-internal-id" id="drawer-id">INT-0000</span>
+        <span class="drawer-item-name" id="drawer-name">Item name</span>
+        <span class="drawer-item-meta" id="drawer-meta">Category · UoM</span>
+      </div>
+      <button class="drawer-close" onclick="closeItemDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="drawer-body">
+      <div>
+        <div class="drawer-section-label">Basic details</div>
+        <div class="drawer-fields">
+          <div class="drawer-field"><label>Buyer name</label><div class="field-val" id="drawer-d-name">—</div></div>
+          <div class="drawer-field"><label>Category</label><div class="field-val" id="drawer-d-cat">—</div></div>
+          <div class="drawer-field"><label>Unit of measure</label><div class="field-val" id="drawer-d-uom">—</div></div>
+          <div class="drawer-field drawer-field-full"><label>Description</label><div class="field-val drawer-desc" id="drawer-d-desc">—</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section-label">Linked suppliers</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+          <table class="sku-table"><thead><tr><th>Supplier</th><th>Their SKU</th><th>Pack size</th><th>Last cost</th><th>Status</th></tr></thead>
+          <tbody id="sku-tbody"></tbody></table>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section-label">Par levels by group</div>
+        <div class="par-grid" id="drawer-pars"></div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="nb-btn" onclick="closeItemDrawer()">Cancel</button>
+      <button class="nb-btn primary" onclick="saveItemDrawer()"><i class="ti ti-check"></i>Save changes</button>
+    </div>
+  </aside>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      NomniShell.init('Inventory · Governance');
+      renderOttoParSection();
+    });
+
+    /* ── Utilities ── */
+    function invToast(msg) {
+      let wrap = document.getElementById('inv-toast');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'inv-toast';
+        wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;';
+        document.body.appendChild(wrap);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    function addActivity(text) {
+      const tl = document.querySelector('.timeline');
+      if (!tl) return;
+      const item = document.createElement('div');
+      item.style.cssText = 'font-size:13px;color:var(--text-soft);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);';
+      item.innerHTML = text + ' · <span style="font-size:11px;">Just now</span>';
+      tl.insertBefore(item, tl.firstChild);
+    }
+
+    function resolveAgent(id, msg) {
+      const card = document.getElementById(id);
+      if (card) card.closest('.agent-surface').classList.add('resolved');
+      invToast(msg);
+    }
+
+    /* ── Par override card actions ── */
+    function approveOverrideCard(cardId, msg) {
+      const card = document.getElementById(cardId);
+      if (card) {
+        card.style.opacity = '0.5';
+        card.style.pointerEvents = 'none';
+        const footer = card.querySelector('.override-card-footer');
+        if (footer) footer.innerHTML = '<span style="font-size:13px;color:var(--status-ok-fg);font-weight:600;"><i class="ti ti-check"></i> Approved</span>';
+      }
+      addActivity('<strong>' + msg + '</strong> — approved by HQ Administrator');
+      invToast(msg);
+    }
+
+    function rejectOverrideCard(cardId, msg) {
+      const card = document.getElementById(cardId);
+      if (card) {
+        card.style.opacity = '0.5';
+        card.style.pointerEvents = 'none';
+        const footer = card.querySelector('.override-card-footer');
+        if (footer) footer.innerHTML = '<span style="font-size:13px;color:var(--text-soft);"><i class="ti ti-x"></i> Rejected</span>';
+      }
+      addActivity(msg + ' — HQ par maintained');
+      invToast(msg);
+    }
+
+    /* ── Item data ── */
+    const ITEM_DATA = {
+      'chicken-breast': {
+        id: 'INT-0001', name: 'Chicken Breast 500g', category: 'Protein', uom: 'kg',
+        description: 'Fresh chicken breast, 500g portions. Used across main dishes and salads.',
+        skus: [
+          { id: 's1', supplier: 'Sydney Butchers Co.', sku: 'SB-CHK-500', pack: '500g', price: '$8.40/kg', preferred: true },
+          { id: 's2', supplier: 'Fresh Direct', sku: 'FD-0441', pack: '1kg', price: '$9.10/kg', preferred: false }
+        ],
+        pars: [
+          { group: 'NSW Metro', value: '10 kg', hqPar: '10 kg', override: { status: 'pending', requestedBy: 'Sarah Kim', requestedAt: '20 Jun', requestedValue: '14 kg', reason: 'High weekend turnover — run out 2× last month' } },
+          { group: 'VIC Metro', value: '8 kg',  hqPar: '8 kg' },
+          { group: 'QLD Metro', value: '6 kg',  hqPar: '6 kg' }
+        ]
+      },
+      'avocado': {
+        id: 'INT-0002', name: 'Avocado', category: 'Produce', uom: 'each',
+        description: 'Ripe Hass avocados. Multiple sourcing options available for price benchmarking.',
+        skus: [
+          { id: 's1', supplier: 'Green Farmers Market', sku: 'GFM-AVOC', pack: 'each', price: '$1.20/ea', preferred: true },
+          { id: 's2', supplier: 'Fresh Direct', sku: 'FD-0092', pack: 'each', price: '$1.35/ea', preferred: false }
+        ],
+        pars: [
+          { group: 'NSW Metro', value: '50 each', hqPar: '50 each', override: { status: 'pending', requestedBy: 'Jake Chen', requestedAt: '18 Jun', requestedValue: '70 each', reason: 'Beach crowd — summer season demand spike' } },
+          { group: 'VIC Metro', value: '40 each', hqPar: '40 each' }
+        ]
+      },
+      'feta': {
+        id: 'INT-0003', name: 'Feta Cheese', category: 'Dairy', uom: 'kg',
+        description: 'Crumbled feta for salads and pastries.',
+        skus: [
+          { id: 's1', supplier: 'Dairy Direct', sku: 'DD-FTA-1KG', pack: '1kg block', price: '$18.50/kg', preferred: true }
+        ],
+        pars: [
+          { group: 'NSW Metro', value: '5 kg',  hqPar: '4.5 kg' },
+          { group: 'VIC Metro', value: '4 kg',  hqPar: '4.5 kg' },
+          { group: 'QLD Metro', value: '3 kg',  hqPar: '4.5 kg', belowAvg: true },
+          { group: 'SA Metro',  value: '2 kg',  hqPar: '4.5 kg', belowAvg: true }
+        ]
+      }
+    };
+
+    let activeItemKey = null;
+
+    function renderSkuTable(skus) {
+      const tbody = document.getElementById('sku-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = skus.map(s => `
+        <tr>
+          <td style="font-weight:600">${s.supplier}</td>
+          <td><span class="sku-code">${s.sku}</span></td>
+          <td style="color:var(--text-soft)">${s.pack}</td>
+          <td><span class="sku-price">${s.price}</span></td>
+          <td>${s.preferred ? '<span class="sku-preferred-badge"><i class="ti ti-star-filled" style="font-size:9px"></i>Preferred</span>' : ''}</td>
+        </tr>`).join('');
+    }
+
+    function openItemDrawer(key) {
+      const item = ITEM_DATA[key];
+      if (!item) return;
+      activeItemKey = key;
+      document.getElementById('drawer-id').textContent = item.id;
+      document.getElementById('drawer-name').textContent = item.name;
+      document.getElementById('drawer-meta').textContent = item.category + ' · ' + item.uom;
+      document.getElementById('drawer-d-name').textContent = item.name;
+      document.getElementById('drawer-d-cat').textContent = item.category;
+      document.getElementById('drawer-d-uom').textContent = item.uom;
+      document.getElementById('drawer-d-desc').textContent = item.description;
+      renderSkuTable(item.skus);
+      document.getElementById('drawer-pars').innerHTML = item.pars.map(p => {
+        const hasOverride = p.override?.status === 'pending';
+        const isBelowAvg  = p.belowAvg;
+        if (!hasOverride && !isBelowAvg) {
+          return `<div class="par-item"><span class="par-group">${p.group}</span><div style="display:flex;align-items:center;gap:var(--space-xs);"><span class="par-value">${p.value}</span><span class="par-hq-tag">HQ</span></div></div>`;
+        }
+        if (isBelowAvg) {
+          return `<div class="par-item-v2">
+            <div class="par-item-head"><span class="par-group">${p.group}</span><span class="par-value" style="color:var(--status-warn-fg);">${p.value}</span></div>
+            <div class="par-override-row"><span class="par-below-tag"><i class="ti ti-alert-triangle" style="font-size:9px;"></i>Below HQ avg — network: ${p.hqPar}</span>
+            <button style="height:20px;padding:0 var(--space-sm);font-size:11px;font-weight:600;border-radius:var(--radius-xs);border:1px solid var(--border);background:var(--surface);color:var(--text-soft);cursor:pointer;font-family:inherit;" onclick="invToast('Par raised to network average')">Raise to avg</button></div>
+          </div>`;
+        }
+        const ov = p.override;
+        return `<div class="par-item-v2" style="border-color:var(--status-warn-bg);">
+          <div class="par-item-head"><span class="par-group">${p.group}</span><div style="display:flex;align-items:center;gap:var(--space-xs);"><span class="par-value">${p.value}</span><span class="par-hq-tag">HQ</span></div></div>
+          <div class="par-override-row"><span class="par-override-tag">Override pending → ${ov.requestedValue}</span><span style="font-size:11px;color:var(--text-soft);">${ov.requestedBy} · ${ov.requestedAt}</span></div>
+          <div style="font-size:12px;color:var(--text-soft);font-style:italic;">"${ov.reason}"</div>
+          <div class="par-override-actions">
+            <button class="par-approve-btn" onclick="invToast('Override approved — par updated to ${ov.requestedValue}')"><i class="ti ti-check" style="font-size:10px;"></i>Approve</button>
+            <button class="par-reject-btn" onclick="invToast('Override rejected — HQ par maintained')">Reject</button>
+          </div>
+        </div>`;
+      }).join('');
+      document.getElementById('item-drawer').classList.add('open');
+      document.getElementById('drawer-backdrop').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeItemDrawer() {
+      document.getElementById('item-drawer').classList.remove('open');
+      document.getElementById('drawer-backdrop').classList.remove('open');
+      document.body.style.overflow = '';
+      activeItemKey = null;
+    }
+
+    function saveItemDrawer() {
+      const item = activeItemKey ? ITEM_DATA[activeItemKey] : null;
+      closeItemDrawer();
+      if (item) invToast(item.name + ' saved');
+    }
+
+    /* ── Otto dynamic par ── */
+    const OTTO_PAR_SUGGESTIONS = [
+      { item:'Chicken Breast 500g', itemKey:'chicken-breast', group:'NSW Metro', currentPar:'10 kg',    suggestedPar:'13 kg',    delta:'+30%', formula:'Avg daily 1.8 kg × 5d lead time + 4 kg safety stock', trend:'up' },
+      { item:'Avocado',             itemKey:'avocado',         group:'NSW Metro', currentPar:'50 each',  suggestedPar:'65 each',  delta:'+30%', formula:'Avg daily 9.2 × 5d lead time + 4 safety buffer',       trend:'up' },
+      { item:'Mixed Leaf 2kg',      itemKey:null,              group:'VIC Metro', currentPar:'8 bag',    suggestedPar:'6 bag',    delta:'–25%', formula:'Avg daily 0.9 × 5d lead time + 1 safety buffer — over-stocked', trend:'down' },
+      { item:'Feta Cheese',         itemKey:'feta',            group:'SA Metro',  currentPar:'2 kg',     suggestedPar:'4 kg',     delta:'+100%',formula:'Avg daily 0.6 kg × 4d lead time + 1.6 kg safety stock', trend:'up' },
+    ];
+
+    function applyOttoPar(idx) {
+      const s = OTTO_PAR_SUGGESTIONS[idx];
+      if (!s) return;
+      s._applied = true;
+      renderOttoParSection();
+      addActivity('<strong>Dynamic par applied</strong> — ' + s.item + ' ' + s.group + ' updated to ' + s.suggestedPar + ' (Otto recommendation) by HQ Administrator');
+      invToast('Par updated · ' + s.item + ' ' + s.group + ' → ' + s.suggestedPar);
+    }
+
+    function dismissOttoPar(idx) {
+      const s = OTTO_PAR_SUGGESTIONS[idx];
+      if (!s) return;
+      s._dismissed = true;
+      renderOttoParSection();
+      invToast('Dismissed — Otto will recalculate next week');
+    }
+
+    function renderOttoParSection() {
+      const el = document.getElementById('otto-par-list');
+      if (!el) return;
+      const active = OTTO_PAR_SUGGESTIONS.filter(s => !s._applied && !s._dismissed);
+      if (!active.length) {
+        el.innerHTML = `<div style="padding:var(--space-xl);text-align:center;color:var(--text-soft);font-size:14px;"><i class="ti ti-circle-check" style="font-size:24px;display:block;margin-bottom:var(--space-sm);color:var(--spinach);"></i>All par suggestions reviewed — Otto will recalculate next Monday</div>`;
+        return;
+      }
+      el.innerHTML = active.map((s) => {
+        const realIdx = OTTO_PAR_SUGGESTIONS.indexOf(s);
+        const trendIcon  = s.trend === 'up' ? 'ti-trending-up' : 'ti-trending-down';
+        const trendColor = s.trend === 'up' ? 'var(--spinach)' : 'var(--status-warn-fg)';
+        return `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-lg);padding:var(--space-md) var(--space-xl);border-bottom:1px solid var(--border);">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:4px;">
+              <span style="font-size:14px;font-weight:700;color:var(--text);">${s.item}</span>
+              <span style="font-size:12px;color:var(--text-soft);">· ${s.group}</span>
+              <span style="font-size:11px;font-weight:700;color:${trendColor};background:color-mix(in srgb,${trendColor} 10%,transparent);padding:1px 5px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:2px;"><i class="ti ${trendIcon}" style="font-size:10px;"></i>${s.delta}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--space-lg);margin-bottom:var(--space-xs);">
+              <span style="font-size:13px;color:var(--text-soft);">Current: <strong style="color:var(--text);">${s.currentPar}</strong></span>
+              <i class="ti ti-arrow-right" style="font-size:12px;color:var(--text-soft);"></i>
+              <span style="font-size:13px;color:var(--text-soft);">Otto: <strong style="color:var(--text-accent);">${s.suggestedPar}</strong></span>
+            </div>
+            <div style="font-size:12px;color:var(--text-soft);font-style:italic;">${s.formula}</div>
+          </div>
+          <div style="display:flex;gap:var(--space-sm);align-items:center;flex-shrink:0;">
+            <button style="height:30px;padding:0 var(--space-md);font-size:12px;font-weight:600;border-radius:var(--radius-xs);border:1px solid var(--border);background:var(--surface);color:var(--text-soft);cursor:pointer;font-family:inherit;" onclick="dismissOttoPar(${realIdx})">Dismiss</button>
+            <button class="confirm-btn" style="height:30px;padding:0 var(--space-md);font-size:12px;" onclick="applyOttoPar(${realIdx})"><i class="ti ti-check" style="font-size:11px;"></i>Apply</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

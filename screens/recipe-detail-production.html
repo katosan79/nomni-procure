@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sourdough Bread — Daily Batch — Nomni HQ</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display: flex; flex-direction: column; padding-block: var(--space-2xl); }
+    .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-xl); }
+    .back-nav { font-size: 13px; font-weight: 600; color: var(--text-accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .back-nav:hover { color: var(--spinach); text-decoration: underline; }
+    .recipe-type-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 3px 10px; border-radius: var(--radius-pill); }
+    .recipe-type-badge.finished  { background: color-mix(in srgb, var(--sky,#3FC3FB) 12%, transparent); color: #0872C3; border: 1px solid color-mix(in srgb, var(--sky,#3FC3FB) 28%, transparent); }
+    .recipe-type-badge.prep      { background: color-mix(in srgb, #B05EC0 10%, transparent); color: #7A3D87; border: 1px solid color-mix(in srgb, #B05EC0 22%, transparent); }
+    .recipe-type-badge.production { background: color-mix(in srgb, #17B3A3 10%, transparent); color: #0E7A6F; border: 1px solid color-mix(in srgb, #17B3A3 22%, transparent); }
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap; }
+    .page-title { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
+    .page-title-meta { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-top: 2px; }
+    .recipe-img-wrap { position: relative; width: 96px; height: 96px; border-radius: var(--radius-lg); overflow: hidden; flex-shrink: 0; cursor: pointer; }
+    .recipe-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .recipe-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .recipe-img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+    .recipe-img-wrap:hover .recipe-img-overlay { opacity: 1; }
+    .recipe-img-overlay i { font-size: 18px; color: #fff; }
+    .recipe-img-overlay span { font-size: 11px; font-weight: 600; color: #fff; }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+    .btn { display: inline-flex; align-items: center; gap: var(--space-xs); height: var(--control-h); padding-inline: var(--space-lg); border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; font-family: inherit; white-space: nowrap; text-decoration: none; transition: background 0.12s, color 0.12s, border-color 0.12s; }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn-teal { background: #17B3A3; color: #fff; border-color: #17B3A3; }
+    .btn-teal:hover { background: #0E7A6F; border-color: #0E7A6F; }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-ghost { background: none; border-color: transparent; color: var(--text-soft); }
+    .btn-ghost:hover { background: var(--surface-soft); color: var(--text); }
+    .btn-danger { background: var(--status-risk-bg); color: var(--status-risk-fg); border-color: transparent; }
+    .btn-sm { height: 30px; padding-inline: var(--space-md); font-size: 13px; }
+    .btn i { font-size: 15px; }
+
+    /* CK badge */
+    .ck-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); background: color-mix(in srgb, #17B3A3 12%, transparent); color: #0E7A6F; border: 1px solid color-mix(in srgb, #17B3A3 28%, transparent); }
+
+    /* KPI strip — 4 tiles */
+    .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-md); }
+    @media (max-width: 700px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+    .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); }
+    .kpi-tile-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
+    .kpi-tile-value { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; margin-top: 4px; }
+    .kpi-tile-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+    .kpi-tile.accent-ck { border-color: color-mix(in srgb, #17B3A3 30%, transparent); background: color-mix(in srgb, #17B3A3 4%, transparent); }
+    .kpi-tile.accent-ck .kpi-tile-value { color: #0E7A6F; }
+
+    .detail-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-2xl); align-items: start; }
+    @media (max-width: 900px) { .detail-layout { grid-template-columns: 1fr; } }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: var(--space-sm); }
+    .card-body { padding: var(--space-xl); }
+    .tab-nav { display: flex; gap: 2px; padding: 3px; background: var(--surface-soft); border-radius: var(--radius-md); border: 1px solid var(--border); align-self: flex-start; flex-wrap: wrap; }
+    .tab-nav-btn { height: 32px; padding-inline: var(--space-lg); border: none; background: none; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-soft); cursor: pointer; white-space: nowrap; font-family: inherit; transition: background 0.12s, color 0.12s; display: inline-flex; align-items: center; gap: 5px; }
+    .tab-nav-btn:hover { color: var(--text); background: color-mix(in srgb, var(--surface) 60%, transparent); }
+    .tab-nav-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px color-mix(in srgb, var(--seaweed) 12%, transparent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .field-group { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .field-label .opt { font-weight: 400; color: var(--text-soft); font-size: 12px; }
+    .field-input { height: var(--control-h); padding-inline: var(--space-md); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; width: 100%; box-sizing: border-box; }
+    .field-select { height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--space-sm) center; width: 100%; box-sizing: border-box; }
+    .field-textarea { padding: var(--space-md); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; width: 100%; box-sizing: border-box; resize: vertical; min-height: 100px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); }
+    .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: var(--space-lg); }
+    .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border); }
+    .ing-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .ing-table thead tr { border-bottom: 1px solid var(--border); background: var(--surface-soft); }
+    .ing-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap; }
+    .ing-table th.num, .ing-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
+    .ing-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+    .ing-table tbody tr:last-child td { border-bottom: none; }
+    .ing-table tbody tr:hover td { background: var(--surface-soft); }
+    .ing-table tfoot td { padding: var(--space-md) var(--space-lg); border-top: 2px solid var(--border); font-size: 14px; background: var(--surface-soft); }
+    .ing-table .total-label { color: var(--text-soft); font-weight: 600; }
+    .ing-table .total-val { text-align: right; font-weight: 700; color: var(--text); font-size: 15px; font-feature-settings: 'tnum' 1; }
+    .cost-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-md) 0; border-bottom: 1px solid var(--border); }
+    .cost-row:last-child { border-bottom: none; }
+    .cost-row-label { font-size: 14px; color: var(--text); }
+    .cost-row-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .cost-row-val { font-size: 15px; font-weight: 700; color: var(--text); font-feature-settings: 'tnum' 1; white-space: nowrap; }
+    .cost-row-val.muted { font-size: 14px; font-weight: 500; color: var(--text-soft); }
+    .cost-total-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-lg) var(--space-xl); background: color-mix(in srgb, var(--seaweed) 4%, transparent); border-radius: var(--radius-md); border: 1.5px solid var(--border); }
+    .cost-total-label { font-size: 15px; font-weight: 700; color: var(--text); }
+    .cost-total-val { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
+
+    /* CK context banner */
+    .ck-banner { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-lg) var(--space-xl); background: color-mix(in srgb, #17B3A3 6%, transparent); border: 1px solid color-mix(in srgb, #17B3A3 25%, transparent); border-radius: var(--radius-md); }
+    .ck-banner i { color: #0E7A6F; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .ck-banner-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+    .ck-banner-text strong { color: #0E7A6F; }
+
+    /* Production schedule card */
+    .schedule-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-sm); }
+    .schedule-day { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--space-md); border: 1.5px solid var(--border); border-radius: var(--radius-md); cursor: pointer; user-select: none; transition: border-color 0.12s, background 0.12s; }
+    .schedule-day.active { border-color: #17B3A3; background: color-mix(in srgb, #17B3A3 8%, transparent); }
+    .schedule-day-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .schedule-day.active .schedule-day-label { color: #0E7A6F; }
+    .schedule-day-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+    .schedule-day.active .schedule-day-dot { background: #17B3A3; }
+
+    /* Run timeline */
+    .run-list { display: flex; flex-direction: column; gap: 0; }
+    .run-item { display: flex; align-items: center; gap: var(--space-lg); padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--border); }
+    .run-item:last-child { border-bottom: none; }
+    .run-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .run-dot.done    { background: var(--status-ok-fg); }
+    .run-dot.next    { background: #17B3A3; box-shadow: 0 0 0 3px color-mix(in srgb, #17B3A3 20%, transparent); }
+    .run-dot.pending { background: var(--border); }
+    .run-meta { flex: 1; }
+    .run-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .run-detail { font-size: 12px; color: var(--text-soft); margin-top: 1px; }
+    .run-status { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; }
+    .run-status.done    { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .run-status.next    { background: color-mix(in srgb, #17B3A3 15%, transparent); color: #0E7A6F; }
+    .run-status.pending { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+
+    /* Distribution table */
+    .dist-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .dist-table th { padding: var(--space-md) var(--space-lg); text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); background: var(--surface-soft); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .dist-table th.num, .dist-table td.num { text-align: right; font-feature-settings: 'tnum' 1; }
+    .dist-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); height: 48px; }
+    .dist-table tbody tr:last-child td { border-bottom: none; }
+    .dist-table tbody tr:hover td { background: var(--surface-soft); }
+    .dist-table tfoot td { padding: var(--space-md) var(--space-lg); border-top: 2px solid var(--border); background: var(--surface-soft); font-weight: 700; font-feature-settings: 'tnum' 1; }
+    .alloc-input { width: 60px; height: 28px; padding-inline: var(--space-sm); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'IBM Plex Mono',monospace; background: var(--surface); color: var(--text); text-align: right; outline: none; }
+    .alloc-input:focus { border-color: #17B3A3; }
+    .dispatch-time { font-size: 12px; color: var(--text-soft); font-family: 'IBM Plex Mono',monospace; }
+
+    .version-list { display: flex; flex-direction: column; gap: 0; }
+    .version-item { display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--border); gap: var(--space-lg); }
+    .version-item:last-child { border-bottom: none; }
+    .version-meta { display: flex; flex-direction: column; gap: 2px; }
+    .version-tag { display: inline-flex; align-items: center; height: 20px; padding-inline: var(--space-sm); border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .version-tag.current { background: var(--mint); color: var(--spinach); }
+    .version-tag.old { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .version-name { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 2px; }
+    .version-by { font-size: 12px; color: var(--text-soft); }
+    .version-desc { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .activity-list { display: flex; flex-direction: column; gap: var(--space-md); }
+    .activity-item { display: flex; gap: var(--space-md); }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; margin-top: 5px; }
+    .activity-dot.ok { background: var(--status-ok-fg); }
+    .activity-dot.warn { background: var(--status-warn-fg); }
+    .activity-text { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+    .activity-text strong { color: var(--text); font-weight: 600; }
+    .activity-time { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+    .aside-stack { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .meta-kv { display: flex; flex-direction: column; gap: var(--space-md); }
+    .meta-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); }
+    .meta-label { font-size: 12px; color: var(--text-soft); }
+    .meta-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-pill); }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
+    .nb-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: var(--radius-pill); }
+    .nb-pill.neutral { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .danger-zone { border: 1.5px solid var(--status-risk-bg); border-radius: var(--radius-lg); padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-md); }
+    .danger-title { font-size: 14px; font-weight: 700; color: var(--status-risk-fg); }
+    .danger-desc { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+
+    /* Next-run countdown chip */
+    .next-run-chip { display: inline-flex; align-items: center; gap: 6px; padding: var(--space-sm) var(--space-lg); background: color-mix(in srgb, #17B3A3 8%, transparent); border: 1.5px solid color-mix(in srgb, #17B3A3 30%, transparent); border-radius: var(--radius-md); font-size: 13px; font-weight: 600; color: #0E7A6F; }
+
+    #toast-wrap { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 80; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .period-btn { display:inline-flex;align-items:center;height:26px;padding-inline:var(--space-md);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-soft);font-family:inherit;transition:background 0.1s,color 0.1s; }
+    .period-btn:hover { background:var(--surface-soft);color:var(--text); }
+    .period-btn.active { background:color-mix(in srgb,#17B3A3 10%,transparent);color:#0E7A6F;border-color:color-mix(in srgb,#17B3A3 30%,transparent); }
+    .tag-input-wrap { display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:100%; min-height:36px; padding:6px var(--space-md); border:1px solid var(--border); border-radius:var(--radius-md); box-sizing:border-box; cursor:text; }
+    .tag-input-wrap:focus-within { border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 12%,transparent); }
+    .tag-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px 2px 10px; border-radius:var(--radius-pill); font-size:12px; font-weight:600; background:color-mix(in srgb,var(--fern) 12%,transparent); color:var(--spinach); white-space:nowrap; }
+    .tag-chip .tag-rm { cursor:pointer; opacity:0.6; display:flex; align-items:center; font-size:11px; }
+    .tag-chip .tag-rm:hover { opacity:1; }
+    .tag-input { flex:1; min-width:120px; border:none; outline:none; background:transparent; font-family:inherit; font-size:13px; color:var(--text); }
+  </style>
+</head>
+<body>
+<script src="../shared/shell.js?v=12" data-active="recipes"></script>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="content">
+
+    <a class="back-nav" href="recipes.html"><i class="ti ti-arrow-left"></i>Recipe library</a>
+
+    <!-- Page header — production recipe has "Schedule run" not "Push to outlets" -->
+    <div class="page-header">
+      <div style="display:flex;align-items:flex-start;gap:var(--space-lg);">
+        <div class="recipe-img-wrap" onclick="showToast('Image upload coming soon…')">
+          <div class="recipe-img-placeholder" style="background:#FEF9EE;color:#D97706"><i class="ti ti-bread" aria-hidden="true"></i></div>
+          <div class="recipe-img-overlay"><i class="ti ti-camera" aria-hidden="true"></i><span>Edit photo</span></div>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;gap:var(--space-sm);flex-wrap:wrap;">
+            <span class="recipe-type-badge production"><i class="ti ti-building-factory" style="font-size:10px;"></i>Production recipe</span>
+            <span class="ck-badge"><i class="ti ti-truck" style="font-size:10px;"></i>Central Kitchen</span>
+          </div>
+          <h1 class="page-title" style="margin-top:var(--space-sm);">Sourdough Bread — Daily Batch</h1>
+          <div class="page-title-meta">
+            <span class="status-pill active">Active</span>
+            <span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>Bakery</span>
+            <span class="nb-pill neutral"><i class="ti ti-clock" style="font-size:11px;"></i>Daily · 4:30 am</span>
+            <span class="nb-pill neutral"><i class="ti ti-building-store" style="font-size:11px;"></i>Dispatches to 6 outlets</span>
+            <span id="header-tags" style="display:contents;"></span>
+          </div>
+        </div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Opening version history…')"><i class="ti ti-history"></i>v1</button>
+        <button class="btn btn-outline" onclick="showToast('Recipe duplicated.')"><i class="ti ti-copy"></i>Duplicate</button>
+        <button class="btn btn-teal" onclick="showToast('Opening schedule run modal…')"><i class="ti ti-calendar-plus"></i>Schedule run</button>
+      </div>
+    </div>
+
+    <!-- KPI strip — Production: batch size, cost/batch, cost/unit, next run -->
+    <!-- NO selling price. NO food cost %. NO gross margin. -->
+    <div class="kpi-strip">
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Batch size</div>
+        <div class="kpi-tile-value">20 loaves</div>
+        <div class="kpi-tile-sub">Per production run</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Cost per batch</div>
+        <div class="kpi-tile-value" id="kpi-batch-cost">$36.00</div>
+        <div class="kpi-tile-sub">Ingredients + labour</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Cost per loaf</div>
+        <div class="kpi-tile-value" id="kpi-unit-cost">$1.80</div>
+        <div class="kpi-tile-sub">Flows to outlet COGS</div>
+      </div>
+      <div class="kpi-tile accent-ck">
+        <div class="kpi-tile-label">Next run</div>
+        <div class="kpi-tile-value" style="font-size:18px;line-height:1.3;">Tomorrow<br><span style="font-size:14px;font-weight:600;">4:30 am</span></div>
+        <div class="kpi-tile-sub">Mon 17 Jun 2026</div>
+      </div>
+    </div>
+
+    <!-- CK context banner -->
+    <div class="ck-banner">
+      <i class="ti ti-building-factory"></i>
+      <div class="ck-banner-text">
+        <strong>Central Kitchen production recipe.</strong> This batch is produced at the CK and dispatched to outlets before service. There is no selling price or margin — cost per unit flows directly into each outlet's COGS on dispatch. Outlet stock positions update automatically when the batch is received.
+      </div>
+    </div>
+
+    <!-- Detail layout -->
+    <div class="detail-layout">
+      <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+
+        <!-- Tab nav -->
+        <div class="tab-nav">
+          <button class="tab-nav-btn active" onclick="switchTab('ingredients')"><i class="ti ti-list-details"></i>Ingredients</button>
+          <button class="tab-nav-btn" onclick="switchTab('production')"><i class="ti ti-calendar-time"></i>Production</button>
+          <button class="tab-nav-btn" onclick="switchTab('distribution')"><i class="ti ti-truck"></i>Distribution</button>
+          <button class="tab-nav-btn" onclick="switchTab('settings')"><i class="ti ti-settings"></i>Settings</button>
+        </div>
+
+        <!-- ── Ingredients tab ── -->
+        <div id="tab-ingredients" class="tab-panel active">
+          <!-- ── Cost movement chart ── -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-chart-line"></i>Cost movement</span>
+              <div style="display:flex;gap:4px;">
+                <button class="period-btn active" data-period="6" onclick="setCostPeriod(this)">6M</button>
+                <button class="period-btn" data-period="12" onclick="setCostPeriod(this)">12M</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding-top:var(--space-md);padding-bottom:var(--space-lg);">
+              <div style="position:relative;" id="chart-wrap">
+                <svg id="cost-chart" width="100%" height="200" viewBox="0 0 600 200" style="display:block;overflow:visible;"></svg>
+                <div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--surface-deep);color:var(--chrome-fg);font-size:12px;font-weight:500;padding:6px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,0.15);line-height:1.6;"></div>
+              </div>
+              <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:20px;height:2px;background:#17B3A3;border-radius:2px;vertical-align:middle;"></span>
+                  Cost per unit (1 loaf)
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--text-soft);">
+                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F5C219;vertical-align:middle;"></span>
+                  Price change event
+                </div>
+                <div id="chart-delta" style="font-size:12px;color:var(--text-soft);margin-left:auto;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Batch details</span></div>
+            <div class="card-body">
+              <div class="form-row-4">
+                <div class="field-group">
+                  <label class="field-label">Batch size</label>
+                  <input class="field-input" type="number" value="20" style="font-feature-settings:'tnum' 1;"/>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Unit</label>
+                  <select class="field-select"><option selected>loaves</option><option>kg</option><option>each</option><option>portions</option></select>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Loaf weight</label>
+                  <input class="field-input" type="text" value="750 g (baked)" style="font-feature-settings:'tnum' 1;"/>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Produced at</label>
+                  <select class="field-select"><option selected>Central Kitchen</option></select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-list-details"></i>Ingredient list <span style="font-size:12px;font-weight:400;color:var(--text-soft);margin-left:4px;">— makes 20 loaves</span></span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Add ingredient row…')"><i class="ti ti-plus"></i>Add line</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="ing-table" aria-label="Ingredient list">
+                <thead><tr><th>Ingredient</th><th class="num">Qty</th><th>Unit</th><th class="num">Unit cost</th><th class="num">Subtotal</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><div style="font-weight:600;">Strong bread flour</div><div style="font-size:12px;color:var(--text-soft);">Pantry · 00 flour, unbleached</div></td>
+                    <td class="num">8</td><td>kg</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$1.75</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$14.00</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Sourdough starter (active)</div><div style="font-size:12px;color:var(--text-soft);">Maintained in-house</div></td>
+                    <td class="num">2</td><td>kg</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.50</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$1.00</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Salt (fine sea salt)</div><div style="font-size:12px;color:var(--text-soft);">Pantry</div></td>
+                    <td class="num">160</td><td>g</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.003</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.48</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Water (filtered)</div><div style="font-size:12px;color:var(--text-soft);">Utilities</div></td>
+                    <td class="num">5.5</td><td>L</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.00</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$0.00</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Extra virgin olive oil</div><div style="font-size:12px;color:var(--text-soft);">Oils · crust finish</div></td>
+                    <td class="num">200</td><td>mL</td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;">$0.008</td>
+                    <td class="num" style="font-weight:600;font-feature-settings:'tnum' 1;">$1.60</td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="showToast('Row removed.')" style="padding:0;width:28px;height:28px;justify-content:center;color:var(--status-risk-fg);"><i class="ti ti-x" style="font-size:14px;"></i></button></td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr><td colspan="4" class="total-label">Ingredient cost total (batch of 20)</td><td class="total-val">$17.08</td><td></td></tr>
+                </tfoot>
+              </table>
+            </div>
+            <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);display:flex;gap:var(--space-sm);">
+              <button class="btn btn-ghost btn-sm" onclick="showToast('Searching ingredients…')"><i class="ti ti-search"></i>Add ingredient</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-calculator"></i>Batch costing summary</span></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+                <div class="cost-row"><div class="cost-row-label">Ingredient cost</div><div class="cost-row-val muted" id="out-ing">$17.08</div></div>
+                <div class="cost-row"><div class="cost-row-label">Labour cost <span style="font-size:12px;color:var(--text-soft);">(1 baker × 45 min active @ $25.28/hr)</span></div><div class="cost-row-val muted" id="out-labour">$18.96</div></div>
+              </div>
+              <div style="margin-top:var(--space-lg);">
+                <div class="cost-total-row" style="background:color-mix(in srgb, #17B3A3 5%, transparent);border-color:color-mix(in srgb, #17B3A3 22%, transparent);">
+                  <div>
+                    <span class="cost-total-label" style="color:#0E7A6F;">Total batch cost</span>
+                    <div style="font-size:12px;color:var(--text-soft);margin-top:2px;">Batch of 20 loaves</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <span class="cost-total-val" style="color:#0E7A6F;" id="out-total">$36.04</span>
+                    <div style="font-size:12px;color:#0E7A6F;font-weight:600;margin-top:2px;font-feature-settings:'tnum' 1;" id="out-per-unit">$1.80 / loaf</div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:var(--space-lg);padding:var(--space-md) var(--space-lg);background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);font-size:12px;color:var(--text-soft);line-height:1.6;">
+                <i class="ti ti-info-circle" style="font-size:13px;vertical-align:-2px;margin-right:4px;color:var(--text-soft);"></i>
+                Cost per unit is transferred to each outlet's COGS on dispatch. No selling price or margin is set — this is an internal CK transfer cost.
+              </div>
+            </div>
+          </div>
+        </div><!-- /tab-ingredients -->
+
+        <!-- ── Production tab ── -->
+        <div id="tab-production" class="tab-panel">
+
+          <!-- Schedule card -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-calendar-repeat"></i>Production schedule</span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Schedule saved.')"><i class="ti ti-device-floppy"></i>Save schedule</button>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-xl);">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:var(--space-md);">Active production days</div>
+                  <div class="schedule-grid" id="schedule-grid">
+                    <!-- Rendered by JS -->
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="field-group">
+                    <label class="field-label">Start time</label>
+                    <input class="field-input" type="time" value="04:30"/>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Batch size</label>
+                    <input class="field-input" type="number" value="20" style="font-feature-settings:'tnum' 1;"/>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:var(--space-md);">Time breakdown</div>
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);">
+                    <div style="padding:var(--space-md) var(--space-lg);background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);">
+                      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);">Active prep</div>
+                      <div style="font-size:18px;font-weight:700;color:var(--text);font-feature-settings:'tnum' 1;margin-top:4px;">45 min</div>
+                      <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">Mix, shape, score</div>
+                    </div>
+                    <div style="padding:var(--space-md) var(--space-lg);background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);">
+                      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);">Proof (passive)</div>
+                      <div style="font-size:18px;font-weight:700;color:var(--text-soft);font-feature-settings:'tnum' 1;margin-top:4px;">3 hr</div>
+                      <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">Unattended — not costed</div>
+                    </div>
+                    <div style="padding:var(--space-md) var(--space-lg);background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);">
+                      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);">Bake &amp; cool</div>
+                      <div style="font-size:18px;font-weight:700;color:var(--text);font-feature-settings:'tnum' 1;margin-top:4px;">55 min</div>
+                      <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">Active supervision</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Production notes <span style="font-weight:400;font-size:12px;color:var(--text-soft);">(optional)</span></label>
+                  <textarea class="field-textarea" rows="3" style="min-height:70px;">Dough must be cold-retarded overnight. Begin shaping at 4:30am after 30-min bench rest. Score with lame before loading. Bake at 250°C with steam injection first 15min, then 220°C dry heat.</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Run history -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-history"></i>Run log</span>
+              <span style="font-size:12px;color:var(--text-soft);">Last 7 days</span>
+            </div>
+            <div class="run-list">
+              <div class="run-item">
+                <div class="run-dot next"></div>
+                <div class="run-meta">
+                  <div class="run-title">Mon 17 Jun 2026 · 4:30 am</div>
+                  <div class="run-detail">Scheduled · 20 loaves · dispatching to 6 outlets</div>
+                </div>
+                <span class="run-status next">Next run</span>
+              </div>
+              <div class="run-item">
+                <div class="run-dot done"></div>
+                <div class="run-meta">
+                  <div class="run-title">Sun 16 Jun 2026 · 4:30 am</div>
+                  <div class="run-detail">20 loaves produced · 20 dispatched · 0 variance</div>
+                </div>
+                <span class="run-status done">Completed</span>
+              </div>
+              <div class="run-item">
+                <div class="run-dot done"></div>
+                <div class="run-meta">
+                  <div class="run-title">Sat 15 Jun 2026 · 4:30 am</div>
+                  <div class="run-detail">20 loaves produced · 18 dispatched · 2 QA rejects</div>
+                </div>
+                <span class="run-status done">Completed</span>
+              </div>
+              <div class="run-item">
+                <div class="run-dot done"></div>
+                <div class="run-meta">
+                  <div class="run-title">Fri 14 Jun 2026 · 4:30 am</div>
+                  <div class="run-detail">20 loaves produced · 20 dispatched · 0 variance</div>
+                </div>
+                <span class="run-status done">Completed</span>
+              </div>
+              <div class="run-item">
+                <div class="run-dot done"></div>
+                <div class="run-meta">
+                  <div class="run-title">Thu 13 Jun 2026 · 4:30 am</div>
+                  <div class="run-detail">20 loaves produced · 20 dispatched · 0 variance</div>
+                </div>
+                <span class="run-status done">Completed</span>
+              </div>
+              <div class="run-item">
+                <div class="run-dot pending"></div>
+                <div class="run-meta">
+                  <div class="run-title">Wed 11 Jun 2026 · 4:30 am</div>
+                  <div class="run-detail">Skipped — public holiday</div>
+                </div>
+                <span class="run-status pending">Skipped</span>
+              </div>
+            </div>
+          </div>
+        </div><!-- /tab-production -->
+
+        <!-- ── Distribution tab ── -->
+        <div id="tab-distribution" class="tab-panel">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title"><i class="ti ti-truck"></i>Outlet allocations</span>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Allocations saved.')"><i class="ti ti-device-floppy"></i>Save allocations</button>
+            </div>
+            <div class="card-body" style="padding-bottom:0;">
+              <p style="font-size:13px;color:var(--text-soft);line-height:1.6;margin-bottom:var(--space-lg);">Set how many loaves each outlet receives per batch run. Total must not exceed batch size (20 loaves). Cost per unit ($1.80) is applied to each outlet's COGS on dispatch confirmation.</p>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="dist-table" aria-label="Outlet distribution">
+                <thead>
+                  <tr>
+                    <th>Outlet</th>
+                    <th>Group</th>
+                    <th class="num">Allocation</th>
+                    <th class="num">Cost transfer</th>
+                    <th>Dispatch time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><div style="font-weight:600;">Harbour Kitchen</div></td>
+                    <td><span style="font-size:12px;color:var(--text-soft);">CBD Cluster</span></td>
+                    <td class="num"><input class="alloc-input" type="number" value="4" min="0" max="20" oninput="updateAllocTotal()"/></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;font-weight:600;">$7.20</td>
+                    <td><span class="dispatch-time">07:00 am</span></td>
+                    <td><span class="run-status done">Received</span></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Darling St Bistro</div></td>
+                    <td><span style="font-size:12px;color:var(--text-soft);">CBD Cluster</span></td>
+                    <td class="num"><input class="alloc-input" type="number" value="3" min="0" max="20" oninput="updateAllocTotal()"/></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;font-weight:600;">$5.40</td>
+                    <td><span class="dispatch-time">07:00 am</span></td>
+                    <td><span class="run-status done">Received</span></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">The CBD Rooftop</div></td>
+                    <td><span style="font-size:12px;color:var(--text-soft);">CBD Cluster</span></td>
+                    <td class="num"><input class="alloc-input" type="number" value="3" min="0" max="20" oninput="updateAllocTotal()"/></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;font-weight:600;">$5.40</td>
+                    <td><span class="dispatch-time">07:00 am</span></td>
+                    <td><span class="run-status done">Received</span></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Bondi Rooftop</div></td>
+                    <td><span style="font-size:12px;color:var(--text-soft);">Beachside</span></td>
+                    <td class="num"><input class="alloc-input" type="number" value="4" min="0" max="20" oninput="updateAllocTotal()"/></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;font-weight:600;">$7.20</td>
+                    <td><span class="dispatch-time">07:30 am</span></td>
+                    <td><span class="run-status done">Received</span></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Parramatta Table</div></td>
+                    <td><span style="font-size:12px;color:var(--text-soft);">Suburban</span></td>
+                    <td class="num"><input class="alloc-input" type="number" value="3" min="0" max="20" oninput="updateAllocTotal()"/></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;font-weight:600;">$5.40</td>
+                    <td><span class="dispatch-time">08:00 am</span></td>
+                    <td><span class="run-status done">Received</span></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;">Surry Hills Social</div></td>
+                    <td><span style="font-size:12px;color:var(--text-soft);">Suburban</span></td>
+                    <td class="num"><input class="alloc-input" type="number" value="3" min="0" max="20" oninput="updateAllocTotal()"/></td>
+                    <td class="num" style="font-feature-settings:'tnum' 1;font-weight:600;">$5.40</td>
+                    <td><span class="dispatch-time">08:00 am</span></td>
+                    <td><span class="run-status done">Received</span></td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" style="color:var(--text-soft);">Total allocated</td>
+                    <td class="num" id="alloc-total">20 loaves</td>
+                    <td class="num" id="alloc-cost-total">$36.00</td>
+                    <td colspan="2" style="font-size:12px;color:var(--text-soft);">of 20 loaf batch</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div style="padding:var(--space-md) var(--space-xl);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:var(--space-lg);flex-wrap:wrap;">
+              <div id="alloc-warning" style="font-size:12px;color:var(--status-ok-fg);display:flex;align-items:center;gap:6px;">
+                <i class="ti ti-circle-check" style="font-size:14px;"></i>
+                All 20 loaves allocated across 6 outlets
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('Adding outlet to distribution…')"><i class="ti ti-plus"></i>Add outlet</button>
+            </div>
+          </div>
+        </div><!-- /tab-distribution -->
+
+        <!-- ── Settings tab ── -->
+        <div id="tab-settings" class="tab-panel">
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-tags"></i>Tags</span></div>
+            <div class="card-body">
+              <div class="tag-input-wrap" id="recipe-tag-wrap" onclick="document.getElementById('recipe-tag-input').focus()">
+                <input type="text" id="recipe-tag-input" class="tag-input" placeholder="Add a tag and press Enter…" onkeydown="if(event.key==='Enter'){event.preventDefault();addRecipeTag(this);}"/>
+              </div>
+              <p style="font-size:12px;color:var(--text-soft);margin-top:var(--space-sm);">An additional way to identify and search for this recipe.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-history"></i>Version history</span></div>
+            <div class="version-list">
+              <div class="version-item">
+                <div class="version-meta">
+                  <span class="version-tag current">v1 · Current</span>
+                  <div class="version-name">Sourdough Bread — Daily Batch</div>
+                  <div class="version-by">Created by Keith Tan · 15 Jan 2026</div>
+                  <div class="version-desc">Initial production recipe. 20 loaves per batch, daily 4:30am run.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><i class="ti ti-activity"></i>Activity log</span></div>
+            <div class="card-body">
+              <div class="activity-list">
+                <div class="activity-item">
+                  <div class="activity-dot ok"></div>
+                  <div><div class="activity-text"><strong>Batch completed</strong> — 20 loaves produced, 20 dispatched to 6 outlets</div><div class="activity-time">16 Jun 2026 · 08:15am</div></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot warn"></div>
+                  <div><div class="activity-text"><strong>QA reject logged</strong> — 2 loaves rejected (underbaked) · waste recorded</div><div class="activity-time">15 Jun 2026 · 08:20am</div></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot warn"></div>
+                  <div><div class="activity-text"><strong>Ingredient price updated</strong> — Bread flour: $1.50/kg → $1.75/kg (invoice sync from Goodman Fielder)</div><div class="activity-time">10 Jun 2026 · 09:45am</div></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot ok"></div>
+                  <div><div class="activity-text"><strong>Allocation updated</strong> — Harbour Kitchen allocation increased 3 → 4 loaves/day</div><div class="activity-time">2 Jun 2026 · 11:00am</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /tab-settings -->
+
+      </div><!-- /main col -->
+
+      <!-- Aside -->
+      <aside class="aside-stack">
+        <div class="card">
+          <div class="card-head"><span class="card-title"><i class="ti ti-info-circle"></i>Production info</span></div>
+          <div class="card-body">
+            <div class="meta-kv">
+              <div class="meta-row"><span class="meta-label">Type</span><span class="recipe-type-badge production" style="font-size:10px;padding:2px 7px;"><i class="ti ti-building-factory" style="font-size:9px;"></i>Production</span></div>
+              <div class="meta-row"><span class="meta-label">Produced at</span><span class="ck-badge" style="font-size:10px;padding:2px 7px;">Central Kitchen</span></div>
+              <div class="meta-row"><span class="meta-label">Status</span><span class="status-pill active" style="font-size:11px;">Active</span></div>
+              <div class="meta-row"><span class="meta-label">Batch size</span><span class="meta-val">20 loaves</span></div>
+              <div class="meta-row"><span class="meta-label">Schedule</span><span class="meta-val">Daily · 4:30 am</span></div>
+              <div class="meta-row"><span class="meta-label">Cost/unit</span><span class="meta-val" style="color:#0E7A6F;" id="kpi-unit-aside">$1.80/loaf</span></div>
+              <div class="meta-row"><span class="meta-label">Selling price</span><span style="font-size:12px;color:var(--text-soft);font-style:italic;">None — CK transfer</span></div>
+              <div class="meta-row"><span class="meta-label">Dispatches to</span><span class="meta-val">6 outlets</span></div>
+              <div class="meta-row"><span class="meta-label">Last updated</span><span class="meta-val">15 Jan 2026</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next run chip -->
+        <div class="card">
+          <div class="card-head"><span class="card-title" style="color:#0E7A6F;"><i class="ti ti-calendar-time" style="color:#0E7A6F;"></i>Next run</span></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:var(--space-md);">
+            <div class="next-run-chip">
+              <i class="ti ti-clock" style="font-size:15px;"></i>
+              Tomorrow · Mon 17 Jun · 4:30 am
+            </div>
+            <div style="font-size:12px;color:var(--text-soft);line-height:1.6;">20 loaves scheduled. Allocations confirmed for all 6 outlets.</div>
+            <button class="btn btn-outline btn-sm" onclick="showToast('Opening schedule run modal…')"><i class="ti ti-calendar-plus"></i>Schedule extra run</button>
+          </div>
+        </div>
+
+        <!-- CK agent -->
+        <div class="card" style="border-color:color-mix(in srgb, #17B3A3 25%, transparent);">
+          <div class="card-head" style="background:color-mix(in srgb, #17B3A3 6%, transparent);border-color:color-mix(in srgb, #17B3A3 15%, transparent);">
+            <span class="card-title" style="font-size:13px;color:#0E7A6F;"><i class="ti ti-robot" style="color:#17B3A3;"></i>Governance agent · Cyrus</span>
+            <span style="font-size:11px;font-weight:600;color:#0E7A6F;">On track</span>
+          </div>
+          <div class="card-body" style="font-size:12px;color:var(--text-soft);line-height:1.6;display:flex;flex-direction:column;gap:var(--space-md);">
+            <p>All allocations confirmed. Flour cost increased +16.7% this month — batch cost up $2.92 vs last month. No action needed at current volume.</p>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('ingredients');showToast('Showing ingredient costing…')"><i class="ti ti-calculator"></i>Review batch cost</button>
+          </div>
+        </div>
+
+        <div class="danger-zone">
+          <div class="danger-title"><i class="ti ti-alert-triangle" style="font-size:14px;"></i> Danger zone</div>
+          <div class="danger-desc">Archiving this recipe will cancel all scheduled runs and stop distribution to 6 outlets. Outlet inventory won't be replenished via CK until a replacement is set.</div>
+          <button class="btn btn-danger btn-sm" onclick="showToast('Confirm archive — this will cancel all scheduled runs.')"><i class="ti ti-archive"></i>Archive recipe</button>
+        </div>
+      </aside>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script src="../shared/shell.js?v=12" data-active="recipes"></script>
+<script>
+  const BATCH_SIZE = 20;
+  const ING_COST   = 17.08;
+  const LABOUR_COST = 18.96;
+
+  NomniShell.init('Sourdough Bread — Daily Batch');
+
+  function switchTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    document.querySelectorAll('.tab-nav-btn').forEach(b => {
+      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
+    });
+  }
+
+  // Schedule grid
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const activeDays = new Set([0,1,2,3,4,5,6]); // all days active
+
+  function renderScheduleGrid() {
+    const grid = document.getElementById('schedule-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    DAYS.forEach((day, i) => {
+      const el = document.createElement('div');
+      el.className = 'schedule-day' + (activeDays.has(i) ? ' active' : '');
+      el.innerHTML = `<div class="schedule-day-label">${day}</div><div class="schedule-day-dot"></div>`;
+      el.addEventListener('click', () => {
+        activeDays.has(i) ? activeDays.delete(i) : activeDays.add(i);
+        renderScheduleGrid();
+      });
+      grid.appendChild(el);
+    });
+  }
+
+  // Distribution allocation total
+  function updateAllocTotal() {
+    const inputs = document.querySelectorAll('.alloc-input');
+    let total = 0;
+    inputs.forEach(inp => { total += parseFloat(inp.value) || 0; });
+    const COST_PER_UNIT = (ING_COST + LABOUR_COST) / BATCH_SIZE;
+    const totalCost = total * COST_PER_UNIT;
+    const totalEl = document.getElementById('alloc-total');
+    const costEl  = document.getElementById('alloc-cost-total');
+    const warnEl  = document.getElementById('alloc-warning');
+    if (totalEl) totalEl.textContent = total + ' loaves';
+    if (costEl)  costEl.textContent  = '$' + totalCost.toFixed(2);
+    if (warnEl) {
+      if (total > BATCH_SIZE) {
+        warnEl.style.color = 'var(--status-risk-fg)';
+        warnEl.innerHTML = `<i class="ti ti-alert-triangle" style="font-size:14px;"></i> Over-allocated by ${total - BATCH_SIZE} loaves`;
+      } else if (total < BATCH_SIZE) {
+        warnEl.style.color = 'var(--status-warn-fg)';
+        warnEl.innerHTML = `<i class="ti ti-alert-circle" style="font-size:14px;"></i> ${BATCH_SIZE - total} loaves unallocated`;
+      } else {
+        warnEl.style.color = 'var(--status-ok-fg)';
+        warnEl.innerHTML = `<i class="ti ti-circle-check" style="font-size:14px;"></i> All ${BATCH_SIZE} loaves allocated across ${inputs.length} outlets`;
+      }
+    }
+  }
+
+  // ── Tags ────────────────────────────────────────────────
+  let recipeTags = ['Artisan', 'Baked daily'];
+
+  function renderRecipeTags() {
+    const wrap  = document.getElementById('recipe-tag-wrap');
+    const input = document.getElementById('recipe-tag-input');
+    wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+    recipeTags.forEach(t => {
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${t}<span class="tag-rm" onclick="removeRecipeTag('${t}')"><i class="ti ti-x" aria-hidden="true"></i></span>`;
+      wrap.insertBefore(chip, input);
+    });
+    const headerEl = document.getElementById('header-tags');
+    if (headerEl) headerEl.innerHTML = recipeTags.map(t => `<span class="nb-pill neutral"><i class="ti ti-tag" style="font-size:11px;"></i>${t}</span>`).join('');
+  }
+
+  function addRecipeTag(input) {
+    const val = input.value.trim();
+    if (!val) return;
+    if (!recipeTags.includes(val)) { recipeTags.push(val); renderRecipeTags(); showToast('Tag added.'); }
+    input.value = '';
+  }
+
+  function removeRecipeTag(val) {
+    recipeTags = recipeTags.filter(t => t !== val);
+    renderRecipeTags();
+  }
+
+  function showToast(msg) {
+    const wrap = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;white-space:nowrap;';
+    t.innerHTML = `<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>${msg}`;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  // ── Cost movement chart ──
+  const COST_HISTORY = [
+    { l:"Jul '25", s:'Jul', v:1.52 },
+    { l:"Aug '25", s:'Aug', v:1.55 },
+    { l:"Sep '25", s:'Sep', v:1.58, ev:'Flour +5%' },
+    { l:"Oct '25", s:'Oct', v:1.62 },
+    { l:"Nov '25", s:'Nov', v:1.65 },
+    { l:"Dec '25", s:'Dec', v:1.70, ev:'Olive oil +8%' },
+    { l:"Jan '26", s:'Jan', v:1.72 },
+    { l:"Feb '26", s:'Feb', v:1.75 },
+    { l:"Mar '26", s:'Mar', v:1.78 },
+    { l:"Apr '26", s:'Apr', v:1.80 },
+    { l:"May '26", s:'May', v:1.80 },
+    { l:"Jun '26", s:'Jun', v:1.80 },
+  ];
+  const CHART_LINE_COLOR = '#17B3A3';
+  const CHART_UNIT = '/loaf';
+  let _cPeriod = 6;
+
+  function setCostPeriod(btn) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _cPeriod = parseInt(btn.dataset.period);
+    renderCostChart();
+  }
+
+  function renderCostChart() {
+    const data = COST_HISTORY.slice(-_cPeriod);
+    const svg = document.getElementById('cost-chart');
+    if (!svg) return;
+    const W = 600, H = 200, P = { t:16, r:16, b:36, l:50 };
+    const cW = W - P.l - P.r, cH = H - P.t - P.b;
+    const vals = data.map(d => d.v);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const span = hi - lo || 0.2;
+    const yLo = lo - span * 0.25, yHi = hi + span * 0.35;
+    const xS = i => P.l + (data.length < 2 ? cW / 2 : (i / (data.length - 1)) * cW);
+    const yS = v => P.t + cH - ((v - yLo) / (yHi - yLo)) * cH;
+    function makePath(pts) {
+      let d = `M${pts[0][0]},${pts[0][1]}`;
+      for (let i = 1; i < pts.length; i++) {
+        const cpx = (pts[i-1][0] + pts[i][0]) / 2;
+        d += ` C${cpx},${pts[i-1][1]} ${cpx},${pts[i][1]} ${pts[i][0]},${pts[i][1]}`;
+      }
+      return d;
+    }
+    const pts = data.map((d, i) => [xS(i), yS(d.v)]);
+    const line = makePath(pts);
+    const lp = pts[pts.length - 1];
+    const area = `${line} L${lp[0]},${P.t + cH} L${pts[0][0]},${P.t + cH}Z`;
+    let grid = '';
+    for (let i = 0; i <= 4; i++) {
+      const v = yLo + (yHi - yLo) * i / 4;
+      const y = yS(v);
+      grid += `<line x1="${P.l}" y1="${y.toFixed(1)}" x2="${W-P.r}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`;
+      grid += `<text x="${P.l-6}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--text-soft)" font-family="Hanken Grotesk,sans-serif" font-feature-settings="'tnum' 1">$${v.toFixed(2)}</text>`;
+    }
+    let xlabels = '';
+    data.forEach((d, i) => {
+      if (data.length > 6 && i % 2 !== 0 && i !== data.length - 1) return;
+      xlabels += `<text x="${xS(i).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="10" fill="var(--text-soft)" font-family="Hanken Grotesk,sans-serif">${d.s}</text>`;
+    });
+    let events = '';
+    data.forEach((d, i) => {
+      if (!d.ev) return;
+      const x = xS(i), y = yS(d.v);
+      events += `<line x1="${x.toFixed(1)}" y1="${P.t}" x2="${x.toFixed(1)}" y2="${(P.t+cH).toFixed(1)}" stroke="#F5C219" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>`;
+      events += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#F5C219"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="#F5C219" opacity="0.15"/>`;
+    });
+    let hits = '';
+    data.forEach((d, i) => { hits += `<circle cx="${xS(i).toFixed(1)}" cy="${yS(d.v).toFixed(1)}" r="14" fill="transparent" class="chart-hit" data-i="${i}"/>`; });
+    svg.innerHTML = `<defs><linearGradient id="cg${_cPeriod}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${CHART_LINE_COLOR}" stop-opacity="0.18"/><stop offset="100%" stop-color="${CHART_LINE_COLOR}" stop-opacity="0.01"/></linearGradient></defs>${grid}<path d="${area}" fill="url(#cg${_cPeriod})"/><path d="${line}" fill="none" stroke="${CHART_LINE_COLOR}" stroke-width="2" stroke-linecap="round"/>${events}<circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="4" fill="${CHART_LINE_COLOR}"/><circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="9" fill="${CHART_LINE_COLOR}" opacity="0.18"/>${xlabels}${hits}`;
+    const tt = document.getElementById('chart-tooltip');
+    const wrap = document.getElementById('chart-wrap');
+    svg.querySelectorAll('.chart-hit').forEach(el => {
+      const d = data[parseInt(el.dataset.i)];
+      el.addEventListener('mouseenter', () => { tt.innerHTML = `<strong style="font-feature-settings:'tnum' 1">$${d.v.toFixed(2)}${CHART_UNIT}</strong> &nbsp;${d.l}${d.ev ? `<br><span style="color:#F5C219;font-size:11px;">⬆ ${d.ev}</span>` : ''}`; tt.style.display = 'block'; });
+      el.addEventListener('mousemove', e => { const r = wrap.getBoundingClientRect(); let lx = e.clientX-r.left+14, ly = e.clientY-r.top-52; if (lx+180>r.width) lx=e.clientX-r.left-180; tt.style.left=lx+'px'; tt.style.top=Math.max(0,ly)+'px'; });
+      el.addEventListener('mouseleave', () => tt.style.display = 'none');
+    });
+    const delta = document.getElementById('chart-delta');
+    if (delta) {
+      const chg = data[data.length-1].v - data[0].v, pct = chg/data[0].v*100;
+      const col = chg > 0 ? 'var(--status-risk-fg)' : 'var(--status-ok-fg)';
+      delta.innerHTML = `<span style="color:${col};font-weight:600;font-feature-settings:'tnum' 1">${chg>=0?'+':''}$${chg.toFixed(2)} (${pct>=0?'+':''}${pct.toFixed(1)}%)</span> over ${_cPeriod}M`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderScheduleGrid();
+    renderCostChart();
+    updateAllocTotal();
+    renderRecipeTags();
+    // Update KPI
+    const totalCost = ING_COST + LABOUR_COST;
+    const perUnit = totalCost / BATCH_SIZE;
+    const batchEl = document.getElementById('kpi-batch-cost');
+    const unitEl  = document.getElementById('kpi-unit-cost');
+    const asideEl = document.getElementById('kpi-unit-aside');
+    if (batchEl) batchEl.textContent = '$' + totalCost.toFixed(2);
+    if (unitEl)  unitEl.textContent  = '$' + perUnit.toFixed(2);
+    if (asideEl) asideEl.textContent = '$' + perUnit.toFixed(2) + '/loaf';
+  });
+</script>
+</body>
+</html>

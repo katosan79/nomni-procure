@@ -1,0 +1,57 @@
+---
+title: Recipes
+description: Manage your menu recipes, track food cost, and push to outlets.
+---
+
+Nomni's recipe module is the connection between your kitchen and your financials. Every recipe has a live cost calculated from current supplier prices — when prices change, food cost % updates automatically.
+
+## Recipe types
+
+| Type | Badge | Use |
+|---|---|---|
+| **Finished** | Blue | POS-linked menu items sold to customers. Has a selling price. |
+| **Preparation** | Purple | Sub-recipes used as ingredients in finished recipes (e.g. Hollandaise Sauce, Caesar Dressing). No selling price. |
+| **Production batch** | Teal | Bulk-produced items that trigger inventory depletion when recorded (e.g. Chicken Stock, Brioche Buns). |
+
+## Food cost %
+
+Food cost % is calculated as: `ingredient cost ÷ selling price`. The target range is:
+
+- **Under 25%** — healthy margin (green)
+- **25–32%** — watch closely (amber)
+- **Over 32%** — review pricing or recipe (red)
+
+The Margin Agent (Sloan) will alert you when a price change pushes a recipe outside your target range.
+
+## Working with finished recipes
+
+A finished recipe has four key numbers:
+
+- **Ingredient cost** — sum of all ingredient quantities × current unit cost
+- **Labour cost** — entered manually per recipe
+- **Prime cost** — ingredient + labour
+- **Gross margin** — `(selling price − prime cost) ÷ selling price`
+
+When a supplier invoice arrives with a new price, all recipes using that item recalculate immediately.
+
+## Sub-recipes (preparations)
+
+Preparation recipes work as ingredients inside finished recipes. When a finished recipe uses "Hollandaise Sauce (60g)", Nomni traces the cost all the way back to the individual ingredients in the Hollandaise recipe. You get full cost transparency with no manual aggregation.
+
+## Pushing recipes to outlets
+
+HQ Administrators can push a recipe to one or more outlet groups. Once pushed:
+
+- The recipe appears as **locked** at the outlet — staff can view it but not edit it
+- The outlet's food cost % reflects HQ pricing and recipe spec
+- If HQ updates the recipe, the push happens automatically with no disruption to outlet access
+
+## Recording a production batch
+
+Production batch recipes are triggered from the **Inventory** module, not the recipe page. When you record a production run (e.g. "made 48 Brioche Buns today"), inventory is reduced for the input ingredients and increased for the output item.
+
+[Go to inventory guide →](/guides/inventory)
+
+## Importing recipes
+
+Use **Import recipes** to bulk-upload from a spreadsheet template. This is the fastest way to get an existing recipe library into Nomni at onboarding.

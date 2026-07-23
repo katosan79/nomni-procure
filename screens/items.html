@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Items — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; gap:var(--space-3xl); padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    /* Page header */
+    .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; }
+    .page-header-left { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .page-eyebrow { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); }
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-subtitle { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+    .page-actions { display:flex; align-items:center; gap:var(--space-sm); }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; transition:background 0.12s,color 0.12s,border-color 0.12s; text-decoration:none; white-space:nowrap; border:1.5px solid transparent; font-family:inherit; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--spinach); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--spinach); border-color:var(--spinach); }
+    .btn i { font-size:15px; }
+
+    /* View toggle */
+    .view-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:var(--space-md); }
+    .view-toggle { display:flex; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:3px; gap:2px; }
+    .view-btn { display:inline-flex; align-items:center; gap:var(--space-xs); padding:6px var(--space-md); border-radius:var(--radius-sm); font-size:13px; font-weight:600; color:var(--text-soft); background:none; border:none; cursor:pointer; font-family:inherit; transition:background 0.12s,color 0.12s; white-space:nowrap; }
+    .view-btn i { font-size:15px; }
+    .view-btn.active { background:var(--surface-raised, white); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .view-btn:not(.active):hover { background:var(--surface-soft); color:var(--text); }
+
+    /* Catalog summary strip */
+    .summary-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); }
+    .summary-tile { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg) var(--space-xl); }
+    .summary-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:var(--space-xs); }
+    .summary-value { font-size:28px; font-weight:700; letter-spacing:-0.02em; color:var(--text); font-feature-settings:'tnum' 1; }
+    .summary-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
+    .summary-sub.warn { color:var(--status-warn-fg); font-weight:600; }
+    @media (max-width:900px) { .summary-strip { grid-template-columns:repeat(2,1fr); } }
+
+    /* Category grid */
+    .cat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); }
+    @media (max-width:900px) { .cat-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:600px) { .cat-grid { grid-template-columns:1fr; } }
+
+    .cat-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+      padding:var(--space-xl); cursor:pointer;
+      transition:border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+      display:flex; flex-direction:column; gap:var(--space-lg);
+    }
+    .cat-card:hover { border-color:var(--fern); box-shadow:0 4px 12px rgba(0,0,0,0.07); transform:translateY(-1px); }
+
+    .cat-card-head { display:flex; align-items:center; gap:var(--space-md); }
+    .cat-icon {
+      width:40px; height:40px; border-radius:var(--radius-md);
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; flex-shrink:0;
+    }
+    .cat-icon.produce   { background:#E6FAF7; color:#17B3A3; }
+    .cat-icon.protein   { background:#FDE8F1; color:#EE4B87; }
+    .cat-icon.dairy     { background:#E8F1FE; color:#3F8AFB; }
+    .cat-icon.drygoods  { background:#FEF6E0; color:#D97706; }
+    .cat-icon.beverages { background:#F3E8FD; color:#B05EC0; }
+    .cat-icon.cleaning  { background:var(--surface-soft); color:var(--text-soft); }
+
+    .cat-name { font-size:16px; font-weight:700; color:var(--text); }
+    .cat-count { font-size:13px; color:var(--text-soft); margin-top:1px; }
+
+    .cat-stats { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .cat-stat-row { display:flex; align-items:center; justify-content:space-between; }
+    .cat-stat-label { font-size:12px; color:var(--text-soft); }
+    .cat-stat-val { font-size:12px; font-weight:700; font-feature-settings:'tnum' 1; }
+    .cat-stat-val.ok { color:var(--status-ok-fg); }
+    .cat-stat-val.warn { color:var(--status-warn-fg); }
+    .cat-stat-val.neutral { color:var(--text-soft); }
+
+    .cat-coverage-track { height:4px; background:var(--border); border-radius:var(--radius-pill); overflow:hidden; margin-top:var(--space-xs); }
+    .cat-coverage-fill { height:100%; border-radius:var(--radius-pill); background:var(--fern); transition:width 0.4s; }
+    .cat-coverage-fill.low { background:var(--status-warn-fg); }
+
+    .cat-attention {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:11px; font-weight:700;
+      padding:2px var(--space-sm); border-radius:var(--radius-pill);
+      align-self:flex-start;
+    }
+    .cat-attention.has { background:var(--status-warn-bg); color:var(--status-warn-fg); }
+    .cat-attention.none { background:var(--mint); color:var(--status-ok-fg); }
+
+    /* Breadcrumb (list view) */
+    .list-breadcrumb {
+      display:flex; align-items:center; gap:var(--space-sm);
+      font-size:13px; color:var(--text-soft);
+    }
+    .breadcrumb-back {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:13px; font-weight:600; color:var(--text-accent);
+      background:none; border:none; cursor:pointer; padding:0; font-family:inherit;
+    }
+    .breadcrumb-back:hover { color:var(--spinach); text-decoration:underline; }
+    .breadcrumb-sep { color:var(--text-soft); }
+    .breadcrumb-current { font-weight:600; color:var(--text); }
+
+    /* Filter bar */
+    .filter-bar { display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; }
+    .search-wrap { position:relative; flex:1; min-width:200px; }
+    .search-wrap i { position:absolute; left:var(--space-md); top:50%; transform:translateY(-50%); color:var(--text-soft); font-size:15px; pointer-events:none; }
+    .search-input { width:100%; height:var(--control-h); padding-inline:var(--space-3xl) var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); outline:none; }
+    .search-input:focus { border-color:var(--border-focus); }
+    .filter-select { height:var(--control-h); padding-inline:var(--space-md) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-md); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); cursor:pointer; outline:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right var(--space-sm) center; }
+    .filter-select:focus { border-color:var(--border-focus); }
+    .result-count { font-size:13px; color:var(--text-soft); white-space:nowrap; margin-left:auto; }
+
+    /* Table */
+    .table-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow-x:auto; }
+    .data-table { width:100%; min-width:700px; border-collapse:collapse; font-size:14px; }
+    .data-table thead tr { border-bottom:1px solid var(--border); }
+    .data-table th { padding:var(--space-md) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); white-space:nowrap; }
+    .data-table td { padding:var(--space-md) var(--space-lg); color:var(--text); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table tbody tr { cursor: pointer; }
+    .data-table tbody tr:hover td { background:var(--surface-soft); }
+    .data-table .tabular { font-feature-settings:'tnum' 1; }
+    .cell-name { font-weight:600; }
+    .cell-cat { font-size:12px; font-weight:500; color:var(--text-soft); }
+    .cell-timestamp { font-size:12px; color:var(--text-soft); font-feature-settings:'tnum' 1; }
+    .row-actions { display:flex; align-items:center; gap:var(--space-sm); white-space:nowrap; }
+    .link-action { font-size:13px; font-weight:600; color:var(--text-accent); background:none; border:none; cursor:pointer; padding:0; font-family:inherit; }
+    .link-action:hover { color:var(--spinach); text-decoration:underline; }
+    .overflow-btn { width:28px; height:28px; border-radius:var(--radius-sm); background:none; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-soft); position:relative; font-size:14px; }
+    .overflow-btn:hover { background:var(--surface-soft); color:var(--text); }
+    .overflow-menu { position:absolute; right:0; top:100%; margin-top:var(--space-xs); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-md); min-width:160px; z-index:50; padding:var(--space-xs) 0; display:none; }
+    .overflow-menu.open { display:block; }
+    .overflow-menu-item { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) var(--space-lg); font-size:13px; font-weight:500; color:var(--text); cursor:pointer; background:none; border:none; width:100%; text-align:left; font-family:inherit; }
+    .overflow-menu-item:hover { background:var(--surface-soft); }
+    .overflow-menu-item.destructive { color:var(--status-risk-fg); }
+    .overflow-menu-item.destructive:hover { background:var(--status-risk-bg); }
+    .overflow-menu-divider { height:1px; background:var(--border); margin:var(--space-xs) 0; }
+    .overflow-wrap { position:relative; display:inline-flex; }
+    .overflow-cell { position:relative; width:1%; white-space:nowrap; }
+
+    /* Supplier chips */
+    .supplier-chip { display:inline-flex; align-items:center; gap:3px; padding:2px var(--space-sm); border-radius:var(--radius-pill); font-size:11px; font-weight:600; white-space:nowrap; }
+    .supplier-chip.preferred { background:var(--mint); color:var(--text-accent); border:1px solid color-mix(in srgb, var(--fern) 25%, transparent); }
+    .supplier-chip.more { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); }
+    .no-supplier { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:var(--status-warn-fg); background:var(--status-warn-bg); padding:2px var(--space-sm); border-radius:var(--radius-pill); }
+
+    /* Group tags */
+    .group-tags { display:flex; flex-wrap:wrap; gap:var(--space-xs); }
+    .group-tag { display:inline-flex; align-items:center; gap:var(--space-xs); padding:2px var(--space-sm); border-radius:var(--radius-pill); background:var(--surface-soft); border:1px solid var(--border); font-size:11px; font-weight:600; color:var(--text-soft); white-space:nowrap; }
+
+    /* ── Item detail drawer ── */
+    .item-drawer-backdrop { position:fixed; inset:0; background:rgba(14,55,39,0.25); z-index:60; opacity:0; pointer-events:none; transition:opacity 0.22s; }
+    .item-drawer-backdrop.open { opacity:1; pointer-events:all; }
+    .item-drawer { position:fixed; top:0; right:0; bottom:0; width:520px; max-width:95vw; background:var(--surface); border-left:1px solid var(--border); box-shadow:var(--shadow-lg); z-index:61; display:flex; flex-direction:column; transform:translateX(100%); transition:transform 0.22s ease; overflow:hidden; }
+    .item-drawer.open { transform:translateX(0); }
+    .drawer-head { display:flex; align-items:flex-start; justify-content:space-between; padding:var(--space-xl) var(--space-2xl); border-bottom:1px solid var(--border); flex-shrink:0; gap:var(--space-md); }
+    .drawer-head-left { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .drawer-internal-id { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); font-feature-settings:'tnum' 1; }
+    .drawer-item-name { font-size:22px; font-weight:700; color:var(--text); letter-spacing:-0.02em; line-height:1.2; }
+    .drawer-item-meta { font-size:13px; color:var(--text-soft); }
+    .drawer-close { width:32px; height:32px; flex-shrink:0; border-radius:var(--radius-sm); background:none; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-soft); font-size:16px; }
+    .drawer-close:hover { background:var(--surface-soft); color:var(--text); }
+    .drawer-body { flex:1; overflow-y:auto; padding:var(--space-xl) var(--space-2xl); display:flex; flex-direction:column; gap:var(--space-2xl); }
+    .drawer-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin-bottom:var(--space-md); }
+    .drawer-fields { display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-sm) var(--space-md); }
+    .drawer-field label { display:block; font-size:11px; font-weight:600; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:var(--space-xs); }
+    .drawer-field .field-val { font-size:14px; font-weight:500; color:var(--text); }
+    .drawer-field-full { grid-column:1 / -1; }
+    .drawer-desc { font-size:13px; color:var(--text-soft); line-height:1.5; }
+    .sku-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .sku-table th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); padding:var(--space-sm); text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
+    .sku-table td { padding:var(--space-md) var(--space-sm); border-bottom:1px solid var(--border); vertical-align:middle; color:var(--text); }
+    .sku-table tbody tr:last-child td { border-bottom:none; }
+    .sku-table tbody tr:hover td { background:var(--surface-soft); }
+    .sku-preferred-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700; color:var(--text-accent); background:var(--mint); border:1px solid color-mix(in srgb, var(--fern) 25%, transparent); border-radius:var(--radius-pill); padding:1px var(--space-sm); }
+    .sku-set-preferred { font-size:12px; font-weight:600; color:var(--text-soft); background:none; border:1.5px solid var(--border); border-radius:var(--radius-pill); padding:2px var(--space-sm); cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .sku-set-preferred:hover { border-color:var(--fern); color:var(--text-accent); }
+    .sku-remove { background:none; border:none; cursor:pointer; color:var(--text-soft); padding:2px; font-size:15px; border-radius:var(--radius-sm); }
+    .sku-remove:hover { color:var(--status-risk-fg); background:var(--status-risk-bg); }
+    .sku-code { font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-soft); }
+    .sku-price { font-feature-settings:'tnum' 1; font-weight:600; }
+    .conv-factor { font-weight:700; font-feature-settings:'tnum' 1; color:var(--text); }
+    .conv-base { font-size:11px; color:var(--text-soft); }
+    .sku-add-btn { display:inline-flex; align-items:center; gap:var(--space-xs); margin-top:var(--space-md); font-size:13px; font-weight:600; color:var(--text-accent); background:none; border:none; cursor:pointer; padding:0; font-family:inherit; }
+    .sku-add-btn:hover { color:var(--spinach); text-decoration:underline; }
+    .par-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm); }
+    .par-item { display:flex; justify-content:space-between; align-items:center; padding:var(--space-sm) var(--space-md); background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-sm); }
+    .par-group { font-size:13px; color:var(--text); font-weight:500; }
+    .par-value { font-size:13px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; }
+    .recipe-summary-btn { display:flex; align-items:center; justify-content:space-between; width:100%; background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md) var(--space-lg); cursor:pointer; font-family:inherit; transition:border-color 0.12s,background 0.12s; }
+    .recipe-summary-btn:hover { border-color:var(--fern); background:var(--mint); }
+    .recipe-summary-left { display:flex; align-items:center; gap:var(--space-sm); font-size:14px; font-weight:600; color:var(--text); }
+    .recipe-summary-left i { font-size:16px; color:var(--text-accent); }
+    .recipe-count-badge { font-size:12px; font-weight:700; background:var(--surface); border:1px solid var(--border); color:var(--text-soft); padding:1px var(--space-sm); border-radius:var(--radius-pill); font-feature-settings:'tnum' 1; }
+    .recipe-chevron { font-size:14px; color:var(--text-soft); transition:transform 0.18s; }
+    .recipe-chevron.open { transform:rotate(180deg); }
+    .recipe-list { display:none; flex-direction:column; gap:var(--space-xs); margin-top:var(--space-sm); }
+    .recipe-list.open { display:flex; }
+    .recipe-row { display:flex; align-items:center; justify-content:space-between; padding:var(--space-sm) var(--space-md); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); }
+    .recipe-name { font-size:13px; font-weight:600; color:var(--text); }
+    .recipe-qty { font-size:12px; color:var(--text-soft); font-feature-settings:'tnum' 1; }
+    .recipe-link { font-size:12px; font-weight:600; color:var(--text-accent); background:none; border:none; cursor:pointer; padding:0; font-family:inherit; }
+    .recipe-link:hover { color:var(--spinach); text-decoration:underline; }
+    .ml-list { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .ml-item { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-sm) var(--space-md); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); text-decoration:none; transition:border-color .12s,background .12s; }
+    .ml-item:hover { border-color:var(--fern); background:var(--mint); }
+    .ml-item-name { font-size:13px; font-weight:600; color:var(--text); flex:1; }
+    .ml-item-sup { font-size:11px; color:var(--text-soft); }
+    .ml-item-price { font-size:13px; font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; margin-left:auto; }
+    .ml-empty { font-size:13px; color:var(--text-soft); padding:var(--space-sm) 0; }
+    .drawer-footer { padding:var(--space-lg) var(--space-2xl); border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:var(--space-sm); flex-shrink:0; }
+
+    /* Dialog */
+    dialog { border:none; border-radius:var(--radius-lg); padding:0; box-shadow:var(--shadow-lg); max-width:440px; width:90%; }
+    dialog::backdrop { background:rgba(14,55,39,0.35); }
+    .dialog-inner { padding:var(--space-2xl); display:flex; flex-direction:column; gap:var(--space-xl); }
+    .dialog-title { font-size:20px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
+    .dialog-body { font-size:14px; color:var(--text-soft); line-height:1.6; }
+    .dialog-body strong { color:var(--text); }
+    .dialog-footer { display:flex; justify-content:flex-end; gap:var(--space-sm); }
+    .btn-danger { background:var(--status-risk-fg); color:#fff; border-color:var(--status-risk-fg); }
+    .btn-danger:hover { opacity:0.9; }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12" data-active="items"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <!-- Page header -->
+      <header class="page-header">
+        <div class="page-header-left">
+          <span class="page-eyebrow">Product Catalog</span>
+          <h1 class="page-title">Items</h1>
+          <p class="page-subtitle">Your buyer-defined catalog — the source of truth for Ordering, Recipes, Inventory, and POS.</p>
+        </div>
+        <div class="page-actions role-editor-only">
+          <button class="btn btn-outline" onclick="itemsToast('Download template — standard .xlsx format')"><i class="ti ti-download"></i>Download template</button>
+          <button class="btn btn-outline" onclick="itemsToast('Import items — drag and drop your .xlsx file')"><i class="ti ti-file-import"></i>Import items</button>
+          <a href="#" class="btn btn-outline" onclick="itemsToast('Preparing XLSX export…'); return false;"><i class="ti ti-table-export"></i>Export XLSX</a>
+          <a class="btn btn-primary" href="new-item.html"><i class="ti ti-plus"></i>New item</a>
+        </div>
+      </header>
+
+      <!-- Summary strip -->
+      <div class="summary-strip">
+        <div class="summary-tile">
+          <div class="summary-label">Total items</div>
+          <div class="summary-value">188</div>
+          <div class="summary-sub">across 6 categories</div>
+        </div>
+        <div class="summary-tile">
+          <div class="summary-label">Supplier linked</div>
+          <div class="summary-value">161</div>
+          <div class="summary-sub">86% of catalog</div>
+        </div>
+        <div class="summary-tile">
+          <div class="summary-label">Need attention</div>
+          <div class="summary-value" style="color:var(--status-warn-fg)">27</div>
+          <div class="summary-sub warn">no preferred supplier</div>
+        </div>
+        <div class="summary-tile">
+          <div class="summary-label">Added this month</div>
+          <div class="summary-value">14</div>
+          <div class="summary-sub">via import &amp; manual</div>
+        </div>
+      </div>
+
+      <!-- View bar -->
+      <div class="view-bar">
+        <div id="view-breadcrumb" style="display:none;">
+          <div class="list-breadcrumb">
+            <button class="breadcrumb-back" onclick="backToGrid()"><i class="ti ti-arrow-left" style="font-size:12px"></i> All categories</button>
+            <span class="breadcrumb-sep">›</span>
+            <span class="breadcrumb-current" id="breadcrumb-cat">Produce</span>
+          </div>
+        </div>
+        <div id="view-heading" style="font-size:14px;font-weight:600;color:var(--text-soft);">
+          6 categories
+        </div>
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button class="view-btn active" id="btn-grid" onclick="setView('grid')"><i class="ti ti-grid-dots"></i>Categories</button>
+          <button class="view-btn" id="btn-list" onclick="setView('list', null)"><i class="ti ti-list"></i>All items</button>
+        </div>
+      </div>
+
+      <!-- ══ Category grid view ══ -->
+      <div id="view-grid">
+        <div class="cat-grid">
+
+          <div class="cat-card" onclick="setView('list','Produce')">
+            <div class="cat-card-head">
+              <div class="cat-icon produce"><i class="ti ti-leaf"></i></div>
+              <div>
+                <div class="cat-name">Produce</div>
+                <div class="cat-count">47 items</div>
+              </div>
+            </div>
+            <div class="cat-stats">
+              <div class="cat-stat-row"><span class="cat-stat-label">Suppliers linked</span><span class="cat-stat-val ok">89%</span></div>
+              <div class="cat-coverage-track"><div class="cat-coverage-fill" style="width:89%"></div></div>
+            </div>
+            <span class="cat-attention has"><i class="ti ti-alert-triangle" style="font-size:10px"></i>5 need attention</span>
+          </div>
+
+          <div class="cat-card" onclick="setView('list','Protein')">
+            <div class="cat-card-head">
+              <div class="cat-icon protein"><i class="ti ti-meat"></i></div>
+              <div>
+                <div class="cat-name">Protein</div>
+                <div class="cat-count">31 items</div>
+              </div>
+            </div>
+            <div class="cat-stats">
+              <div class="cat-stat-row"><span class="cat-stat-label">Suppliers linked</span><span class="cat-stat-val ok">97%</span></div>
+              <div class="cat-coverage-track"><div class="cat-coverage-fill" style="width:97%"></div></div>
+            </div>
+            <span class="cat-attention has"><i class="ti ti-alert-triangle" style="font-size:10px"></i>1 needs attention</span>
+          </div>
+
+          <div class="cat-card" onclick="setView('list','Dairy')">
+            <div class="cat-card-head">
+              <div class="cat-icon dairy"><i class="ti ti-droplet"></i></div>
+              <div>
+                <div class="cat-name">Dairy</div>
+                <div class="cat-count">18 items</div>
+              </div>
+            </div>
+            <div class="cat-stats">
+              <div class="cat-stat-row"><span class="cat-stat-label">Suppliers linked</span><span class="cat-stat-val ok">100%</span></div>
+              <div class="cat-coverage-track"><div class="cat-coverage-fill" style="width:100%"></div></div>
+            </div>
+            <span class="cat-attention none"><i class="ti ti-circle-check" style="font-size:10px"></i>All linked</span>
+          </div>
+
+          <div class="cat-card" onclick="setView('list','Dry goods')">
+            <div class="cat-card-head">
+              <div class="cat-icon drygoods"><i class="ti ti-wheat"></i></div>
+              <div>
+                <div class="cat-name">Dry goods &amp; Bakery</div>
+                <div class="cat-count">58 items</div>
+              </div>
+            </div>
+            <div class="cat-stats">
+              <div class="cat-stat-row"><span class="cat-stat-label">Suppliers linked</span><span class="cat-stat-val warn">76%</span></div>
+              <div class="cat-coverage-track"><div class="cat-coverage-fill low" style="width:76%"></div></div>
+            </div>
+            <span class="cat-attention has"><i class="ti ti-alert-triangle" style="font-size:10px"></i>14 need attention</span>
+          </div>
+
+          <div class="cat-card" onclick="setView('list','Beverages')">
+            <div class="cat-card-head">
+              <div class="cat-icon beverages"><i class="ti ti-bottle"></i></div>
+              <div>
+                <div class="cat-name">Beverages</div>
+                <div class="cat-count">22 items</div>
+              </div>
+            </div>
+            <div class="cat-stats">
+              <div class="cat-stat-row"><span class="cat-stat-label">Suppliers linked</span><span class="cat-stat-val ok">91%</span></div>
+              <div class="cat-coverage-track"><div class="cat-coverage-fill" style="width:91%"></div></div>
+            </div>
+            <span class="cat-attention has"><i class="ti ti-alert-triangle" style="font-size:10px"></i>2 need attention</span>
+          </div>
+
+          <div class="cat-card" onclick="setView('list','Cleaning')">
+            <div class="cat-card-head">
+              <div class="cat-icon cleaning"><i class="ti ti-spray"></i></div>
+              <div>
+                <div class="cat-name">Cleaning &amp; Supplies</div>
+                <div class="cat-count">12 items</div>
+              </div>
+            </div>
+            <div class="cat-stats">
+              <div class="cat-stat-row"><span class="cat-stat-label">Suppliers linked</span><span class="cat-stat-val warn">58%</span></div>
+              <div class="cat-coverage-track"><div class="cat-coverage-fill low" style="width:58%"></div></div>
+            </div>
+            <span class="cat-attention has"><i class="ti ti-alert-triangle" style="font-size:10px"></i>5 need attention</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ List view ══ -->
+      <div id="view-list" style="display:none; flex-direction:column; gap:var(--space-lg);">
+
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input class="search-input" type="search" placeholder="Search items…" aria-label="Search items"/>
+          </div>
+          <select class="filter-select" id="cat-filter" aria-label="Filter by category" onchange="onCatFilterChange(this.value)">
+            <option value="">All categories</option>
+            <option value="Produce">Produce</option>
+            <option value="Protein">Protein</option>
+            <option value="Dairy">Dairy</option>
+            <option value="Dry goods">Dry goods &amp; Bakery</option>
+            <option value="Beverages">Beverages</option>
+            <option value="Cleaning">Cleaning &amp; Supplies</option>
+          </select>
+          <select class="filter-select" aria-label="Filter by supplier status">
+            <option value="">All items</option>
+            <option value="linked">Supplier linked</option>
+            <option value="unlinked">No supplier</option>
+          </select>
+          <span class="result-count" id="result-count">7 items</span>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table" aria-label="Items list">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>UOM</th>
+                <th>Linked suppliers</th>
+                <th style="text-align:right">Recipes</th>
+                <th>Assigned groups</th>
+                <th>Last updated</th>
+                <th><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="openItemDrawer('chicken-breast')">
+                <td class="cell-name">Chicken Breast 500g</td>
+                <td><span class="cell-cat">Protein</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Sydney Butchers</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right">4</td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
+                <td class="cell-timestamp">2h ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('chicken-breast')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Chicken Breast 500g',3,8,2)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('avocado')">
+                <td class="cell-name">Avocado</td>
+                <td><span class="cell-cat">Produce</span></td>
+                <td class="tabular">each</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+2</span></div></td>
+                <td class="tabular" style="text-align:right">2</td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">1 day ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('avocado')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('avocado')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Avocado',2,4,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('feta')">
+                <td class="cell-name">Feta Cheese</td>
+                <td><span class="cell-cat">Dairy</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Dairy Direct</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right">3</td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
+                <td class="cell-timestamp">3 days ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('feta')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('feta')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Feta Cheese',4,6,3)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('sourdough')">
+                <td class="cell-name">Sourdough Bread</td>
+                <td><span class="cell-cat">Dry goods</span></td>
+                <td class="tabular">loaf</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Bread &amp; Co</span></div></td>
+                <td class="tabular" style="text-align:right">2</td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
+                <td class="cell-timestamp">1 week ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('sourdough')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('sourdough')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Sourdough Bread',3,5,2)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('olive-oil')">
+                <td class="cell-name">Olive Oil 1L</td>
+                <td><span class="cell-cat">Dry goods</span></td>
+                <td class="tabular">bottle</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Mediterranean Foods</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right">5</td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+2</span></div></td>
+                <td class="cell-timestamp">1 week ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('olive-oil')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('olive-oil')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Olive Oil 1L',4,7,4)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('milk')">
+                <td class="cell-name">Whole Milk 2L</td>
+                <td><span class="cell-cat">Dairy</span></td>
+                <td class="tabular">carton</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Farm Fresh</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">2 weeks ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('milk')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('milk')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Whole Milk 2L',2,3,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('tomatoes')">
+                <td class="cell-name">Roma Tomatoes</td>
+                <td><span class="cell-cat">Produce</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span><span class="supplier-chip more">+1</span></div></td>
+                <td class="tabular" style="text-align:right">3</td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span><span class="group-tag">+1</span></div></td>
+                <td class="cell-timestamp">2 weeks ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('tomatoes')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('tomatoes')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Roma Tomatoes',3,4,2)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('salmon')">
+                <td class="cell-name">Salmon Fillet 200g</td>
+                <td><span class="cell-cat">Protein</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Ocean Fresh Seafood</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">3 days ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('salmon')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('salmon')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Salmon Fillet 200g',1,2,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('eggs')">
+                <td class="cell-name">Free-range Eggs</td>
+                <td><span class="cell-cat">Dairy</span></td>
+                <td class="tabular">dozen</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Farm Fresh</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">4 days ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('eggs')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('eggs')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Free-range Eggs',1,2,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('spinach')">
+                <td class="cell-name">Baby Spinach</td>
+                <td><span class="cell-cat">Produce</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span></div></td>
+                <td class="cell-timestamp">5 days ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('spinach')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('spinach')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Baby Spinach',1,1,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('parmesan')">
+                <td class="cell-name">Parmesan Cheese</td>
+                <td><span class="cell-cat">Dairy</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Artisan Dairy</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">1 week ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('parmesan')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('parmesan')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Parmesan Cheese',1,2,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('bacon')">
+                <td class="cell-name">Bacon Rashers</td>
+                <td><span class="cell-cat">Protein</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Sydney Butchers</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span></div></td>
+                <td class="cell-timestamp">1 week ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('bacon')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('bacon')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Bacon Rashers',1,1,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('basil')">
+                <td class="cell-name">Fresh Basil</td>
+                <td><span class="cell-cat">Produce</span></td>
+                <td class="tabular">bunch</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span></div></td>
+                <td class="cell-timestamp">2 weeks ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('basil')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('basil')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Fresh Basil',1,1,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('garlic')">
+                <td class="cell-name">Garlic</td>
+                <td><span class="cell-cat">Produce</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Fresh Direct</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">2 weeks ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('garlic')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('garlic')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Garlic',1,2,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('onion')">
+                <td class="cell-name">Brown Onion</td>
+                <td><span class="cell-cat">Produce</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Green Farmers</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span></div></td>
+                <td class="cell-timestamp">3 weeks ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('onion')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('onion')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Brown Onion',1,1,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('cheddar')">
+                <td class="cell-name">Cheddar Cheese</td>
+                <td><span class="cell-cat">Dairy</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Dairy Direct</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">3 weeks ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('cheddar')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('cheddar')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Cheddar Cheese',1,2,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('yogurt')">
+                <td class="cell-name">Greek Yogurt</td>
+                <td><span class="cell-cat">Dairy</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Farm Fresh</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span></div></td>
+                <td class="cell-timestamp">1 month ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('yogurt')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('yogurt')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Greek Yogurt',1,1,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('flour')">
+                <td class="cell-name">Plain Flour</td>
+                <td><span class="cell-cat">Dry goods</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Bakers Pantry</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">1 month ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('flour')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('flour')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Plain Flour',1,2,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('coffee-beans')">
+                <td class="cell-name">Coffee Beans (Espresso Blend)</td>
+                <td><span class="cell-cat">Beverages</span></td>
+                <td class="tabular">kg</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Roasters Collective</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span><span class="group-tag">VIC Metro</span></div></td>
+                <td class="cell-timestamp">1 month ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('coffee-beans')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('coffee-beans')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Coffee Beans (Espresso Blend)',1,2,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr onclick="openItemDrawer('orange-juice')">
+                <td class="cell-name">Orange Juice</td>
+                <td><span class="cell-cat">Beverages</span></td>
+                <td class="tabular">L</td>
+                
+                <td><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="supplier-chip preferred"><i class="ti ti-star-filled" style="font-size:9px"></i>Farm Fresh</span></div></td>
+                <td class="tabular" style="text-align:right"><span style="color:var(--text-soft)">—</span></td>
+                <td><div class="group-tags"><span class="group-tag">NSW Metro</span></div></td>
+                <td class="cell-timestamp">1 month ago</td>
+                <td class="overflow-cell" onclick="event.stopPropagation()"><div class="row-actions">
+                  
+                  <div class="overflow-wrap"><button class="overflow-btn" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu"><button class="overflow-menu-item" onclick="openItemDrawer('orange-juice')"><i class="ti ti-edit"></i>Edit item</button><button class="overflow-menu-item" onclick="openItemDrawer('orange-juice')"><i class="ti ti-link"></i>Manage suppliers</button><div class="overflow-menu-divider"></div><button class="overflow-menu-item destructive" onclick="openRemoveDialog('Orange Juice',1,1,1)"><i class="ti ti-trash"></i>Remove item</button></div>
+                  </div>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /view-list -->
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <!-- Item detail drawer -->
+  <div class="item-drawer-backdrop" id="drawer-backdrop" onclick="closeItemDrawer()"></div>
+  <aside class="item-drawer" id="item-drawer" role="dialog" aria-modal="true" aria-label="Item details">
+    <div class="drawer-head">
+      <div class="drawer-head-left">
+        <span class="drawer-internal-id" id="drawer-id">INT-0000</span>
+        <span class="drawer-item-name" id="drawer-name">Item name</span>
+        <span class="drawer-item-meta" id="drawer-meta">Category · UoM</span>
+      </div>
+      <button class="drawer-close" onclick="closeItemDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="drawer-body">
+      <div>
+        <div class="drawer-section-label">Basic details</div>
+        <div class="drawer-fields">
+          <div class="drawer-field"><label>Buyer name</label><div class="field-val" id="drawer-d-name">—</div></div>
+          <div class="drawer-field"><label>Category</label><div class="field-val" id="drawer-d-cat">—</div></div>
+          <div class="drawer-field"><label>Unit of measure</label><div class="field-val" id="drawer-d-uom">—</div></div>
+          <div class="drawer-field drawer-field-full"><label>Description</label><div class="field-val drawer-desc" id="drawer-d-desc">—</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section-label">Linked suppliers</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+          <table class="sku-table">
+            <thead><tr><th>Supplier</th><th>Their SKU</th><th>Order in</th><th>Conv. factor</th><th>Last cost</th><th>Status</th><th></th></tr></thead>
+            <tbody id="sku-tbody"></tbody>
+          </table>
+        </div>
+        <button class="sku-add-btn" onclick="addSkuRow()"><i class="ti ti-plus"></i>Link supplier SKU</button>
+      </div>
+      <div>
+        <div class="drawer-section-label">Par levels by group</div>
+        <div class="par-grid" id="drawer-pars"></div>
+      </div>
+      <div id="drawer-recipes-section">
+        <div class="drawer-section-label">Used in recipes</div>
+        <button class="recipe-summary-btn" onclick="toggleRecipes()" id="recipe-toggle-btn">
+          <span class="recipe-summary-left">
+            <i class="ti ti-tools-kitchen-2"></i>
+            <span id="recipe-summary-text">0 recipes</span>
+          </span>
+          <span class="recipe-chevron" id="recipe-chevron"><i class="ti ti-chevron-down"></i></span>
+        </button>
+        <div class="recipe-list" id="recipe-list"></div>
+      </div>
+      <div id="drawer-marketlists-section">
+        <div class="drawer-section-label">In market lists</div>
+        <div id="drawer-marketlists-body"></div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-outline" onclick="closeItemDrawer()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItemDrawer()"><i class="ti ti-check"></i>Save changes</button>
+    </div>
+  </aside>
+
+  <!-- Remove confirm dialog -->
+  <dialog id="remove-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-inner">
+      <h2 class="dialog-title" id="dialog-title">Remove item?</h2>
+      <p class="dialog-body" id="dialog-desc">This will remove the item from outlet inventories and affect recipes and POS mappings.</p>
+      <div class="dialog-footer">
+        <button class="btn btn-outline" onclick="document.getElementById('remove-dialog').close()">Cancel</button>
+        <button class="btn btn-danger" id="confirm-remove-btn"><i class="ti ti-trash"></i>Remove item</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Items'));
+
+    /* View switching */
+    function setView(mode, cat) {
+      const grid = document.getElementById('view-grid');
+      const list = document.getElementById('view-list');
+      const breadcrumb = document.getElementById('view-breadcrumb');
+      const heading = document.getElementById('view-heading');
+      const btnGrid = document.getElementById('btn-grid');
+      const btnList = document.getElementById('btn-list');
+
+      if (mode === 'grid') {
+        grid.style.display = '';
+        list.style.display = 'none';
+        breadcrumb.style.display = 'none';
+        heading.style.display = '';
+        heading.textContent = '6 categories';
+        btnGrid.classList.add('active');
+        btnList.classList.remove('active');
+      } else {
+        grid.style.display = 'none';
+        list.style.display = 'flex';
+        btnGrid.classList.remove('active');
+        btnList.classList.add('active');
+        if (cat) {
+          breadcrumb.style.display = '';
+          heading.style.display = 'none';
+          document.getElementById('breadcrumb-cat').textContent = cat;
+          const sel = document.getElementById('cat-filter');
+          const opt = Array.from(sel.options).find(o => o.value === cat);
+          if (opt) sel.value = cat; else sel.value = '';
+        } else {
+          breadcrumb.style.display = 'none';
+          heading.style.display = '';
+          heading.textContent = '7 items';
+          document.getElementById('cat-filter').value = '';
+        }
+      }
+    }
+
+    function backToGrid() { setView('grid'); }
+
+    function onCatFilterChange(val) {
+      const heading = document.getElementById('view-heading');
+      const breadcrumb = document.getElementById('view-breadcrumb');
+      if (val) {
+        breadcrumb.style.display = '';
+        heading.style.display = 'none';
+        document.getElementById('breadcrumb-cat').textContent = document.getElementById('cat-filter').options[document.getElementById('cat-filter').selectedIndex].text;
+      } else {
+        breadcrumb.style.display = 'none';
+        heading.style.display = '';
+        heading.textContent = '7 items';
+      }
+    }
+
+    /* Overflow menus */
+    function toggleMenu(btn) {
+      const menu = btn.nextElementSibling;
+      document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.overflow-btn')) document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    });
+
+    // Clickable rows — derive item key from existing onclick or link-action
+    document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+      const btn = tr.querySelector('[onclick*="openItemDrawer"]');
+      if (!btn) return;
+      const m = btn.getAttribute('onclick').match(/openItemDrawer\('([^']+)'\)/);
+      if (!m) return;
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', e => {
+        if (e.target.closest('.overflow-wrap, .overflow-btn')) return;
+        openItemDrawer(m[1]);
+      });
+    });
+
+    /* Remove dialog */
+    let removeName = '';
+    function openRemoveDialog(name, outlets, recipes, pos) {
+      removeName = name;
+      document.getElementById('dialog-title').textContent = 'Remove ' + name + '?';
+      document.getElementById('dialog-desc').innerHTML = 'This will remove the item from <strong>' + outlets + ' outlet inventories</strong> and affect <strong>' + recipes + ' recipes</strong> and <strong>' + pos + ' POS mappings</strong>. This action cannot be undone.';
+      document.getElementById('remove-dialog').showModal();
+      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    }
+    document.getElementById('confirm-remove-btn').addEventListener('click', () => {
+      document.getElementById('remove-dialog').close();
+      itemsToast(removeName + ' removed');
+    });
+    document.getElementById('remove-dialog').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+
+    /* Toast */
+    function itemsToast(msg) {
+      let wrap = document.getElementById('items-toast');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'items-toast';
+        wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
+        document.body.appendChild(wrap);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;white-space:nowrap;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;flex-shrink:0;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    /* ── Item drawer ── */
+    const ITEM_DATA = {
+      'chicken-breast': { id:'INT-0001', name:'Chicken Breast 500g', category:'Protein', uom:'kg', description:'Fresh chicken breast, 500g portions. Used across main dishes and salads.', skus:[{id:'s1',supplier:'Sydney Butchers Co.',sku:'SB-CHK-500',purchaseUom:'5kg box',convFactor:5,price:'$42.00/box',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0441',purchaseUom:'1kg pack',convFactor:1,price:'$9.10/pack',preferred:false}], pars:[{group:'NSW Metro',value:'10 kg'},{group:'VIC Metro',value:'8 kg'},{group:'QLD Metro',value:'6 kg'}], recipes:[{name:'Grilled Chicken Salad',qty:'180g per serve'},{name:'Chicken Parmigiana',qty:'200g per serve'},{name:'Caesar Salad',qty:'120g per serve'},{name:'Chicken Burger',qty:'150g per serve'}], marketLists:[{name:'Spring Menu AU',supplier:'Sydney Butchers Co.',outletPrice:'$47.50/ctn',href:'market-list-detail.html'},{name:'Winter Specials',supplier:'Melbourne Fresh',outletPrice:'$44.00/ctn',href:'market-list-detail.html'}] },
+      'avocado':        { id:'INT-0002', name:'Avocado', category:'Produce', uom:'each', description:'Ripe Hass avocados. Multiple sourcing options available for price benchmarking.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-AVOC',purchaseUom:'tray (12)',convFactor:12,price:'$13.20/tray',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-0092',purchaseUom:'each',convFactor:1,price:'$1.35/each',preferred:false},{id:'s3',supplier:'Premium Produce',sku:'PP-AVO-01',purchaseUom:'each',convFactor:1,price:'$1.55/each',preferred:false}], pars:[{group:'NSW Metro',value:'50 each'},{group:'VIC Metro',value:'40 each'}], recipes:[{name:'Avocado Toast',qty:'½ each per serve'},{name:'Smashed Avo Salad',qty:'¼ each per serve'}], marketLists:[] },
+      'feta':           { id:'INT-0003', name:'Feta Cheese', category:'Dairy', uom:'kg', description:'Crumbled feta for salads and pastries.', skus:[{id:'s1',supplier:'Dairy Direct',sku:'DD-FTA-1KG',purchaseUom:'1kg block',convFactor:1,price:'$18.50/block',preferred:true},{id:'s2',supplier:'Artisan Dairy',sku:'AD-FETA',purchaseUom:'500g pack',convFactor:0.5,price:'$11.00/pack',preferred:false}], pars:[{group:'NSW Metro',value:'5 kg'},{group:'VIC Metro',value:'4 kg'},{group:'QLD Metro',value:'3 kg'},{group:'SA Metro',value:'2 kg'}], recipes:[{name:'Greek Salad',qty:'40g per serve'},{name:'Spinach & Feta Pastry',qty:'60g per serve'},{name:'Beet & Feta Bowl',qty:'35g per serve'}], marketLists:[{name:'Winter Specials',supplier:'Dairy Direct',outletPrice:'$18.50/kg',href:'market-list-detail.html'}] },
+      'sourdough':      { id:'INT-0004', name:'Sourdough Bread', category:'Dry goods', uom:'loaf', description:'Artisan sourdough loaf. Bread & Co is the sole approved supplier.', skus:[{id:'s1',supplier:'Bread & Co',sku:'BC-SDGH',purchaseUom:'loaf',convFactor:1,price:'$4.20/loaf',preferred:true}], pars:[{group:'NSW Metro',value:'20 loaf'},{group:'VIC Metro',value:'16 loaf'},{group:'QLD Metro',value:'12 loaf'}], recipes:[{name:'Avocado Toast',qty:'2 slices per serve'},{name:'Bruschetta',qty:'3 slices per serve'}], marketLists:[] },
+      'olive-oil':      { id:'INT-0005', name:'Olive Oil 1L', category:'Dry goods', uom:'bottle', description:'Extra virgin olive oil, 1L. Used in cooking and dressings.', skus:[{id:'s1',supplier:'Mediterranean Foods',sku:'MF-OO-1L',purchaseUom:'case (6)',convFactor:6,price:'$72.00/case',preferred:true},{id:'s2',supplier:'Gourmet Direct',sku:'GD-OLV1L',purchaseUom:'bottle',convFactor:1,price:'$14.50/btl',preferred:false}], pars:[{group:'NSW Metro',value:'8 bottle'},{group:'VIC Metro',value:'6 bottle'},{group:'QLD Metro',value:'5 bottle'},{group:'SA Metro',value:'4 bottle'}], recipes:[{name:'Greek Salad',qty:'15ml dressing'},{name:'Grilled Chicken Salad',qty:'10ml dressing'},{name:'Bruschetta',qty:'20ml per serve'},{name:'Pasta Napolitana',qty:'30ml per serve'},{name:'Roasted Vegetables',qty:'25ml per serve'}], marketLists:[] },
+      'milk':           { id:'INT-0006', name:'Whole Milk 2L', category:'Dairy', uom:'carton', description:'Full-cream whole milk in 2L cartons.', skus:[{id:'s1',supplier:'Farm Fresh',sku:'FF-MLK-2L',purchaseUom:'case (12)',convFactor:12,price:'$35.40/case',preferred:true},{id:'s2',supplier:'Dairy Direct',sku:'DD-MLK-2L',purchaseUom:'carton',convFactor:1,price:'$2.95/ctn',preferred:false}], pars:[{group:'NSW Metro',value:'15 carton'},{group:'VIC Metro',value:'12 carton'}], recipes:[], marketLists:[] },
+      'tomatoes':       { id:'INT-0007', name:'Roma Tomatoes', category:'Produce', uom:'kg', description:'Roma tomatoes for sauces, salads and garnish.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-TOMA',purchaseUom:'10kg box',convFactor:10,price:'$28.00/box',preferred:true},{id:'s2',supplier:'Fresh Direct',sku:'FD-TOM-01',purchaseUom:'kg',convFactor:1,price:'$2.80/kg',preferred:false}], pars:[{group:'NSW Metro',value:'12 kg'},{group:'VIC Metro',value:'10 kg'},{group:'QLD Metro',value:'8 kg'}], recipes:[{name:'Pasta Napolitana',qty:'120g per serve'},{name:'Bruschetta',qty:'80g per serve'},{name:'Greek Salad',qty:'60g per serve'}], marketLists:[] },
+      'salmon':         { id:'INT-0008', name:'Salmon Fillet 200g', category:'Protein', uom:'kg', description:'Skin-on Atlantic salmon fillet portions.', skus:[{id:'s1',supplier:'Ocean Fresh Seafood',sku:'OFS-SAL-2K',purchaseUom:'2kg pack',convFactor:2,price:'$54.00/pack',preferred:true},{id:'s2',supplier:'Premium Seafood',sku:'PS-SALM',purchaseUom:'kg',convFactor:1,price:'$29.50/kg',preferred:false}], pars:[{group:'NSW Metro',value:'6 kg'},{group:'VIC Metro',value:'5 kg'}], recipes:[], marketLists:[] },
+      'eggs':           { id:'INT-0009', name:'Free-range Eggs', category:'Dairy', uom:'dozen', description:'Free-range eggs, cage-free certified.', skus:[{id:'s1',supplier:'Farm Fresh',sku:'FF-EGG-360',purchaseUom:'crate (30 dozen)',convFactor:30,price:'$180.00/crate',preferred:true},{id:'s2',supplier:'Local Farms Co-op',sku:'LF-EGG-DZ',purchaseUom:'dozen',convFactor:1,price:'$6.80/dozen',preferred:false}], pars:[{group:'NSW Metro',value:'20 dozen'},{group:'VIC Metro',value:'16 dozen'}], recipes:[], marketLists:[] },
+      'spinach':        { id:'INT-0010', name:'Baby Spinach', category:'Produce', uom:'kg', description:'Washed baby spinach leaves.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-SPIN-5K',purchaseUom:'box (5kg)',convFactor:5,price:'$32.50/box',preferred:true}], pars:[{group:'NSW Metro',value:'6 kg'},{group:'VIC Metro',value:'5 kg'}], recipes:[], marketLists:[] },
+      'parmesan':       { id:'INT-0011', name:'Parmesan Cheese', category:'Dairy', uom:'kg', description:'Aged parmesan, grated to order.', skus:[{id:'s1',supplier:'Artisan Dairy',sku:'AD-PARM-2K',purchaseUom:'wheel (2kg)',convFactor:2,price:'$68.00/wheel',preferred:true}], pars:[{group:'NSW Metro',value:'3 kg'},{group:'VIC Metro',value:'2 kg'}], recipes:[], marketLists:[] },
+      'bacon':          { id:'INT-0012', name:'Bacon Rashers', category:'Protein', uom:'kg', description:'Streaky bacon rashers, sliced.', skus:[{id:'s1',supplier:'Sydney Butchers Co.',sku:'SB-BAC-2.5K',purchaseUom:'2.5kg pack',convFactor:2.5,price:'$45.00/pack',preferred:true}], pars:[{group:'NSW Metro',value:'5 kg'},{group:'VIC Metro',value:'4 kg'}], recipes:[], marketLists:[] },
+      'basil':          { id:'INT-0013', name:'Fresh Basil', category:'Produce', uom:'bunch', description:'Fresh basil bunches for garnish and sauces.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-BASIL',purchaseUom:'bunch',convFactor:1,price:'$2.50/bunch',preferred:true}], pars:[{group:'NSW Metro',value:'10 bunch'}], recipes:[], marketLists:[] },
+      'garlic':         { id:'INT-0014', name:'Garlic', category:'Produce', uom:'kg', description:'Fresh garlic bulbs, netted.', skus:[{id:'s1',supplier:'Fresh Direct',sku:'FD-GARL-1K',purchaseUom:'1kg net',convFactor:1,price:'$7.20/kg',preferred:true}], pars:[{group:'NSW Metro',value:'4 kg'},{group:'VIC Metro',value:'3 kg'}], recipes:[], marketLists:[] },
+      'onion':          { id:'INT-0015', name:'Brown Onion', category:'Produce', uom:'kg', description:'Brown onions, bulk bagged.', skus:[{id:'s1',supplier:'Green Farmers Market',sku:'GFM-ONI-10K',purchaseUom:'10kg bag',convFactor:10,price:'$18.00/bag',preferred:true}], pars:[{group:'NSW Metro',value:'15 kg'},{group:'VIC Metro',value:'12 kg'}], recipes:[], marketLists:[] },
+      'cheddar':        { id:'INT-0016', name:'Cheddar Cheese', category:'Dairy', uom:'kg', description:'Tasty cheddar block, shredded on site.', skus:[{id:'s1',supplier:'Dairy Direct',sku:'DD-CHED-2K',purchaseUom:'block (2kg)',convFactor:2,price:'$32.00/block',preferred:true}], pars:[{group:'NSW Metro',value:'4 kg'},{group:'VIC Metro',value:'3 kg'}], recipes:[], marketLists:[] },
+      'yogurt':         { id:'INT-0017', name:'Greek Yogurt', category:'Dairy', uom:'kg', description:'Natural Greek-style yogurt.', skus:[{id:'s1',supplier:'Farm Fresh',sku:'FF-YOG-5K',purchaseUom:'tub (5kg)',convFactor:5,price:'$42.50/tub',preferred:true}], pars:[{group:'NSW Metro',value:'6 kg'}], recipes:[], marketLists:[] },
+      'flour':          { id:'INT-0018', name:'Plain Flour', category:'Dry goods', uom:'kg', description:'Bakers plain flour, bulk bag.', skus:[{id:'s1',supplier:'Bakers Pantry',sku:'BP-FLR-25K',purchaseUom:'25kg bag',convFactor:25,price:'$32.50/bag',preferred:true}], pars:[{group:'NSW Metro',value:'30 kg'},{group:'VIC Metro',value:'25 kg'}], recipes:[], marketLists:[] },
+      'coffee-beans':   { id:'INT-0019', name:'Coffee Beans (Espresso Blend)', category:'Beverages', uom:'kg', description:'Roasted espresso blend coffee beans.', skus:[{id:'s1',supplier:'Roasters Collective',sku:'RC-ESP-5K',purchaseUom:'5kg bag',convFactor:5,price:'$140.00/bag',preferred:true}], pars:[{group:'NSW Metro',value:'8 kg'},{group:'VIC Metro',value:'6 kg'}], recipes:[], marketLists:[] },
+      'orange-juice':   { id:'INT-0020', name:'Orange Juice', category:'Beverages', uom:'L', description:'Fresh-squeezed orange juice.', skus:[{id:'s1',supplier:'Farm Fresh',sku:'FF-OJ-12L',purchaseUom:'case (6×2L)',convFactor:12,price:'$54.00/case',preferred:true}], pars:[{group:'NSW Metro',value:'24 L'},{group:'VIC Metro',value:'18 L'}], recipes:[], marketLists:[] }
+    };
+
+    let activeItemKey = null;
+
+    function renderSkuTable(skus) {
+      const baseUom = activeItemKey ? ITEM_DATA[activeItemKey].uom : 'unit';
+      document.getElementById('sku-tbody').innerHTML = skus.map(s => `
+        <tr data-sku-id="${s.id}">
+          <td style="font-weight:600">${s.supplier}</td>
+          <td><span class="sku-code">${s.sku}</span></td>
+          <td>${s.purchaseUom}</td>
+          <td><span class="conv-factor">×${s.convFactor}</span> <span class="conv-base">${baseUom}</span></td>
+          <td><span class="sku-price">${s.price}</span></td>
+          <td>${s.preferred ? '<span class="sku-preferred-badge"><i class="ti ti-star-filled" style="font-size:9px"></i>Preferred</span>' : `<button class="sku-set-preferred" onclick="setPreferred('${s.id}')">Set preferred</button>`}</td>
+          <td><button class="sku-remove" onclick="removeSku('${s.id}')"><i class="ti ti-x"></i></button></td>
+        </tr>`).join('');
+    }
+
+    function openItemDrawer(key) {
+      const item = ITEM_DATA[key]; if (!item) return;
+      activeItemKey = key;
+      document.getElementById('drawer-id').textContent = item.id;
+      document.getElementById('drawer-name').textContent = item.name;
+      document.getElementById('drawer-meta').textContent = item.category + ' · ' + item.uom;
+      document.getElementById('drawer-d-name').textContent = item.name;
+      document.getElementById('drawer-d-cat').textContent = item.category;
+      document.getElementById('drawer-d-uom').textContent = item.uom;
+      document.getElementById('drawer-d-desc').textContent = item.description;
+      renderSkuTable(item.skus);
+      document.getElementById('drawer-pars').innerHTML = item.pars.map(p => `<div class="par-item"><span class="par-group">${p.group}</span><span class="par-value">${p.value}</span></div>`).join('');
+      const recipes = item.recipes || [];
+      document.getElementById('recipe-summary-text').textContent = recipes.length === 0 ? 'Not used in any recipes' : recipes.length + (recipes.length === 1 ? ' recipe' : ' recipes');
+      document.getElementById('recipe-toggle-btn').style.cursor = recipes.length ? 'pointer' : 'default';
+      document.getElementById('recipe-list').innerHTML = recipes.map(r => `<div class="recipe-row"><span class="recipe-name">${r.name}</span><span class="recipe-qty">${r.qty}</span></div>`).join('');
+      document.getElementById('recipe-list').classList.remove('open');
+      document.getElementById('recipe-chevron').classList.remove('open');
+      document.getElementById('recipe-chevron').style.display = recipes.length ? '' : 'none';
+      const mls = item.marketLists || [];
+      document.getElementById('drawer-marketlists-body').innerHTML = mls.length
+        ? `<div class="ml-list">${mls.map(ml => `<a class="ml-item" href="${ml.href}"><span class="ml-item-name">${ml.name}<br><span class="ml-item-sup">${ml.supplier}</span></span><span class="ml-item-price">${ml.outletPrice}</span><i class="ti ti-arrow-right" style="font-size:13px;color:var(--text-soft);flex-shrink:0;"></i></a>`).join('')}</div>`
+        : `<span class="ml-empty">Not in any market list yet.</span>`;
+      document.getElementById('item-drawer').classList.add('open');
+      document.getElementById('drawer-backdrop').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeItemDrawer() {
+      document.getElementById('item-drawer').classList.remove('open');
+      document.getElementById('drawer-backdrop').classList.remove('open');
+      document.body.style.overflow = '';
+      activeItemKey = null;
+    }
+
+    function toggleRecipes() {
+      const item = activeItemKey ? ITEM_DATA[activeItemKey] : null;
+      if (!item || !item.recipes || !item.recipes.length) return;
+      const list = document.getElementById('recipe-list');
+      const chevron = document.getElementById('recipe-chevron');
+      list.classList.toggle('open');
+      chevron.classList.toggle('open');
+    }
+
+    function setPreferred(skuId) {
+      if (!activeItemKey) return;
+      ITEM_DATA[activeItemKey].skus.forEach(s => s.preferred = (s.id === skuId));
+      renderSkuTable(ITEM_DATA[activeItemKey].skus);
+      itemsToast('Preferred supplier updated');
+    }
+
+    function removeSku(skuId) {
+      if (!activeItemKey) return;
+      const item = ITEM_DATA[activeItemKey];
+      if (item.skus.length <= 1) { itemsToast('At least one supplier link required'); return; }
+      const removing = item.skus.find(s => s.id === skuId);
+      item.skus = item.skus.filter(s => s.id !== skuId);
+      if (removing && removing.preferred && item.skus.length > 0) item.skus[0].preferred = true;
+      renderSkuTable(item.skus);
+      itemsToast('Supplier link removed');
+    }
+
+    function addSkuRow() {
+      if (!activeItemKey) return;
+      ITEM_DATA[activeItemKey].skus.push({ id:'new-'+Date.now(), supplier:'New supplier', sku:'SKU-000', purchaseUom:'—', convFactor:1, price:'—', preferred:false });
+      renderSkuTable(ITEM_DATA[activeItemKey].skus);
+      itemsToast('Supplier row added — edit details to complete');
+    }
+
+    function saveItemDrawer() {
+      const item = activeItemKey ? ITEM_DATA[activeItemKey] : null;
+      closeItemDrawer();
+      if (item) itemsToast(item.name + ' saved');
+    }
+  </script>
+</body>
+</html>

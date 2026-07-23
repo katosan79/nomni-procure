@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Approvals &amp; workflows — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+    .page-body { display:flex; flex-direction:column; padding-block:var(--space-2xl); }
+    .page-body .napp-canvas { display:flex; flex-direction:column; gap:var(--space-2xl); }
+
+    .back-btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:36px; padding-inline:var(--space-md); border-radius:var(--radius-md); border:1.5px solid var(--border); background:var(--surface); font-size:13px; font-weight:600; color:var(--text-soft); cursor:pointer; font-family:inherit; width:fit-content; text-decoration:none; }
+    .back-btn:hover { border-color:var(--fern); color:var(--text-accent); }
+
+    .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; }
+    .page-desc  { font-size:14px; color:var(--text-soft); margin-top:var(--space-xs); }
+
+    /* Cards */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .card-head {
+      display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg);
+      padding:var(--space-lg) var(--space-xl);
+      border-bottom:1px solid var(--border);
+    }
+    .card-head-left { display:flex; flex-direction:column; gap:3px; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:var(--space-sm); }
+    .card-title i { font-size:17px; color:var(--text-accent); }
+    .card-desc  { font-size:13px; color:var(--text-soft); }
+    .card-body  { padding:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xl); }
+    .card-body.no-pad { padding:0; }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:var(--control-h); padding-inline:var(--space-lg); border-radius:var(--radius-md); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent; font-family:inherit; }
+    .btn-outline { background:var(--surface); border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--fern); color:var(--text-accent); }
+    .btn-primary { background:var(--btn-primary-bg); color:var(--btn-primary-fg); border-color:var(--btn-primary-bg); }
+    .btn-primary:hover { background:var(--btn-primary-hover); }
+    .btn-sm { height:32px; padding-inline:var(--space-md); font-size:13px; }
+    .btn i { font-size:15px; }
+    .btn-ghost { background:none; border:none; color:var(--text-soft); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-ghost:hover { color:var(--text-accent); }
+    .btn-danger-ghost { background:none; border:none; color:var(--status-risk-fg); padding-inline:var(--space-sm); height:32px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+    .btn-danger-ghost:hover { opacity:0.75; }
+
+    /* Toggle switch */
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; gap:var(--space-xl); }
+    .toggle-info { display:flex; flex-direction:column; gap:3px; }
+    .toggle-label { font-size:14px; font-weight:600; color:var(--text); }
+    .toggle-sub   { font-size:13px; color:var(--text-soft); }
+    .toggle-wrap { position:relative; flex-shrink:0; }
+    .toggle-input { position:absolute; opacity:0; width:0; height:0; }
+    .toggle-track {
+      display:block; width:44px; height:24px; border-radius:var(--radius-pill);
+      background:var(--border); cursor:pointer;
+      transition:background var(--dur-2) var(--ease-standard);
+      position:relative;
+    }
+    .toggle-track::after {
+      content:''; position:absolute; top:3px; left:3px;
+      width:18px; height:18px; border-radius:50%;
+      background:#fff; transition:transform var(--dur-2) var(--ease-standard);
+      box-shadow:0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-input:checked + .toggle-track { background:var(--fern); }
+    .toggle-input:checked + .toggle-track::after { transform:translateX(20px); }
+
+    /* Approval rules table */
+    .rules-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .rules-table thead tr { border-bottom:1px solid var(--border); }
+    .rules-table th { padding:var(--space-sm) var(--space-lg); text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); white-space:nowrap; }
+    .rules-table td { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .rules-table tbody tr:last-child td { border-bottom:none; }
+    .rules-table tbody tr:hover td { background:rgba(42,200,100,0.03); }
+    .rule-range { font-weight:700; color:var(--text); font-feature-settings:'tnum' 1; font-size:13px; }
+    .rule-auto  { font-size:12px; font-weight:600; color:var(--status-ok-fg); background:var(--status-ok-bg); padding:2px 8px; border-radius:var(--radius-pill); display:inline-flex; align-items:center; gap:4px; }
+    .rule-approver { display:flex; align-items:center; gap:var(--space-sm); }
+    .approver-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+    .approver-name  { font-size:13px; font-weight:600; color:var(--text); }
+    .approver-role  { font-size:11px; color:var(--text-soft); }
+    .scope-badge { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; color:var(--text-soft); background:var(--surface-soft); border:1px solid var(--border); padding:2px 8px; border-radius:var(--radius-pill); }
+    .chain-badge { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; }
+    .chain-badge.seq  { color:var(--status-info-fg); }
+    .chain-badge.any  { color:var(--status-warn-fg); }
+    .chain-badge.all  { color:#7A3FD4; }
+    .rule-actions { display:flex; gap:var(--space-xs); }
+
+    /* Add rule row */
+    .add-rule-row { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-lg); border-top:1px solid var(--border); }
+
+    /* Section divider within card */
+    .card-divider { border:none; border-top:1px solid var(--border); margin:0; }
+
+    /* Form inline */
+    .form-group { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .form-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); }
+    .form-select, .form-input {
+      height:40px; padding-inline:var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      font-family:inherit; font-size:14px; background:var(--surface); color:var(--text);
+      appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right var(--space-sm) center;
+    }
+    .form-input { background-image:none; }
+    .form-select:focus, .form-input:focus { outline:none; border-color:var(--fern); box-shadow:0 0 0 3px color-mix(in srgb,var(--fern) 15%,transparent); }
+    .form-row { display:grid; gap:var(--space-lg); }
+    .form-row.cols-2 { grid-template-columns:1fr 1fr; }
+    .form-row.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+    .form-row.cols-4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+
+    /* Category overrides */
+    .override-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .override-row {
+      display:flex; align-items:center; gap:var(--space-md);
+      padding:var(--space-md) var(--space-lg);
+      background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md);
+    }
+    .override-cat { font-size:13px; font-weight:700; color:var(--text); flex:1; display:flex; align-items:center; gap:var(--space-sm); }
+    .override-cat i { font-size:15px; color:var(--text-soft); }
+    .override-rule { font-size:13px; color:var(--text-soft); flex:2; }
+    .override-rule strong { color:var(--text); }
+
+    /* Escalation row */
+    .escalation-row { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; }
+    .escalation-text { font-size:14px; color:var(--text-soft); display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap; }
+    .escalation-text strong { color:var(--text); }
+    .inline-input { height:36px; padding-inline:var(--space-sm); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; font-weight:700; color:var(--text); background:var(--surface); width:60px; text-align:center; font-feature-settings:'tnum' 1; }
+    .inline-input:focus { outline:none; border-color:var(--fern); }
+    .inline-select { height:36px; padding-inline:var(--space-sm) var(--space-2xl); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; font-weight:600; color:var(--text); background:var(--surface); appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; cursor:pointer; }
+    .inline-select:focus { outline:none; border-color:var(--fern); }
+
+    /* Standing order defaults */
+    .exec-options { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); }
+    .exec-opt { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; transition:all 0.15s; }
+    .exec-opt:hover { border-color:var(--fern); }
+    .exec-opt.selected { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 6%,transparent); }
+    .exec-opt input[type=radio] { margin-top:2px; accent-color:var(--fern); flex-shrink:0; }
+    .exec-opt-body { display:flex; flex-direction:column; gap:3px; }
+    .exec-opt-title { font-size:14px; font-weight:700; color:var(--text); }
+    .exec-opt-desc  { font-size:13px; color:var(--text-soft); line-height:1.4; }
+
+    /* ── Rule drawer ── */
+    .drawer-section { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-xl); }
+    .drawer-section:last-child { margin-bottom:0; }
+    .drawer-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin-bottom:2px; }
+
+    .dollar-input-wrap { position:relative; }
+    .dollar-prefix { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; font-weight:600; color:var(--text-soft); pointer-events:none; }
+    .dollar-input-wrap .form-input { padding-left:26px; font-feature-settings:'tnum' 1; }
+
+    .range-row { display:grid; grid-template-columns:1fr auto 1fr; align-items:end; gap:var(--space-sm); }
+    .range-sep { font-size:14px; color:var(--text-soft); padding-bottom:10px; text-align:center; }
+
+    .form-checkbox-row { display:flex; align-items:flex-start; gap:var(--space-sm); font-size:13px; color:var(--text-soft); cursor:pointer; margin-top:var(--space-xs); line-height:1.45; }
+    .form-checkbox-row input[type=checkbox] { margin-top:2px; accent-color:var(--fern); flex-shrink:0; }
+
+    .approver-cards { display:flex; flex-direction:column; gap:var(--space-sm); }
+    .approver-card { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md) var(--space-lg); border:1.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; transition:border-color 0.14s, background 0.14s; }
+    .approver-card:hover { border-color:color-mix(in srgb,var(--fern) 55%,var(--border)); }
+    .approver-card.selected { border-color:var(--fern); background:color-mix(in srgb,var(--fern) 5%,transparent); }
+    .ac-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .ac-body { flex:1; }
+    .ac-name { font-size:14px; font-weight:600; color:var(--text); }
+    .ac-desc { font-size:12px; color:var(--text-soft); }
+    .ac-check { width:20px; height:20px; border-radius:50%; background:var(--fern); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.14s; flex-shrink:0; }
+    .ac-check i { font-size:11px; color:#fff; }
+    .approver-card.selected .ac-check { opacity:1; }
+
+    .scope-options, .chain-options { display:flex; flex-direction:column; gap:var(--space-xs); }
+    .scope-opt, .chain-opt {
+      display:flex; align-items:center; gap:var(--space-sm);
+      padding:10px var(--space-md); border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      cursor:pointer; font-size:14px; color:var(--text); transition:border-color 0.12s;
+    }
+    .scope-opt:hover, .chain-opt:hover { border-color:color-mix(in srgb,var(--fern) 55%,var(--border)); }
+    .scope-opt input[type=radio], .chain-opt input[type=radio] { accent-color:var(--fern); flex-shrink:0; }
+    .scope-opt i { font-size:15px; color:var(--text-soft); }
+    .scope-opt span, .chain-opt .chain-opt-label { font-weight:500; flex:1; }
+    .chain-opt-desc { font-size:12px; color:var(--text-soft); }
+
+    /* Outlet picker (appears when Outlet level scope is chosen) */
+    .outlet-picker {
+      margin-top:var(--space-sm);
+      border:1.5px solid var(--border); border-radius:var(--radius-md);
+      overflow:hidden;
+      animation:row-in var(--dur-3) var(--ease-emphasized) both;
+    }
+    .outlet-picker-search {
+      display:flex; align-items:center; gap:var(--space-sm);
+      padding:var(--space-sm) var(--space-md);
+      border-bottom:1px solid var(--border);
+      background:var(--surface-soft);
+    }
+    .outlet-picker-search i { font-size:15px; color:var(--text-soft); flex-shrink:0; }
+    .outlet-search-input {
+      flex:1; border:none; outline:none; background:transparent;
+      font-family:inherit; font-size:13px; color:var(--text);
+    }
+    .outlet-search-input::placeholder { color:var(--text-soft); }
+    .outlet-select-all {
+      display:flex; align-items:center; gap:var(--space-sm);
+      padding:var(--space-sm) var(--space-md);
+      border-bottom:1px solid var(--border);
+      font-size:12px; font-weight:700; color:var(--text-soft);
+      cursor:pointer; background:var(--surface-soft);
+    }
+    .outlet-select-all input { accent-color:var(--fern); }
+    .outlet-list { max-height:192px; overflow-y:auto; }
+    .outlet-item {
+      display:flex; align-items:center; gap:var(--space-md);
+      padding:9px var(--space-md); border-bottom:1px solid var(--border);
+      cursor:pointer; transition:background 0.1s;
+    }
+    .outlet-item:last-child { border-bottom:none; }
+    .outlet-item:hover { background:color-mix(in srgb,var(--fern) 4%,transparent); }
+    .outlet-item input[type=checkbox] { accent-color:var(--fern); flex-shrink:0; }
+    .outlet-item-body { flex:1; }
+    .outlet-item-name { font-size:13px; font-weight:600; color:var(--text); }
+    .outlet-item-meta { font-size:11px; color:var(--text-soft); }
+    .outlet-picker-footer {
+      padding:var(--space-sm) var(--space-md);
+      border-top:1px solid var(--border);
+      font-size:12px; color:var(--text-soft); background:var(--surface-soft);
+    }
+    .outlet-picker-footer span { font-weight:600; color:var(--text-accent); }
+    .drawer-error { font-size:12px; color:var(--status-risk-fg); display:none; margin-top:3px; }
+    .has-error .form-input { border-color:var(--status-risk-fg) !important; }
+    .has-error + .drawer-error, .show-error { display:block !important; }
+
+    /* Per-card save indicator */
+    .card-save-status {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:12px; font-weight:600; white-space:nowrap;
+      opacity:0;
+      transition:opacity var(--dur-2) var(--ease-standard);
+    }
+    .card-save-status.saving { opacity:1; color:var(--text-soft); }
+    .card-save-status.saved  { opacity:1; color:var(--status-ok-fg); }
+    .card-save-status.fading { opacity:0; }
+  </style>
+</head>
+<body>
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="content">
+
+      <a class="back-btn" href="settings.html"><i class="ti ti-arrow-left"></i>Settings</a>
+
+      <div>
+        <h1 class="page-title">Approvals &amp; workflows</h1>
+        <p class="page-desc">Define when approvals are required, who approves them, and what happens if they're not actioned in time.</p>
+      </div>
+
+      <!-- ── PO Approval rules ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-git-branch"></i>Purchase order approval rules</div>
+            <div class="card-desc">Rules are applied in order — first matching rule wins. All orders over the last tier always require approval.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-md);">
+            <div class="toggle-row" style="gap:var(--space-sm);">
+              <span style="font-size:13px;font-weight:600;color:var(--text-soft);">Require approval</span>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="approval-on" class="toggle-input" checked onchange="saveSection(this.closest('.card'))">
+                <label for="approval-on" class="toggle-track"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body no-pad">
+          <table class="rules-table" data-stagger>
+            <thead>
+              <tr>
+                <th>Order value</th>
+                <th>Approver</th>
+                <th>Scope</th>
+                <th>Chain type</th>
+                <th><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody data-stagger id="po-rules-tbody">
+              <tr>
+                <td><span class="rule-range">$0 – $499</span></td>
+                <td><span class="rule-auto"><i class="ti ti-check"></i>Auto-approved</span></td>
+                <td><span class="scope-badge"><i class="ti ti-world"></i>All outlets</span></td>
+                <td><span style="font-size:12px;color:var(--text-soft);">—</span></td>
+                <td class="rule-actions">
+                  <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="rule-range">$500 – $1,999</span></td>
+                <td>
+                  <div class="rule-approver">
+                    <div class="approver-avatar" style="background:var(--ordering);">OM</div>
+                    <div>
+                      <div class="approver-name">Outlet Manager</div>
+                      <div class="approver-role">Per outlet</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="scope-badge"><i class="ti ti-building-store"></i>Outlet level</span></td>
+                <td><span class="chain-badge seq"><i class="ti ti-arrow-right"></i>Sequential</span></td>
+                <td class="rule-actions">
+                  <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+                  <button class="btn-danger-ghost" onclick="deleteRule(this)"><i class="ti ti-trash"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="rule-range">$2,000 – $9,999</span></td>
+                <td>
+                  <div class="rule-approver">
+                    <div class="approver-avatar" style="background:var(--procurement);">HQ</div>
+                    <div>
+                      <div class="approver-name">HQ Administrator</div>
+                      <div class="approver-role">Organisation-wide</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="scope-badge"><i class="ti ti-building"></i>HQ level</span></td>
+                <td><span class="chain-badge seq"><i class="ti ti-arrow-right"></i>Sequential</span></td>
+                <td class="rule-actions">
+                  <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+                  <button class="btn-danger-ghost" onclick="deleteRule(this)"><i class="ti ti-trash"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="rule-range">$10,000+</span></td>
+                <td>
+                  <div class="rule-approver" style="flex-direction:column;align-items:flex-start;gap:4px;">
+                    <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                      <div class="approver-avatar" style="background:var(--procurement);">HQ</div>
+                      <div>
+                        <div class="approver-name">HQ Administrator</div>
+                        <div class="approver-role">Organisation-wide</div>
+                      </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                      <div class="approver-avatar" style="background:var(--seaweed);font-size:10px;">CEO</div>
+                      <div>
+                        <div class="approver-name">Keith Tan</div>
+                        <div class="approver-role">Owner</div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="scope-badge"><i class="ti ti-building"></i>HQ level</span></td>
+                <td><span class="chain-badge all"><i class="ti ti-users"></i>All must approve</span></td>
+                <td class="rule-actions">
+                  <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+                  <button class="btn-danger-ghost" onclick="deleteRule(this)"><i class="ti ti-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="add-rule-row">
+            <button class="btn btn-outline btn-sm" onclick="showAddRule()"><i class="ti ti-plus"></i>Add rule</button>
+            <span style="font-size:12px;color:var(--text-soft);">Rules are evaluated top-to-bottom — drag to reorder</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Requisition approval ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-clipboard-list"></i>Requisition routing</div>
+            <div class="card-desc">Who reviews outlet requisitions before they are routed to suppliers as POs.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Require HQ review before routing</div>
+              <div class="toggle-sub">All requisitions pass through HQ before becoming purchase orders. If off, outlet managers route directly.</div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="hq-review" class="toggle-input" checked onchange="saveSection(this.closest('.card'))">
+              <label for="hq-review" class="toggle-track"></label>
+            </div>
+          </div>
+
+          <hr class="card-divider"/>
+
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Review window</label>
+              <select class="form-select" onchange="saveSection(this.closest('.card'))">
+                <option>24 hours</option>
+                <option selected>48 hours</option>
+                <option>72 hours</option>
+                <option>Custom…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">If unreviewed after window</label>
+              <select class="form-select" onchange="saveSection(this.closest('.card'))">
+                <option>Escalate to owner</option>
+                <option selected>Auto-approve and route</option>
+                <option>Block and notify</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="card-divider"/>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Agent-drafted requisitions skip manual review</div>
+              <div class="toggle-sub">When Otto (Ordering Agent) drafts a requisition within par limits, it routes directly without waiting for HQ review.</div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="agent-skip" class="toggle-input" onchange="saveSection(this.closest('.card'))">
+              <label for="agent-skip" class="toggle-track"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Category overrides ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-tag"></i>Category overrides</div>
+            <div class="card-desc">Apply stricter approval rules to specific categories regardless of order value.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="awToast('Add category override…')"><i class="ti ti-plus"></i>Add override</button>
+        </div>
+        <div class="card-body">
+          <div class="override-list">
+            <div class="override-row">
+              <div class="override-cat"><i class="ti ti-meat"></i>Proteins</div>
+              <div class="override-rule">Always requires <strong>Outlet Manager</strong> approval — regardless of value</div>
+              <button class="btn-ghost btn-sm" onclick="awToast('Editing Proteins override…')"><i class="ti ti-pencil"></i>Edit</button>
+              <button class="btn-danger-ghost" onclick="const _r=this.closest('.override-row'),_c=this.closest('.card');_r.remove();saveSection(_c)"><i class="ti ti-trash"></i></button>
+            </div>
+            <div class="override-row">
+              <div class="override-cat"><i class="ti ti-fish"></i>Seafood</div>
+              <div class="override-rule">Always requires <strong>HQ Administrator</strong> approval — regardless of value</div>
+              <button class="btn-ghost btn-sm" onclick="awToast('Editing Seafood override…')"><i class="ti ti-pencil"></i>Edit</button>
+              <button class="btn-danger-ghost" onclick="const _r=this.closest('.override-row'),_c=this.closest('.card');_r.remove();saveSection(_c)"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Standing order execution defaults ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-repeat"></i>Standing order execution defaults</div>
+            <div class="card-desc">Default behaviour when a standing order generates a new purchase order. Can be overridden per standing order.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="exec-options" id="exec-opts">
+            <div class="exec-opt selected" onclick="selectExec(this)">
+              <input type="radio" name="exec-default" checked>
+              <div class="exec-opt-body">
+                <div class="exec-opt-title"><i class="ti ti-eye" style="font-size:15px;"></i> Auto-draft</div>
+                <div class="exec-opt-desc">A draft PO is created and held for review before being sent to the supplier. Recommended for most outlets.</div>
+              </div>
+            </div>
+            <div class="exec-opt" onclick="selectExec(this)">
+              <input type="radio" name="exec-default">
+              <div class="exec-opt-body">
+                <div class="exec-opt-title"><i class="ti ti-send" style="font-size:15px;"></i> Auto-submit</div>
+                <div class="exec-opt-desc">PO is generated and sent to the supplier automatically. Only use when approval rules already gate high-value orders.</div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="card-divider"/>
+
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Default review window</label>
+              <select class="form-select" onchange="saveSection(this.closest('.card'))">
+                <option>12 hours</option>
+                <option>24 hours</option>
+                <option selected>48 hours</option>
+                <option>72 hours</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Auto-submit threshold</label>
+              <div style="position:relative;">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:600;color:var(--text-soft);">$</span>
+                <input type="number" class="form-input" value="500" style="padding-left:28px;font-feature-settings:'tnum' 1;" onchange="saveSection(this.closest('.card'))" placeholder="0">
+              </div>
+              <span style="font-size:12px;color:var(--text-soft);margin-top:3px;">Standing order POs under this value skip the review window and submit automatically</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Escalation ── -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-title"><i class="ti ti-alarm"></i>Escalation</div>
+            <div class="card-desc">What happens when an approval is not actioned within the review window.</div>
+          </div>
+        </div>
+        <div class="card-body" style="gap:var(--space-lg);">
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Enable escalation</div>
+              <div class="toggle-sub">Automatically escalate overdue approvals to the next approver in the chain.</div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="escalation-on" class="toggle-input" checked onchange="toggleEscalation(this.checked)">
+              <label for="escalation-on" class="toggle-track"></label>
+            </div>
+          </div>
+
+          <div id="escalation-detail" style="display:flex;flex-direction:column;gap:var(--space-lg);">
+            <hr class="card-divider"/>
+            <div class="escalation-row">
+              <span class="escalation-text">
+                If a PO approval is not actioned within
+                <input type="number" class="inline-input" value="24" onchange="saveSection(this.closest('.card'))"> hours,
+                escalate to
+                <select class="inline-select" onchange="saveSection(this.closest('.card'))">
+                  <option>HQ Administrator</option>
+                  <option>Owner</option>
+                  <option>Group Manager</option>
+                </select>
+              </span>
+            </div>
+            <div class="escalation-row">
+              <span class="escalation-text">
+                If still unresolved after another
+                <input type="number" class="inline-input" value="24" onchange="saveSection(this.closest('.card'))"> hours,
+                <select class="inline-select" onchange="saveSection(this.closest('.card'))">
+                  <option selected>Auto-approve</option>
+                  <option>Block order</option>
+                  <option>Notify owner</option>
+                </select>
+              </span>
+            </div>
+
+            <hr class="card-divider"/>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Notify approver by email</div>
+                <div class="toggle-sub">Send an email when a PO is waiting for their approval, and again 4 hours before escalation.</div>
+              </div>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="email-notify" class="toggle-input" checked onchange="saveSection(this.closest('.card'))">
+                <label for="email-notify" class="toggle-track"></label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div style="height:24px;"></div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Rule add/edit drawer -->
+<div id="rule-drawer-scrim" class="nb-drawer-scrim" onclick="closeRuleDrawer()"></div>
+<div id="rule-drawer" class="nb-drawer" role="dialog" aria-modal="true">
+  <div class="nb-drawer-head">
+    <div id="rule-drawer-title" class="nb-drawer-title">New approval rule</div>
+    <button class="btn-ghost" style="width:32px;padding:0;justify-content:center;" onclick="closeRuleDrawer()" aria-label="Close">
+      <i class="ti ti-x" style="font-size:16px;"></i>
+    </button>
+  </div>
+  <div class="nb-drawer-body">
+
+    <!-- Value range -->
+    <div class="drawer-section">
+      <div class="drawer-section-label">Order value range</div>
+      <div class="range-row">
+        <div class="form-group" id="from-group">
+          <label class="form-label" for="rule-from">From</label>
+          <div class="dollar-input-wrap">
+            <span class="dollar-prefix">$</span>
+            <input id="rule-from" type="number" class="form-input" placeholder="0" min="0" step="1">
+          </div>
+        </div>
+        <div class="range-sep">to</div>
+        <div class="form-group" id="to-group">
+          <label class="form-label" for="rule-to">To</label>
+          <div class="dollar-input-wrap">
+            <span class="dollar-prefix">$</span>
+            <input id="rule-to" type="number" class="form-input" placeholder="e.g. 1,999" min="0" step="1">
+          </div>
+        </div>
+      </div>
+      <span class="drawer-error" id="range-error">Enter both a "from" and "to" value, or check "no upper limit"</span>
+      <label class="form-checkbox-row">
+        <input type="checkbox" id="rule-open" onchange="toggleOpenEnded(this.checked)">
+        No upper limit — applies to all orders above the "from" value
+      </label>
+    </div>
+
+    <!-- Approver -->
+    <div class="drawer-section">
+      <div class="drawer-section-label">Approver</div>
+      <div class="approver-cards" id="approver-cards">
+        <div class="approver-card" data-value="auto" onclick="selectApprover(this)">
+          <div class="ac-icon" style="background:var(--status-ok-bg);color:var(--status-ok-fg);font-size:16px;"><i class="ti ti-bolt"></i></div>
+          <div class="ac-body">
+            <div class="ac-name">Auto-approved</div>
+            <div class="ac-desc">No approval required for this range</div>
+          </div>
+          <div class="ac-check"><i class="ti ti-check"></i></div>
+        </div>
+        <div class="approver-card" data-value="om" onclick="selectApprover(this)">
+          <div class="ac-icon" style="background:color-mix(in srgb,var(--ordering) 15%,transparent);color:var(--ordering);">OM</div>
+          <div class="ac-body">
+            <div class="ac-name">Outlet Manager</div>
+            <div class="ac-desc">Assigned per outlet</div>
+          </div>
+          <div class="ac-check"><i class="ti ti-check"></i></div>
+        </div>
+        <div class="approver-card" data-value="hq" onclick="selectApprover(this)">
+          <div class="ac-icon" style="background:color-mix(in srgb,var(--procurement) 15%,transparent);color:var(--procurement);">HQ</div>
+          <div class="ac-body">
+            <div class="ac-name">HQ Administrator</div>
+            <div class="ac-desc">Organisation-wide</div>
+          </div>
+          <div class="ac-check"><i class="ti ti-check"></i></div>
+        </div>
+        <div class="approver-card" data-value="owner" onclick="selectApprover(this)">
+          <div class="ac-icon" style="background:color-mix(in srgb,var(--seaweed) 15%,transparent);color:var(--seaweed);font-size:10px;">CEO</div>
+          <div class="ac-body">
+            <div class="ac-name">Owner / CEO</div>
+            <div class="ac-desc">Keith Tan</div>
+          </div>
+          <div class="ac-check"><i class="ti ti-check"></i></div>
+        </div>
+      </div>
+      <span class="drawer-error" id="approver-error">Select an approver</span>
+    </div>
+
+    <!-- Scope (shown when non-auto approver) -->
+    <div class="drawer-section" id="scope-section" style="display:none;">
+      <div class="drawer-section-label">Scope</div>
+      <div class="scope-options">
+        <label class="scope-opt">
+          <input type="radio" name="rule-scope" value="all" checked onchange="toggleOutletPicker(this.value)">
+          <i class="ti ti-world"></i><span>All outlets</span>
+        </label>
+        <label class="scope-opt">
+          <input type="radio" name="rule-scope" value="outlet" onchange="toggleOutletPicker(this.value)">
+          <i class="ti ti-building-store"></i><span>Outlet level</span>
+        </label>
+        <label class="scope-opt">
+          <input type="radio" name="rule-scope" value="hq" onchange="toggleOutletPicker(this.value)">
+          <i class="ti ti-building"></i><span>HQ level</span>
+        </label>
+      </div>
+
+      <!-- Outlet picker — visible when "outlet" scope selected -->
+      <div id="outlet-picker" class="outlet-picker" style="display:none;">
+        <div class="outlet-picker-search">
+          <i class="ti ti-search"></i>
+          <input class="outlet-search-input" id="outlet-search" type="text" placeholder="Search outlets…" oninput="filterOutlets(this.value)">
+        </div>
+        <label class="outlet-select-all" id="outlet-select-all-row">
+          <input type="checkbox" id="outlet-select-all" onchange="toggleAllOutlets(this.checked)">
+          Select all
+        </label>
+        <div class="outlet-list" id="outlet-list"></div>
+        <div class="outlet-picker-footer" id="outlet-footer">0 outlets selected</div>
+      </div>
+      <span class="drawer-error" id="outlet-error">Select at least one outlet</span>
+    </div>
+
+    <!-- Chain type (shown when non-auto approver) -->
+    <div class="drawer-section" id="chain-section" style="display:none;">
+      <div class="drawer-section-label">Approval chain</div>
+      <div class="chain-options">
+        <label class="chain-opt">
+          <input type="radio" name="rule-chain" value="seq" checked>
+          <span class="chain-opt-label">Sequential</span>
+          <span class="chain-opt-desc">Approver must sign off before moving forward</span>
+        </label>
+        <label class="chain-opt">
+          <input type="radio" name="rule-chain" value="any">
+          <span class="chain-opt-label">Any one approves</span>
+          <span class="chain-opt-desc">First person to approve clears the rule</span>
+        </label>
+        <label class="chain-opt">
+          <input type="radio" name="rule-chain" value="all">
+          <span class="chain-opt-label">All must approve</span>
+          <span class="chain-opt-desc">Everyone at this level must sign off</span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+  <div class="nb-drawer-foot">
+    <button class="btn btn-outline" onclick="closeRuleDrawer()">Cancel</button>
+    <button class="btn btn-primary" id="rule-save-btn" onclick="submitRule()">
+      <i class="ti ti-plus"></i>Add rule
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="aw-toast-wrap" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;"></div>
+
+<script src="../shared/shell.js?v=12" data-active="settings"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    NomniShell.init('Approvals & workflows');
+    NomniShell.initStagger();
+  });
+
+  /* ── Per-section auto-save ── */
+  const debounceTimers = new WeakMap();
+
+  function saveSection(card, delay) {
+    if (!card) return;
+    if (delay) {
+      clearTimeout(debounceTimers.get(card));
+      debounceTimers.set(card, setTimeout(() => saveSection(card), delay));
+      return;
+    }
+    const head = card.querySelector('.card-head');
+    if (!head) return;
+
+    let ind = head.querySelector('.card-save-status');
+    if (!ind) {
+      ind = document.createElement('span');
+      ind.className = 'card-save-status';
+      head.appendChild(ind);
+    }
+
+    // Cancel any pending fade-out
+    clearTimeout(ind._fadeTimer);
+    clearTimeout(ind._doneTimer);
+
+    ind.className = 'card-save-status saving';
+    ind.innerHTML = '<i class="ti ti-loader-2" style="font-size:13px;animation:spin 600ms linear infinite;"></i>Saving…';
+
+    ind._doneTimer = setTimeout(() => {
+      ind.className = 'card-save-status saved';
+      ind.innerHTML = '<i class="ti ti-circle-check" style="font-size:13px;"></i>Saved';
+
+      ind._fadeTimer = setTimeout(() => {
+        ind.classList.add('fading');
+        setTimeout(() => { ind.className = 'card-save-status'; ind.innerHTML = ''; }, 220);
+      }, 2000);
+    }, 600);
+  }
+
+  const styleEl = document.createElement('style');
+  styleEl.textContent = '@keyframes spin { to { transform:rotate(360deg); } }';
+  document.head.appendChild(styleEl);
+
+  function selectExec(opt) {
+    document.querySelectorAll('.exec-opt').forEach(o => { o.classList.remove('selected'); o.querySelector('input').checked = false; });
+    opt.classList.add('selected');
+    opt.querySelector('input').checked = true;
+    saveSection(opt.closest('.card'));
+  }
+
+  function toggleEscalation(on) {
+    document.getElementById('escalation-detail').style.display = on ? 'flex' : 'none';
+    saveSection(document.getElementById('escalation-on').closest('.card'));
+  }
+
+  function editRule(btn) { openRuleDrawer(btn.closest('tr')); }
+
+  function deleteRule(btn) {
+    const row = btn.closest('tr');
+    const card = btn.closest('.card');
+    row.style.transition = 'opacity 200ms, transform 200ms';
+    row.style.opacity = '0';
+    row.style.transform = 'translateX(8px)';
+    setTimeout(() => { row.remove(); saveSection(card); }, 220);
+  }
+
+  function showAddRule() { openRuleDrawer(null); }
+
+  /* ── Rule drawer ── */
+  let _ruleEditRow = null;
+
+  function openRuleDrawer(editRow) {
+    _ruleEditRow = editRow || null;
+    const isEdit = !!editRow;
+
+    // Reset
+    document.getElementById('rule-from').value = '';
+    document.getElementById('rule-to').value = '';
+    document.getElementById('rule-open').checked = false;
+    toggleOpenEnded(false);
+    document.querySelectorAll('.approver-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('scope-section').style.display = 'none';
+    document.getElementById('chain-section').style.display = 'none';
+    document.querySelectorAll('[name=rule-scope]')[0].checked = true;
+    document.querySelectorAll('[name=rule-chain]')[0].checked = true;
+    document.getElementById('outlet-picker').style.display = 'none';
+    document.getElementById('outlet-error').style.display = 'none';
+    document.getElementById('range-error').style.display = 'none';
+    document.getElementById('approver-error').style.display = 'none';
+    document.getElementById('from-group').classList.remove('has-error');
+    document.getElementById('to-group').classList.remove('has-error');
+
+    document.getElementById('rule-drawer-title').textContent = isEdit ? 'Edit approval rule' : 'New approval rule';
+    const saveBtn = document.getElementById('rule-save-btn');
+    saveBtn.innerHTML = isEdit ? '<i class="ti ti-check"></i>Save changes' : '<i class="ti ti-plus"></i>Add rule';
+
+    if (isEdit) {
+      // Pre-populate value range
+      const rangeText = (editRow.querySelector('.rule-range')?.textContent || '').replace(/,/g, '');
+      const isOpen = rangeText.includes('+');
+      const parts = rangeText.replace(/\$/g,'').replace(/\+/g,'').split('–').map(s => s.trim());
+      if (parts[0]) document.getElementById('rule-from').value = parseFloat(parts[0]) || '';
+      if (parts[1] && !isOpen) document.getElementById('rule-to').value = parseFloat(parts[1]) || '';
+      if (isOpen) { document.getElementById('rule-open').checked = true; toggleOpenEnded(true); }
+
+      // Pre-select approver
+      if (editRow.querySelector('.rule-auto')) selectApproverByValue('auto');
+      else {
+        const ats = editRow.querySelector('.approver-avatar')?.textContent?.trim();
+        if (ats === 'OM') selectApproverByValue('om');
+        else if (ats === 'HQ') selectApproverByValue('hq');
+        else if (ats === 'CEO') selectApproverByValue('owner');
+      }
+
+      // Pre-select scope
+      const si = editRow.querySelector('.scope-badge i');
+      if (si) {
+        if (si.className.includes('world')) setRadio('rule-scope','all');
+        else if (si.className.includes('building-store')) setRadio('rule-scope','outlet');
+        else setRadio('rule-scope','hq');
+      }
+
+      // Pre-select chain
+      const cb = editRow.querySelector('.chain-badge');
+      if (cb) {
+        if (cb.classList.contains('seq')) setRadio('rule-chain','seq');
+        else if (cb.classList.contains('any')) setRadio('rule-chain','any');
+        else if (cb.classList.contains('all')) setRadio('rule-chain','all');
+      }
+    } else {
+      selectApproverByValue('auto');
+    }
+
+    document.getElementById('rule-drawer-scrim').classList.add('open');
+    document.getElementById('rule-drawer').classList.add('open');
+    setTimeout(() => document.getElementById('rule-from').focus(), 300);
+  }
+
+  function closeRuleDrawer() {
+    document.getElementById('rule-drawer-scrim').classList.remove('open');
+    document.getElementById('rule-drawer').classList.remove('open');
+    _ruleEditRow = null;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('rule-drawer').classList.contains('open')) closeRuleDrawer();
+  });
+
+  function toggleOpenEnded(open) {
+    const tg = document.getElementById('to-group');
+    const ti = document.getElementById('rule-to');
+    tg.style.opacity = open ? '0.4' : '1';
+    ti.disabled = open;
+    if (open) ti.value = '';
+  }
+
+  function selectApprover(card) {
+    document.querySelectorAll('.approver-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    const isAuto = card.dataset.value === 'auto';
+    document.getElementById('scope-section').style.display = isAuto ? 'none' : '';
+    document.getElementById('chain-section').style.display = isAuto ? 'none' : '';
+    document.getElementById('approver-error').style.display = 'none';
+  }
+
+  function selectApproverByValue(val) {
+    const c = document.querySelector(`.approver-card[data-value="${val}"]`);
+    if (c) selectApprover(c);
+  }
+
+  function setRadio(name, val) {
+    const r = document.querySelector(`[name=${name}][value="${val}"]`);
+    if (r) r.checked = true;
+  }
+
+  function submitRule() {
+    let valid = true;
+
+    const fromStr = document.getElementById('rule-from').value;
+    const isOpen  = document.getElementById('rule-open').checked;
+    const toStr   = document.getElementById('rule-to').value;
+    const fromVal = parseFloat(fromStr);
+    const toVal   = parseFloat(toStr);
+
+    document.getElementById('from-group').classList.remove('has-error');
+    document.getElementById('to-group').classList.remove('has-error');
+    document.getElementById('range-error').style.display = 'none';
+    document.getElementById('approver-error').style.display = 'none';
+    document.getElementById('outlet-error').style.display = 'none';
+
+    if (fromStr === '' || isNaN(fromVal)) {
+      document.getElementById('from-group').classList.add('has-error');
+      document.getElementById('range-error').style.display = 'block';
+      valid = false;
+    } else if (!isOpen && (toStr === '' || isNaN(toVal))) {
+      document.getElementById('to-group').classList.add('has-error');
+      document.getElementById('range-error').style.display = 'block';
+      valid = false;
+    }
+
+    const selectedCard = document.querySelector('.approver-card.selected');
+    if (!selectedCard) {
+      document.getElementById('approver-error').style.display = 'block';
+      valid = false;
+    }
+
+    const scopeVal0 = document.querySelector('[name=rule-scope]:checked')?.value || 'all';
+    const selectedOutlets = scopeVal0 === 'outlet'
+      ? [...document.querySelectorAll('[name=rule-outlet]:checked')].map(cb => cb.value)
+      : [];
+    if (scopeVal0 === 'outlet' && selectedOutlets.length === 0) {
+      document.getElementById('outlet-error').style.display = 'block';
+      valid = false;
+    }
+
+    if (!valid) {
+      const btn = document.getElementById('rule-save-btn');
+      btn.classList.add('shake');
+      setTimeout(() => btn.classList.remove('shake'), 500);
+      return;
+    }
+
+    const approverVal = selectedCard.dataset.value;
+    const isAuto = approverVal === 'auto';
+    const scopeVal = scopeVal0;
+    const chainVal = document.querySelector('[name=rule-chain]:checked')?.value || 'seq';
+
+    // Build range text
+    const fmt = n => '$' + Number(n).toLocaleString();
+    const rangeText = isOpen ? fmt(fromVal) + '+' : fmt(fromVal) + ' – ' + fmt(toVal);
+
+    // Build approver cell HTML
+    let approverHTML;
+    if (isAuto) {
+      approverHTML = '<span class="rule-auto"><i class="ti ti-check"></i>Auto-approved</span>';
+    } else {
+      const aMap = {
+        om:    { bg:'var(--ordering)',    txt:'OM',  name:'Outlet Manager',    role:'Per outlet' },
+        hq:    { bg:'var(--procurement)', txt:'HQ',  name:'HQ Administrator',  role:'Organisation-wide' },
+        owner: { bg:'var(--seaweed)',     txt:'CEO', name:'Keith Tan',          role:'Owner', small:true }
+      };
+      const a = aMap[approverVal];
+      approverHTML = `<div class="rule-approver"><div class="approver-avatar" style="background:${a.bg};${a.small?'font-size:10px;':''}">${a.txt}</div><div><div class="approver-name">${a.name}</div><div class="approver-role">${a.role}</div></div></div>`;
+    }
+
+    // Build scope cell HTML
+    const scopeMap = { all:{icon:'ti-world',label:'All outlets'}, outlet:{icon:'ti-building-store',label:'Outlet level'}, hq:{icon:'ti-building',label:'HQ level'} };
+    const sc = scopeMap[scopeVal];
+    let scopeLabel = sc.label;
+    if (scopeVal === 'outlet' && selectedOutlets.length > 0) {
+      scopeLabel = selectedOutlets.length === OUTLETS.length ? 'All outlets' : `${selectedOutlets.length} outlet${selectedOutlets.length > 1 ? 's' : ''}`;
+    }
+    const scopeHTML = isAuto ? '<span style="font-size:12px;color:var(--text-soft);">—</span>'
+      : `<span class="scope-badge"><i class="ti ${sc.icon}"></i>${scopeLabel}</span>`;
+
+    // Build chain cell HTML
+    const chainMap = { seq:{cls:'seq',icon:'ti-arrow-right',label:'Sequential'}, any:{cls:'any',icon:'ti-user-check',label:'Any one approves'}, all:{cls:'all',icon:'ti-users',label:'All must approve'} };
+    const ch = chainMap[chainVal];
+    const chainHTML = isAuto ? '<span style="font-size:12px;color:var(--text-soft);">—</span>'
+      : `<span class="chain-badge ${ch.cls}"><i class="ti ${ch.icon}"></i>${ch.label}</span>`;
+
+    const tbody = document.getElementById('po-rules-tbody');
+    const poCard = tbody.closest('.card');
+
+    if (_ruleEditRow) {
+      const cells = _ruleEditRow.querySelectorAll('td');
+      cells[0].innerHTML = `<span class="rule-range">${rangeText}</span>`;
+      cells[1].innerHTML = approverHTML;
+      cells[2].innerHTML = scopeHTML;
+      cells[3].innerHTML = chainHTML;
+      _ruleEditRow.style.transition = 'background 400ms';
+      _ruleEditRow.style.background = 'color-mix(in srgb,var(--fern) 9%,transparent)';
+      setTimeout(() => { _ruleEditRow.style.background = ''; }, 800);
+      awToast('Rule updated');
+    } else {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="rule-range">${rangeText}</span></td>
+        <td>${approverHTML}</td>
+        <td>${scopeHTML}</td>
+        <td>${chainHTML}</td>
+        <td class="rule-actions">
+          <button class="btn-ghost" onclick="editRule(this)"><i class="ti ti-pencil"></i>Edit</button>
+          <button class="btn-danger-ghost" onclick="deleteRule(this)"><i class="ti ti-trash"></i></button>
+        </td>`;
+      tr.style.setProperty('--si', tbody.querySelectorAll('tr').length);
+      tbody.appendChild(tr);
+      awToast('Approval rule added');
+    }
+
+    saveSection(poCard);
+    closeRuleDrawer();
+  }
+
+  /* ── Outlet picker ── */
+  const OUTLETS = [
+    { id:'ck',  name:'Central Kitchen',        meta:'Production · Toa Payoh' },
+    { id:'o01', name:'Outlet 01 — Orchard',    meta:'Dine-in · Central' },
+    { id:'o02', name:'Outlet 02 — Tanjong Pagar', meta:'Dine-in · Central' },
+    { id:'o03', name:'Outlet 03 — Jurong East', meta:'Dine-in · West' },
+    { id:'o04', name:'Outlet 04 — Tampines',   meta:'Dine-in · East' },
+    { id:'o05', name:'Outlet 05 — Woodlands',  meta:'Dine-in · North' },
+    { id:'o06', name:'Outlet 06 — Novena',     meta:'Dine-in · Central' },
+  ];
+
+  let _outletQuery = '';
+
+  function renderOutletList() {
+    const list = document.getElementById('outlet-list');
+    const q = _outletQuery.toLowerCase();
+    const visible = OUTLETS.filter(o => o.name.toLowerCase().includes(q) || o.meta.toLowerCase().includes(q));
+    list.innerHTML = visible.map(o => `
+      <label class="outlet-item">
+        <input type="checkbox" name="rule-outlet" value="${o.id}" onchange="updateOutletFooter()">
+        <div class="outlet-item-body">
+          <div class="outlet-item-name">${o.name}</div>
+          <div class="outlet-item-meta">${o.meta}</div>
+        </div>
+      </label>`).join('');
+    updateOutletFooter();
+  }
+
+  function filterOutlets(q) {
+    _outletQuery = q;
+    renderOutletList();
+  }
+
+  function toggleAllOutlets(checked) {
+    document.querySelectorAll('[name=rule-outlet]').forEach(cb => cb.checked = checked);
+    updateOutletFooter();
+  }
+
+  function updateOutletFooter() {
+    const all  = document.querySelectorAll('[name=rule-outlet]');
+    const checked = [...all].filter(cb => cb.checked);
+    document.getElementById('outlet-footer').innerHTML =
+      checked.length === 0 ? '0 outlets selected'
+      : `<span>${checked.length}</span> of ${OUTLETS.length} outlets selected`;
+    // Update select-all indeterminate state
+    const sa = document.getElementById('outlet-select-all');
+    sa.indeterminate = checked.length > 0 && checked.length < all.length;
+    sa.checked = checked.length === all.length && all.length > 0;
+    document.getElementById('outlet-error').style.display = 'none';
+  }
+
+  function toggleOutletPicker(scopeVal) {
+    const picker = document.getElementById('outlet-picker');
+    const show = scopeVal === 'outlet';
+    if (show) {
+      picker.style.display = '';
+      _outletQuery = '';
+      document.getElementById('outlet-search').value = '';
+      renderOutletList();
+    } else {
+      picker.style.display = 'none';
+    }
+    document.getElementById('outlet-error').style.display = 'none';
+  }
+
+  function awToast(msg) {
+    const wrap = document.getElementById('aw-toast-wrap');
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;pointer-events:auto;white-space:nowrap;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity 300ms'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+{
+  "name": "Nomni Procure",
+  "logo": {
+    "light": "/logo/nomni-light.svg",
+    "dark": "/logo/nomni-dark.svg",
+    "href": "https://katosan79.github.io/nomni-procure/"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#129B41",
+    "light": "#2AC864",
+    "dark": "#076715",
+    "background": {
+      "light": "#F5F2EF",
+      "dark": "#0E3727"
+    }
+  },
+  "topbarCtaButton": {
+    "name": "Live Prototype",
+    "url": "https://katosan79.github.io/nomni-procure/"
+  },
+  "tabs": [
+    {
+      "name": "User Guides",
+      "url": "guides"
+    },
+    {
+      "name": "Developer Docs",
+      "url": "internal"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "guides/introduction",
+        "guides/getting-started",
+        "guides/roles"
+      ]
+    },
+    {
+      "group": "Ordering",
+      "pages": [
+        "guides/ordering",
+        "guides/receiving-goods",
+        "guides/invoices"
+      ]
+    },
+    {
+      "group": "Catalogue & Recipes",
+      "pages": [
+        "guides/items",
+        "guides/recipes"
+      ]
+    },
+    {
+      "group": "Inventory",
+      "pages": [
+        "guides/inventory",
+        "guides/stock-counts"
+      ]
+    },
+    {
+      "group": "POS & Reporting",
+      "pages": [
+        "guides/pos-mapping",
+        "guides/reports"
+      ]
+    },
+    {
+      "group": "AI Agents",
+      "pages": [
+        "guides/agents"
+      ]
+    },
+    {
+      "group": "Overview",
+      "pages": [
+        "internal/overview",
+        "internal/architecture"
+      ]
+    },
+    {
+      "group": "Data Model",
+      "pages": [
+        "internal/data-model",
+        "internal/order-schema",
+        "internal/item-model"
+      ]
+    },
+    {
+      "group": "Feature Specs",
+      "pages": [
+        "internal/screens/orders",
+        "internal/screens/invoices",
+        "internal/screens/items",
+        "internal/screens/recipes",
+        "internal/screens/inventory",
+        "internal/screens/market-lists",
+        "internal/screens/pos-mapping",
+        "internal/screens/reporting",
+        "internal/screens/outlets"
+      ]
+    },
+    {
+      "group": "Agent Layer",
+      "pages": [
+        "internal/agents/overview",
+        "internal/agents/ordering-agent",
+        "internal/agents/invoice-agent",
+        "internal/agents/margin-agent",
+        "internal/agents/variance-agent",
+        "internal/agents/governance-agent"
+      ]
+    },
+    {
+      "group": "API Surface",
+      "pages": [
+        "internal/api-surface"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "website": "https://katosan79.github.io/nomni-procure/"
+  }
+}

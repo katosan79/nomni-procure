@@ -1,0 +1,2302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Inventory · Operations — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xl);
+      padding-block: var(--space-2xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+    }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h);
+      padding-inline: var(--space-lg);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none;
+      white-space: nowrap;
+      border: 1.5px solid transparent;
+    }
+    .btn-outline {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border-color: var(--btn-primary-bg);
+    }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn-danger {
+      background: var(--status-risk-fg);
+      color: var(--btn-primary-fg);
+      border-color: var(--status-risk-fg);
+    }
+    .btn-danger:hover { opacity: 0.9; }
+    .btn i { font-size: 15px; }
+
+    /* Table card */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .data-table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .data-table thead tr {
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table th {
+      padding: var(--space-md) var(--space-lg);
+      text-align: left;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--space-md) var(--space-lg);
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+    .data-table .tabular { font-feature-settings: 'tnum' 1; }
+
+    /* Cell styles */
+    .cell-name { font-weight: 600; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--text-soft); font-weight: 400; margin-top: 2px; }
+    .cell-timestamp {
+      font-size: 12px;
+      color: var(--text-soft);
+      font-feature-settings: 'tnum' 1;
+    }
+    .row-actions {
+      display: flex; align-items: center;
+      gap: var(--space-sm);
+      white-space: nowrap;
+    }
+    .link-action {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+
+    /* Bulk import section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+    }
+    .section-header-left {
+      display: flex; align-items: center; gap: var(--space-sm);
+    }
+    .section-title {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+    }
+    .section-chevron {
+      font-size: 16px;
+      color: var(--text-soft);
+      transition: transform 0.2s;
+    }
+    .section-chevron.open { transform: rotate(180deg); }
+    .section-body {
+      padding: var(--space-xl);
+      display: none;
+    }
+    .section-body.open { display: block; }
+
+    /* Activity timeline */
+    .timeline-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+    }
+    .timeline-heading {
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+      margin-bottom: var(--space-xl);
+    }
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .timeline-item {
+      display: grid;
+      grid-template-columns: var(--space-xl) 1fr auto;
+      gap: var(--space-sm);
+      align-items: start;
+      padding-bottom: var(--space-lg);
+      position: relative;
+    }
+    .timeline-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 20px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+    .timeline-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--fern);
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .timeline-body { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .timeline-text { font-size: 13px; font-weight: 500; color: var(--text); }
+    .timeline-meta { font-size: 11px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+    .timeline-time { font-size: 11px; color: var(--text-soft); white-space: nowrap; font-feature-settings: 'tnum' 1; }
+
+    /* ── Responsive breakpoints ── */
+
+    /* Tablet ≤1024px */
+    @media (max-width: 1024px) {
+      .table-card {
+        overflow-x: auto;
+      }
+      .data-table {
+        min-width: 640px;
+      }
+    }
+
+    /* Mobile ≤768px: reduce typography, wrap header actions, table scroll */
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 24px;
+      }
+      .page-header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: var(--space-md);
+      }
+      .page-actions {
+        flex-wrap: wrap;
+      }
+      .table-card {
+        overflow-x: auto;
+      }
+      .data-table {
+        min-width: 600px;
+      }
+    }
+
+    /* Small mobile ≤480px: reduce padding */
+    @media (max-width: 480px) {
+      .page-body {
+        padding-block: var(--space-lg);
+        gap: var(--space-xl);
+      }
+      .page-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+      }
+      .page-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .section-header {
+        padding: var(--space-md) var(--space-md);
+      }
+      .section-body {
+        padding: var(--space-md);
+      }
+    }
+      /* Section spacing — flex gap on canvas */
+    .page-body .napp-canvas {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2xl);
+    }
+
+    /* Agent strip */
+    .agent-strip { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .agent-strip .agent-surface.resolved { opacity: 0.62; }
+    .agent-strip .agent-surface.resolved .agent-actions { display: none; }
+    @media (max-width: 1024px) { .agent-strip { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px)  { .agent-strip { grid-template-columns: 1fr; } }
+
+    /* Sub-module tabs */
+    .inv-tabs { display: flex; gap: var(--space-xs); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .inv-tab {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: var(--space-sm) var(--space-md);
+      background: none; border: none; border-bottom: 2px solid transparent;
+      font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text-soft);
+      cursor: pointer; margin-bottom: -1px;
+      transition: color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard);
+    }
+    .inv-tab i { font-size: 16px; }
+    .inv-tab:hover { color: var(--text); }
+    .inv-tab.active { color: var(--text-accent); border-bottom-color: var(--text-accent); }
+
+    /* Panels */
+    .inv-panel { display: none; flex-direction: column; gap: var(--space-2xl); }
+    .inv-panel.active { display: flex; }
+    .sub-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); }
+    .sub-card-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: var(--space-xs); }
+    .sub-card-sub { font-size: 13px; color: var(--text-soft); margin-bottom: var(--space-lg); }
+
+    .drawer-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: var(--space-xl) var(--space-2xl);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: var(--space-md);
+    }
+    .drawer-head-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .drawer-close {
+      width: 32px; height: 32px; flex-shrink: 0;
+      border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft);
+      font-size: 16px;
+    }
+    .drawer-close:hover { background: var(--surface-soft); color: var(--text); }
+    .drawer-body {
+      flex: 1; overflow-y: auto;
+      padding: var(--space-xl) var(--space-2xl);
+      display: flex; flex-direction: column;
+      gap: var(--space-2xl);
+    }
+    .drawer-section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-soft);
+      margin-bottom: var(--space-md);
+    }
+    /* §3.7.10 — CK Transfer panel */
+    .ck-source-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      background: color-mix(in srgb, var(--procurement-magenta, #B05EC0) 12%, transparent);
+      color: #7A3D88;
+      padding: 1px 6px; border-radius: var(--radius-xs);
+    }
+    .trf-kpi-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
+    .trf-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); }
+    .trf-kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: var(--space-xs); }
+    .trf-kpi-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
+    .trf-kpi-sub   { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .confirm-btn {
+      height: 26px; padding: 0 var(--space-md); font-size: 12px; font-weight: 600;
+      border-radius: var(--radius-xs); border: 1px solid color-mix(in srgb, var(--fern) 35%, transparent);
+      background: var(--mint); color: var(--spinach); cursor: pointer; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+    }
+    .confirm-btn:hover { background: color-mix(in srgb, var(--mint) 80%, var(--fern)); }
+    .trf-row-received { background: color-mix(in srgb, var(--mint) 40%, transparent) !important; }
+
+    /* Drawer footer */
+    .drawer-footer {
+      padding: var(--space-lg) var(--space-2xl);
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: var(--space-sm);
+      flex-shrink: 0;
+    }
+
+    /* Variance mini-bars */
+    .var-row { display: grid; grid-template-columns: 130px 1fr 70px; align-items: center; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
+    .var-row:last-child { border-bottom: none; }
+    .var-label { font-size: 13px; color: var(--text); }
+    .var-track { height: 18px; background: color-mix(in srgb, var(--border) 70%, transparent); border-radius: 3px; overflow: hidden; }
+    .var-fill { height: 100%; background: color-mix(in srgb, var(--fern) 58%, transparent); border-radius: 3px; }
+    .var-fill.high { background: var(--status-risk-fg); }
+    .var-val { font-size: 13px; font-weight: 600; text-align: right; font-feature-settings: 'tnum' 1; }
+    .var-val.high { color: var(--status-risk-fg); }
+
+    /* ── Count sessions ── */
+    .sessions-kpi {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+    }
+    .sessions-actions {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .sessions-actions-left { display: flex; gap: var(--space-sm); }
+    .filter-select {
+      height: var(--control-h);
+      padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+    .outlet-link { font-weight: 500; color: var(--text-link); background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; font-size: 14px; }
+    .outlet-link:hover { text-decoration: underline; }
+    .cadence-badge {
+      font-size: 10px; font-weight: 600;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-soft);
+      color: var(--text-soft);
+      border: 1px solid var(--border);
+    }
+
+    /* Session drawer */
+    .session-drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(14,55,39,0.25);
+      z-index: 190;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s;
+    }
+    .session-drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .session-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 520px; max-width: 95vw;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      overflow: hidden;
+    }
+    .session-drawer.open { transform: translateX(0); }
+
+    /* Sheet rows */
+    .sheet-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: var(--space-md);
+      align-items: center;
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .sheet-row:last-child { border-bottom: none; }
+    .sheet-status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sheet-status-dot.submitted      { background: var(--fern); }
+    .sheet-status-dot.in-progress    { background: var(--status-warn-fg); }
+    .sheet-status-dot.pending        { background: var(--border); }
+    .sheet-status-dot.carried-forward{ background: var(--text-soft); }
+
+    /* COGS panel */
+    .cogs-panel {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .cogs-row {
+      display: flex; justify-content: space-between;
+      font-size: 14px; color: var(--text-soft);
+    }
+    .cogs-total {
+      display: flex; justify-content: space-between;
+      font-size: 15px; font-weight: 700; color: var(--text);
+      padding-top: var(--space-sm);
+      border-top: 1px solid var(--border);
+      font-feature-settings: 'tnum' 1;
+    }
+
+    /* Variance by category */
+    .var-cat-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 90px;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) 0;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+    }
+    .var-cat-row:hover { background: var(--surface-soft); }
+    .var-item-list {
+      padding: var(--space-sm) 0 var(--space-md) var(--space-lg);
+      display: none;
+    }
+    .var-item-list.open { display: block; }
+    .var-item-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: var(--space-md);
+      font-size: 12px; color: var(--text-soft);
+      padding: 3px 0;
+    }
+    .var-item-row-wrap { padding: 3px 0; border-bottom: 1px dashed var(--border); }
+    .var-item-row-wrap:last-child { border-bottom: none; }
+    .var-item-row-wrap .var-item-row { padding: 0; }
+    .waste-match-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 2px; background: none; border: none; padding: 0; font-family: inherit; }
+    .waste-match-tag.ok      { color: var(--status-ok-fg); }
+    .waste-match-tag.partial { color: var(--status-warn-fg); }
+    .waste-match-tag.none    { color: var(--status-risk-fg); cursor: pointer; }
+    .waste-match-tag.none:hover { text-decoration: underline; }
+    .waste-match-tag.suspected { color: var(--text-accent); background: var(--surface-soft); border: 1px dashed var(--border); border-radius: var(--radius-pill); padding: 1px 8px; margin-top: 2px; cursor: pointer; }
+    .waste-match-tag.suspected:hover { border-color: var(--fern); }
+    .classify-wrap { position: relative; display: inline-flex; }
+    .classify-menu { position: absolute; left: 0; top: 100%; margin-top: 4px; z-index: 80; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); min-width: 170px; padding: var(--space-xs) 0; display: none; }
+    .classify-menu.open { display: block; }
+    .classify-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-lg); font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .classify-item:hover { background: var(--surface-soft); }
+
+    /* KPI tile (reuse existing pattern) */
+    .kpi-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg) var(--space-xl);
+      display: flex; flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+    .kpi-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; }
+    .kpi-sub { font-size: 11px; color: var(--text-soft); }
+    .kpi-sub.warn { color: var(--status-warn-fg); }
+
+    /* num column alignment */
+    .data-table th.num, .data-table td.num { text-align: right; }
+
+    /* ── Overview tab ── */
+    .ov-value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-lg); }
+    .ov-metric { background: var(--surface-soft); border-radius: var(--radius-md); padding: var(--space-lg); }
+    .ov-metric-label { font-size: 13px; color: var(--text-soft); margin: 0 0 4px; }
+    .ov-metric-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; font-feature-settings: 'tnum' 1; margin: 0; }
+    .ov-metric-sub { font-size: 12px; color: var(--text-soft); margin: 6px 0 0; }
+    .ov-delta-bar { display: flex; align-items: center; gap: var(--space-sm); border-radius: var(--radius-md); padding: 10px 14px; margin-top: var(--space-md); font-size: 13px; flex-wrap: wrap; }
+    .ov-delta-bar.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .ov-delta-bar.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .ov-delta-bar.ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .ov-delta-link { margin-left: auto; font-weight: 700; text-decoration: underline; white-space: nowrap; color: inherit; cursor: pointer; background: none; border: none; font-family: inherit; font-size: 13px; }
+
+    /* Outlet health grid */
+    .health-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-lg); }
+    .health-toggle { display: flex; align-items: center; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 3px; gap: 2px; }
+    .health-toggle-btn { padding: 5px var(--space-md); border-radius: calc(var(--radius-md) - 2px); font-size: 12px; font-weight: 600; color: var(--text-soft); background: none; border: none; cursor: pointer; white-space: nowrap; font-family: inherit; }
+    .health-toggle-btn.active { background: var(--seaweed); color: var(--cream); }
+    .health-group-label { font-size: 12px; color: var(--text-soft); margin: 0 0 6px; font-weight: 600; }
+    .health-tiles { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-bottom: var(--space-lg); }
+    .health-tile { display: flex; flex-direction: column; gap: 4px; border-radius: var(--radius-md); padding: 8px 10px; min-width: 112px; cursor: pointer; border: none; font-family: inherit; text-align: left; }
+    .health-tile-name { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; }
+    .health-tile-sub { font-size: 11px; }
+    .health-tile.ok      { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .health-tile.warn    { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .health-tile.risk    { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .health-tile.pending { background: var(--surface); color: var(--text-soft); border: 1px solid var(--border); }
+    .health-tile.streak { box-shadow: 0 0 0 1.5px var(--status-risk-fg); }
+    .health-tile-name i.ti-repeat { font-size: 11px; }
+    .health-review-wrap { position: relative; display: inline-flex; }
+    .health-review-menu { position: absolute; left: 0; top: 100%; margin-top: var(--space-xs); z-index: 70; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); min-width: 160px; padding: var(--space-xs) 0; display: none; }
+    .health-review-menu.open { display: block; }
+    .health-review-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-lg); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .health-review-item:hover { background: var(--surface-soft); }
+    .health-legend { display: flex; flex-wrap: wrap; gap: var(--space-lg); border-top: 1px solid var(--border); padding-top: var(--space-md); }
+    .health-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-soft); }
+    .health-legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* Weekly pulse strip */
+    .pulse-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-sm); }
+    .pulse-day { display: flex; flex-direction: column; gap: 6px; cursor: pointer; border: none; background: none; font-family: inherit; padding: 6px 4px; border-radius: var(--radius-sm); }
+    .pulse-day:hover { background: var(--surface-soft); }
+    .pulse-day.today { background: var(--surface-soft); border: 1px solid var(--border); }
+    .pulse-day-label { font-size: 11px; color: var(--text-soft); text-align: center; }
+    .pulse-day-label.today { color: var(--text); font-weight: 700; }
+    .pulse-bar-track { height: 6px; border-radius: 3px; overflow: hidden; background: var(--border); }
+    .pulse-bar-fill { display: block; height: 100%; }
+    .pulse-bar-fill.ok { background: var(--fern); }
+    .pulse-bar-fill.risk { background: var(--status-risk-fg); }
+    .pulse-bar-outline { height: 6px; border-radius: 3px; border: 1px dashed var(--border); }
+    .pulse-day-count { font-size: 12px; text-align: center; font-feature-settings: 'tnum' 1; }
+    .pulse-day-count.risk { color: var(--status-risk-fg); font-weight: 700; }
+    .pulse-day-count.muted { color: var(--text-soft); }
+
+    /* Needs-attention pills + trend */
+    .ov-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; }
+    .ov-pill.risk { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .ov-pill.warn { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .ov-pill.ok   { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+    .ov-trend.risk { color: var(--status-risk-fg); font-weight: 600; }
+    .ov-trend.warn { color: var(--status-warn-fg); font-weight: 600; }
+    .ov-trend.flat { color: var(--text-soft); }
+    .ov-trend.down { color: var(--status-ok-fg); }
+
+    @media (max-width: 900px) { .pulse-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 480px) { .pulse-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    @media (max-width: 768px) {
+      .sessions-kpi { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .sessions-kpi { grid-template-columns: 1fr; }
+    }
+
+    /* ── Record Production drawer ── */
+    .prod-drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(14,55,39,0.22);
+      z-index: 60;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .prod-drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .prod-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 520px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      z-index: 61;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.22s ease;
+    }
+    .prod-drawer.open { transform: translateX(0); }
+    .prod-drawer-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-xl) var(--space-2xl);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .prod-drawer-title { font-size: 18px; font-weight: 700; color: var(--text); }
+    .prod-drawer-sub { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+    .prod-drawer-close {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: var(--radius-md);
+      background: none; border: none; color: var(--text-soft);
+      cursor: pointer; font-size: 18px;
+      transition: background 0.1s;
+    }
+    .prod-drawer-close:hover { background: var(--surface-soft); color: var(--text); }
+    .prod-drawer-body {
+      flex: 1; overflow-y: auto;
+      padding: var(--space-2xl);
+      display: flex; flex-direction: column; gap: var(--space-xl);
+    }
+    .prod-field { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .prod-field label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .prod-field-input {
+      height: var(--control-h);
+      padding-inline: var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit;
+      color: var(--text); background: var(--surface);
+      outline: none; transition: border-color 0.12s;
+    }
+    .prod-field-input:focus { border-color: var(--border-focus); }
+    .prod-field-input::placeholder { color: var(--text-soft); }
+    .prod-field select.prod-field-input { cursor: pointer; }
+    .prod-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .prod-ing-preview {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      display: flex; flex-direction: column; gap: var(--space-sm);
+    }
+    .prod-ing-preview-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-soft);
+      margin-bottom: var(--space-xs);
+    }
+    .prod-ing-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; color: var(--text);
+      padding: var(--space-xs) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .prod-ing-row:last-child { border-bottom: none; }
+    .prod-ing-name { font-weight: 500; }
+    .prod-ing-qty { color: var(--status-risk-fg); font-weight: 600; font-feature-settings: 'tnum' 1; font-size: 12px; }
+    .prod-notice {
+      display: flex; align-items: flex-start; gap: var(--space-sm);
+      padding: var(--space-md);
+      background: color-mix(in srgb, var(--status-warn-bg) 60%, transparent);
+      border: 1px solid var(--status-warn-fg);
+      border-radius: var(--radius-sm);
+      font-size: 12px; color: var(--text);
+    }
+    .prod-notice i { color: var(--status-warn-fg); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .prod-drawer-footer {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: var(--space-sm);
+      padding: var(--space-lg) var(--space-2xl);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    html[data-role="outlet-user"] td.overflow-cell,
+    html[data-role="outlet-user"] .data-table th:last-child { display: none; }
+
+    /* ── Variance heat map ── */
+    .var-cell {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 3px 8px; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600;
+      font-feature-settings: 'tnum' 1;
+      white-space: nowrap;
+    }
+    .var-cell.tier-ok   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+    .var-cell.tier-warn { background: var(--status-warn-bg);  color: var(--status-warn-fg); }
+    .var-cell.tier-risk { background: var(--status-risk-bg);  color: var(--status-risk-fg); }
+    .var-cell.tier-urg  { background: var(--status-risk-fg);  color: #fff; }
+    .heat-table td.num  { padding: var(--space-sm) var(--space-md); vertical-align: middle; }
+
+    /* ── Waste reason pills ── */
+    .waste-pill {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: var(--radius-pill);
+      font-size: 12px; font-weight: 600;
+    }
+    .waste-pill.r-spoilage,
+    .waste-pill.r-expired     { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .waste-pill.r-over-portion,
+    .waste-pill.r-theft       { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .waste-pill.r-breakage    { background: var(--status-info-bg); color: var(--status-info-fg); }
+    .waste-pill.r-end-of-day,
+    .waste-pill.r-other       { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+
+    /* Waste reason breakdown bar */
+    .waste-breakdown-bar {
+      display: flex; height: 6px; border-radius: var(--radius-pill);
+      overflow: hidden; gap: 1px;
+    }
+    .waste-breakdown-seg { height: 100%; }
+    .waste-reason-legend {
+      display: flex; flex-wrap: wrap; gap: var(--space-sm);
+      margin-top: var(--space-sm);
+    }
+    .waste-reason-legend-item {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11px; color: var(--text-soft);
+    }
+    .waste-reason-swatch {
+      width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
+    }
+
+    /* Waste log drawer */
+    .waste-drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(14,55,39,0.22);
+      z-index: 60; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .waste-drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .waste-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 480px; max-width: 95vw;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      z-index: 61; display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.22s ease;
+    }
+    .waste-drawer.open { transform: translateX(0); }
+    .waste-drawer-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-xl) var(--space-2xl);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .waste-drawer-body {
+      flex: 1; overflow-y: auto;
+      padding: var(--space-2xl);
+      display: flex; flex-direction: column; gap: var(--space-xl);
+    }
+    .waste-drawer-footer {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: var(--space-sm);
+      padding: var(--space-lg) var(--space-2xl);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .waste-field { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .waste-field label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .waste-field-input {
+      height: var(--control-h);
+      padding-inline: var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit;
+      color: var(--text); background: var(--surface);
+      outline: none; transition: border-color 0.12s;
+    }
+    .waste-field-input:focus { border-color: var(--border-focus); }
+    .waste-field-input::placeholder { color: var(--text-soft); }
+    .waste-field select.waste-field-input { cursor: pointer; }
+    .waste-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+    .waste-reason-preview {
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-md);
+      font-size: 12px; font-weight: 600;
+      margin-top: var(--space-xs);
+      display: none;
+    }
+    .waste-reason-preview.show { display: block; }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12" data-active="inventory-operations"></script>
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <!-- Page header -->
+      <header class="page-header">
+        <div class="page-header-left">
+          <span class="page-eyebrow">Inventory Management</span>
+          <h1 class="page-title">Inventory</h1>
+        </div>
+        <div class="page-actions role-editor-only">
+          <a class="btn btn-primary" href="spot-count.html"><i class="ti ti-clipboard-plus"></i>Start count</a>
+        </div>
+      </header>
+
+      <!-- Read-only note for outlet users -->
+      <div class="role-readonly-note" style="align-items:center;gap:var(--space-sm);padding:var(--space-md) var(--space-lg);background:var(--status-info-bg);color:var(--status-info-fg);border-radius:var(--radius-md);font-size:13px;font-weight:500;margin-bottom:var(--space-xl);">
+        <i class="ti ti-lock" aria-hidden="true"></i>
+        Inventory items are managed by HQ. You can view them, but adding, editing, and removing items is restricted to HQ.
+      </div>
+
+      <!-- Sub-module tabs (IN-6/7/9/10 entry points) -->
+      <div class="inv-tabs" role="tablist" aria-label="Inventory modules">
+        <button class="inv-tab active" role="tab" aria-selected="true" onclick="switchTab('overview')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Overview</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('counts')"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Stock counts</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('transfers')"><i class="ti ti-transfer" aria-hidden="true"></i>Transfers</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('waste')"><i class="ti ti-trash-x" aria-hidden="true"></i>Waste</button>
+        <button class="inv-tab" role="tab" aria-selected="false" onclick="switchTab('production')"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>Production</button>
+      </div>
+
+      <!-- ══ Panel: Overview (monitoring — default landing tab) ══ -->
+      <div class="inv-panel active" id="panel-overview">
+
+        <!-- Agent strip: Vera (Needs you) first, Otto (Proposed) second -->
+        <div class="agent-strip">
+          <article class="agent-surface" id="vera-card" data-agent-fn="variance">
+            <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+              <div class="agent-card-head">
+                <span class="agent-avatar" data-agent="vera" aria-hidden="true">Ve</span>
+                <span class="agent-id"><span class="agent-name">Vera</span><span class="agent-role">Variance agent</span></span>
+                <span class="agent-card-spacer"></span>
+                <span class="agent-state needs-you"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Needs you</span>
+              </div>
+              <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">3 outlets above risk threshold — Dry goods at Bondi Beach is 25× the network average</p>
+              <p class="agent-why">Bondi Beach Dry goods (Olive Oil 1L) shows 25.0% A vs T variance — 10 bottles actual vs 6 theoretical. Surry Hills and Newtown also above escalate tier. No waste logs or transfers explain the gap.</p>
+              <div class="agent-actions">
+                <button class="nb-btn primary" onclick="window.location='inventory-analytics.html'"><i class="ti ti-chart-dots" aria-hidden="true"></i>View heat map</button>
+                <button class="nb-btn" onclick="invToast('Dismissed — Vera keeps watching')">Dismiss</button>
+              </div>
+            </div>
+          </article>
+          <article class="agent-surface" id="otto-card" data-agent-fn="ordering">
+            <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);">
+              <div class="agent-card-head">
+                <span class="agent-avatar" data-agent="otto" aria-hidden="true">Ot</span>
+                <span class="agent-id"><span class="agent-name">Otto</span><span class="agent-role">Ordering agent</span></span>
+                <span class="agent-card-spacer"></span>
+                <span class="agent-state proposed"><i class="ti ti-bulb" aria-hidden="true"></i>Proposed</span>
+              </div>
+              <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">8 items below par — drafts ready. Also: 4 par levels are out of step with 4-week sales cadence</p>
+              <p class="agent-why">Replenishment drafts staged for Chicken Breast, Avocado and 6 others. Separately, rolling 4-week usage data suggests 4 items (Chicken Breast, Avocado, Feta Cheese, Mixed Leaf) have par levels that no longer reflect real demand — see Templates → Dynamic Par for recommendations.</p>
+              <div class="agent-actions">
+                <button class="nb-btn primary" onclick="resolveAgent('otto-card','Approved — 8 replenishment drafts sent to outlets')"><i class="ti ti-check" aria-hidden="true"></i>Approve drafts</button>
+                <button class="nb-btn" onclick="window.location='inventory-governance.html'"><i class="ti ti-chart-line" aria-hidden="true"></i>View par suggestions</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Stock value -->
+        <div class="sub-card">
+          <div class="sub-card-title">Stock value</div>
+          <div class="ov-value-grid">
+            <div class="ov-metric">
+              <p class="ov-metric-label">Live theoretical</p>
+              <p class="ov-metric-value">$284,600</p>
+              <p class="ov-metric-sub">As of 2:14pm today · last count + purchases − POS-driven usage</p>
+            </div>
+            <div class="ov-metric">
+              <p class="ov-metric-label">Last count (actual)</p>
+              <p class="ov-metric-value">$271,200</p>
+              <p class="ov-metric-sub">Counts completed 18–24 Jun · 109 of 124 outlets</p>
+            </div>
+          </div>
+          <div class="ov-delta-bar risk">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+            <span><strong>$13,400 (4.9%)</strong> gap between live and last count — escalate tier</span>
+            <button class="ov-delta-link" onclick="window.location='inventory-analytics.html'">See drivers →</button>
+          </div>
+        </div>
+
+        <!-- Outlet health grid -->
+        <div class="sub-card">
+          <div class="health-head">
+            <div>
+              <div class="sub-card-title" style="margin-bottom:2px;">Outlet health this cycle</div>
+              <div class="sub-card-sub" style="margin-bottom:0;">109 of 124 counted · overdue is computed against each outlet's count-template cadence</div>
+            </div>
+            <div class="health-toggle" role="tablist" aria-label="Outlet health view">
+              <button class="health-toggle-btn active" onclick="setHealthView('severity', this)">Sort by severity</button>
+              <button class="health-toggle-btn" onclick="setHealthView('group', this)">Group by region</button>
+            </div>
+          </div>
+
+          <div id="health-grid-body"></div>
+
+          <div class="health-legend">
+            <span class="health-legend-item"><span class="health-legend-dot" style="background:var(--status-ok-fg)"></span>On track</span>
+            <span class="health-legend-item"><span class="health-legend-dot" style="background:var(--status-warn-fg)"></span>Needs attention</span>
+            <span class="health-legend-item"><span class="health-legend-dot" style="background:var(--status-risk-fg)"></span>Escalate</span>
+            <span class="health-legend-item"><span class="health-legend-dot" style="background:var(--text-soft)"></span>Awaiting review</span>
+          </div>
+        </div>
+
+        <!-- Weekly pulse strip -->
+        <div class="sub-card">
+          <div class="health-head" style="margin-bottom:var(--space-md);">
+            <div class="sub-card-title" style="margin-bottom:0;">This week</div>
+            <div class="sub-card-sub" style="margin-bottom:0;">From count templates · 22–28 Jun</div>
+          </div>
+          <div class="pulse-grid" id="pulse-grid"></div>
+        </div>
+
+        <!-- Needs attention -->
+        <div class="table-card">
+          <div class="section-header" style="cursor:default;">
+            <div class="section-header-left"><span class="section-title">Needs attention · sorted by days of stock remaining</span></div>
+            <span style="font-size:12px;color:var(--text-soft);">5 of 188 items</span>
+          </div>
+          <table class="data-table" aria-label="Items needing attention">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>On hand / par</th>
+                <th class="num">Days left</th>
+                <th>7-day usage</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-name">Olive Oil 1L</td>
+                <td class="tabular">4 <span style="color:var(--text-soft)">/ 8 btl</span></td>
+                <td class="num tabular" style="color:var(--status-risk-fg);font-weight:700;">1 day</td>
+                <td class="ov-trend risk"><i class="ti ti-arrow-up" aria-hidden="true"></i> up 40%</td>
+                <td><span class="ov-pill risk"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Reorder now</span></td>
+              </tr>
+              <tr>
+                <td class="cell-name">Chicken Breast 500g</td>
+                <td class="tabular">8 <span style="color:var(--text-soft)">/ 10 kg</span></td>
+                <td class="num tabular" style="color:var(--status-risk-fg);font-weight:700;">2 days</td>
+                <td class="ov-trend risk"><i class="ti ti-arrow-up" aria-hidden="true"></i> up 18%</td>
+                <td><span class="ov-pill risk"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Reorder now</span></td>
+              </tr>
+              <tr>
+                <td class="cell-name">Avocado</td>
+                <td class="tabular">22 <span style="color:var(--text-soft)">/ 50 ea</span></td>
+                <td class="num tabular" style="color:var(--status-warn-fg);font-weight:700;">4 days</td>
+                <td class="ov-trend warn"><i class="ti ti-arrow-up" aria-hidden="true"></i> up 9%</td>
+                <td><span class="ov-pill warn"><i class="ti ti-clock" aria-hidden="true"></i>Order soon</span></td>
+              </tr>
+              <tr>
+                <td class="cell-name">Roma Tomatoes</td>
+                <td class="tabular">14 <span style="color:var(--text-soft)">/ 12 kg</span></td>
+                <td class="num tabular" style="color:var(--status-warn-fg);font-weight:700;">5 days</td>
+                <td class="ov-trend flat"><i class="ti ti-arrow-right" aria-hidden="true"></i> flat</td>
+                <td><span class="ov-pill warn"><i class="ti ti-clock" aria-hidden="true"></i>Order soon</span></td>
+              </tr>
+              <tr>
+                <td class="cell-name">Feta Cheese</td>
+                <td class="tabular">9 <span style="color:var(--text-soft)">/ 5 kg</span></td>
+                <td class="num tabular">9 days</td>
+                <td class="ov-trend down"><i class="ti ti-arrow-down" aria-hidden="true"></i> down 12%</td>
+                <td><span class="ov-pill ok"><i class="ti ti-eye" aria-hidden="true"></i>Monitor</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /panel-overview -->
+
+      <!-- ══ Panel: Stock counts (IN-6) ══ -->
+      <div class="inv-panel" id="panel-counts">
+
+        <!-- KPI strip -->
+        <div class="sessions-kpi">
+          <div class="kpi-tile">
+            <div class="kpi-label">Active sessions</div>
+            <div class="kpi-value">3</div>
+            <div class="kpi-sub">across 3 outlets</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-label">Last posted COGS</div>
+            <div class="kpi-value">$8,600</div>
+            <div class="kpi-sub">Bondi · 1 Jun fortnight</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-label">Network variance</div>
+            <div class="kpi-value" style="color:var(--status-warn-fg)">6.7%</div>
+            <div class="kpi-sub warn">+1.4pp vs prior period</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-label">Pending approval</div>
+            <div class="kpi-value">1</div>
+            <div class="kpi-sub">Newtown · 8 Jun week</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="sessions-actions">
+          <div class="sessions-actions-left">
+            <a class="btn btn-primary" href="new-count-session.html"><i class="ti ti-clipboard-list"></i>New count session</a>
+            <a class="btn btn-outline" href="spot-count.html"><i class="ti ti-clipboard-plus"></i>Spot count</a>
+          </div>
+          <select class="filter-select" id="sessions-outlet-filter" aria-label="Filter by outlet" onchange="renderSessions()">
+            <option value="">All outlets</option>
+          </select>
+        </div>
+
+        <!-- Sessions table -->
+        <div class="table-card">
+          <table class="data-table" id="sessions-table">
+            <thead>
+              <tr>
+                <th>Session</th>
+                <th>Outlet</th>
+                <th>Sheets</th>
+                <th>Status</th>
+                <th class="num">COGS</th>
+                <th class="num">Variance</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sessions-tbody"></tbody>
+          </table>
+          <div class="empty-state" id="sessions-empty" style="display:none;padding:var(--space-2xl);text-align:center;color:var(--text-soft);">
+            <i class="ti ti-clipboard-off" aria-hidden="true" style="font-size:24px;display:block;margin-bottom:var(--space-sm);"></i>
+            No sessions match this outlet.
+          </div>
+        </div>
+
+      </div>
+      <!-- ══ Panel: Transfers / CK (§3.7.10) ══ -->
+      <div class="inv-panel" id="panel-transfers">
+
+        <!-- KPI strip -->
+        <div class="trf-kpi-strip">
+          <div class="trf-kpi">
+            <div class="trf-kpi-label">In transit</div>
+            <div class="trf-kpi-value" id="trf-kpi-transit">2</div>
+            <div class="trf-kpi-sub">Awaiting outlet confirmation</div>
+          </div>
+          <div class="trf-kpi">
+            <div class="trf-kpi-label">Dispatched today</div>
+            <div class="trf-kpi-value">1</div>
+            <div class="trf-kpi-sub">From Sydney Central Kitchen</div>
+          </div>
+          <div class="trf-kpi">
+            <div class="trf-kpi-label">Received this week</div>
+            <div class="trf-kpi-value">4</div>
+            <div class="trf-kpi-sub">$189.51 in transfer value</div>
+          </div>
+        </div>
+
+        <!-- Transfer log -->
+        <div class="sub-card" style="padding:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-lg) var(--space-xl);border-bottom:1px solid var(--border);">
+            <div>
+              <div class="sub-card-title" style="margin-bottom:2px;">CK Transfer log</div>
+              <p class="sub-card-sub" style="margin-bottom:0;">Dispatch items from Sydney Central Kitchen to outlet groups. On receipt, CK on-hand decreases and outlet on-hand increases. Transfer cost attributed at CK production cost.</p>
+            </div>
+            <button class="btn btn-primary" onclick="invToast('Opening CK dispatch form…')"><i class="ti ti-plus"></i>Log dispatch</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" id="trf-table">
+              <thead>
+                <tr>
+                  <th>Transfer</th>
+                  <th>Item</th>
+                  <th>Route</th>
+                  <th style="text-align:right">Qty</th>
+                  <th style="text-align:right">CK cost</th>
+                  <th>Batch ref</th>
+                  <th>Dispatched</th>
+                  <th>Status</th>
+                  <th><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="trf-tbody">
+                <!-- rows rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ Panel: Waste (IN-10) ══ -->
+      <div class="inv-panel" id="panel-waste">
+
+        <!-- Reason breakdown summary -->
+        <div class="sub-card" style="padding:var(--space-lg) var(--space-xl);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);">
+            <div>
+              <div class="sub-card-title" style="margin-bottom:2px;">Waste this week</div>
+              <p class="sub-card-sub" style="margin-bottom:0;">$34.50 total across 3 outlets · 3 entries</p>
+            </div>
+            <button class="btn btn-primary" onclick="openWasteDrawer()"><i class="ti ti-plus"></i>Log waste</button>
+          </div>
+          <!-- Stacked breakdown bar -->
+          <div class="waste-breakdown-bar" id="waste-breakdown-bar">
+            <div class="waste-breakdown-seg" style="flex:2.4;background:var(--status-warn-fg);" title="Spoilage $8.40"></div>
+            <div class="waste-breakdown-seg" style="flex:14.4;background:var(--surface-soft);border:1px solid var(--border);" title="End of day $14.40"></div>
+            <div class="waste-breakdown-seg" style="flex:11.7;background:var(--status-warn-fg);opacity:0.6;" title="Expired $11.70"></div>
+          </div>
+          <div class="waste-reason-legend">
+            <div class="waste-reason-legend-item"><span class="waste-reason-swatch" style="background:var(--status-warn-fg);"></span>Spoilage ($8.40)</div>
+            <div class="waste-reason-legend-item"><span class="waste-reason-swatch" style="background:var(--surface-soft);border:1px solid var(--border);"></span>End of day ($14.40)</div>
+            <div class="waste-reason-legend-item"><span class="waste-reason-swatch" style="background:var(--status-warn-fg);opacity:0.6;"></span>Expired ($11.70)</div>
+          </div>
+        </div>
+
+        <!-- Waste log table -->
+        <div class="sub-card" style="padding:0;">
+          <table class="data-table" id="waste-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Outlet</th>
+                <th class="num">Qty</th>
+                <th>Reason</th>
+                <th>Notes</th>
+                <th class="num">Cost</th>
+                <th>Logged by</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="waste-tbody">
+              <tr>
+                <td class="cell-name">Roma Tomatoes</td>
+                <td>Surry Hills</td>
+                <td class="num tabular">2.4 kg</td>
+                <td><span class="waste-pill r-spoilage">Spoilage</span></td>
+                <td style="font-size:12px;color:var(--text-soft);">Over-ordered, not used in service</td>
+                <td class="num tabular">$8.40</td>
+                <td style="font-size:12px;color:var(--text-soft);">Sarah Kim</td>
+                <td class="cell-timestamp">Today 2:30pm</td>
+              </tr>
+              <tr>
+                <td class="cell-name">Sourdough Bread</td>
+                <td>Circular Quay</td>
+                <td class="num tabular">6 loaf</td>
+                <td><span class="waste-pill r-end-of-day">End of day</span></td>
+                <td style="font-size:12px;color:var(--text-soft);">Unsold at close</td>
+                <td class="num tabular">$14.40</td>
+                <td style="font-size:12px;color:var(--text-soft);">James Nguyen</td>
+                <td class="cell-timestamp">Today 10:15pm</td>
+              </tr>
+              <tr>
+                <td class="cell-name">Whole Milk 2L</td>
+                <td>Newtown</td>
+                <td class="num tabular">3 carton</td>
+                <td><span class="waste-pill r-expired">Expired</span></td>
+                <td style="font-size:12px;color:var(--text-soft);">Past use-by date</td>
+                <td class="num tabular">$11.70</td>
+                <td style="font-size:12px;color:var(--text-soft);">Marcus Lee</td>
+                <td class="cell-timestamp">Yesterday 8:00am</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- ══ Panel: Production ══ -->
+      <div class="inv-panel" id="panel-production">
+        <div class="sub-card">
+          <div class="sub-card-title">Production log</div>
+          <p class="sub-card-sub">Record completed production batches. Each entry deducts raw ingredients from inventory and adds the finished batch quantity to stock.</p>
+          <button class="btn btn-primary" style="margin-bottom:var(--space-lg);" onclick="openProductionDrawer()"><i class="ti ti-plus"></i>Record production</button>
+          <table class="data-table" id="production-table">
+            <thead>
+              <tr>
+                <th>Recipe</th>
+                <th>Outlet</th>
+                <th style="text-align:right">Batches</th>
+                <th>Yield</th>
+                <th>Ingredients deducted</th>
+                <th>Recorded by</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <p class="cell-name">Chicken Stock</p>
+                  <p style="font-size:11px;color:var(--text-soft);margin-top:1px;">Production batch</p>
+                </td>
+                <td>Surry Hills Social</td>
+                <td class="tabular" style="text-align:right">2</td>
+                <td class="tabular">20 L</td>
+                <td style="font-size:12px;color:var(--text-soft);">Chicken carcass 4 kg · Onion 0.8 kg · Celery 0.4 kg · Carrot 0.4 kg</td>
+                <td>Sarah Kim</td>
+                <td class="cell-timestamp">Today 9:14am</td>
+              </tr>
+              <tr>
+                <td>
+                  <p class="cell-name">Brioche Bun Batch</p>
+                  <p style="font-size:11px;color:var(--text-soft);margin-top:1px;">Production batch</p>
+                </td>
+                <td>Darling Street Bistro</td>
+                <td class="tabular" style="text-align:right">1</td>
+                <td class="tabular">48 buns</td>
+                <td style="font-size:12px;color:var(--text-soft);">Bread flour 1.8 kg · Butter 0.3 kg · Eggs 8 each · Yeast 14 g · Milk 0.24 L</td>
+                <td>James Nguyen</td>
+                <td class="cell-timestamp">Yesterday 7:30am</td>
+              </tr>
+              <tr>
+                <td>
+                  <p class="cell-name">Chicken Stock</p>
+                  <p style="font-size:11px;color:var(--text-soft);margin-top:1px;">Production batch</p>
+                </td>
+                <td>Bondi Rooftop</td>
+                <td class="tabular" style="text-align:right">3</td>
+                <td class="tabular">30 L</td>
+                <td style="font-size:12px;color:var(--text-soft);">Chicken carcass 6 kg · Onion 1.2 kg · Celery 0.6 kg · Carrot 0.6 kg</td>
+                <td>Keith Tan</td>
+                <td class="cell-timestamp">13 Jun 2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /panel-production -->
+
+      <!-- Activity timeline -->
+      <div class="timeline-card">
+        <div class="timeline-heading">Recent activity</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <div class="timeline-text">Par level for <strong>Chicken Breast 500g</strong> updated to 10 kg</div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">2h ago</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <div class="timeline-text"><strong>12 items</strong> imported via bulk upload</div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">1 day ago</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <div class="timeline-text"><strong>Avocado</strong> assigned to 2 new groups</div>
+              <div class="timeline-meta">HQ Administrator</div>
+            </div>
+            <div class="timeline-time">3 days ago</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /napp-canvas -->
+  </div><!-- /page-body -->
+
+  <!-- Session detail drawer (Count sessions) -->
+  <div class="session-drawer-backdrop" id="session-drawer-backdrop" onclick="closeSessionDrawer()"></div>
+  <aside class="session-drawer" id="session-drawer" role="dialog" aria-modal="true" aria-label="Count session details"></aside>
+
+  <!-- Waste log drawer -->
+  <div class="waste-drawer-backdrop" id="waste-drawer-backdrop" onclick="closeWasteDrawer()"></div>
+  <aside class="waste-drawer" id="waste-drawer" role="dialog" aria-modal="true" aria-label="Log waste">
+    <div class="waste-drawer-head">
+      <div>
+        <p style="font-size:18px;font-weight:700;color:var(--text);">Log waste</p>
+        <p style="font-size:13px;color:var(--text-soft);margin-top:2px;">Entry feeds variance analytics and COGS.</p>
+      </div>
+      <button style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-md);background:none;border:none;color:var(--text-soft);cursor:pointer;font-size:18px;" onclick="closeWasteDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="waste-drawer-body">
+
+      <!-- Item -->
+      <div class="waste-field">
+        <label for="waste-item">Item</label>
+        <select class="waste-field-input" id="waste-item">
+          <option value="">Select item…</option>
+          <option>Chicken Breast 500g</option>
+          <option>Avocado</option>
+          <option>Feta Cheese</option>
+          <option>Sourdough Bread</option>
+          <option>Olive Oil 1L</option>
+          <option>Whole Milk 2L</option>
+          <option>Roma Tomatoes</option>
+        </select>
+      </div>
+
+      <!-- Outlet + Qty -->
+      <div class="waste-two-col">
+        <div class="waste-field">
+          <label for="waste-outlet">Outlet</label>
+          <select class="waste-field-input" id="waste-outlet">
+            <option value="">Select outlet…</option>
+            <option>Surry Hills Social</option>
+            <option>Circular Quay</option>
+            <option>Newtown</option>
+            <option>Bondi Beach</option>
+            <option>Melbourne CBD</option>
+          </select>
+        </div>
+        <div class="waste-field">
+          <label for="waste-qty">Quantity</label>
+          <input class="waste-field-input" type="number" id="waste-qty" placeholder="e.g. 2.5" min="0" step="0.1"/>
+        </div>
+      </div>
+
+      <!-- Reason (structured) -->
+      <div class="waste-field">
+        <label for="waste-reason">Reason</label>
+        <select class="waste-field-input" id="waste-reason" onchange="updateWasteReasonPreview()">
+          <option value="">Select reason…</option>
+          <option value="Spoilage">Spoilage — deteriorated before use</option>
+          <option value="Over-portion">Over-portion — excess served beyond recipe</option>
+          <option value="Breakage">Breakage — dropped or container damaged</option>
+          <option value="Theft">Theft — confirmed or suspected</option>
+          <option value="End of day">End of day — unsold at service close</option>
+          <option value="Expired">Expired — past use-by date</option>
+          <option value="Other">Other — see notes</option>
+        </select>
+        <div class="waste-reason-preview" id="waste-reason-preview"></div>
+      </div>
+
+      <!-- Notes -->
+      <div class="waste-field">
+        <label for="waste-notes">Notes (optional)</label>
+        <input class="waste-field-input" type="text" id="waste-notes" placeholder="e.g. Left out overnight, not refrigerated"/>
+      </div>
+
+      <!-- Date + Logged by -->
+      <div class="waste-two-col">
+        <div class="waste-field">
+          <label for="waste-date">Date</label>
+          <input class="waste-field-input" type="date" id="waste-date"/>
+        </div>
+        <div class="waste-field">
+          <label for="waste-by">Logged by</label>
+          <select class="waste-field-input" id="waste-by">
+            <option>Keith Tan</option>
+            <option>Sarah Kim</option>
+            <option>James Nguyen</option>
+            <option>Marcus Lee</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+    <div class="waste-drawer-footer">
+      <button class="btn btn-outline" onclick="closeWasteDrawer()">Cancel</button>
+      <button class="btn btn-primary" id="waste-confirm-btn" onclick="confirmWaste()"><i class="ti ti-check"></i>Log waste entry</button>
+    </div>
+  </aside>
+
+  <!-- Record Production drawer -->
+  <div class="prod-drawer-backdrop" id="prod-drawer-backdrop" onclick="closeProductionDrawer()"></div>
+  <aside class="prod-drawer" id="prod-drawer" role="dialog" aria-modal="true" aria-label="Record production">
+    <div class="prod-drawer-head">
+      <div>
+        <p class="prod-drawer-title">Record production</p>
+        <p class="prod-drawer-sub">Ingredients will be deducted from inventory on confirm.</p>
+      </div>
+      <button class="prod-drawer-close" onclick="closeProductionDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="prod-drawer-body">
+
+      <!-- Recipe select -->
+      <div class="prod-field">
+        <label for="prod-recipe">Production batch recipe</label>
+        <select class="prod-field-input" id="prod-recipe" onchange="updateIngPreview()">
+          <option value="">Select a recipe…</option>
+          <option value="chicken-stock">Chicken Stock (yields 10 L per batch)</option>
+          <option value="brioche-bun">Brioche Bun Batch (yields 48 buns per batch)</option>
+        </select>
+      </div>
+
+      <!-- Outlet + batches -->
+      <div class="prod-two-col">
+        <div class="prod-field">
+          <label for="prod-outlet">Outlet</label>
+          <select class="prod-field-input" id="prod-outlet">
+            <option value="">Select outlet…</option>
+            <option>Surry Hills Social</option>
+            <option>Darling Street Bistro</option>
+            <option>Bondi Rooftop</option>
+            <option>Manly Wharf Bar</option>
+          </select>
+        </div>
+        <div class="prod-field">
+          <label for="prod-batches">Number of batches</label>
+          <input class="prod-field-input" type="number" id="prod-batches" value="1" min="1" max="99" onchange="updateIngPreview()"/>
+        </div>
+      </div>
+
+      <!-- Date + recorded by -->
+      <div class="prod-two-col">
+        <div class="prod-field">
+          <label for="prod-date">Production date</label>
+          <input class="prod-field-input" type="date" id="prod-date"/>
+        </div>
+        <div class="prod-field">
+          <label for="prod-by">Recorded by</label>
+          <select class="prod-field-input" id="prod-by">
+            <option>Keith Tan</option>
+            <option>Sarah Kim</option>
+            <option>James Nguyen</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="prod-field">
+        <label for="prod-notes">Notes (optional)</label>
+        <input class="prod-field-input" type="text" id="prod-notes" placeholder="e.g. Extra batch for weekend service"/>
+      </div>
+
+      <!-- Ingredient deduction preview -->
+      <div class="prod-ing-preview" id="prod-ing-preview" style="display:none;">
+        <p class="prod-ing-preview-label">Ingredients to deduct</p>
+        <div id="prod-ing-rows"></div>
+      </div>
+
+      <!-- Warning notice -->
+      <div class="prod-notice" id="prod-notice" style="display:none;">
+        <i class="ti ti-alert-triangle"></i>
+        <span>Confirming will immediately deduct these ingredients from the selected outlet's inventory. This cannot be undone — log a waste entry if you need to reverse it.</span>
+      </div>
+
+    </div>
+    <div class="prod-drawer-footer">
+      <button class="btn btn-outline" onclick="closeProductionDrawer()">Cancel</button>
+      <button class="btn btn-primary" id="prod-confirm-btn" disabled onclick="confirmProduction()"><i class="ti ti-check"></i>Confirm production</button>
+    </div>
+  </aside>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Inventory · Operations'));
+
+    /* Tabs */
+    function switchTab(id) {
+      document.querySelectorAll('.inv-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + id)?.classList.add('active');
+      document.querySelectorAll('.inv-tab').forEach(t => {
+        const on = t.getAttribute('onclick')?.includes("'" + id + "'");
+        t.classList.toggle('active', !!on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      history.replaceState(null, '', '#' + id);
+    }
+
+    // Hash routing — open correct tab on page load (e.g. from recipes.html "Record production" link)
+    document.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && document.getElementById('panel-' + hash)) {
+        switchTab(hash);
+      }
+    });
+
+    /* ══════════════════════════════════════════════════════
+       Overview tab — outlet health grid + weekly pulse strip
+    ══════════════════════════════════════════════════════ */
+
+    // Overdue/health status is computed against each outlet's assigned
+    // count-template cadence (see inventory-governance.html → HQ Count
+    // Templates). NSW Metro runs the weekly template, VIC Metro fortnightly.
+    // streak = consecutive cycles this outlet has been flagged at this
+    // status or worse. Supy's framing: a one-off spike is noise, but 4-5+
+    // points sustained over multiple cycles is a systemic problem — streak
+    // is what tells the two apart at a glance.
+    const OUTLET_GROUPS = [
+      { name: 'NSW Metro', total: 68, onTrack: 64, outlets: [
+        { name: 'Bondi Beach',   status: 'risk', reason: 'Escalate · overdue 14d', streak: 3 },
+        { name: 'Newtown',       status: 'risk', reason: '2 anomalies flagged',     streak: 1 },
+        { name: 'Surry Hills',   status: 'warn', reason: '6.3% variance',          streak: 2 },
+        { name: 'Parramatta',    status: 'warn', reason: 'New outlet · monitor',   streak: 1 },
+      ]},
+      { name: 'VIC Metro', total: 56, onTrack: 53, outlets: [
+        { name: 'Richmond',  status: 'warn',    reason: '3.9% variance',              streak: 1 },
+        { name: 'St Kilda',  status: 'warn',    reason: '4.2% variance',              streak: 2 },
+        { name: 'Fitzroy',   status: 'pending', reason: 'Counted · awaiting review',  streak: 0 },
+      ]},
+    ];
+    const HEALTH_ICON = { risk: 'alert-triangle', warn: 'alert-circle', pending: 'clock' };
+    function streakSuffix(streak) {
+      if (!streak || streak < 2) return '';
+      const ord = streak === 2 ? '2nd' : streak === 3 ? '3rd' : streak + 'th';
+      return ` · ${ord} cycle running`;
+    }
+    let _healthView = 'severity';
+
+    function outletSlug(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
+    function goToOutlet(name) { window.location = 'outlet-inventory.html?outlet=' + outletSlug(name); }
+
+    function healthTileHTML(o) {
+      if (o.status === 'pending') {
+        return `<div class="health-review-wrap">
+          <button class="health-tile pending" onclick="toggleHealthReview(event,this)">
+            <span class="health-tile-name"><i class="ti ti-clock" aria-hidden="true"></i>${o.name}</span>
+            <span class="health-tile-sub">${o.reason}</span>
+          </button>
+          <div class="health-review-menu" role="menu">
+            <button class="health-review-item" role="menuitem" onclick="markOutletReviewed(event,'${o.name}',this)"><i class="ti ti-check" aria-hidden="true"></i>Mark reviewed</button>
+            <button class="health-review-item" role="menuitem" onclick="flagOutletIssue(event,'${o.name}',this)"><i class="ti ti-flag" aria-hidden="true"></i>Flag issue</button>
+            <button class="health-review-item" role="menuitem" onclick="goToOutlet('${o.name}')"><i class="ti ti-clipboard-list" aria-hidden="true"></i>View count activity</button>
+          </div>
+        </div>`;
+      }
+      const icon = HEALTH_ICON[o.status];
+      const streakBadge = o.streak >= 3 ? `<i class="ti ti-repeat" title="${o.streak} consecutive cycles" aria-hidden="true"></i>` : '';
+      return `<button class="health-tile ${o.status}${o.streak>=3?' streak':''}" onclick="goToOutlet('${o.name}')" title="View ${o.name} count activity">
+        <span class="health-tile-name">${streakBadge}<i class="ti ti-${icon}" aria-hidden="true"></i>${o.name}</span>
+        <span class="health-tile-sub">${o.reason}${streakSuffix(o.streak)}</span>
+      </button>`;
+    }
+
+    function onTrackChipHTML(count) {
+      return `<span class="health-tile ok" style="cursor:default;">
+        <span class="health-tile-name"><i class="ti ti-check" aria-hidden="true"></i>+${count} on track</span>
+      </span>`;
+    }
+
+    function renderHealthGrid() {
+      const body = document.getElementById('health-grid-body');
+      if (!body) return;
+      if (_healthView === 'group') {
+        body.innerHTML = OUTLET_GROUPS.map(g => {
+          const tiles = g.outlets.map(healthTileHTML).join('');
+          return `<p class="health-group-label">${g.name} · ${g.total} outlets</p>
+            <div class="health-tiles">${tiles}${onTrackChipHTML(g.onTrack)}</div>`;
+        }).join('');
+      } else {
+        const rank = { risk: 3, warn: 2, pending: 1 };
+        const flagged = OUTLET_GROUPS.flatMap(g => g.outlets).sort((a, b) => rank[b.status] - rank[a.status]);
+        const totalOnTrack = OUTLET_GROUPS.reduce((s, g) => s + g.onTrack, 0);
+        body.innerHTML = `<div class="health-tiles">${flagged.map(healthTileHTML).join('')}${onTrackChipHTML(totalOnTrack)}</div>`;
+      }
+    }
+
+    function setHealthView(mode, btn) {
+      _healthView = mode;
+      document.querySelectorAll('.health-toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderHealthGrid();
+    }
+
+    function toggleHealthReview(e, btn) {
+      e.stopPropagation();
+      const menu = btn.nextElementSibling;
+      document.querySelectorAll('.health-review-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.health-review-wrap')) {
+        document.querySelectorAll('.health-review-menu.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    function markOutletReviewed(e, name, btn) {
+      e.stopPropagation();
+      const wrap = btn.closest('.health-review-wrap');
+      wrap.outerHTML = `<button class="health-tile ok" onclick="goToOutlet('${name}')" title="View ${name} count activity">
+        <span class="health-tile-name"><i class="ti ti-check" aria-hidden="true"></i>${name}</span>
+        <span class="health-tile-sub">Reviewed · on track</span>
+      </button>`;
+      invToast(name + ' marked reviewed');
+      addInvActivity(`${name}'s stock count reviewed and cleared`, 'Keith Tan');
+    }
+
+    function flagOutletIssue(e, name, btn) {
+      e.stopPropagation();
+      const wrap = btn.closest('.health-review-wrap');
+      wrap.outerHTML = `<button class="health-tile warn" onclick="goToOutlet('${name}')" title="View ${name} count activity">
+        <span class="health-tile-name"><i class="ti ti-alert-circle" aria-hidden="true"></i>${name}</span>
+        <span class="health-tile-sub">Flagged for follow-up</span>
+      </button>`;
+      invToast(name + ' flagged for follow-up');
+      addInvActivity(`${name}'s stock count flagged for follow-up`, 'Keith Tan');
+    }
+
+    // This week's counts — expected due dates come from each outlet's count
+    // template cadence; "done" is filled in as sessions are submitted.
+    const PULSE_WEEK = [
+      { label: 'Mon 22', state: 'done',   total: 12, done: 12 },
+      { label: 'Tue 23', state: 'done',   total: 8,  done: 7  },
+      { label: 'Wed 24', state: 'done',   total: 10, done: 10 },
+      { label: 'Thu 25', state: 'today',  total: 9,  done: 5  },
+      { label: 'Fri 26', state: 'future', total: 11, done: 0  },
+      { label: 'Sat 27', state: 'future', total: 3,  done: 0  },
+      { label: 'Sun 28', state: 'future', total: 0,  done: 0  },
+    ];
+
+    function renderPulseStrip() {
+      const grid = document.getElementById('pulse-grid');
+      if (!grid) return;
+      grid.innerHTML = PULSE_WEEK.map(d => {
+        if (d.state === 'future') {
+          const countText = d.total > 0 ? `${d.total} due` : 'None due';
+          return `<button class="pulse-day" onclick="invToast('${d.label}: ${countText}')">
+            <span class="pulse-day-label">${d.label}</span>
+            <span class="pulse-bar-outline"></span>
+            <span class="pulse-day-count muted">${countText}</span>
+          </button>`;
+        }
+        const isToday = d.state === 'today';
+        const missed = d.total - d.done;
+        const pct = d.total ? Math.round((d.done / d.total) * 100) : 100;
+        const barClass = (!isToday && missed > 0) ? 'risk' : 'ok';
+        const countLabel = isToday ? `${d.done}/${d.total} so far` : `${d.done}/${d.total}`;
+        const countClass = (!isToday && missed > 0) ? 'risk' : '';
+        return `<button class="pulse-day ${isToday ? 'today' : ''}" onclick="goToDayCounts('${d.label}')">
+          <span class="pulse-day-label ${isToday ? 'today' : ''}">${d.label}${isToday ? ' · today' : ''}</span>
+          <span class="pulse-bar-track"><span class="pulse-bar-fill ${barClass}" style="width:${pct}%;"></span></span>
+          <span class="pulse-day-count ${countClass}">${countLabel}</span>
+        </button>`;
+      }).join('');
+    }
+
+    function goToDayCounts(label) {
+      invToast('Opening sessions for ' + label);
+      switchTab('counts');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderHealthGrid();
+      renderPulseStrip();
+    });
+
+    /* ── Production drawer ── */
+    const PROD_RECIPES = {
+      'chicken-stock': {
+        name: 'Chicken Stock',
+        yieldPer: '10 L',
+        ingredients: [
+          { name: 'Chicken carcass', qtyPer: 2, uom: 'kg' },
+          { name: 'Brown onion', qtyPer: 0.4, uom: 'kg' },
+          { name: 'Celery', qtyPer: 0.2, uom: 'kg' },
+          { name: 'Carrot', qtyPer: 0.2, uom: 'kg' },
+          { name: 'Bay leaves', qtyPer: 4, uom: 'each' },
+        ]
+      },
+      'brioche-bun': {
+        name: 'Brioche Bun Batch',
+        yieldPer: '48 buns',
+        ingredients: [
+          { name: 'Bread flour', qtyPer: 1.8, uom: 'kg' },
+          { name: 'Unsalted butter', qtyPer: 0.3, uom: 'kg' },
+          { name: 'Eggs', qtyPer: 8, uom: 'each' },
+          { name: 'Instant yeast', qtyPer: 14, uom: 'g' },
+          { name: 'Whole milk', qtyPer: 240, uom: 'mL' },
+        ]
+      }
+    };
+
+    function openProductionDrawer() {
+      // Pre-fill today's date
+      const d = new Date();
+      const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      document.getElementById('prod-date').value = iso;
+      document.getElementById('prod-recipe').value = '';
+      document.getElementById('prod-batches').value = 1;
+      document.getElementById('prod-notes').value = '';
+      document.getElementById('prod-ing-preview').style.display = 'none';
+      document.getElementById('prod-notice').style.display = 'none';
+      document.getElementById('prod-confirm-btn').disabled = true;
+      document.getElementById('prod-drawer-backdrop').classList.add('open');
+      document.getElementById('prod-drawer').classList.add('open');
+    }
+
+    function closeProductionDrawer() {
+      document.getElementById('prod-drawer-backdrop').classList.remove('open');
+      document.getElementById('prod-drawer').classList.remove('open');
+    }
+
+    function updateIngPreview() {
+      const recipe = document.getElementById('prod-recipe').value;
+      const batches = Math.max(1, parseInt(document.getElementById('prod-batches').value) || 1);
+      const preview = document.getElementById('prod-ing-preview');
+      const notice = document.getElementById('prod-notice');
+      const confirmBtn = document.getElementById('prod-confirm-btn');
+      const rows = document.getElementById('prod-ing-rows');
+
+      if (!recipe || !PROD_RECIPES[recipe]) {
+        preview.style.display = 'none';
+        notice.style.display = 'none';
+        confirmBtn.disabled = true;
+        return;
+      }
+
+      const data = PROD_RECIPES[recipe];
+      rows.innerHTML = data.ingredients.map(ing => {
+        const total = ing.qtyPer * batches;
+        const qty = total % 1 === 0 ? total : total.toFixed(1);
+        return `<div class="prod-ing-row">
+          <span class="prod-ing-name">${ing.name}</span>
+          <span class="prod-ing-qty">−${qty} ${ing.uom}</span>
+        </div>`;
+      }).join('');
+
+      // Update preview label to show yield
+      preview.querySelector('.prod-ing-preview-label').textContent =
+        `Ingredients to deduct · Yield: ${batches} × ${data.yieldPer}`;
+
+      preview.style.display = 'flex';
+      notice.style.display = 'flex';
+      confirmBtn.disabled = false;
+    }
+
+    function confirmProduction() {
+      const recipe = document.getElementById('prod-recipe').value;
+      const batches = parseInt(document.getElementById('prod-batches').value) || 1;
+      const outlet = document.getElementById('prod-outlet').value || 'outlet';
+      const data = PROD_RECIPES[recipe];
+      const recipeName = data ? data.name : 'recipe';
+      const yieldDesc = data ? `${batches} × ${data.yieldPer}` : '';
+
+      closeProductionDrawer();
+
+      // Add row to production log table
+      const tbody = document.querySelector('#production-table tbody');
+      if (tbody) {
+        const ingSummary = data ? data.ingredients.map(i => `${i.name} ${(i.qtyPer*batches).toFixed(1)} ${i.uom}`).join(' · ') : '';
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><p class="cell-name">${recipeName}</p><p style="font-size:11px;color:var(--text-soft);margin-top:1px;">Production batch</p></td>
+          <td>${outlet}</td>
+          <td class="tabular" style="text-align:right">${batches}</td>
+          <td class="tabular">${yieldDesc}</td>
+          <td style="font-size:12px;color:var(--text-soft);">${ingSummary}</td>
+          <td>Keith Tan</td>
+          <td class="cell-timestamp">Today ${timeStr}</td>`;
+        tbody.insertBefore(tr, tbody.firstChild);
+      }
+
+      invToast(`Production recorded — ${yieldDesc} of ${recipeName} added to ${outlet || 'inventory'}`);
+      addInvActivity(`Production recorded: ${batches}× ${recipeName} at ${outlet} · Inventory updated`, 'Keith Tan');
+    }
+
+    /* Agent resolve */
+    function resolveAgent(cardId, msg) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const state = card.querySelector('.agent-state');
+      if (state) { state.className = 'agent-state done'; state.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>Done'; }
+      card.classList.add('resolved');
+      invToast(msg);
+      addInvActivity(msg, 'by Otto');
+    }
+
+    /* Toast */
+    function invToast(msg) {
+      let wrap = document.getElementById('inv-toast');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'inv-toast';
+        wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;';
+        document.body.appendChild(wrap);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+      t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    /* Audit entry */
+    function addInvActivity(text, actor) {
+      const tl = document.querySelector('.timeline');
+      if (!tl) return;
+      const isAgent = (actor||'').startsWith('by ');
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.innerHTML = '<div class="timeline-dot"' + (isAgent ? ' style="border-color:var(--insights)"' : '') + '></div>' +
+        '<div class="timeline-body"><div class="timeline-text">' + text + '</div><div class="timeline-meta">' + (actor||'HQ Administrator') + '</div></div>' +
+        '<div class="timeline-time">Just now</div>';
+      tl.insertBefore(item, tl.firstChild);
+    }
+
+    /* ── §3.7.10 CK Transfer data + rendering ── */
+    const CK_TRANSFERS = [
+      { id:'TRF-0012', item:'Chicken Stock',   from:'Sydney Central Kitchen', to:'Surry Hills Social',   qty:20,  uom:'L',    costPer:1.85, batchRef:'BATCH-CK-0081', dispatchedAt:'Today 8:00am',    dispatchedBy:'James Nguyen', status:'Dispatched' },
+      { id:'TRF-0011', item:'Brioche Buns',    from:'Sydney Central Kitchen', to:'Bondi Beach',          qty:48,  uom:'each', costPer:0.62, batchRef:'BATCH-CK-0080', dispatchedAt:'Yesterday 7:30am', dispatchedBy:'James Nguyen', status:'Dispatched' },
+      { id:'TRF-0010', item:'Chicken Stock',   from:'Sydney Central Kitchen', to:'Newtown',              qty:15,  uom:'L',    costPer:1.85, batchRef:'BATCH-CK-0079', dispatchedAt:'20 Jun 8:15am',   dispatchedBy:'Keith Tan',    receivedAt:'20 Jun 10:30am', receivedBy:'Marcus Lee',   status:'Received' },
+      { id:'TRF-0009', item:'Sourdough Bread', from:'Sydney Central Kitchen', to:'Darling Street Bistro',qty:30,  uom:'loaf', costPer:3.20, batchRef:'BATCH-CK-0078', dispatchedAt:'19 Jun 7:00am',   dispatchedBy:'James Nguyen', receivedAt:'19 Jun 9:15am',  receivedBy:'Tom Wilson',   status:'Received' },
+      { id:'TRF-0008', item:'Brioche Buns',    from:'Sydney Central Kitchen', to:'Surry Hills Social',   qty:36,  uom:'each', costPer:0.62, batchRef:'BATCH-CK-0077', dispatchedAt:'18 Jun 8:00am',   dispatchedBy:'Keith Tan',    receivedAt:'18 Jun 9:40am',  receivedBy:'Sarah Kim',    status:'Received' },
+      { id:'TRF-0007', item:'Chicken Stock',   from:'Sydney Central Kitchen', to:'Darling Street Bistro',qty:10,  uom:'L',    costPer:1.85, batchRef:'BATCH-CK-0076', dispatchedAt:'17 Jun 7:45am',   dispatchedBy:'James Nguyen', receivedAt:'17 Jun 10:00am', receivedBy:'Tom Wilson',   status:'Received' },
+    ];
+
+    const STATUS_TRF = {
+      'Dispatched': '<span class="nb-pill info"><i class="ti ti-truck-delivery"></i>Dispatched</span>',
+      'Received':   '<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Received</span>',
+      'Discrepancy':'<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Discrepancy</span>',
+    };
+
+    function renderTransfers() {
+      const tbody = document.getElementById('trf-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = CK_TRANSFERS.map((t, i) => {
+        const cost = (t.qty * t.costPer).toFixed(2);
+        const recvInfo = t.receivedAt ? `<div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${t.receivedAt} · ${t.receivedBy}</div>` : '';
+        const action = t.status === 'Dispatched'
+          ? `<button class="confirm-btn" onclick="confirmReceipt(${i})"><i class="ti ti-package" style="font-size:11px;"></i>Confirm receipt</button>`
+          : '—';
+        return `<tr id="trf-row-${i}" class="${t.status==='Received'?'trf-row-received':''}">
+          <td><div style="font-size:13px;font-weight:600;color:var(--text);">${t.id}</div><span class="ck-source-badge"><i class="ti ti-tools-kitchen-2" style="font-size:9px;"></i>CK</span></td>
+          <td class="cell-name">${t.item}</td>
+          <td style="font-size:13px;"><span style="color:var(--text-soft);">${t.from.replace('Sydney Central Kitchen','CK')}</span> <i class="ti ti-arrow-right" style="font-size:11px;color:var(--text-soft);"></i> <strong>${t.to}</strong></td>
+          <td class="tabular" style="text-align:right;">${t.qty} ${t.uom}</td>
+          <td class="tabular" style="text-align:right;">$${cost}</td>
+          <td style="font-size:12px;color:var(--text-soft);">${t.batchRef}</td>
+          <td><div style="font-size:13px;">${t.dispatchedAt}</div><div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${t.dispatchedBy}</div>${recvInfo}</td>
+          <td>${STATUS_TRF[t.status]||t.status}</td>
+          <td style="white-space:nowrap;">${action}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function confirmReceipt(idx) {
+      const t = CK_TRANSFERS[idx];
+      if (!t || t.status !== 'Dispatched') return;
+      t.status = 'Received';
+      t.receivedAt = 'Just now';
+      t.receivedBy = 'Outlet staff';
+      // update in-transit KPI
+      const inTransit = CK_TRANSFERS.filter(x => x.status === 'Dispatched').length;
+      const kpiEl = document.getElementById('trf-kpi-transit');
+      if (kpiEl) kpiEl.textContent = inTransit;
+      renderTransfers();
+      addInvActivity('CK transfer <strong>' + t.id + '</strong> received at <strong>' + t.to + '</strong> — ' + t.qty + ' ' + t.uom + ' ' + t.item + ' · on-hand updated', 'Outlet staff');
+      invToast(t.id + ' confirmed received · ' + t.to + ' on-hand updated');
+    }
+
+
+    /* ── Count sessions ── */
+    // Waste log — cross-referenced against variance item rows below so a
+    // usage gap can be told apart from "explained by a logged waste entry"
+    // vs. genuinely unexplained (Supy calls the latter a "black hole").
+    const WASTE_LOG = [
+      { item:'Roma Tomatoes',  outlet:'Surry Hills',   qty:'2.4 kg',    reason:'Spoilage',   cost:8.40,  loggedBy:'Sarah Kim' },
+      { item:'Sourdough Bread',outlet:'Circular Quay', qty:'6 loaf',    reason:'End of day', cost:14.40, loggedBy:'James Nguyen' },
+      { item:'Whole Milk 2L',  outlet:'Newtown',       qty:'3 carton',  reason:'Expired',    cost:11.70, loggedBy:'Marcus Lee' },
+    ];
+    function matchWaste(itemName, outletName) {
+      return WASTE_LOG.find(w => w.item === itemName && w.outlet === outletName) || null;
+    }
+    function wasteMatch(it, outletName) {
+      const match = matchWaste(it.name, outletName);
+      if (!match) return { match: null, explained: 0, full: false };
+      const explained = Math.min(match.cost, it.varCost);
+      return { match, explained, full: explained >= it.varCost - 0.01 };
+    }
+
+    // Items with no waste-log match get a manual classification affordance
+    // — HQ can tag a suspected cause (over-portion/spoilage/theft/count
+    // error) even without a formal log entry, per Supy's recommendation
+    // that every flagged item should carry a cause, not just a dollar figure.
+    const SUSPECTED = {};
+    function classifyMenuItems(sessionId, itemName) {
+      return ['Over-portion', 'Spoilage (unlogged)', 'Theft', 'Count error'].map(c =>
+        `<button class="classify-item" role="menuitem" onclick="setSuspected(event,'${sessionId}','${itemName.replace(/'/g,"\\'")}','${c}')">${c}</button>`
+      ).join('');
+    }
+    function toggleClassifyMenu(e, btn) {
+      e.stopPropagation();
+      const menu = btn.nextElementSibling;
+      document.querySelectorAll('.classify-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.classify-wrap')) {
+        document.querySelectorAll('.classify-menu.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+    function setSuspected(e, sessionId, itemName, cause) {
+      e.stopPropagation();
+      SUSPECTED[sessionId + '|' + itemName] = cause;
+      invToast(itemName + ' tagged as suspected ' + cause.toLowerCase());
+      addInvActivity(itemName + ' variance tagged as suspected ' + cause, 'Keith Tan');
+      if (activeSession) renderSessionDrawer(activeSession);
+    }
+
+    function wasteMatchTagHTML(it, outletName, sessionId) {
+      const { match, explained, full } = wasteMatch(it, outletName);
+      if (match) {
+        return full
+          ? `<span class="waste-match-tag ok"><i class="ti ti-check" aria-hidden="true"></i>Explained · ${match.reason} logged by ${match.loggedBy}</span>`
+          : `<span class="waste-match-tag partial"><i class="ti ti-alert-circle" aria-hidden="true"></i>Partially explained · $${match.cost.toFixed(2)} ${match.reason.toLowerCase()} logged, $${(it.varCost-explained).toFixed(2)} unexplained</span>`;
+      }
+      const suspected = SUSPECTED[sessionId + '|' + it.name];
+      const label = suspected ? `Suspected: ${suspected}` : 'Unexplained · Classify';
+      const cls = suspected ? 'suspected' : 'none';
+      return `<div class="classify-wrap">
+        <button class="waste-match-tag ${cls}" onclick="toggleClassifyMenu(event,this)"><i class="ti ti-help-circle" aria-hidden="true"></i>${label} <i class="ti ti-chevron-down" aria-hidden="true" style="font-size:9px;"></i></button>
+        <div class="classify-menu" role="menu">${classifyMenuItems(sessionId, it.name)}</div>
+      </div>`;
+    }
+
+    const SESSIONS = [
+      {
+        id:'CS-003', period:'Week ending 15 Jun 2026', outlet:'Surry Hills', type:'full', status:'in-progress',
+        sheets:[
+          {name:'Dry Store',  required:true,  cadence:'Weekly',      assignee:'Keith Tan',  status:'submitted'},
+          {name:'Freezer',    required:true,  cadence:'Weekly',      assignee:'Keith Tan',  status:'submitted'},
+          {name:'Bar',        required:true,  cadence:'Weekly',      assignee:'Sarah Kim',  status:'in-progress'},
+          {name:'FOH',        required:false, cadence:'Monthly',     assignee:'Sarah Kim',  status:'pending'},
+        ],
+        openingStock:14200, purchases:8400, closingStock:null, actualCogs:null, theoreticalCogs:null,
+        variance:null, variancePct:null, varByCategory:null,
+        createdAt:'13 Jun 2026', createdBy:'Keith Tan',
+      },
+      {
+        id:'CS-002', period:'Week ending 8 Jun 2026', outlet:'Newtown', type:'full', status:'submitted',
+        sheets:[
+          {name:'Dry Store',  required:true, cadence:'Weekly', assignee:'Marcus Lee', status:'submitted'},
+          {name:'Freezer',    required:true, cadence:'Weekly', assignee:'Marcus Lee', status:'submitted'},
+          {name:'Bar',        required:true, cadence:'Weekly', assignee:'Jake Chen',  status:'submitted'},
+          {name:'FOH',        required:true, cadence:'Weekly', assignee:'Jake Chen',  status:'submitted'},
+        ],
+        openingStock:12800, purchases:6900, closingStock:9800, actualCogs:9900, theoreticalCogs:9200,
+        variance:700, variancePct:7.6,
+        varByCategory:[
+          {cat:'Proteins',  actual:3800, theoretical:3400, var:400, varPct:11.8, items:[
+            {name:'Chicken Breast 500g', theoretical:'1.2 kg',  actual:'1.8 kg',  varCost:180},
+            {name:'Beef Short Rib 500g', theoretical:'0.8 kg',  actual:'1.1 kg',  varCost:110},
+          ]},
+          {cat:'Produce',   actual:2400, theoretical:2200, var:200, varPct:9.1, items:[
+            {name:'Avocado',       theoretical:'40 ea',  actual:'52 ea',  varCost:96},
+            {name:'Roma Tomatoes', theoretical:'15 kg',  actual:'19 kg',  varCost:66},
+          ]},
+          {cat:'Dairy',     actual:1900, theoretical:1820, var:80,  varPct:4.4, items:[
+            {name:'Whole Milk 2L', theoretical:'24 ctn', actual:'27 ctn', varCost:48},
+          ]},
+          {cat:'Beverages', actual:1200, theoretical:1180, var:20,  varPct:1.7, items:[
+            {name:'Orange Juice 2L', theoretical:'10 btl', actual:'11 btl', varCost:20},
+          ]},
+          {cat:'Dry goods', actual:600, theoretical:600, var:0, varPct:0, items:[]},
+        ],
+        createdAt:'8 Jun 2026', submittedAt:'9 Jun, 8:30 am', createdBy:'Marcus Lee',
+      },
+      {
+        id:'CS-001', period:'Fortnight ending 1 Jun 2026', outlet:'Bondi Beach', type:'full', status:'locked',
+        sheets:[
+          {name:'Dry Store',  required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'Freezer',    required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'Bar',        required:true,  cadence:'Fortnightly', assignee:'Priya Mendez', status:'submitted'},
+          {name:'FOH',        required:false, cadence:'Monthly',     assignee:'Priya Mendez', status:'carried-forward'},
+        ],
+        openingStock:9800, purchases:7200, closingStock:8400, actualCogs:8600, theoreticalCogs:8100,
+        variance:500, variancePct:6.2,
+        varByCategory:[
+          {cat:'Proteins',  actual:3200, theoretical:2900, var:300, varPct:10.3, items:[
+            {name:'Chicken Thigh 2kg', theoretical:'8 pkg', actual:'11 pkg', varCost:180},
+          ]},
+          {cat:'Produce',   actual:2100, theoretical:2050, var:50,  varPct:2.4, items:[]},
+          {cat:'Dairy',     actual:1600, theoretical:1600, var:0,   varPct:0,   items:[]},
+          {cat:'Beverages', actual:1200, theoretical:1150, var:50,  varPct:4.3, items:[]},
+          {cat:'Dry goods', actual:500,  theoretical:400,  var:100, varPct:25.0, items:[
+            {name:'Olive Oil 1L', theoretical:'6 btl', actual:'10 btl', varCost:100},
+          ]},
+        ],
+        approvedBy:'Keith Tan', approvedAt:'2 Jun, 10:14 am',
+        createdAt:'1 Jun 2026', createdBy:'Priya Mendez',
+      },
+      {
+        id:'SC-041', period:'Spot · Proteins', outlet:'Melbourne CBD', type:'spot', status:'complete',
+        sheets:[{name:'Proteins (spot)', required:true, cadence:null, assignee:'Lee Sung', status:'submitted'}],
+        openingStock:null, purchases:null, closingStock:null, actualCogs:null, theoreticalCogs:null,
+        variance:null, variancePct:null, varByCategory:null,
+        createdAt:'13 Jun 2026', createdBy:'Lee Sung',
+      },
+    ];
+
+    function fmt(n) { return n==null?'—':'$'+n.toLocaleString(); }
+    function fmtPct(p) { return p==null?'—':p.toFixed(1)+'%'; }
+
+    function populateSessionsOutletFilter() {
+      const sel = document.getElementById('sessions-outlet-filter');
+      if (!sel || sel.options.length > 1) return;
+      [...new Set(SESSIONS.map(s => s.outlet))].sort().forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderSessions() {
+      const tbody = document.getElementById('sessions-tbody');
+      const table = document.getElementById('sessions-table');
+      const empty = document.getElementById('sessions-empty');
+      if (!tbody) return;
+      populateSessionsOutletFilter();
+      const filterVal = document.getElementById('sessions-outlet-filter')?.value || '';
+      const filtered = filterVal ? SESSIONS.filter(s => s.outlet === filterVal) : SESSIONS;
+      if (!filtered.length) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+      table.style.display = '';
+      empty.style.display = 'none';
+      tbody.innerHTML = filtered.map(s => {
+        const reqSheets = s.sheets.filter(sh=>sh.required);
+        const doneReq   = reqSheets.filter(sh=>sh.status==='submitted'||sh.status==='carried-forward').length;
+        const totalReq  = reqSheets.length;
+
+        // Sheets cell — dots
+        const dots = s.sheets.map(sh => {
+          const col = sh.status==='submitted'?'var(--fern)': sh.status==='in-progress'?'var(--status-warn-fg)': sh.status==='carried-forward'?'var(--text-soft)':'var(--border)';
+          return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;" title="${sh.name}: ${sh.status}"></span>`;
+        }).join('');
+        const sheetsCell = `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">${dots}<span style="font-size:11px;color:var(--text-soft);white-space:nowrap;">${doneReq}/${totalReq} req.</span></div>`;
+
+        // Status badge
+        const statusBadge = s.status==='in-progress'  ? `<span class="nb-pill warn"><i class="ti ti-edit"></i>In progress</span>`
+                          : s.status==='submitted'      ? `<span class="nb-pill info"><i class="ti ti-send"></i>Pending approval</span>`
+                          : s.status==='locked'         ? `<span class="nb-pill ok"><i class="ti ti-lock"></i>Locked</span>`
+                          : s.status==='complete'       ? `<span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span>`
+                          : `<span class="nb-pill neutral"><i class="ti ti-clock"></i>Open</span>`;
+
+        // Variance color
+        const varColor = s.variancePct==null?'':s.variancePct>4?'color:var(--status-risk-fg);font-weight:600':s.variancePct>2?'color:var(--status-warn-fg);font-weight:600':'';
+
+        // Action button
+        const actionBtn = s.status==='submitted'
+          ? `<button class="btn btn-primary" style="height:32px;font-size:12px;padding-inline:var(--space-md);" onclick="event.stopPropagation();approveSession('${s.id}')"><i class="ti ti-check"></i>Approve</button>`
+          : `<button class="link-action" onclick="event.stopPropagation();openSessionDrawer('${s.id}')">View</button>`;
+
+        return `<tr style="cursor:pointer;" onclick="openSessionDrawer('${s.id}')">
+          <td>
+            <div style="font-weight:600;color:var(--text);">${s.period}</div>
+            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-soft);">${s.id}</div>
+          </td>
+          <td onclick="event.stopPropagation()"><button class="outlet-link" onclick="goToOutlet('${s.outlet}')">${s.outlet}</button></td>
+          <td>${sheetsCell}</td>
+          <td>${statusBadge}</td>
+          <td class="num tabular">${fmt(s.actualCogs)}</td>
+          <td class="num tabular" style="${varColor}">${fmtPct(s.variancePct)}</td>
+          <td onclick="event.stopPropagation()">${actionBtn}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    let activeSession = null;
+    function openSessionDrawer(id) {
+      activeSession = SESSIONS.find(s=>s.id===id);
+      if (!activeSession) return;
+      renderSessionDrawer(activeSession);
+      document.getElementById('session-drawer').classList.add('open');
+      document.getElementById('session-drawer-backdrop').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSessionDrawer() {
+      document.getElementById('session-drawer').classList.remove('open');
+      document.getElementById('session-drawer-backdrop').classList.remove('open');
+      document.body.style.overflow = '';
+      activeSession = null;
+    }
+    function approveSession(id) {
+      const s = SESSIONS.find(x=>x.id===id);
+      if (!s) return;
+      s.status = 'locked';
+      s.approvedBy = 'Keith Tan';
+      s.approvedAt = '13 Jun, now';
+      renderSessions();
+      invToast('Session approved and locked — COGS posted');
+    }
+    function openNewSession() { invToast('New count session — select outlet and period'); }
+    function openSpotCount()  { invToast('Spot count — select outlet and sheet'); }
+
+    function renderSessionDrawer(s) {
+      const el = document.getElementById('session-drawer');
+
+      // Status badge for header
+      const statusBadge = s.status==='in-progress'  ? `<span class="nb-pill warn"><i class="ti ti-edit"></i>In progress</span>`
+                        : s.status==='submitted'      ? `<span class="nb-pill info"><i class="ti ti-send"></i>Pending approval</span>`
+                        : s.status==='locked'         ? `<span class="nb-pill ok"><i class="ti ti-lock"></i>Locked</span>`
+                        : s.status==='complete'       ? `<span class="nb-pill ok"><i class="ti ti-check"></i>Complete</span>`
+                        : `<span class="nb-pill neutral"><i class="ti ti-clock"></i>Open</span>`;
+
+      // Sheets
+      const reqSheets = s.sheets.filter(sh=>sh.required);
+      const doneReq   = reqSheets.filter(sh=>sh.status==='submitted').length;
+      const totalReq  = reqSheets.length;
+      const sheetsHtml = s.sheets.map(sh => {
+        const dotClass = sh.status==='submitted'?'submitted':sh.status==='in-progress'?'in-progress':sh.status==='carried-forward'?'carried-forward':'pending';
+        const statusLabel = sh.status==='submitted'?'Submitted':sh.status==='in-progress'?'In progress':sh.status==='carried-forward'?'Carry-forward':'Pending';
+        const cadenceBadge = sh.cadence ? `<span class="cadence-badge">${sh.cadence}</span>` : '';
+        const optionalNote = !sh.required ? `<span style="font-size:10px;color:var(--text-soft);margin-left:4px;">optional</span>` : '';
+        return `<div class="sheet-row">
+          <div>
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${sh.name}</span>
+            ${cadenceBadge}${optionalNote}
+            <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${sh.assignee}</div>
+          </div>
+          <span style="font-size:12px;color:var(--text-soft);white-space:nowrap;">${sh.assignee}</span>
+          <div style="display:flex;align-items:center;gap:var(--space-xs);white-space:nowrap;">
+            <span class="sheet-status-dot ${dotClass}"></span>
+            <span style="font-size:12px;font-weight:600;color:${dotClass==='submitted'?'var(--fern)':dotClass==='in-progress'?'var(--status-warn-fg)':'var(--text-soft)'};">${statusLabel}</span>
+          </div>
+        </div>`;
+      }).join('');
+
+      // COGS panel
+      let cogsHtml = '';
+      const showCogs = s.actualCogs != null;
+      if (showCogs) {
+        const varColor = s.variancePct>4?'color:var(--status-risk-fg)':s.variancePct>2?'color:var(--status-warn-fg)':'color:var(--status-ok-fg)';
+        const varIcon  = s.variancePct>4?'ti-alert-triangle':s.variancePct>2?'ti-alert-circle':'ti-check';
+        const cfNote   = s.sheets.some(sh=>sh.status==='carried-forward')?' + 1 carry-forward':'';
+        cogsHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">COGS summary</div>
+        <div class="cogs-panel">
+          <div class="cogs-row"><span>Opening stock</span><span class="tabular">${fmt(s.openingStock)}</span></div>
+          <div class="cogs-row"><span style="color:var(--status-ok-fg)">+ Purchases</span><span class="tabular">${fmt(s.purchases)}</span></div>
+          <div class="cogs-row"><span style="color:var(--status-risk-fg)">− Closing stock</span><span class="tabular">${fmt(s.closingStock)}</span></div>
+          <div class="cogs-total"><span>Actual COGS</span><span>${fmt(s.actualCogs)}</span></div>
+          <div class="cogs-row" style="margin-top:var(--space-xs);"><span>Theoretical COGS <span style="font-size:11px;">(POS × recipes)</span></span><span class="tabular">${fmt(s.theoreticalCogs)}</span></div>
+          <div class="cogs-total" style="${varColor}"><span><i class="ti ${varIcon}" style="font-size:12px;margin-right:4px;"></i>Variance</span><span>${fmt(s.variance)} (${fmtPct(s.variancePct)})</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-soft);margin-top:var(--space-sm);">Based on ${doneReq}/${totalReq} required sheets${cfNote}</div>`;
+      }
+
+      // Variance by category
+      let varCatHtml = '';
+      if (showCogs && s.varByCategory) {
+        const rows = s.varByCategory.map((c,i) => {
+          const maxVar = Math.max(...s.varByCategory.map(x=>x.varPct));
+          const barW   = maxVar>0 ? Math.round((c.varPct/maxVar)*100) : 0;
+          const textColor = c.varPct>4?'color:var(--status-risk-fg);font-weight:700':c.varPct>2?'color:var(--status-warn-fg);font-weight:600':'color:var(--text-soft)';
+          const fillColor = c.varPct>4?'background:var(--status-risk-fg)':c.varPct>2?'background:var(--status-warn-fg)':'background:var(--fern)';
+          const itemRows  = c.items.length ? c.items.map(it=>`
+            <div class="var-item-row-wrap">
+              <div class="var-item-row">
+                <span>${it.name}</span>
+                <span class="tabular" style="color:var(--text-soft);">${it.theoretical} → ${it.actual}</span>
+                <span class="tabular" style="color:var(--status-risk-fg);">+$${it.varCost}</span>
+              </div>
+              ${wasteMatchTagHTML(it, s.outlet, s.id)}
+            </div>`).join('') : `<div style="font-size:12px;color:var(--text-soft);padding:4px 0;">No significant item variance</div>`;
+          return `<div class="var-cat-row" ondblclick="toggleVarItems('var-items-${i}')">
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${c.cat}</span>
+            <div class="var-track" style="height:6px;"><div class="var-fill" style="width:${barW}%;${fillColor}"></div></div>
+            <span style="font-size:12px;${textColor}">${c.var>0?'+':''}${fmt(c.var)} (${fmtPct(c.varPct)})</span>
+          </div>
+          <div class="var-item-list" id="var-items-${i}">${itemRows}</div>`;
+        }).join('');
+        varCatHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">Variance by category <span style="font-size:11px;font-weight:400;color:var(--text-soft);">· Double-click to expand</span></div>
+        ${rows}`;
+      }
+
+      // Activity
+      const actItems = [`Created by <strong>${s.createdBy}</strong> · ${s.createdAt}`];
+      if (s.submittedAt) actItems.push(`Submitted for approval · ${s.submittedAt}`);
+      if (s.approvedBy)  actItems.push(`Approved by <strong>${s.approvedBy}</strong> · ${s.approvedAt}`);
+      const actHtml = `
+        <div class="drawer-section-label" style="margin-top:var(--space-xl);">Activity</div>
+        ${actItems.map(a=>`<div style="font-size:12px;color:var(--text-soft);padding:var(--space-xs) 0;border-bottom:1px solid var(--border);">${a}</div>`).join('')}`;
+
+      // Footer buttons
+      const reqDone = s.sheets.filter(sh=>sh.required&&sh.status==='submitted').length === s.sheets.filter(sh=>sh.required).length;
+      const footerHtml = s.status==='submitted'
+        ? `<button class="btn btn-primary" onclick="approveSession('${s.id}');closeSessionDrawer()"><i class="ti ti-check"></i>Approve &amp; lock</button>
+           <button class="btn btn-outline" onclick="invToast('Re-count request sent to outlet manager')"><i class="ti ti-arrow-back"></i>Request re-count</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : s.status==='locked'||s.status==='complete'
+        ? `<button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : reqDone
+        ? `<button class="btn btn-primary" onclick="invToast('Session submitted for HQ approval')"><i class="ti ti-send"></i>Submit for review</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`
+        : `<button class="btn btn-primary" style="opacity:0.45;cursor:not-allowed;" disabled title="All required sheets must be submitted first"><i class="ti ti-send"></i>Submit for review</button>
+           <button class="btn btn-outline" onclick="closeSessionDrawer()">Close</button>`;
+
+      el.innerHTML = `
+        <div class="drawer-head">
+          <div class="drawer-head-left">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-soft);">${s.id}</span>
+            <span style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em;">${s.period}</span>
+            <span style="font-size:13px;color:var(--text-soft);">${s.outlet} &nbsp;${statusBadge}</span>
+          </div>
+          <button class="drawer-close" onclick="closeSessionDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="drawer-body" style="overflow-y:auto;flex:1;padding:var(--space-xl);">
+          <div class="drawer-section-label">Count sheets <span style="font-weight:400;color:var(--text-soft);">(${doneReq}/${totalReq} required submitted)</span></div>
+          ${sheetsHtml}
+          ${cogsHtml}
+          ${varCatHtml}
+          ${actHtml}
+        </div>
+        <div class="drawer-footer">${footerHtml}</div>`;
+    }
+
+    function toggleVarItems(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('open');
+    }
+
+    // Kick off sessions render on load
+    document.addEventListener('DOMContentLoaded', () => renderSessions());
+
+    /* ── Waste log drawer ── */
+    const WASTE_REASON_META = {
+      'Spoilage':     { cls: 'r-spoilage',     label: 'Spoilage',     hint: 'Item deteriorated before it could be used.' },
+      'Over-portion': { cls: 'r-over-portion',  label: 'Over-portion', hint: 'More than the recipe portion was served or plated.' },
+      'Breakage':     { cls: 'r-breakage',      label: 'Breakage',     hint: 'Container dropped, smashed, or packaging damaged.' },
+      'Theft':        { cls: 'r-theft',         label: 'Theft',        hint: 'Confirmed missing — log a note and notify management.' },
+      'End of day':   { cls: 'r-end-of-day',    label: 'End of day',   hint: 'Unsold at service close — too much was prepped.' },
+      'Expired':      { cls: 'r-expired',       label: 'Expired',      hint: 'Past use-by date at time of discovery.' },
+      'Other':        { cls: 'r-other',         label: 'Other',        hint: 'Add a note explaining the reason.' },
+    };
+
+    function openWasteDrawer() {
+      const d = new Date();
+      const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      document.getElementById('waste-date').value = iso;
+      document.getElementById('waste-item').value = '';
+      document.getElementById('waste-outlet').value = '';
+      document.getElementById('waste-qty').value = '';
+      document.getElementById('waste-reason').value = '';
+      document.getElementById('waste-notes').value = '';
+      document.getElementById('waste-reason-preview').classList.remove('show');
+      document.getElementById('waste-drawer-backdrop').classList.add('open');
+      document.getElementById('waste-drawer').classList.add('open');
+    }
+
+    function closeWasteDrawer() {
+      document.getElementById('waste-drawer-backdrop').classList.remove('open');
+      document.getElementById('waste-drawer').classList.remove('open');
+    }
+
+    function updateWasteReasonPreview() {
+      const val = document.getElementById('waste-reason').value;
+      const preview = document.getElementById('waste-reason-preview');
+      const meta = WASTE_REASON_META[val];
+      if (!meta) { preview.classList.remove('show'); return; }
+      preview.className = 'waste-reason-preview show waste-pill ' + meta.cls;
+      preview.textContent = meta.hint;
+      preview.style.cssText = 'display:block;padding:var(--space-sm) var(--space-md);border-radius:var(--radius-sm);font-size:12px;font-weight:400;';
+    }
+
+    function confirmWaste() {
+      const item   = document.getElementById('waste-item').value;
+      const outlet = document.getElementById('waste-outlet').value;
+      const qty    = document.getElementById('waste-qty').value;
+      const reason = document.getElementById('waste-reason').value;
+      const notes  = document.getElementById('waste-notes').value;
+      const by     = document.getElementById('waste-by').value;
+
+      if (!item || !outlet || !qty || !reason) {
+        invToast('Please fill in item, outlet, quantity and reason');
+        return;
+      }
+
+      closeWasteDrawer();
+
+      const meta = WASTE_REASON_META[reason] || { cls: 'r-other', label: reason };
+      const tbody = document.getElementById('waste-tbody');
+      if (tbody) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-AU', { hour:'2-digit', minute:'2-digit' });
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="cell-name">${item}</td>
+          <td>${outlet}</td>
+          <td class="num tabular">${qty}</td>
+          <td><span class="waste-pill ${meta.cls}">${meta.label}</span></td>
+          <td style="font-size:12px;color:var(--text-soft);">${notes || '—'}</td>
+          <td class="num tabular">—</td>
+          <td style="font-size:12px;color:var(--text-soft);">${by}</td>
+          <td class="cell-timestamp">Today ${timeStr}</td>`;
+        tbody.insertBefore(tr, tbody.firstChild);
+      }
+
+      invToast(`Waste logged — ${qty} of ${item} at ${outlet} (${reason})`);
+      addInvActivity(`Waste logged: ${qty} ${item} at ${outlet} · ${reason}`, by);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderTransfers();
+    });
+  </script>
+</body>
+</html>

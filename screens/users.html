@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Users — Nomni HQ</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background: var(--surface-soft); }
+
+    .page-body {
+      display: flex; flex-direction: column;
+      padding-block: var(--space-2xl);
+    }
+    .page-body .napp-canvas {
+      display: flex; flex-direction: column;
+      gap: var(--space-3xl);
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: var(--space-xl);
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .page-eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent);
+    }
+    .page-title {
+      font-size: 35px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.025em; line-height: 1.1;
+    }
+    .page-desc { font-size: 14px; color: var(--text-soft); margin-top: var(--space-xs); }
+    .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      height: var(--control-h); padding-inline: var(--space-lg);
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s;
+      text-decoration: none; white-space: nowrap; border: 1.5px solid transparent;
+      font-family: inherit;
+    }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--spinach); color: var(--text-accent); }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); }
+    .btn-primary:hover { background: var(--spinach); border-color: var(--spinach); }
+    .btn i { font-size: 15px; }
+
+    /* Role tabs */
+    .tab-bar {
+      display: flex; gap: 2px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 3px;
+      width: fit-content;
+    }
+    .tab-btn {
+      height: 32px; padding-inline: var(--space-lg);
+      border-radius: calc(var(--radius-md) - 2px); border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      background: none; color: var(--text-soft);
+      transition: background 0.12s, color 0.12s;
+      font-family: inherit; display: flex; align-items: center; gap: 6px;
+    }
+    .tab-btn:not(.active):hover { background: var(--surface-soft); color: var(--text); }
+    .tab-btn.active { background: var(--fern); color: var(--btn-primary-fg); }
+    .tab-count {
+      font-size: 11px; font-weight: 700;
+      background: color-mix(in srgb, var(--cream) 25%, transparent); border-radius: var(--radius-pill);
+      padding: 1px 7px; line-height: 1.5;
+    }
+    .tab-btn:not(.active) .tab-count {
+      background: var(--surface-soft); color: var(--text-soft);
+    }
+
+    /* Filter bar */
+    .filter-bar { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap i {
+      position: absolute; left: var(--space-md); top: 50%; transform: translateY(-50%);
+      color: var(--text-soft); font-size: 15px; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; height: var(--control-h); padding-inline: var(--space-3xl) var(--space-lg);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); outline: none;
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .filter-select {
+      height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; background: var(--surface);
+      color: var(--text); cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right var(--space-sm) center;
+    }
+    .filter-select:focus { border-color: var(--border-focus); }
+
+    /* Table card */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .data-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px; }
+    .data-table thead tr { border-bottom: 1px solid var(--border); }
+    .data-table th {
+      padding: var(--space-md) var(--space-lg); text-align: left;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-soft); white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--space-md) var(--space-lg); color: var(--text);
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--surface-soft); }
+
+    /* User cell */
+    .cell-user { display: flex; align-items: center; gap: var(--space-md); }
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+      text-transform: uppercase;
+    }
+    .avatar-green  { background: var(--mint); color: var(--spinach); }
+    .avatar-purple { background: rgba(176,94,192,0.13); color: var(--procurement); }
+    .avatar-blue   { background: rgba(63,138,251,0.13); color: var(--pos); }
+    .avatar-amber  { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .avatar-rose   { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .cell-name { font-weight: 600; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--text-soft); }
+
+    /* Role badge */
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600;
+      padding: 3px 10px; border-radius: var(--radius-pill); white-space: nowrap;
+    }
+    .role-badge.owner    { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .role-badge.admin    { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+    .role-badge.manager  { background: color-mix(in srgb, var(--procurement) 13%, transparent); color: var(--procurement); }
+    .role-badge.buyer    { background: color-mix(in srgb, var(--pos) 13%, transparent); color: var(--pos); }
+    .role-badge.viewer   { background: var(--surface-soft); color: var(--text-soft); }
+    .role-badge.finance  { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .role-badge.supplier { background: color-mix(in srgb, var(--ordering) 14%, transparent); color: var(--ordering); }
+
+    /* Permission matrix */
+    .matrix-wrap { overflow-x: auto; }
+    .matrix { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 13px; }
+    .matrix th, .matrix td { padding: var(--space-sm) var(--space-md); text-align: center; border-bottom: 1px solid var(--border); }
+    .matrix th:first-child, .matrix td:first-child { text-align: left; font-weight: 600; color: var(--text); white-space: nowrap; }
+    .matrix thead th { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+    .matrix tbody tr:last-child td { border-bottom: none; }
+    .perm-yes { color: var(--status-ok-fg); }
+    .perm-no  { color: var(--stone); }
+    .perm-view { color: var(--status-info-fg); }
+    .perm-legend { display: flex; gap: var(--space-lg); flex-wrap: wrap; font-size: 12px; color: var(--text-soft); padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--border); }
+    .perm-legend span { display: inline-flex; align-items: center; gap: var(--space-xs); }
+
+    /* Outlet access pill strip */
+    .venue-access { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+    .venue-pill {
+      font-size: 11px; font-weight: 500; padding: 2px 8px;
+      border-radius: var(--radius-pill); background: var(--surface-soft);
+      border: 1px solid var(--border); color: var(--text-soft);
+      white-space: nowrap;
+    }
+    .venue-pill-more {
+      font-size: 11px; font-weight: 600; color: var(--text-accent);
+      cursor: pointer;
+    }
+
+    /* Status pill */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-pill);
+    }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
+    .status-pill.active::before { background: var(--status-ok-fg); }
+    .status-pill.invited { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+    .status-pill.invited::before { background: var(--status-warn-fg); }
+    .status-pill.suspended { background: var(--surface-soft); color: var(--text-soft); }
+    .status-pill.suspended::before { background: var(--text-soft); }
+
+    /* Row actions */
+    .row-actions { display: flex; align-items: center; gap: var(--space-sm); white-space: nowrap; }
+    .link-action {
+      font-size: 13px; font-weight: 600; color: var(--text-accent);
+      background: none; border: none; cursor: pointer; padding: 0; font-family: inherit;
+    }
+    .link-action:hover { color: var(--spinach); text-decoration: underline; }
+    .overflow-btn {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: none; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-soft); transition: background 0.12s;
+    }
+    .overflow-btn:hover { background: var(--surface-soft); color: var(--text); }
+    .overflow-btn i { font-size: 15px; }
+    .overflow-wrap { position: relative; display: inline-flex; }
+    .overflow-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 50;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+      min-width: 180px; padding: var(--space-xs);
+    }
+    .overflow-menu.open { display: block; }
+    .overflow-menu-item {
+      display: flex; align-items: center; gap: var(--space-sm);
+      width: 100%; padding: var(--space-sm) var(--space-md);
+      font-size: 13px; font-weight: 500; color: var(--text);
+      background: none; border: none; cursor: pointer;
+      border-radius: var(--radius-sm); font-family: inherit; text-align: left;
+    }
+    .overflow-menu-item:hover { background: var(--surface-soft); }
+    .overflow-menu-item.destructive { color: var(--status-risk-fg); }
+    .overflow-menu-item.destructive:hover { background: var(--status-risk-bg); }
+    .overflow-menu-divider { height: 1px; background: var(--border); margin: var(--space-xs) 0; }
+    .overflow-cell { width: 1%; white-space: nowrap; }
+
+    /* Roles info card */
+    .info-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .info-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+    }
+    .info-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .roles-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+      gap: 0;
+    }
+    .role-row {
+      padding: var(--space-md) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .role-row:last-child { border-bottom: none; }
+    .role-row-name {
+      display: flex; align-items: center; gap: var(--space-sm);
+      font-size: 13px; font-weight: 700; color: var(--text);
+    }
+    .role-row-desc { font-size: 12px; color: var(--text-soft); line-height: 1.4; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .page-header { flex-direction: column; align-items: flex-start; }
+      .tab-bar { width: 100%; }
+      .tab-btn { flex: 1; justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .filter-bar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-body">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <span class="page-eyebrow">Administration</span>
+        <h1 class="page-title">Users</h1>
+        <p class="page-desc">Manage who has access to Nomni, their roles, and which outlets they can operate in.</p>
+      </div>
+      <div class="page-actions">
+        <a href="#" class="btn btn-outline role-hqadmin-only" onclick="usersToast('Preparing XLSX export…'); return false;"><i class="ti ti-table-export"></i>Export XLSX</a>
+        <button class="btn btn-outline role-hqadmin-only" onclick="document.getElementById('permission-matrix').scrollIntoView({behavior:'smooth',block:'start'})"><i class="ti ti-shield-lock"></i>Roles &amp; permissions</button>
+        <button class="btn btn-primary role-hqadmin-only" onclick="openInviteDrawer()"><i class="ti ti-user-plus"></i>Invite user</button>
+      </div>
+    </div>
+
+    <!-- Users table -->
+    <div>
+      <!-- Tab bar + filter -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-lg);flex-wrap:wrap;margin-bottom:var(--space-lg);">
+        <div class="tab-bar" role="tablist">
+          <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab(this,'all')">All users <span class="tab-count">24</span></button>
+          <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(this,'active')">Active <span class="tab-count">20</span></button>
+          <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(this,'invited')">Invited <span class="tab-count">3</span></button>
+          <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(this,'suspended')">Suspended <span class="tab-count">1</span></button>
+        </div>
+        <div class="filter-bar" style="flex:1;min-width:240px;max-width:480px;">
+          <div class="search-wrap" style="flex:1;">
+            <i class="ti ti-search"></i>
+            <input class="search-input" type="search" placeholder="Search users…" aria-label="Search users"/>
+          </div>
+          <select class="filter-select" aria-label="Filter by role">
+            <option value="">All roles</option>
+            <option>HQ Administrator</option>
+            <option>HQ Approver</option>
+            <option>Outlet Manager</option>
+            <option>Outlet User</option>
+            <option>Finance User</option>
+            <option>Supplier User</option>
+          </select>
+          <select class="filter-select" aria-label="Filter by outlet">
+            <option value="">All outlets</option>
+            <option>CBD Cluster</option>
+            <option>Beachside</option>
+            <option>Suburban</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table" aria-label="Users">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Outlet access</th>
+              <th>Last active</th>
+              <th>Status</th>
+              <th class="overflow-cell"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-amber">KT</div>
+                  <div><div class="cell-name">Keith Tan</div><div class="cell-sub">ktwm79@gmail.com</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge owner">HQ Administrator</span></td>
+              <td><span class="venue-pill">All outlets</span></td>
+              <td><span style="font-size:13px;color:var(--text-soft);">Today</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="user-detail.html">Edit</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Keith Tan" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit outlet access</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-rose">JL</div>
+                  <div><div class="cell-name">Jane Liu</div><div class="cell-sub">jane.liu@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge admin">HQ Approver</span></td>
+              <td><span class="venue-pill">All outlets</span></td>
+              <td><span style="font-size:13px;color:var(--text-soft);">2 hours ago</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="user-detail.html">Edit</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Jane Liu" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit outlet access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-user-off"></i>Suspend account</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-purple">SO</div>
+                  <div><div class="cell-name">Sarah Okonkwo</div><div class="cell-sub">s.okonkwo@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge manager">Outlet Manager</span></td>
+              <td>
+                <div class="venue-access">
+                  <span class="venue-pill">Harbour Kitchen</span>
+                  <span class="venue-pill">Darling St Bistro</span>
+                  <span class="venue-pill-more">+2</span>
+                </div>
+              </td>
+              <td><span style="font-size:13px;color:var(--text-soft);">Yesterday</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="user-detail.html">Edit</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Sarah Okonkwo" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit outlet access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-user-off"></i>Suspend account</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-blue">JN</div>
+                  <div><div class="cell-name">James Nguyen</div><div class="cell-sub">j.nguyen@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge buyer">Outlet User</span></td>
+              <td>
+                <div class="venue-access">
+                  <span class="venue-pill">Darling St Bistro</span>
+                </div>
+              </td>
+              <td><span style="font-size:13px;color:var(--text-soft);">3 days ago</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="user-detail.html">Edit</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for James Nguyen" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit outlet access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-user-off"></i>Suspend account</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-green">AP</div>
+                  <div><div class="cell-name">Aisha Patel</div><div class="cell-sub">a.patel@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge finance">Finance User</span></td>
+              <td>
+                <div class="venue-access">
+                  <span class="venue-pill">Parramatta Table</span>
+                  <span class="venue-pill">Surry Hills Social</span>
+                </div>
+              </td>
+              <td><span style="font-size:13px;color:var(--text-soft);">Today</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <a class="link-action" href="user-detail.html">Edit</a>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Aisha Patel" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-edit"></i>Edit profile</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit outlet access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-user-off"></i>Suspend account</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="cell-user">
+                  <div class="user-avatar avatar-purple">MC</div>
+                  <div><div class="cell-name">Mia Chen</div><div class="cell-sub">m.chen@nomni.com.au</div></div>
+                </div>
+              </td>
+              <td><span class="role-badge supplier">Supplier User</span></td>
+              <td>
+                <div class="venue-access">
+                  <span class="venue-pill">Bondi Rooftop</span>
+                  <span class="venue-pill">Manly Wharf Bar</span>
+                  <span class="venue-pill">Beachside ×3</span>
+                </div>
+              </td>
+              <td><span style="font-size:13px;color:var(--text-soft);">1 week ago</span></td>
+              <td><span class="status-pill invited">Invited</span></td>
+              <td class="overflow-cell">
+                <div class="row-actions">
+                  <button class="link-action">Resend</button>
+                  <div class="overflow-wrap">
+                    <button class="overflow-btn" aria-label="More actions for Mia Chen" onclick="toggleMenu(this)"><i class="ti ti-dots"></i></button>
+                    <div class="overflow-menu" role="menu">
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-mail-forward"></i>Resend invite</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-shield"></i>Change role</button>
+                      <button class="overflow-menu-item" role="menuitem"><i class="ti ti-building-store"></i>Edit outlet access</button>
+                      <div class="overflow-menu-divider"></div>
+                      <button class="overflow-menu-item destructive" role="menuitem"><i class="ti ti-x"></i>Cancel invite</button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Permission matrix (§8 — role templates over a permission engine) -->
+    <div class="info-card" id="permission-matrix">
+      <div class="info-card-header">
+        <span class="info-card-title">Role permissions</span>
+        <button class="btn btn-outline" style="height:32px;font-size:13px;padding-inline:var(--space-md);" onclick="usersToast('Editing role template — 200+ granular permissions')"><i class="ti ti-edit"></i>Edit role template</button>
+      </div>
+      <div class="perm-legend">
+        <span><i class="ti ti-circle-check-filled perm-yes"></i>Full access</span>
+        <span><i class="ti ti-eye perm-view"></i>Read-only</span>
+        <span><i class="ti ti-minus perm-no"></i>No access</span>
+      </div>
+      <div class="matrix-wrap">
+        <table class="matrix" aria-label="Role permission matrix">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th><span class="role-badge owner">HQ Admin</span></th>
+              <th><span class="role-badge admin">HQ Approver</span></th>
+              <th><span class="role-badge manager">Outlet Mgr</span></th>
+              <th><span class="role-badge buyer">Outlet User</span></th>
+              <th><span class="role-badge finance">Finance</span></th>
+              <th><span class="role-badge supplier">Supplier</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Market lists, recipes, POS mappings</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Approve recipes / mappings / high-value POs</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Raise requisitions &amp; orders</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Receive goods &amp; stock counts</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Invoices &amp; 3-way match exceptions</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Reports &amp; exports</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Manage users &amp; permissions</td><td><i class="ti ti-circle-check-filled perm-yes"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td></tr>
+            <tr><td>Supplier catalogue &amp; e-invoices</td><td><i class="ti ti-eye perm-view"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-minus perm-no"></i></td><td><i class="ti ti-circle-check-filled perm-yes"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--text-soft);padding:var(--space-md) var(--space-xl);">Roles are shipped templates over a permission engine of 200+ discrete permissions, enforced at the API layer. Scope is set per outlet group (Brand → Region → State → Outlet).</p>
+    </div>
+
+  </div><!-- /.napp-canvas -->
+</div><!-- /.page-body -->
+
+<!-- Invite drawer styles -->
+<style>
+  /* Drawer shell */
+  .inv-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: color-mix(in srgb, var(--seaweed) 35%, transparent);
+    opacity: 0; transition: opacity 0.25s ease;
+  }
+  .inv-backdrop.open { opacity: 1; }
+  .inv-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 560px;
+    background: var(--surface); z-index: 201;
+    transform: translateX(100%); transition: transform 0.25s ease;
+    display: flex; flex-direction: column;
+    box-shadow: 0 0 40px color-mix(in srgb, var(--seaweed) 20%, transparent);
+  }
+  .inv-drawer.open { transform: translateX(0); }
+  @media (max-width: 600px) { .inv-drawer { width: 100%; } }
+
+  /* Header */
+  .inv-drawer-header {
+    padding: var(--space-xl) var(--space-2xl) var(--space-lg);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .inv-header-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: var(--space-md);
+  }
+  .inv-title { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+  .inv-close-btn {
+    width: 32px; height: 32px; border-radius: var(--radius-md);
+    background: none; border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-soft); transition: background 0.12s;
+  }
+  .inv-close-btn:hover { background: var(--surface-soft); color: var(--text); }
+
+  /* Step indicator */
+  .step-indicator { display: flex; align-items: flex-start; }
+  .step-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .step-node {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .step-node.done    { background: var(--fern); color: #fff; }
+  .step-node.active  { background: var(--fern); color: #fff; box-shadow: 0 0 0 3px var(--mint); }
+  .step-node.pending { background: var(--surface-soft); color: var(--text-soft); border: 2px solid var(--border); }
+  .step-label { font-size: 11px; color: var(--text-soft); white-space: nowrap; }
+  .step-line { flex: 1; height: 2px; background: var(--border); margin-top: 11px; }
+  .step-line.done { background: var(--fern); }
+
+  /* Body */
+  .inv-drawer-body { flex: 1; overflow-y: auto; padding: var(--space-2xl); }
+  .inv-step-panel { display: none; }
+  .inv-step-panel.active { display: block; }
+
+  /* Fields */
+  .inv-field { display: flex; flex-direction: column; gap: var(--space-xs); margin-bottom: var(--space-lg); }
+  .inv-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .inv-input {
+    height: var(--control-h); padding-inline: var(--space-md);
+    border: 1.5px solid var(--border); border-radius: var(--radius-md);
+    font-size: 14px; font-family: inherit; background: var(--surface);
+    color: var(--text); outline: none; width: 100%; box-sizing: border-box;
+  }
+  .inv-input:focus { border-color: var(--fern); box-shadow: 0 0 0 3px var(--mint); }
+  .inv-input.error { border-color: var(--status-risk-fg); }
+  .inv-hint { font-size: 12px; color: var(--text-soft); }
+  .inv-error { font-size: 12px; color: var(--status-risk-fg); display: none; }
+  .inv-error.show { display: block; }
+
+  /* Role cards */
+  .inv-step2-heading { font-size: 14px; font-weight: 600; color: var(--text-soft); margin-bottom: var(--space-lg); }
+  .role-option {
+    border: 2px solid var(--border); border-radius: var(--radius-lg);
+    padding: var(--space-lg); cursor: pointer; margin-bottom: var(--space-md);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .role-option:hover { border-color: var(--fern); }
+  .role-option.selected { border-color: var(--fern); background: var(--mint); }
+  .role-option-top {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
+  }
+  .role-option-desc { font-size: 13px; color: var(--text-soft); margin-bottom: var(--space-sm); }
+  .role-option.selected .role-option-desc { color: var(--spinach); }
+  .perm-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .perm-chip {
+    font-size: 11px; font-weight: 500; padding: 2px 8px;
+    border-radius: var(--radius-pill);
+  }
+  .perm-chip.on  { background: var(--mint); color: var(--spinach); border: 1px solid var(--fern); }
+  .perm-chip.off { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+  .role-option.selected .perm-chip.off { background: color-mix(in srgb, var(--mint) 60%, var(--surface-soft)); }
+
+  /* Access tree */
+  .inv-access-tree { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .inv-group-row {
+    display: flex; align-items: center; gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border);
+    cursor: pointer; background: var(--surface);
+  }
+  .inv-group-row:last-of-type { border-bottom: none; }
+  .inv-group-row:hover { background: var(--surface-soft); }
+  .inv-group-chevron { color: var(--text-soft); font-size: 13px; transition: transform 0.15s; flex-shrink: 0; }
+  .inv-group-chevron.open { transform: rotate(90deg); }
+  .inv-group-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+  .inv-group-state {
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill);
+  }
+  .inv-group-state.all  { background: var(--mint); color: var(--spinach); }
+  .inv-group-state.some { background: var(--status-warn-bg); color: var(--status-warn-fg); }
+  .inv-group-state.none { background: var(--surface-soft); color: var(--text-soft); border: 1px solid var(--border); }
+  .inv-group-toggle { accent-color: var(--fern); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+  .inv-outlet-list { display: none; flex-direction: column; background: var(--surface-soft); border-bottom: 1px solid var(--border); }
+  .inv-outlet-list.open { display: flex; }
+  .inv-outlet-row {
+    display: flex; align-items: center; gap: var(--space-md);
+    padding: var(--space-sm) var(--space-lg) var(--space-sm) 48px;
+  }
+  .inv-outlet-row:hover { background: color-mix(in srgb, var(--mint) 40%, transparent); }
+  .inv-outlet-check { accent-color: var(--fern); width: 15px; height: 15px; cursor: pointer; }
+  .inv-outlet-name { font-size: 13px; color: var(--text); }
+
+  /* Footer */
+  .inv-drawer-footer {
+    padding: var(--space-lg) var(--space-2xl); border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: var(--space-sm); flex-shrink: 0;
+    background: var(--surface);
+  }
+</style>
+
+<!-- Invite drawer backdrop -->
+<div id="inv-backdrop" class="inv-backdrop" onclick="closeInviteDrawer()"></div>
+
+<!-- Invite drawer -->
+<div id="inv-drawer" class="inv-drawer" role="dialog" aria-modal="true" aria-labelledby="inv-title">
+
+  <!-- Header -->
+  <div class="inv-drawer-header">
+    <div class="inv-header-top">
+      <span class="inv-title" id="inv-title">Invite user</span>
+      <button class="inv-close-btn" onclick="closeInviteDrawer()" aria-label="Close drawer"><i class="ti ti-x"></i></button>
+    </div>
+    <!-- Step indicator -->
+    <div class="step-indicator" id="inv-step-indicator">
+      <div class="step-col">
+        <div class="step-node active" id="sn1">1</div>
+        <span class="step-label">Details</span>
+      </div>
+      <div class="step-line" id="sl1"></div>
+      <div class="step-col">
+        <div class="step-node pending" id="sn2">2</div>
+        <span class="step-label">Role</span>
+      </div>
+      <div class="step-line" id="sl2"></div>
+      <div class="step-col">
+        <div class="step-node pending" id="sn3">3</div>
+        <span class="step-label">Access</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="inv-drawer-body">
+
+    <!-- Step 1: Details -->
+    <div class="inv-step-panel active" id="inv-panel-1">
+      <div class="inv-field">
+        <label class="inv-label" for="inv-name">Name <span style="font-weight:400;color:var(--text-soft);">(optional)</span></label>
+        <input class="inv-input" id="inv-name" type="text" placeholder="Full name" autocomplete="name"/>
+      </div>
+      <div class="inv-field">
+        <label class="inv-label" for="inv-email">Email <span style="color:var(--status-risk-fg);">*</span></label>
+        <input class="inv-input" id="inv-email" type="email" placeholder="colleague@example.com" autocomplete="email"/>
+        <span class="inv-error" id="inv-email-err">Please enter a valid email address.</span>
+      </div>
+    </div>
+
+    <!-- Step 2: Role -->
+    <div class="inv-step-panel" id="inv-panel-2">
+      <div class="inv-step2-heading">Select a role</div>
+      <div id="inv-role-error" class="inv-error" style="margin-bottom:var(--space-md);">Please select a role to continue.</div>
+
+      <div class="role-option" onclick="selectRole(this,'owner',true)">
+        <div class="role-option-top">
+          <span class="role-badge owner">HQ Administrator</span>
+          <i class="ti ti-circle-check" style="color:var(--fern);display:none;" data-check></i>
+        </div>
+        <div class="role-option-desc">Full platform access. Can configure all settings, manage users, and approve any action.</div>
+        <div class="perm-chips">
+          <span class="perm-chip on">All outlets ✓</span>
+          <span class="perm-chip on">Manage users ✓</span>
+          <span class="perm-chip on">Approve orders ✓</span>
+          <span class="perm-chip on">Finance &amp; invoices ✓</span>
+        </div>
+      </div>
+
+      <div class="role-option" onclick="selectRole(this,'admin',true)">
+        <div class="role-option-top">
+          <span class="role-badge admin">HQ Approver</span>
+          <i class="ti ti-circle-check" style="color:var(--fern);display:none;" data-check></i>
+        </div>
+        <div class="role-option-desc">Reviews and approves high-value orders, recipes and POS mappings.</div>
+        <div class="perm-chips">
+          <span class="perm-chip on">Approve orders ✓</span>
+          <span class="perm-chip on">View all reports ✓</span>
+          <span class="perm-chip off">HQ config ✗</span>
+          <span class="perm-chip off">Manage users ✗</span>
+        </div>
+      </div>
+
+      <div class="role-option" onclick="selectRole(this,'manager',false)">
+        <div class="role-option-top">
+          <span class="role-badge manager">Outlet Manager</span>
+          <i class="ti ti-circle-check" style="color:var(--fern);display:none;" data-check></i>
+        </div>
+        <div class="role-option-desc">Manages day-to-day operations for assigned outlets.</div>
+        <div class="perm-chips">
+          <span class="perm-chip on">Raise orders ✓</span>
+          <span class="perm-chip on">Stock counts ✓</span>
+          <span class="perm-chip on">Approve orders (own) ✓</span>
+          <span class="perm-chip off">HQ config ✗</span>
+        </div>
+      </div>
+
+      <div class="role-option" onclick="selectRole(this,'buyer',false)">
+        <div class="role-option-top">
+          <span class="role-badge buyer">Outlet User</span>
+          <i class="ti ti-circle-check" style="color:var(--fern);display:none;" data-check></i>
+        </div>
+        <div class="role-option-desc">Operational staff — can raise orders and do stock counts.</div>
+        <div class="perm-chips">
+          <span class="perm-chip on">Raise orders ✓</span>
+          <span class="perm-chip on">Stock counts ✓</span>
+          <span class="perm-chip off">Approve orders ✗</span>
+          <span class="perm-chip off">Reports ✗</span>
+        </div>
+      </div>
+
+      <div class="role-option" onclick="selectRole(this,'finance',false)">
+        <div class="role-option-top">
+          <span class="role-badge finance">Finance User</span>
+          <i class="ti ti-circle-check" style="color:var(--fern);display:none;" data-check></i>
+        </div>
+        <div class="role-option-desc">Manages invoices and financial data across assigned outlets.</div>
+        <div class="perm-chips">
+          <span class="perm-chip on">Invoices ✓</span>
+          <span class="perm-chip on">Finance reports ✓</span>
+          <span class="perm-chip off">Raise orders ✗</span>
+          <span class="perm-chip off">HQ config ✗</span>
+        </div>
+      </div>
+
+      <div class="role-option" onclick="selectRole(this,'supplier',false)">
+        <div class="role-option-top">
+          <span class="role-badge supplier">Supplier User</span>
+          <i class="ti ti-circle-check" style="color:var(--fern);display:none;" data-check></i>
+        </div>
+        <div class="role-option-desc">External supplier portal — upload invoices and view relevant orders.</div>
+        <div class="perm-chips">
+          <span class="perm-chip on">Upload invoices ✓</span>
+          <span class="perm-chip on">View orders (own) ✓</span>
+          <span class="perm-chip off">Outlet data ✗</span>
+          <span class="perm-chip off">HQ config ✗</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Access -->
+    <div class="inv-step-panel" id="inv-panel-3">
+
+      <!-- HQ role message -->
+      <div id="inv-hq-msg" style="display:none; background:var(--mint); border:1px solid var(--fern); border-radius:var(--radius-md); padding:var(--space-lg); gap:var(--space-md); align-items:flex-start;">
+        <i class="ti ti-building-estate" style="color:var(--fern);font-size:20px;flex-shrink:0;"></i>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--spinach);margin-bottom:4px;">Access to all outlets</div>
+          <div style="font-size:13px;color:var(--spinach);">HQ Administrator and HQ Approver roles automatically have full access to every outlet in your group, including new outlets added in future.</div>
+        </div>
+      </div>
+
+      <!-- Outlet access tree -->
+      <div id="inv-outlet-tree-wrap">
+        <div style="font-size:14px;font-weight:600;color:var(--text-soft);margin-bottom:var(--space-lg);">Assign outlet access</div>
+        <div id="inv-access-error" class="inv-error" style="margin-bottom:var(--space-md);">Please select at least one outlet.</div>
+        <div class="inv-access-tree" id="inv-access-tree"></div>
+        <div id="inv-access-summary" style="font-size:13px;color:var(--text-soft);margin-top:var(--space-md);">No outlets selected yet.</div>
+      </div>
+
+    </div>
+  </div><!-- /.inv-drawer-body -->
+
+  <!-- Footer -->
+  <div class="inv-drawer-footer" id="inv-footer">
+    <!-- rendered by JS -->
+  </div>
+
+</div><!-- /#inv-drawer -->
+
+<script src="../shared/shell.js?v=12" data-active="users"></script>
+<script>
+  NomniShell.init('Users');
+
+  function toggleMenu(btn) {
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll('.overflow-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+    menu.classList.toggle('open');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.overflow-wrap')) {
+      document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  // Clickable rows
+  document.querySelectorAll('.data-table tbody tr').forEach(tr => {
+    tr.style.cursor = 'pointer';
+    tr.addEventListener('click', e => {
+      if (e.target.closest('.overflow-wrap, .row-actions a, .row-actions button')) return;
+      window.location.href = 'user-detail.html';
+    });
+  });
+
+  function switchTab(el, id) {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    el.classList.add('active');
+    el.setAttribute('aria-selected', 'true');
+  }
+
+  /* ── Invite drawer ────────────────────────────────────────── */
+
+  const INVITE_GROUPS = [
+    { id:'g1', name:'CBD Cluster',  outlets:['Harbour Kitchen','Darling St Bistro','The CBD Rooftop','Central Brasserie'] },
+    { id:'g2', name:'Beachside',    outlets:['Bondi Rooftop','Manly Wharf Bar','Coogee Bay Dining'] },
+    { id:'g3', name:'Suburban',     outlets:['Parramatta Table','Surry Hills Social','Newtown Kitchen','Leichhardt Trattoria'] },
+  ];
+
+  let inviteCurrentStep = 1;
+  let inviteSelectedRole = null;
+  let inviteIsHqRole = false;
+  let inviteAccess = { g1:[], g2:[], g3:[] };
+
+  function openInviteDrawer() {
+    // reset state
+    inviteCurrentStep = 1;
+    inviteSelectedRole = null;
+    inviteIsHqRole = false;
+    inviteAccess = { g1:[], g2:[], g3:[] };
+    document.getElementById('inv-email').value = '';
+    document.getElementById('inv-name').value = '';
+    document.getElementById('inv-email').classList.remove('error');
+    document.getElementById('inv-email-err').classList.remove('show');
+    document.getElementById('inv-role-error').classList.remove('show');
+    document.querySelectorAll('.role-option').forEach(c => {
+      c.classList.remove('selected');
+      c.querySelector('[data-check]').style.display = 'none';
+    });
+    buildAccessTree();
+    inviteStep(1);
+    document.getElementById('inv-backdrop').style.display = 'block';
+    requestAnimationFrame(() => {
+      document.getElementById('inv-backdrop').classList.add('open');
+      document.getElementById('inv-drawer').classList.add('open');
+    });
+  }
+
+  function closeInviteDrawer() {
+    document.getElementById('inv-backdrop').classList.remove('open');
+    document.getElementById('inv-drawer').classList.remove('open');
+    setTimeout(() => { document.getElementById('inv-backdrop').style.display = 'none'; }, 260);
+  }
+
+  function inviteStep(n) {
+    inviteCurrentStep = n;
+    // panels
+    document.querySelectorAll('.inv-step-panel').forEach((p, i) => {
+      p.classList.toggle('active', i + 1 === n);
+    });
+    // step nodes
+    [1,2,3].forEach(i => {
+      const node = document.getElementById('sn' + i);
+      node.className = 'step-node ' + (i < n ? 'done' : i === n ? 'active' : 'pending');
+      if (i < n) node.innerHTML = '<i class="ti ti-check" style="font-size:12px;"></i>';
+      else node.textContent = i;
+    });
+    // connector lines
+    document.getElementById('sl1').className = 'step-line' + (n > 1 ? ' done' : '');
+    document.getElementById('sl2').className = 'step-line' + (n > 2 ? ' done' : '');
+    // step 3: show right panel
+    if (n === 3) {
+      const hqMsg = document.getElementById('inv-hq-msg');
+      const treeWrap = document.getElementById('inv-outlet-tree-wrap');
+      if (inviteIsHqRole) {
+        hqMsg.style.display = 'flex';
+        treeWrap.style.display = 'none';
+      } else {
+        hqMsg.style.display = 'none';
+        treeWrap.style.display = 'block';
+      }
+    }
+    renderFooter();
+  }
+
+  function renderFooter() {
+    const f = document.getElementById('inv-footer');
+    const n = inviteCurrentStep;
+    if (n === 1) {
+      f.innerHTML = `
+        <button class="btn btn-outline" onclick="closeInviteDrawer()">Cancel</button>
+        <button class="btn btn-primary" onclick="inviteNext()">Next: Role <i class="ti ti-arrow-right"></i></button>`;
+    } else if (n === 2) {
+      f.innerHTML = `
+        <button class="btn btn-outline" onclick="inviteBack()"><i class="ti ti-arrow-left"></i> Back</button>
+        <button class="btn btn-primary" onclick="inviteNext()">Next: Access <i class="ti ti-arrow-right"></i></button>`;
+    } else {
+      f.innerHTML = `
+        <button class="btn btn-outline" onclick="inviteBack()"><i class="ti ti-arrow-left"></i> Back</button>
+        <button class="btn btn-primary" onclick="sendInvite()"><i class="ti ti-send"></i> Send invite</button>`;
+    }
+  }
+
+  function inviteNext() {
+    if (inviteCurrentStep === 1) {
+      const emailEl = document.getElementById('inv-email');
+      const errEl = document.getElementById('inv-email-err');
+      const val = emailEl.value.trim();
+      if (!val || !val.includes('@')) {
+        emailEl.classList.add('error');
+        errEl.classList.add('show');
+        emailEl.focus();
+        return;
+      }
+      emailEl.classList.remove('error');
+      errEl.classList.remove('show');
+      inviteStep(2);
+    } else if (inviteCurrentStep === 2) {
+      const errEl = document.getElementById('inv-role-error');
+      if (!inviteSelectedRole) {
+        errEl.classList.add('show');
+        return;
+      }
+      errEl.classList.remove('show');
+      inviteStep(3);
+    }
+  }
+
+  function inviteBack() {
+    if (inviteCurrentStep > 1) inviteStep(inviteCurrentStep - 1);
+  }
+
+  function selectRole(card, role, isHq) {
+    document.querySelectorAll('.role-option').forEach(c => {
+      c.classList.remove('selected');
+      c.querySelector('[data-check]').style.display = 'none';
+    });
+    card.classList.add('selected');
+    card.querySelector('[data-check]').style.display = 'block';
+    inviteSelectedRole = role;
+    inviteIsHqRole = isHq;
+    document.getElementById('inv-role-error').classList.remove('show');
+  }
+
+  function sendInvite() {
+    if (!inviteIsHqRole) {
+      const total = Object.values(inviteAccess).reduce((s, a) => s + a.length, 0);
+      if (total === 0) {
+        document.getElementById('inv-access-error').classList.add('show');
+        return;
+      }
+      document.getElementById('inv-access-error').classList.remove('show');
+    }
+    const email = document.getElementById('inv-email').value.trim();
+    closeInviteDrawer();
+    usersToast('Invite sent to ' + email);
+  }
+
+  /* ── Access tree ───────────────────────────────────────────── */
+
+  function buildAccessTree() {
+    inviteAccess = { g1:[], g2:[], g3:[] };
+    const tree = document.getElementById('inv-access-tree');
+    tree.innerHTML = '';
+    INVITE_GROUPS.forEach(g => {
+      // Group row
+      const groupRow = document.createElement('div');
+      groupRow.className = 'inv-group-row';
+      groupRow.dataset.gid = g.id;
+      groupRow.innerHTML = `
+        <i class="ti ti-chevron-right inv-group-chevron" id="chev-${g.id}"></i>
+        <span class="inv-group-name">${g.name}</span>
+        <span class="inv-group-state none" id="gstate-${g.id}">None</span>
+        <input type="checkbox" class="inv-group-toggle" id="gtog-${g.id}" onclick="toggleGroupAll('${g.id}',this)" aria-label="Select all in ${g.name}"/>`;
+      groupRow.addEventListener('click', e => {
+        if (e.target.type === 'checkbox') return;
+        toggleGroupExpand(g.id);
+      });
+      tree.appendChild(groupRow);
+
+      // Outlet list
+      const outletList = document.createElement('div');
+      outletList.className = 'inv-outlet-list';
+      outletList.id = 'olist-' + g.id;
+      g.outlets.forEach(o => {
+        const row = document.createElement('div');
+        row.className = 'inv-outlet-row';
+        row.innerHTML = `
+          <input type="checkbox" class="inv-outlet-check" aria-label="${o}"
+            onchange="toggleOutlet('${g.id}','${o}',this)"/>
+          <span class="inv-outlet-name">${o}</span>`;
+        outletList.appendChild(row);
+      });
+      tree.appendChild(outletList);
+    });
+    updateAccessSummary();
+  }
+
+  function toggleGroupExpand(gid) {
+    const list = document.getElementById('olist-' + gid);
+    const chev = document.getElementById('chev-' + gid);
+    list.classList.toggle('open');
+    chev.classList.toggle('open');
+  }
+
+  function toggleGroupAll(gid, cb) {
+    const group = INVITE_GROUPS.find(g => g.id === gid);
+    const outletList = document.getElementById('olist-' + gid);
+    const checks = outletList.querySelectorAll('input[type=checkbox]');
+    if (cb.checked) {
+      inviteAccess[gid] = [...group.outlets];
+      checks.forEach(c => c.checked = true);
+    } else {
+      inviteAccess[gid] = [];
+      checks.forEach(c => c.checked = false);
+    }
+    refreshGroupState(gid);
+    updateAccessSummary();
+  }
+
+  function toggleOutlet(gid, outlet, cb) {
+    if (cb.checked) {
+      if (!inviteAccess[gid].includes(outlet)) inviteAccess[gid].push(outlet);
+    } else {
+      inviteAccess[gid] = inviteAccess[gid].filter(o => o !== outlet);
+    }
+    refreshGroupState(gid);
+    updateAccessSummary();
+  }
+
+  function refreshGroupState(gid) {
+    const group = INVITE_GROUPS.find(g => g.id === gid);
+    const count = inviteAccess[gid].length;
+    const total = group.outlets.length;
+    const stateEl = document.getElementById('gstate-' + gid);
+    const togEl = document.getElementById('gtog-' + gid);
+    if (count === 0) {
+      stateEl.className = 'inv-group-state none'; stateEl.textContent = 'None';
+      togEl.checked = false; togEl.indeterminate = false;
+    } else if (count === total) {
+      stateEl.className = 'inv-group-state all'; stateEl.textContent = 'All';
+      togEl.checked = true; togEl.indeterminate = false;
+    } else {
+      stateEl.className = 'inv-group-state some'; stateEl.textContent = count + '/' + total;
+      togEl.checked = false; togEl.indeterminate = true;
+    }
+  }
+
+  function updateAccessSummary() {
+    const totalOutlets = Object.values(inviteAccess).reduce((s, a) => s + a.length, 0);
+    const groupsWithAny = Object.values(inviteAccess).filter(a => a.length > 0).length;
+    const el = document.getElementById('inv-access-summary');
+    if (totalOutlets === 0) {
+      el.textContent = 'No outlets selected yet.';
+    } else {
+      el.textContent = totalOutlets + ' outlet' + (totalOutlets !== 1 ? 's' : '') +
+        ' across ' + groupsWithAny + ' group' + (groupsWithAny !== 1 ? 's' : '') + '.';
+    }
+    if (totalOutlets > 0) document.getElementById('inv-access-error').classList.remove('show');
+  }
+
+  // Close drawer on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('inv-drawer').classList.contains('open')) {
+      closeInviteDrawer();
+    }
+  });
+  function usersToast(msg) {
+    let wrap = document.getElementById('users-toast');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = 'users-toast';
+      wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;';
+      document.body.appendChild(wrap);
+    }
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface-deep);color:var(--cream);padding:12px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;';
+    t.innerHTML = '<i class="ti ti-circle-check" style="color:var(--spring);font-size:16px;"></i>' + msg;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+</script>
+</body>
+</html>

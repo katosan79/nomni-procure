@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en" data-role="hq" data-tier="hq">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Invoice Detail — Nomni Procure</title>
+  <link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+  <link rel="stylesheet" href="../shared/components.css?v=4"/>
+  <style>
+    body { background:var(--surface); height:100vh; overflow:hidden; }
+    /* Full-height split pane: clamp shell-layout to viewport, then let flex fill downward */
+    .shell-layout { height:100vh !important; min-height:0 !important; overflow:hidden !important; }
+    .shell-content { padding:0 !important; overflow:hidden !important; display:flex; flex-direction:column; }
+    .main { display:flex; flex-direction:column; overflow:hidden; flex:1; min-height:0; }
+
+    /* ── Detail top bar ── */
+    .detail-topbar {
+      display:flex; align-items:center; gap:var(--space-md);
+      padding:0 var(--space-xl); border-bottom:1px solid var(--border);
+      background:var(--surface); flex-shrink:0; height:48px;
+      font-family:inherit;
+    }
+    .back-btn {
+      display:inline-flex; align-items:center; gap:var(--space-xs);
+      height:32px; padding-inline:var(--space-md); border-radius:var(--radius-md);
+      border:1px solid var(--border); background:var(--surface);
+      font-family:inherit; font-size:13px; font-weight:600; color:var(--text);
+      cursor:pointer; text-decoration:none; white-space:nowrap;
+    }
+    .back-btn:hover { border-color:var(--text-accent); color:var(--text-accent); }
+    .topbar-sep { color:var(--border); font-size:18px; line-height:1; }
+    .topbar-inv { font-size:14px; font-weight:700; color:var(--text); white-space:nowrap; }
+    .topbar-sup { font-size:13px; color:var(--text-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nav-btns { margin-left:auto; display:flex; gap:var(--space-xs); flex-shrink:0; }
+    .nav-btn {
+      display:inline-flex; align-items:center; gap:4px;
+      height:32px; padding-inline:var(--space-md); border-radius:var(--radius-md);
+      border:1px solid var(--border); background:var(--surface);
+      font-family:inherit; font-size:13px; font-weight:600; color:var(--text); cursor:pointer;
+    }
+    .nav-btn:hover { border-color:var(--text-accent); color:var(--text-accent); }
+    .nav-btn:disabled { opacity:0.35; cursor:default; pointer-events:none; }
+
+    /* ── Split body ── */
+    .split-body { display:flex; flex:1; overflow:hidden; min-height:0; }
+
+    /* ── Document pane ── */
+    .doc-pane {
+      width:44%; flex-shrink:0; display:flex; flex-direction:column;
+      border-right:1px solid var(--border); background:#EDEAE5;
+    }
+    .doc-toolbar {
+      display:flex; align-items:center; gap:var(--space-sm);
+      padding:0 var(--space-lg); height:40px;
+      background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .doc-toolbar-label {
+      flex:1; font-size:12px; font-weight:600; color:var(--text-soft);
+      display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap;
+    }
+    .zoom-ctrl { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+    .zoom-btn {
+      width:26px; height:26px; border:1px solid var(--border);
+      border-radius:var(--radius-sm); background:var(--surface);
+      font-size:13px; color:var(--text); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; line-height:1;
+    }
+    .zoom-btn:hover { border-color:var(--text-accent); color:var(--text-accent); }
+    .zoom-pct { font-size:12px; font-weight:600; color:var(--text-soft); min-width:38px; text-align:center; }
+    .zoom-reset { height:26px; padding-inline:var(--space-sm); border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); font-family:inherit; font-size:11px; font-weight:700; color:var(--text-soft); cursor:pointer; }
+    .zoom-reset:hover { border-color:var(--text-accent); color:var(--text-accent); }
+    .doc-scroll {
+      flex:1; overflow-y:auto; overflow-x:auto;
+      padding:var(--space-xl); display:flex; flex-direction:column; align-items:center;
+    }
+    .doc-content { transform-origin:top center; width:100%; }
+
+    /* ── Email viewer ── */
+    .email-card {
+      background:var(--surface); border-radius:var(--radius-lg);
+      box-shadow:0 2px 16px rgba(14,55,39,0.12); width:100%;
+      overflow:hidden; min-width:360px;
+    }
+    .email-meta {
+      padding:var(--space-md) var(--space-xl);
+      background:var(--surface-soft); border-bottom:1px solid var(--border);
+    }
+    .email-meta-row {
+      display:flex; gap:var(--space-sm); font-size:12px; color:var(--text);
+      margin-bottom:3px; line-height:1.4;
+    }
+    .email-meta-key { color:var(--text-soft); font-weight:700; min-width:48px; flex-shrink:0; }
+    .email-subject {
+      font-size:13.5px; font-weight:700; color:var(--text);
+      padding:var(--space-sm) var(--space-xl); border-bottom:1px solid var(--border);
+      background:var(--surface);
+    }
+    .email-body { padding:var(--space-lg) var(--space-xl); font-size:13px; color:var(--text); line-height:1.6; }
+    .email-sig { color:var(--text-soft); font-size:12px; margin-top:var(--space-lg); }
+
+    /* ── Paper invoice ── */
+    .paper-inv {
+      margin-top:var(--space-lg); border:1px solid #D0CCC4;
+      border-radius:4px; overflow:hidden; background:#fff;
+      box-shadow:0 1px 6px rgba(0,0,0,0.1);
+    }
+    .paper-inv-head {
+      display:flex; justify-content:space-between; align-items:flex-start;
+      padding:20px 24px; background:#fff; border-bottom:2px solid #1a1a1a;
+    }
+    .paper-sup-name {
+      font-size:16px; font-weight:700; color:#111;
+      font-family:'Hanken Grotesk',sans-serif; margin-bottom:5px;
+    }
+    .paper-sup-detail { font-size:11px; color:#555; line-height:1.6; }
+    .paper-inv-label { font-size:18px; font-weight:700; color:#111; font-family:'Hanken Grotesk',sans-serif; letter-spacing:-0.01em; }
+    .paper-inv-ref { font-size:11.5px; color:#555; margin-top:5px; line-height:1.65; text-align:right; }
+    .paper-inv-body { padding:16px 24px; background:#fff; }
+    .paper-bill-row { display:flex; gap:var(--space-2xl); margin-bottom:var(--space-md); font-size:12px; }
+    .paper-bill-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:#999; margin-bottom:3px; }
+    .paper-bill-val { color:#111; line-height:1.55; }
+    .paper-items { width:100%; border-collapse:collapse; font-size:11.5px; margin-bottom:var(--space-md); }
+    .paper-items th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#999; padding:6px 8px; border-bottom:1px solid #ddd; text-align:left; }
+    .paper-items th.r { text-align:right; }
+    .paper-items td { padding:7px 8px; border-bottom:1px solid #f2f2f2; color:#111; }
+    .paper-items td.r { text-align:right; font-feature-settings:'tnum' 1; }
+    .paper-totals { display:flex; flex-direction:column; align-items:flex-end; gap:3px; padding-bottom:var(--space-md); }
+    .paper-total-row { display:flex; min-width:200px; justify-content:space-between; font-size:12px; color:#444; padding:2px 8px; }
+    .paper-total-row.grand { font-size:14px; font-weight:700; color:#111; border-top:1.5px solid #111; padding-top:6px; margin-top:3px; }
+    .paper-inv-foot { padding:10px 24px; background:#f7f5f0; border-top:1px solid #e8e5e0; font-size:11px; color:#888; line-height:1.6; }
+
+    /* ── Nomni e-invoice ── */
+    .nomni-receipt {
+      background:var(--surface); border-radius:var(--radius-lg);
+      box-shadow:0 2px 16px rgba(14,55,39,0.12); width:100%; overflow:hidden; min-width:360px;
+    }
+    .nomni-receipt-badge {
+      display:flex; align-items:center; gap:var(--space-sm);
+      padding:var(--space-sm) var(--space-xl); background:var(--mint);
+      border-bottom:1px solid rgba(42,200,100,0.3);
+      font-size:12px; font-weight:700; color:var(--spinach);
+    }
+    .nomni-receipt-body { padding:var(--space-xl); }
+    .nomni-receipt-sup { font-size:18px; font-weight:700; color:var(--text); font-family:'Hanken Grotesk',sans-serif; letter-spacing:-0.02em; margin-bottom:4px; }
+    .nomni-receipt-ref { font-size:13px; color:var(--text-soft); margin-bottom:var(--space-lg); }
+
+    /* ── Upload / PDF wrapper ── */
+    .pdf-wrapper { width:100%; }
+    .pdf-label {
+      display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) var(--space-md);
+      background:var(--surface-soft); border:1px solid var(--border); border-radius:var(--radius-md);
+      font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:var(--space-lg);
+    }
+
+    /* ── Data pane ── */
+    .data-pane { flex:1; overflow-y:auto; min-width:0; background:var(--surface); position:relative; }
+    .data-inner { padding:var(--space-xl) var(--space-2xl) 100px; max-width:640px; }
+
+    .inv-detail-head {
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:var(--space-md); margin-bottom:var(--space-lg);
+    }
+    .inv-detail-id { font-size:22px; font-weight:700; color:var(--text); letter-spacing:-0.02em; line-height:1.1; margin:0; }
+    .inv-detail-meta { font-size:13px; color:var(--text-soft); margin-top:5px; line-height:1.5; }
+
+    /* ── Section headings ── */
+    .section-head { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin:var(--space-2xl) 0 var(--space-md); }
+
+    /* ── KV list ── */
+    .dkv { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); font-size:13px; padding:var(--space-xs) 0; border-bottom:1px solid var(--border); }
+    .dkv:last-child { border-bottom:none; }
+    .dkv-label { color:var(--text-soft); flex-shrink:0; padding-block:3px; }
+    .dkv-value { font-weight:600; color:var(--text); text-align:right; }
+
+    /* ── Cyrus agent surface ── */
+    .cyrus-surface {
+      padding:var(--space-md) var(--space-lg); background:var(--surface-soft);
+      border:1px solid var(--agent-border,rgba(42,200,100,0.35));
+      border-radius:var(--radius-lg); margin-bottom:var(--space-xl);
+      box-shadow:0 0 0 4px var(--agent-glow,rgba(42,200,100,0.07));
+    }
+    .cyrus-head { display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-sm); }
+    .cyrus-note { font-size:13px; color:var(--text-soft); line-height:1.55; }
+    .cyrus-note i.ti { color:var(--text-accent); margin-right:3px; }
+
+    /* ── Match banner ── */
+    .match-banner {
+      display:flex; align-items:flex-start; gap:var(--space-md);
+      padding:var(--space-md) var(--space-lg); border-radius:var(--radius-md); margin-bottom:var(--space-md);
+    }
+    .match-banner.pass { background:var(--status-ok-bg); border:1px solid rgba(42,200,100,0.35); }
+    .match-banner.fail { background:var(--status-risk-bg); border:1px solid rgba(238,75,135,0.35); }
+    .match-banner.pending { background:var(--status-info-bg); border:1px solid rgba(63,195,251,0.35); }
+    .match-banner-icon { font-size:22px; flex-shrink:0; margin-top:1px; }
+    .match-banner-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:3px; }
+    .match-banner-sub { font-size:12px; color:var(--text-soft); line-height:1.5; }
+
+    /* ── 3-way match table ── */
+    .three-way-wrap { overflow-x:auto; border-radius:var(--radius-md); border:1px solid var(--border); }
+    .three-way { width:100%; border-collapse:collapse; font-size:12px; min-width:520px; }
+    .three-way th {
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+      color:var(--text-soft); padding:var(--space-xs) var(--space-sm);
+      background:var(--surface-soft); border-bottom:1px solid var(--border);
+      text-align:right; white-space:nowrap;
+    }
+    .three-way th:first-child { text-align:left; min-width:120px; }
+    .three-way th.c { text-align:center; }
+    .three-way td { padding:var(--space-sm); border-bottom:1px solid var(--border); text-align:right; vertical-align:middle; font-feature-settings:'tnum' 1; color:var(--text); }
+    .three-way td:first-child { text-align:left; font-weight:600; }
+    .three-way tr:last-child td { border-bottom:none; }
+    .three-way tr.line-pass td { background:rgba(42,200,100,0.03); }
+    .three-way tr.line-fail td { background:rgba(238,75,135,0.03); }
+    .three-way tr.line-pending td { background:var(--surface-soft); color:var(--text-soft); }
+    .fail-val { color:var(--status-risk-fg) !important; font-weight:700; }
+    .pass-val { color:var(--status-ok-fg) !important; }
+    .soft-val { color:var(--text-soft) !important; font-style:italic; }
+    td.c { text-align:center; }
+
+    /* ── Unlinked sections ── */
+    .suggestion-card {
+      display:flex; align-items:flex-start; gap:var(--space-md);
+      padding:var(--space-md) var(--space-lg);
+      background:color-mix(in srgb,var(--fern) 5%,transparent);
+      border:1.5px solid var(--agent-border,rgba(42,200,100,0.4));
+      border-radius:var(--radius-md); margin-bottom:var(--space-lg);
+    }
+    .sug-po { font-size:16px; font-weight:700; color:var(--text); font-family:'IBM Plex Mono',monospace; }
+    .sug-reason { font-size:13px; color:var(--text-soft); margin-top:3px; line-height:1.5; }
+    .confidence-chip {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:11px; font-weight:700; padding:2px 8px;
+      border-radius:var(--radius-pill); margin-top:6px;
+    }
+    .confidence-chip.high { background:var(--mint); color:var(--spinach); }
+    .confidence-chip.medium { background:var(--status-warn-bg); color:#7A5000; }
+    .no-suggestion-card {
+      padding:var(--space-md) var(--space-lg); background:var(--status-warn-bg);
+      border:1px solid rgba(245,194,25,0.45); border-radius:var(--radius-md);
+      margin-bottom:var(--space-lg); font-size:13px; color:#5A3A00; line-height:1.55;
+    }
+    .link-po-row { display:flex; gap:var(--space-sm); margin-top:var(--space-md); }
+    .link-po-row input {
+      flex:1; height:40px; padding-inline:var(--space-md);
+      border:1px solid var(--border); border-radius:var(--radius-md);
+      font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text);
+      background:var(--surface);
+    }
+    .link-po-row input:focus { outline:none; border-color:var(--text-accent); }
+    .link-po-row button {
+      height:40px; padding-inline:var(--space-lg); border-radius:var(--radius-md);
+      border:none; background:var(--btn-primary-bg,var(--fern)); color:#fff;
+      font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+    }
+
+    /* ── Sticky footer ── */
+    .detail-foot {
+      position:sticky; bottom:0;
+      background:var(--surface); border-top:1px solid var(--border);
+      padding:var(--space-md) var(--space-2xl);
+      display:flex; gap:var(--space-sm); flex-wrap:wrap; align-items:center;
+      z-index:20;
+    }
+    .btn-primary {
+      height:40px; padding-inline:var(--space-xl); border-radius:var(--radius-md);
+      border:none; background:var(--btn-primary-bg,var(--fern)); color:#fff;
+      font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+      display:inline-flex; align-items:center; gap:var(--space-xs);
+    }
+    .btn-primary:hover { opacity:0.9; }
+    .btn-secondary {
+      height:40px; padding-inline:var(--space-lg); border-radius:var(--radius-md);
+      border:1px solid var(--border); background:var(--surface);
+      font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; color:var(--text);
+      display:inline-flex; align-items:center; gap:var(--space-xs);
+    }
+    .btn-secondary:hover { border-color:var(--text-accent); }
+    .btn-danger {
+      height:40px; padding-inline:var(--space-lg); border-radius:var(--radius-md);
+      border:1px solid rgba(238,75,135,0.3); background:var(--status-risk-bg);
+      font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; color:var(--status-risk-fg);
+      display:inline-flex; align-items:center; gap:var(--space-xs);
+    }
+    .foot-spacer { flex:1; }
+
+    /* ── Toast ── */
+    #toast-wrap { position:fixed; bottom:var(--space-xl); left:50%; transform:translateX(-50%); z-index:300; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+
+    /* ── Edit / override mode ── */
+    .override-banner {
+      display:flex; gap:var(--space-md);
+      padding:var(--space-md) var(--space-lg);
+      background:#FFFBEB; border:1px solid rgba(245,194,25,0.5);
+      border-radius:var(--radius-md); margin-bottom:var(--space-xl);
+    }
+    .override-banner-icon { font-size:18px; color:#D97706; flex-shrink:0; margin-top:2px; }
+    .override-banner-body { flex:1; font-size:13px; color:#78350F; line-height:1.55; }
+    .override-banner-title { font-weight:700; margin-bottom:3px; }
+    .edit-reason {
+      display:block; width:100%; margin-top:var(--space-sm);
+      padding:var(--space-sm) var(--space-md);
+      border:1px solid rgba(245,194,25,0.6); border-radius:var(--radius-sm);
+      background:rgba(255,251,235,0.6); font-family:inherit; font-size:12px; color:#78350F;
+      resize:none; height:50px;
+    }
+    .edit-reason:focus { outline:none; border-color:#D97706; }
+    .edit-reason::placeholder { color:#92400E; opacity:0.65; }
+    .edit-field-row {
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:var(--space-md); padding:var(--space-xs) 0; border-bottom:1px solid var(--border);
+    }
+    .edit-field-row:last-child { border-bottom:none; }
+    .edit-field-label { font-size:13px; color:var(--text-soft); flex-shrink:0; padding-top:8px; }
+    .edit-field-right { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+    .edit-input {
+      height:34px; padding:0 var(--space-md);
+      border:1px solid var(--border); border-radius:var(--radius-sm);
+      background:var(--surface); font-family:inherit; font-size:13px;
+      font-weight:600; color:var(--text); text-align:right;
+    }
+    .edit-input:focus { outline:none; border-color:var(--text-accent); box-shadow:0 0 0 3px rgba(18,155,65,0.1); }
+    .edit-hint { font-size:11px; color:var(--text-soft); font-style:italic; }
+    .edit-line-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .edit-line-table th {
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+      color:var(--text-soft); padding:var(--space-xs) var(--space-sm);
+      background:var(--surface-soft); border-bottom:1px solid var(--border); text-align:left;
+    }
+    .edit-line-table th.r { text-align:right; }
+    .edit-line-table td {
+      padding:var(--space-xs) var(--space-sm); border-bottom:1px solid var(--border);
+      color:var(--text); vertical-align:top;
+    }
+    .edit-line-table tr:last-child td { border-bottom:none; }
+    .edit-inline {
+      display:block; width:72px; height:30px; text-align:right; padding:0 var(--space-sm);
+      border:1px solid var(--border); border-radius:var(--radius-sm);
+      background:var(--surface); font-family:inherit; font-size:12px;
+      font-weight:600; color:var(--text); font-feature-settings:'tnum' 1;
+    }
+    .edit-inline:focus { outline:none; border-color:var(--text-accent); }
+    .edit-totals {
+      display:flex; flex-direction:column; align-items:flex-end;
+      gap:2px; padding:var(--space-md) 0 0;
+    }
+    .edit-total-row {
+      display:flex; min-width:224px; justify-content:space-between;
+      font-size:13px; color:var(--text-soft); padding:2px var(--space-xs);
+    }
+    .edit-total-row.grand {
+      font-size:15px; font-weight:700; color:var(--text);
+      border-top:1.5px solid var(--border); padding-top:var(--space-sm); margin-top:4px;
+    }
+    .override-record {
+      background:var(--surface-soft); border:1px solid var(--border);
+      border-radius:var(--radius-md); padding:var(--space-md) var(--space-lg);
+      margin-bottom:var(--space-md);
+    }
+    .override-record-head {
+      display:flex; align-items:center; gap:var(--space-sm);
+      font-size:13px; font-weight:600; color:var(--text); margin-bottom:var(--space-sm);
+    }
+    .override-record-reason { font-size:12px; color:var(--text-soft); font-style:italic; margin-bottom:var(--space-xs); }
+    .override-record-at { font-size:11px; color:var(--text-soft); margin-top:var(--space-xs); }
+  </style>
+</head>
+<body>
+  <script src="../shared/shell.js?v=12"></script>
+
+  <main class="main">
+
+    <!-- Detail top bar -->
+    <div class="detail-topbar">
+      <a href="invoices.html" class="back-btn"><i class="ti ti-arrow-left"></i> Invoices</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-inv" id="topbar-inv">—</span>
+      <span class="topbar-sup" id="topbar-sup"></span>
+      <div class="nav-btns">
+        <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled><i class="ti ti-chevron-left"></i> Prev</button>
+        <button class="nav-btn" id="btn-next" onclick="navigate(1)">Next <i class="ti ti-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <!-- Split body -->
+    <div class="split-body">
+
+      <!-- Document pane -->
+      <div class="doc-pane">
+        <div class="doc-toolbar">
+          <span class="doc-toolbar-label" id="doc-toolbar-label">
+            <i class="ti ti-file-invoice"></i> Invoice document
+          </span>
+          <div class="zoom-ctrl">
+            <button class="zoom-btn" onclick="setZoom(_zoom - 0.15)" title="Zoom out (-)"><i class="ti ti-minus"></i></button>
+            <span class="zoom-pct" id="zoom-pct">100%</span>
+            <button class="zoom-btn" onclick="setZoom(_zoom + 0.15)" title="Zoom in (+)"><i class="ti ti-plus"></i></button>
+          </div>
+          <button class="zoom-reset" onclick="setZoom(1.0)" title="Reset zoom (0)">Fit</button>
+        </div>
+        <div class="doc-scroll">
+          <div class="doc-content" id="doc-content"></div>
+        </div>
+      </div>
+
+      <!-- Data pane -->
+      <div class="data-pane">
+        <div class="data-inner" id="data-inner"></div>
+        <div class="detail-foot" id="detail-foot"></div>
+      </div>
+
+    </div><!-- /split-body -->
+
+  </main>
+
+  <div id="toast-wrap"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => NomniShell.init('Invoices'));
+
+    /* ══════════════════════════════════════════════════════
+       DATA
+    ══════════════════════════════════════════════════════ */
+    const INV_DATA = [
+      {
+        id:'INV-00895', po:'PO-5515', supplier:'Sydney Butchers Co.', outlet:'Bondi Beach',
+        date:'12 Jun 2026', source:'email', amount:310, status:'pending',
+        agentNote:'Received via supplier email · Cyrus has extracted all 4 lines and is awaiting GRN confirmation before finalising the 3-way match',
+        lines:[
+          { name:'Chicken Thigh 2kg',   uom:'pkg', poQty:8,  grnQty:null, invQty:8,  poPrice:11.50, invPrice:11.50 },
+          { name:'Beef Mince 500g',     uom:'pkg', poQty:10, grnQty:null, invQty:10, poPrice:9.80,  invPrice:9.80  },
+          { name:'Pork Sausages 500g',  uom:'pkg', poQty:12, grnQty:null, invQty:12, poPrice:7.50,  invPrice:7.50  },
+          { name:'Duck Breast (each)',  uom:'ea',  poQty:4,  grnQty:null, invQty:4,  poPrice:22.00, invPrice:22.00 },
+        ]
+      },
+      {
+        id:'INV-00892', po:'PO-5519', supplier:'Green Farmers Market', outlet:'Newtown',
+        date:'11 Jun 2026', source:'upload', amount:1180, status:'pending',
+        agentNote:'Uploaded by outlet staff during receiving · Cyrus is extracting line items and will begin matching once the GRN is submitted',
+        lines:[
+          { name:'Mixed Leaf 2kg',      uom:'bag',   poQty:12, grnQty:null, invQty:12, poPrice:9.00,  invPrice:9.00  },
+          { name:'Avocado (each)',       uom:'ea',    poQty:80, grnQty:null, invQty:80, poPrice:2.40,  invPrice:2.40  },
+          { name:'Roma Tomatoes 5kg',   uom:'box',   poQty:10, grnQty:null, invQty:10, poPrice:16.50, invPrice:16.50 },
+          { name:'Baby Spinach 1kg',    uom:'bag',   poQty:16, grnQty:null, invQty:16, poPrice:12.00, invPrice:12.00 },
+          { name:'Broccolini bunch',    uom:'bunch', poQty:24, grnQty:null, invQty:24, poPrice:4.50,  invPrice:4.50  },
+        ]
+      },
+      {
+        id:'INV-00891', po:'PO-5510', supplier:'Green Farmers Market', outlet:'Parramatta Table',
+        date:'9 Jun 2026', source:'upload', amount:890, status:'matched',
+        agentNote:'Auto-matched by Cyrus · 3-way match passed on all 7 lines · quantities and prices align with PO-5510 and the submitted GRN',
+        lines:[
+          { name:'Mixed Leaf 2kg',        uom:'bag',   poQty:16, grnQty:16, invQty:16, poPrice:9.00,  invPrice:9.00  },
+          { name:'Avocado (each)',         uom:'ea',    poQty:60, grnQty:60, invQty:60, poPrice:2.40,  invPrice:2.40  },
+          { name:'Roma Tomatoes 5kg',     uom:'box',   poQty:10, grnQty:10, invQty:10, poPrice:16.50, invPrice:16.50 },
+          { name:'Baby Spinach 1kg',      uom:'bag',   poQty:12, grnQty:12, invQty:12, poPrice:12.00, invPrice:12.00 },
+          { name:'Broccolini bunch',      uom:'bunch', poQty:30, grnQty:30, invQty:30, poPrice:4.50,  invPrice:4.50  },
+          { name:'Continental Cucumber',  uom:'ea',    poQty:50, grnQty:50, invQty:50, poPrice:2.50,  invPrice:2.50  },
+          { name:'Capsicum Red 500g',     uom:'bag',   poQty:20, grnQty:20, invQty:20, poPrice:6.00,  invPrice:6.00  },
+        ]
+      },
+      {
+        id:'INV-00884', po:'PO-5518', supplier:'Pacific Drinks Wholesale', outlet:'Melbourne CBD',
+        date:'14 Jun 2026', source:'nomni', amount:520, status:'matched',
+        agentNote:'Received electronically via Nomni Supply EDI · auto-matched on receipt · no discrepancies found across all 4 lines',
+        lines:[
+          { name:'Sparkling Water 1L',      uom:'btl', poQty:48, grnQty:48, invQty:48, poPrice:1.80, invPrice:1.80 },
+          { name:'Cold Brew Coffee 250ml',  uom:'btl', poQty:36, grnQty:36, invQty:36, poPrice:3.50, invPrice:3.50 },
+          { name:'Kombucha Original 330ml', uom:'btl', poQty:24, grnQty:24, invQty:24, poPrice:4.20, invPrice:4.20 },
+          { name:'Orange Juice 1L',         uom:'btl', poQty:20, grnQty:20, invQty:20, poPrice:3.80, invPrice:3.80 },
+        ]
+      },
+      {
+        id:'INV-00889', po:'PO-5509', supplier:'Harbour Meats', outlet:'Bondi Beach',
+        date:'9 Jun 2026', source:'email', amount:1386, status:'failed',
+        failReason:'Chicken Breast invoiced at $8.92/kg vs market list $8.40/kg (+6.2%) and Salmon Fillet at $38.40/kg vs $32.20/kg (+19.3%) · $170 overbilled',
+        agentNote:'Cyrus flagged 2 lines invoiced above the agreed market list rate · no approved price amendment on file for either item — dispute or accept the new price into the market list',
+        lines:[
+          { name:'Chicken Breast 500g', uom:'kg', poQty:40, grnQty:40, invQty:40, poPrice:8.40,  invPrice:8.92  },
+          { name:'Salmon Fillet 200g',  uom:'kg', poQty:24, grnQty:24, invQty:24, poPrice:32.20, invPrice:38.40 },
+          { name:'Pork Belly 1kg',      uom:'kg', poQty:6,  grnQty:6,  invQty:6,  poPrice:18.00, invPrice:18.00 },
+        ]
+      },
+      {
+        id:'INV-00887', po:'PO-5508', supplier:'Harbour Meats', outlet:'Newtown',
+        date:'8 Jun 2026', source:'email', amount:470, status:'failed',
+        failReason:'Supplier invoiced for 12 × Beef Short Rib and 6 × Lamb Rack · GRN confirms only 8 and 4 were received · $106 overbilled',
+        agentNote:'Cyrus flagged 2 lines with quantity variance · the invoice amount exceeds the GRN-confirmed delivery by $106 — raise a credit note or contact the supplier to reissue',
+        lines:[
+          { name:'Chicken Breast 500g', uom:'pkg', poQty:20, grnQty:20, invQty:20, poPrice:7.15,  invPrice:7.15  },
+          { name:'Beef Short Rib 500g', uom:'pkg', poQty:12, grnQty:8,  invQty:12, poPrice:12.50, invPrice:12.50 },
+          { name:'Lamb Rack (each)',    uom:'ea',  poQty:6,  grnQty:4,  invQty:6,  poPrice:28.00, invPrice:28.00 },
+          { name:'Pork Belly 1kg',     uom:'pkg', poQty:5,  grnQty:5,  invQty:5,  poPrice:18.00, invPrice:18.00 },
+        ]
+      },
+      {
+        id:'INV-00885', po:'PO-5507', supplier:'Green Farmers Market', outlet:'Surry Hills',
+        date:'7 Jun 2026', source:'email', amount:745, status:'failed',
+        failReason:'Avocado (each) invoiced at $2.80 vs agreed PO rate of $2.40 · $24 price variance · no pre-approved price increase on file',
+        agentNote:'Cyrus detected a unit price variance on Line 2 · avocados were invoiced at $2.80 but the agreed PO rate is $2.40 · no approved price amendment found for this period',
+        lines:[
+          { name:'Mixed Leaf 2kg',    uom:'bag', poQty:10, grnQty:10, invQty:10, poPrice:9.00,  invPrice:9.00  },
+          { name:'Avocado (each)',    uom:'ea',  poQty:60, grnQty:60, invQty:60, poPrice:2.40,  invPrice:2.80  },
+          { name:'Roma Tomatoes 5kg', uom:'box', poQty:8,  grnQty:8,  invQty:8,  poPrice:16.50, invPrice:16.50 },
+          { name:'Baby Spinach 1kg',  uom:'bag', poQty:12, grnQty:12, invQty:12, poPrice:12.00, invPrice:12.00 },
+        ]
+      },
+      {
+        id:'INV-00880', po:'PO-5502', supplier:'Fresh Produce Co', outlet:'Surry Hills',
+        date:'5 Jun 2026', source:'upload', amount:320, status:'approved',
+        agentNote:'Auto-matched by Cyrus on 5 Jun · 3-way match passed · approved by Keith Tan',
+        lines:[
+          { name:'Cherry Tomatoes 250g', uom:'punnet', poQty:20, grnQty:20, invQty:20, poPrice:3.50,  invPrice:3.50  },
+          { name:'Spinach 1kg',           uom:'bag',    poQty:8,  grnQty:8,  invQty:8,  poPrice:12.00, invPrice:12.00 },
+          { name:'Cucumber (each)',       uom:'ea',     poQty:30, grnQty:30, invQty:30, poPrice:2.20,  invPrice:2.20  },
+        ]
+      },
+      {
+        id:'INV-00876', po:'PO-5499', supplier:'Sydney Butchers Co.', outlet:'Bondi Beach',
+        date:'1 Jun 2026', source:'email', amount:290, status:'exported',
+        exportedTo:'Xero', exportedAt:'2 Jun 2026', exportedRef:'XR-20260602-044',
+        agentNote:'Auto-matched and approved · exported to Xero on 2 Jun 2026 · reference XR-20260602-044',
+        lines:[
+          { name:'Chicken Breast 500g', uom:'pkg', poQty:12, grnQty:12, invQty:12, poPrice:7.15, invPrice:7.15 },
+          { name:'Beef Mince 500g',     uom:'pkg', poQty:8,  grnQty:8,  invQty:8,  poPrice:9.80, invPrice:9.80 },
+          { name:'Pork Sausages 500g',  uom:'pkg', poQty:10, grnQty:10, invQty:10, poPrice:7.50, invPrice:7.50 },
+        ]
+      },
+      {
+        id:'INV-00897', po:null, supplier:'Harbour Meats', outlet:null,
+        date:'12 Jun 2026', source:'email', amount:364, status:'unlinked',
+        agentNote:'Invoice arrived with no PO reference · Cyrus matched it against open POs based on supplier, amount, and timing — high confidence suggestion below',
+        suggestion:{ po:'PO-5512', supplier:'Harbour Meats', amount:360, date:'10 Jun 2026',
+          confidence:'high', reason:'Same supplier · invoice amount within 1% of PO value ($364 vs $360) · received 2 days after PO was sent' },
+        lines:[]
+      },
+      {
+        id:'INV-00894', po:null, supplier:'Metro Bakery Supplies', outlet:null,
+        date:'10 Jun 2026', source:'email', amount:145, status:'unlinked',
+        agentNote:'Invoice arrived from a supplier not currently registered in the system · Cyrus could not identify a matching PO · manual review and PO linking required',
+        suggestion:null,
+        lines:[]
+      },
+    ];
+
+    /* ── Supplier meta for document rendering ── */
+    const SUPPLIER_META = {
+      'Sydney Butchers Co.':      { email:'accounts@sydneybutchers.com.au',  abn:'42 123 456 789', address:'15 Wholesale Drive\nHomebush NSW 2140',          phone:'(02) 9745 8800', bank:'CBA · BSB 062-001 · Acc 10234567',  terms:'NET 14' },
+      'Green Farmers Market':     { email:'invoices@greenfarmers.com.au',    abn:'55 987 654 321', address:'8 Market Street\nFlemington VIC 3031',            phone:'(03) 9376 4400', bank:'NAB · BSB 083-004 · Acc 28345678',  terms:'NET 7'  },
+      'Pacific Drinks Wholesale': { email:'ap@pacificdrinks.com.au',         abn:'71 234 567 890', address:'22 Distribution Way\nWetherill Park NSW 2164',   phone:'(02) 9756 3300', bank:'ANZ · BSB 012-003 · Acc 36478901',  terms:'NET 30' },
+      'Harbour Meats':            { email:'invoices@harbourmeats.com.au',    abn:'38 456 789 012', address:'7 Butchers Row\nAlexandria NSW 2015',            phone:'(02) 9519 2200', bank:'Westpac · BSB 032-002 · Acc 45987623', terms:'NET 14' },
+      'Fresh Produce Co':         { email:'billing@freshproduce.com.au',     abn:'29 876 543 210', address:'12 Growers Lane\nHomebush NSW 2140',             phone:'(02) 9764 5500', bank:'CBA · BSB 062-002 · Acc 52847391',  terms:'NET 7'  },
+      'Metro Bakery Supplies':    { email:'accounts@metrobakery.com.au',     abn:'61 345 678 901', address:'4 Baker Street\nMarrickville NSW 2204',          phone:'(02) 9519 8700', bank:'Bendigo · BSB 633-000 · Acc 73849201', terms:'NET 14' },
+    };
+
+    /* ── Status config ── */
+    const STATUS_CFG = {
+      unlinked: { pill:'<span class="nb-pill warn"><i class="ti ti-unlink"></i>No PO linked</span>' },
+      pending:  { pill:'<span class="nb-pill info"><i class="ti ti-loader-2"></i>Pending match</span>' },
+      matched:  { pill:'<span class="nb-pill ok"><i class="ti ti-circle-check"></i>Matched</span>' },
+      failed:   { pill:'<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Match failed</span>' },
+      approved: { pill:'<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Approved</span>' },
+      exported: { pill:'<span class="nb-pill" style="background:var(--surface-soft);border:1px solid var(--border);color:var(--text-soft);"><i class="ti ti-send"></i>Exported</span>' },
+    };
+
+    /* ══════════════════════════════════════════════════════
+       HELPERS
+    ══════════════════════════════════════════════════════ */
+    function srcBadge(src) {
+      if (src==='nomni')  return '<span class="nb-pill ok" style="font-size:11px;"><i class="ti ti-plug-connected"></i>Nomni Supply</span>';
+      if (src==='email')  return '<span class="nb-pill info" style="font-size:11px;"><i class="ti ti-mail"></i>Supplier email</span>';
+      return '<span class="nb-pill" style="font-size:11px;"><i class="ti ti-upload"></i>Outlet upload</span>';
+    }
+
+    function dueDate(inv) {
+      const meta = SUPPLIER_META[inv.supplier];
+      const days = parseInt((meta?.terms||'NET 14').replace('NET ','')) || 14;
+      const mo = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+      const p = inv.date.split(' ');
+      const d = new Date(parseInt(p[2]), mo[p[1]], parseInt(p[0]) + days);
+      return d.getDate() + ' ' + p[1] + ' ' + p[2];
+    }
+
+    function lineMatch(l) {
+      if (l.grnQty === null) return 'pending';
+      return (l.grnQty===l.invQty && Math.abs(l.poPrice-l.invPrice)<0.001) ? 'pass' : 'fail';
+    }
+
+    function invMatchSummary(inv) {
+      if (!inv.lines.length) return { result:'blocked', pass:0, fail:0 };
+      let pass=0, fail=0;
+      inv.lines.forEach(l => { const r=lineMatch(l); if(r==='pass') pass++; else if(r==='fail') fail++; });
+      const allPending = inv.lines.every(l => l.grnQty===null);
+      return { result: allPending?'pending': fail>0?'fail':'pass', pass, fail };
+    }
+
+    function fmtMoney(n) { return '$' + n.toLocaleString('en-AU', {minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+    /* ══════════════════════════════════════════════════════
+       DOCUMENT RENDERER
+    ══════════════════════════════════════════════════════ */
+    function buildPaperInv(inv) {
+      const meta = SUPPLIER_META[inv.supplier] || {};
+      /* Compute totals from line items; fall back to inv.amount if no lines */
+      /* Always use inv.amount as the authoritative invoice total so the
+         document and data pane agree, even if demo line items don't sum exactly. */
+      const total    = inv.amount;
+      const subtotal = total / 1.1;
+      const gst      = total - subtotal;
+
+      const addrLines = (meta.address||'').split('\n').join('<br>');
+      const itemRows  = inv.lines.map(l => `
+        <tr>
+          <td>${l.name}</td><td class="r">${l.uom}</td>
+          <td class="r">${l.invQty}</td><td class="r">${fmtMoney(l.invPrice)}</td>
+          <td class="r">${fmtMoney(l.invQty * l.invPrice)}</td>
+        </tr>`).join('');
+
+      return `
+        <div class="paper-inv">
+          <div class="paper-inv-head">
+            <div>
+              <div class="paper-sup-name">${inv.supplier}</div>
+              <div class="paper-sup-detail">
+                ABN: ${meta.abn||'—'}<br>${addrLines}<br>
+                ${meta.phone||''} · ${meta.email||''}
+              </div>
+            </div>
+            <div>
+              <div class="paper-inv-label">TAX INVOICE</div>
+              <div class="paper-inv-ref">
+                No: <strong>${inv.id}</strong><br>
+                Date: ${inv.date}<br>
+                Due: ${dueDate(inv)}<br>
+                ${inv.po
+                  ? 'Your PO: <strong>'+inv.po+'</strong>'
+                  : '<span style="color:#c00;font-weight:700;">No PO reference</span>'}
+              </div>
+            </div>
+          </div>
+          <div class="paper-inv-body">
+            <div class="paper-bill-row">
+              <div>
+                <div class="paper-bill-label">Bill to</div>
+                <div class="paper-bill-val">${inv.outlet||'Nomni Procure Pty Ltd'}<br>ap@nomni.io</div>
+              </div>
+              <div>
+                <div class="paper-bill-label">Payment terms</div>
+                <div class="paper-bill-val">${meta.terms||'NET 14'}</div>
+              </div>
+            </div>
+            ${inv.lines.length ? `
+            <table class="paper-items">
+              <thead><tr>
+                <th>Description</th><th class="r">UoM</th>
+                <th class="r">Qty</th><th class="r">Unit</th><th class="r">Amount</th>
+              </tr></thead>
+              <tbody>${itemRows}</tbody>
+            </table>
+            <div class="paper-totals">
+              <div class="paper-total-row"><span>Subtotal (excl. GST)</span><span>${fmtMoney(subtotal)}</span></div>
+              <div class="paper-total-row"><span>GST 10%</span><span>${fmtMoney(gst)}</span></div>
+              <div class="paper-total-row grand"><span>Total (incl. GST)</span><span>${fmtMoney(total)}</span></div>
+            </div>` : `
+            <div style="padding:var(--space-lg);color:#888;font-size:13px;font-style:italic;text-align:center;">Line items not available for this preview</div>
+            <div class="paper-totals">
+              <div class="paper-total-row grand"><span>Total (incl. GST)</span><span>${fmtMoney(inv.amount)}</span></div>
+            </div>`}
+          </div>
+          <div class="paper-inv-foot">
+            Payment: ${meta.bank||'—'} · ${meta.terms||'NET 14'} from invoice date.<br>
+            Please reference <strong>${inv.id}</strong> when remitting.
+          </div>
+        </div>`;
+    }
+
+    function buildDocPane(inv) {
+      const meta = SUPPLIER_META[inv.supplier] || {};
+      const toolbarEl = document.getElementById('doc-toolbar-label');
+
+      /* ── Nomni Supply ── */
+      if (inv.source === 'nomni') {
+        toolbarEl.innerHTML = '<i class="ti ti-plug-connected" style="color:var(--spinach);"></i> Nomni Supply — Electronic invoice';
+        const linesTotal = inv.lines.reduce((s,l) => s + l.invQty * l.invPrice, 0);
+        const subtotal  = linesTotal / 1.1;
+        const itemRows  = inv.lines.map(l => `
+          <tr>
+            <td>${l.name}</td><td class="r">${l.uom}</td>
+            <td class="r">${l.invQty}</td><td class="r">${fmtMoney(l.invPrice)}</td>
+            <td class="r">${fmtMoney(l.invQty * l.invPrice)}</td>
+          </tr>`).join('');
+        return `
+          <div class="nomni-receipt">
+            <div class="nomni-receipt-badge">
+              <i class="ti ti-plug-connected"></i>
+              Received electronically via Nomni Supply · ${inv.date}
+            </div>
+            <div class="nomni-receipt-body">
+              <div class="nomni-receipt-sup">${inv.supplier}</div>
+              <div class="nomni-receipt-ref">Invoice ${inv.id} · PO ${inv.po} · ${inv.outlet}</div>
+              <table class="paper-items">
+                <thead><tr>
+                  <th>Description</th><th class="r">UoM</th>
+                  <th class="r">Qty</th><th class="r">Unit</th><th class="r">Amount</th>
+                </tr></thead>
+                <tbody>${itemRows}</tbody>
+              </table>
+              <div class="paper-totals" style="margin-top:var(--space-sm);">
+                <div class="paper-total-row"><span>Subtotal (excl. GST)</span><span>${fmtMoney(subtotal)}</span></div>
+                <div class="paper-total-row"><span>GST 10%</span><span>${fmtMoney(linesTotal - subtotal)}</span></div>
+                <div class="paper-total-row grand"><span>Total (incl. GST)</span><span>${fmtMoney(linesTotal)}</span></div>
+              </div>
+              <div style="margin-top:var(--space-xl);padding-top:var(--space-md);border-top:1px solid var(--border);font-size:11px;color:var(--text-soft);line-height:1.65;">
+                <strong>Supplier:</strong> ${inv.supplier} · ABN ${meta.abn||'—'}<br>
+                <strong>Payment:</strong> ${meta.bank||'—'} · ${meta.terms||'NET 30'}<br>
+                <strong>Transmitted:</strong> ${inv.date} via Nomni Supply EDI
+              </div>
+            </div>
+          </div>`;
+      }
+
+      /* ── Upload / scanned PDF ── */
+      if (inv.source === 'upload') {
+        toolbarEl.innerHTML = '<i class="ti ti-file-type-pdf" style="color:#e53e3e;"></i> Uploaded document';
+        return `
+          <div class="pdf-wrapper">
+            <div class="pdf-label">
+              <i class="ti ti-file-type-pdf" style="color:#e53e3e;"></i>
+              <span>${inv.id}_${inv.supplier.replace(/\s+/g,'-')}.pdf</span>
+              <span style="margin-left:auto;font-size:11px;opacity:0.7;">Uploaded by outlet staff</span>
+            </div>
+            ${buildPaperInv(inv)}
+          </div>`;
+      }
+
+      /* ── Email ── */
+      toolbarEl.innerHTML = '<i class="ti ti-mail" style="color:var(--status-info-fg);"></i> Received via supplier email';
+      return `
+        <div class="email-card">
+          <div class="email-meta">
+            <div class="email-meta-row"><span class="email-meta-key">From</span><span>${inv.supplier} &lt;${meta.email||'accounts@supplier.com'}&gt;</span></div>
+            <div class="email-meta-row"><span class="email-meta-key">To</span><span>Nomni Procure AP &lt;ap@nomni.io&gt;</span></div>
+            <div class="email-meta-row"><span class="email-meta-key">Date</span><span>${inv.date}, 9:14 AM</span></div>
+          </div>
+          <div class="email-subject">Tax Invoice ${inv.id}${inv.po ? ' · Order '+inv.po : ''}</div>
+          <div class="email-body">
+            <p>Hi,</p>
+            <p>Please find our tax invoice ${inv.id}${inv.po ? ' for purchase order '+inv.po : ''}${inv.outlet ? ' for '+inv.outlet : ''} attached below.</p>
+            <p>Total amount due: <strong>${fmtMoney(inv.amount)}</strong> (incl. GST) · Due ${dueDate(inv)}.</p>
+            <p>Please ${inv.po ? 'reference '+inv.po+' and ' : ''}remit payment to our account by the due date. Thank you for your business.</p>
+            ${buildPaperInv(inv)}
+            <div class="email-sig">
+              <p>—<br>Accounts Receivable<br>${inv.supplier}<br>${meta.email||''} · ${meta.phone||''}</p>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       DATA PANE RENDERER
+    ══════════════════════════════════════════════════════ */
+    function buildDataPane(inv) {
+      const s = invMatchSummary(inv);
+
+      /* ── Header ── */
+      const header = `
+        <div class="inv-detail-head">
+          <div>
+            <h1 class="inv-detail-id">${inv.id}</h1>
+            <div class="inv-detail-meta">
+              ${inv.supplier}${inv.outlet ? ' · '+inv.outlet : ''}
+            </div>
+          </div>
+          <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;align-items:flex-start;flex-shrink:0;">
+            ${STATUS_CFG[inv.status]?.pill||''}
+          </div>
+        </div>`;
+
+      /* ── Cyrus surface ── */
+      const needsYou = (inv.status==='failed'||inv.status==='unlinked');
+      const agentState = needsYou ? 'needs-you' : (inv.status==='pending'?'proposed':'done');
+      const cyrus = `
+        <div class="cyrus-surface">
+          <div class="cyrus-head">
+            <span class="agent-avatar" data-agent="cyrus" aria-hidden="true">Cy</span>
+            <span class="agent-id">
+              <span class="agent-name">Cyrus</span>
+              <span class="agent-role">Invoice &amp; spend agent</span>
+            </span>
+            <span class="agent-state ${agentState}" style="margin-left:auto;"></span>
+          </div>
+          <div class="cyrus-note"><i class="ti ti-sparkles"></i>${inv.agentNote}</div>
+        </div>`;
+
+      /* ── KV metadata ── */
+      const meta = SUPPLIER_META[inv.supplier] || {};
+      const kvRows = [
+        ['Invoice ref',    `<span style="font-family:'IBM Plex Mono',monospace;font-weight:700;">${inv.id}</span>`],
+        ['Purchase order', inv.po
+          ? `<a href="order-detail.html?id=${inv.po}" style="color:var(--text-link);font-weight:700;font-family:'IBM Plex Mono',monospace;text-decoration:none;">${inv.po}</a>`
+          : '<span style="color:var(--status-warn-fg);"><i class="ti ti-unlink"></i> Not linked</span>'],
+        ['Supplier',       `<strong>${inv.supplier}</strong>`],
+        ['Outlet',         inv.outlet || '<span style="color:var(--text-soft);">—</span>'],
+        ['Date received',  inv.date],
+        ['Payment due',    dueDate(inv)],
+        ['Terms',          meta.terms||'NET 14'],
+        ['Source',         srcBadge(inv.source)],
+        ['Amount',         `<strong style="font-size:15px;font-feature-settings:'tnum' 1;">${fmtMoney(inv.amount)}</strong>`],
+        ...(inv.exportedTo ? [['Exported to', `<span style="color:var(--status-ok-fg);font-weight:600;"><i class="ti ti-circle-check"></i> ${inv.exportedTo} · ${inv.exportedAt} · ${inv.exportedRef||''}</span>`]] : []),
+      ];
+      const kvHtml = `
+        <div class="section-head">Invoice details</div>
+        <div>${kvRows.map(([l,v]) => `<div class="dkv"><span class="dkv-label">${l}</span><span class="dkv-value">${v}</span></div>`).join('')}</div>`;
+
+      /* ── Match / unlinked section ── */
+      let matchHtml = '';
+      if (inv.status === 'unlinked') {
+        matchHtml = buildUnlinkedSection(inv);
+      } else if (inv.lines.length) {
+        let bannerCls, bannerIcon, bannerTitle, bannerSub;
+        if (s.result==='pending') {
+          bannerCls='pending'; bannerIcon='ti-loader-2'; bannerTitle='Match in progress';
+          bannerSub='Cyrus is matching invoice lines against the PO. GRN has not been submitted — quantity check will complete on receipt confirmation.';
+        } else if (s.result==='pass') {
+          bannerCls='pass'; bannerIcon='ti-circle-check'; bannerTitle=`3-way match passed · all ${inv.lines.length} lines verified`;
+          bannerSub='Quantities and prices align with the PO and submitted GRN. Ready to approve.';
+        } else {
+          bannerCls='fail'; bannerIcon='ti-alert-hexagon'; bannerTitle=`Match failed · ${s.fail} line${s.fail!==1?'s':''} with variance`;
+          bannerSub=inv.failReason||'Review highlighted lines below.';
+        }
+        const bannerIconColour = bannerCls==='pass' ? 'var(--status-ok-fg)' : bannerCls==='fail' ? 'var(--status-risk-fg)' : 'var(--status-info-fg)';
+
+        const trows = inv.lines.map(l => {
+          const res = lineMatch(l);
+          const cls = res==='pass'?'line-pass':res==='fail'?'line-fail':'line-pending';
+          const qOk  = l.grnQty===null ? null : l.grnQty===l.invQty;
+          const pOk  = Math.abs(l.poPrice-l.invPrice)<0.001;
+          const grnCell = l.grnQty===null
+            ? `<td class="soft-val">—</td>`
+            : `<td class="${qOk?'pass-val':'fail-val'}">${l.grnQty}</td>`;
+          const invQCell = l.grnQty===null
+            ? `<td>${l.invQty}</td>`
+            : `<td class="${qOk?'pass-val':'fail-val'}">${l.invQty}</td>`;
+          const priceCell = `<td class="${pOk?'pass-val':'fail-val'}">${fmtMoney(l.invPrice)}</td>`;
+          let varStr='—', varCls='soft-val';
+          if (res==='fail') {
+            const qVar = l.grnQty!==null ? (l.invQty-l.grnQty)*l.invPrice : 0;
+            const pVar = (l.invPrice-l.poPrice)*l.invQty;
+            const tot  = qVar+pVar;
+            if (Math.abs(tot)>0.001) { varStr=(tot>0?'+':'')+fmtMoney(tot); varCls='fail-val'; }
+          }
+          const resIcon = res==='pass'
+            ? '<span style="color:var(--status-ok-fg);font-weight:700;white-space:nowrap;"><i class="ti ti-check"></i> Pass</span>'
+            : res==='fail'
+            ? '<span style="color:var(--status-risk-fg);font-weight:700;white-space:nowrap;"><i class="ti ti-x"></i> Fail</span>'
+            : '<span style="color:var(--text-soft);white-space:nowrap;">Pending</span>';
+          return `<tr class="${cls}">
+            <td>${l.name}</td><td>${l.uom}</td>
+            <td>${l.poQty}</td>${grnCell}${invQCell}
+            <td>${fmtMoney(l.poPrice)}</td>${priceCell}
+            <td class="${varCls}">${varStr}</td>
+            <td class="c">${resIcon}</td>
+          </tr>`;
+        }).join('');
+
+        matchHtml = `
+          <div class="section-head">3-way match — PO vs GRN vs Invoice</div>
+          <div class="match-banner ${bannerCls}">
+            <span class="match-banner-icon"><i class="ti ${bannerIcon}" style="color:${bannerIconColour};"></i></span>
+            <div>
+              <div class="match-banner-title">${bannerTitle}</div>
+              <div class="match-banner-sub">${bannerSub}</div>
+            </div>
+          </div>
+          <div class="three-way-wrap">
+            <table class="three-way">
+              <thead><tr>
+                <th style="text-align:left;">Item</th><th>UoM</th>
+                <th>PO qty</th><th>GRN qty</th><th>Inv qty</th>
+                <th>PO price</th><th>Inv price</th><th>Variance</th><th class="c">Result</th>
+              </tr></thead>
+              <tbody>${trows}</tbody>
+            </table>
+          </div>`;
+      }
+
+      /* ── Override record (shown after a correction has been saved) ── */
+      let overrideHtml = '';
+      if (inv.hasOverride) {
+        const changeItems = inv.overrideChanges.length
+          ? inv.overrideChanges.map(c => `<li style="margin-bottom:2px;">${c}</li>`).join('')
+          : '<li style="color:var(--text-soft);">No field values changed</li>';
+        overrideHtml = `
+          <div class="section-head">Override record</div>
+          <div class="override-record">
+            <div class="override-record-head">
+              <span class="agent-avatar" data-agent="cyrus" aria-hidden="true" style="width:22px;height:22px;font-size:10px;flex-shrink:0;">Cy</span>
+              Cyrus re-ran 3-way match after override by ${inv.overrideBy}
+            </div>
+            <ul style="font-size:12px;color:var(--text-soft);padding-left:var(--space-lg);margin:var(--space-sm) 0;line-height:1.7;">${changeItems}</ul>
+            ${inv.overrideReason ? `<div class="override-record-reason">Reason: "${inv.overrideReason}"</div>` : ''}
+            <div class="override-record-at">${inv.overrideAt}</div>
+          </div>`;
+      }
+
+      return header + cyrus + kvHtml + overrideHtml + matchHtml;
+    }
+
+    function buildUnlinkedSection(inv) {
+      let html = `<div class="section-head">Link purchase order</div>`;
+      if (inv.suggestion) {
+        const s = inv.suggestion;
+        html += `
+          <div class="suggestion-card">
+            <span class="agent-avatar" data-agent="cyrus" aria-hidden="true" style="width:28px;height:28px;font-size:12px;flex-shrink:0;">Cy</span>
+            <div>
+              <div class="sug-po">${s.po}</div>
+              <div class="sug-reason">${s.reason}</div>
+              <span class="confidence-chip ${s.confidence}">
+                <i class="ti ti-${s.confidence==='high'?'circle-check':'adjustments-horizontal'}"></i>
+                ${s.confidence.charAt(0).toUpperCase()+s.confidence.slice(1)} confidence
+              </span>
+            </div>
+          </div>
+          <div>${[
+            ['Suggested PO',  `<a href="order-detail.html?id=${s.po}" style="color:var(--text-link);font-weight:700;font-family:'IBM Plex Mono',monospace;text-decoration:none;">${s.po}</a>`],
+            ['Supplier',      `<strong>${s.supplier}</strong>`],
+            ['PO amount',     `<strong>${fmtMoney(s.amount)}</strong>`],
+            ['PO date',       s.date],
+          ].map(([l,v]) => `<div class="dkv"><span class="dkv-label">${l}</span><span class="dkv-value">${v}</span></div>`).join('')}</div>`;
+      } else {
+        html += `
+          <div class="no-suggestion-card">
+            <i class="ti ti-info-circle"></i>
+            Cyrus could not identify a matching PO. <strong>${inv.supplier}</strong> may not be registered in the system, or no open PO matches this amount and date.
+          </div>
+          <div class="link-po-row">
+            <input id="link-po-field" type="text" placeholder="Enter PO number — e.g. PO-5520" />
+            <button onclick="confirmPOLink('${inv.id}', document.getElementById('link-po-field').value.trim())">Link PO</button>
+          </div>`;
+      }
+      return html;
+    }
+
+    /* ── Footer ── */
+    function buildFoot(inv) {
+      const parts = [];
+      if (inv.status==='unlinked' && inv.suggestion) {
+        parts.push(`<button class="btn-primary" onclick="confirmPOLink('${inv.id}','${inv.suggestion.po}')"><i class="ti ti-link"></i> Confirm ${inv.suggestion.po}</button>`);
+      }
+      if (inv.status==='matched') {
+        parts.push(`<button class="btn-primary" onclick="approveInv('${inv.id}')"><i class="ti ti-circle-check"></i> Approve invoice</button>`);
+      }
+      if (inv.status==='failed') {
+        parts.push(`<button class="btn-primary" onclick="toast('Raising credit note for ${inv.id} — supplier will be notified')"><i class="ti ti-receipt-refund"></i> Raise credit note</button>`);
+        parts.push(`<button class="btn-secondary" onclick="toast('${inv.id} flagged for follow-up')"><i class="ti ti-flag"></i> Flag for follow-up</button>`);
+      }
+      if (inv.status==='approved') {
+        parts.push(`<button class="btn-primary" onclick="exportInv('${inv.id}')"><i class="ti ti-send"></i> Export to Xero</button>`);
+      }
+      if (inv.status==='unlinked') {
+        parts.push(`<button class="btn-secondary" onclick="toast('${inv.id} flagged for manual review')"><i class="ti ti-flag"></i> Flag</button>`);
+        parts.push(`<button class="btn-danger" onclick="rejectInvoice('${inv.id}')"><i class="ti ti-trash"></i> Reject</button>`);
+      }
+      if (['pending','matched','failed'].includes(inv.status) && inv.lines.length) {
+        parts.push(`<button class="btn-secondary" onclick="enterEditMode()"><i class="ti ti-pencil"></i> Edit invoice</button>`);
+      }
+      parts.push(`<span class="foot-spacer"></span>`);
+      parts.push(`<a href="invoices.html" class="btn-secondary"><i class="ti ti-list"></i> All invoices</a>`);
+      return parts.join('');
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ACTIONS
+    ══════════════════════════════════════════════════════ */
+    function approveInv(id) {
+      const inv = INV_DATA.find(i => i.id===id); if(!inv) return;
+      inv.status = 'approved';
+      toast(id + ' approved · ready for export to Xero');
+      renderPage();
+    }
+
+    function exportInv(id) {
+      const inv = INV_DATA.find(i => i.id===id); if(!inv) return;
+      inv.status='exported'; inv.exportedTo='Xero'; inv.exportedAt='Today'; inv.exportedRef='XR-'+Date.now();
+      toast(id + ' exported to Xero');
+      renderPage();
+    }
+
+    function confirmPOLink(id, po) {
+      if (!po) { toast('Please enter a PO number'); return; }
+      const inv = INV_DATA.find(i => i.id===id); if(!inv) return;
+      inv.po=po; inv.status='pending';
+      if (!inv.outlet) inv.outlet='—';
+      toast(id + ' linked to ' + po + ' · Cyrus will begin matching');
+      renderPage();
+    }
+
+    function rejectInvoice(id) {
+      const inv = INV_DATA.find(i => i.id===id); if(!inv) return;
+      inv.status='failed'; inv.failReason='Invoice rejected — no matching PO found';
+      toast(id + ' rejected');
+      renderPage();
+    }
+
+    /* ══════════════════════════════════════════════════════
+       NAVIGATION & ZOOM
+    ══════════════════════════════════════════════════════ */
+    let _currentIdx = 0;
+    let _zoom = 1.0;
+    let _editMode = false;
+
+    function navigate(delta) {
+      const n = _currentIdx + delta;
+      if (n < 0 || n >= INV_DATA.length) return;
+      _currentIdx = n;
+      window.history.pushState({}, '', '?id=' + INV_DATA[n].id);
+      renderPage();
+    }
+
+    function setZoom(z) {
+      _zoom = Math.max(0.4, Math.min(2.5, z));
+      document.getElementById('doc-content').style.zoom = _zoom;
+      document.getElementById('zoom-pct').textContent = Math.round(_zoom * 100) + '%';
+    }
+
+    /* ══════════════════════════════════════════════════════
+       RENDER
+    ══════════════════════════════════════════════════════ */
+    function renderPage() {
+      const inv = INV_DATA[_currentIdx];
+      if (!inv) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif;">Invoice not found.</p>'; return; }
+
+      document.title = inv.id + ' · ' + inv.supplier + ' — Nomni Procure';
+      document.getElementById('topbar-inv').textContent = inv.id;
+      document.getElementById('topbar-sup').textContent = inv.supplier + (inv.outlet ? ' · '+inv.outlet : '');
+      document.getElementById('btn-prev').disabled = _currentIdx === 0;
+      document.getElementById('btn-next').disabled = _currentIdx === INV_DATA.length - 1;
+
+      /* Scroll doc pane to top on navigation */
+      document.querySelector('.doc-scroll').scrollTop = 0;
+      document.querySelector('.data-pane').scrollTop = 0;
+
+      document.getElementById('doc-content').innerHTML = buildDocPane(inv);
+      document.getElementById('doc-content').style.zoom = _zoom;
+      document.getElementById('data-inner').innerHTML  = _editMode ? buildEditDataPane(inv) : buildDataPane(inv);
+      document.getElementById('detail-foot').innerHTML = _editMode ? buildEditFoot(inv)     : buildFoot(inv);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       INIT
+    ══════════════════════════════════════════════════════ */
+    (function init() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (id) {
+        const idx = INV_DATA.findIndex(i => i.id === id);
+        _currentIdx = idx >= 0 ? idx : 0;
+      }
+      renderPage();
+    })();
+
+    /* ── Keyboard shortcuts ── */
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  navigate(1);
+      if (e.key === '+' || e.key === '=') setZoom(_zoom + 0.15);
+      if (e.key === '-')                  setZoom(_zoom - 0.15);
+      if (e.key === '0')                  setZoom(1.0);
+    });
+
+    /* ══════════════════════════════════════════════════════
+       EDIT / OVERRIDE MODE
+    ══════════════════════════════════════════════════════ */
+    function enterEditMode() {
+      _editMode = true;
+      document.querySelector('.data-pane').scrollTop = 0;
+      renderPage();
+    }
+
+    function exitEditMode() {
+      _editMode = false;
+      renderPage();
+    }
+
+    function recalcLine(i) {
+      const qty   = parseFloat(document.getElementById('edit-qty-'  +i)?.value) || 0;
+      const price = parseFloat(document.getElementById('edit-price-'+i)?.value) || 0;
+      const el = document.getElementById('edit-line-amt-'+i);
+      if (el) el.textContent = fmtMoney(qty * price);
+      recalcTotal();
+    }
+
+    function recalcTotal() {
+      const inv = INV_DATA[_currentIdx];
+      let lineSum = 0;
+      inv.lines.forEach((_, i) => {
+        lineSum += (parseFloat(document.getElementById('edit-qty-'  +i)?.value) || 0)
+                 * (parseFloat(document.getElementById('edit-price-'+i)?.value) || 0);
+      });
+      const gst   = lineSum * 0.1;
+      const total = lineSum + gst;
+      const subEl = document.getElementById('edit-subtotal');
+      const gstEl = document.getElementById('edit-gst');
+      const totEl = document.getElementById('edit-total');
+      const hdrEl = document.getElementById('edit-header-total');
+      if (subEl) subEl.textContent = fmtMoney(lineSum);
+      if (gstEl) gstEl.textContent = fmtMoney(gst);
+      if (totEl) totEl.textContent = fmtMoney(total);
+      if (hdrEl) hdrEl.textContent = fmtMoney(total);
+    }
+
+    function saveOverride(id) {
+      const inv = INV_DATA.find(i => i.id === id);
+      if (!inv) return;
+
+      const reason  = (document.getElementById('edit-reason')?.value || '').trim();
+      const newDate = (document.getElementById('edit-date')?.value   || inv.date).trim();
+      const changes = [];
+
+      if (newDate !== inv.date) { changes.push('Date: ' + inv.date + ' → ' + newDate); inv.date = newDate; }
+
+      let lineSum = 0;
+      inv.lines.forEach((l, i) => {
+        const newQty   = parseFloat(document.getElementById('edit-qty-'  +i)?.value) ?? l.invQty;
+        const newPrice = parseFloat(document.getElementById('edit-price-'+i)?.value) ?? l.invPrice;
+        if (newQty !== l.invQty)                        changes.push(l.name + ' qty: ' + l.invQty + ' → ' + newQty);
+        if (Math.abs(newPrice - l.invPrice) > 0.001)   changes.push(l.name + ' price: ' + fmtMoney(l.invPrice) + ' → ' + fmtMoney(newPrice));
+        l.invQty = newQty; l.invPrice = newPrice;
+        lineSum += newQty * newPrice;
+      });
+
+      const newTotal = Math.round(lineSum * 1.1 * 100) / 100;
+      if (Math.abs(newTotal - inv.amount) > 0.01) changes.push('Total: ' + fmtMoney(inv.amount) + ' → ' + fmtMoney(newTotal));
+      inv.amount = newTotal;
+
+      const summary = invMatchSummary(inv);
+      if (summary.result === 'pass')     inv.status = 'matched';
+      else if (summary.result === 'fail') inv.status = 'failed';
+
+      inv.hasOverride      = true;
+      inv.overrideBy       = 'Keith Tan';
+      inv.overrideAt       = '13 Jun 2026';
+      inv.overrideChanges  = changes;
+      inv.overrideReason   = reason;
+
+      const delta    = changes.length ? changes.join(' · ') : 'no fields changed';
+      const matchMsg = summary.result === 'pass'  ? 'match now clean — ready to approve'
+                     : summary.result === 'fail'  ? 'match still failing — review lines below'
+                     : 'match pending GRN confirmation';
+      inv.agentNote = 'Override by Keith Tan · ' + delta + ' · Cyrus re-ran 3-way match · ' + matchMsg;
+
+      _editMode = false;
+      toast(changes.length ? 'Override saved · Cyrus re-running 3-way match' : 'No changes made');
+      renderPage();
+    }
+
+    function buildEditDataPane(inv) {
+      const lineSum0 = inv.lines.reduce((s, l) => s + l.invQty * l.invPrice, 0);
+      const gst0     = lineSum0 * 0.1;
+      const total0   = lineSum0 + gst0;
+      const meta     = SUPPLIER_META[inv.supplier] || {};
+
+      const header = `
+        <div class="inv-detail-head">
+          <div>
+            <h1 class="inv-detail-id">${inv.id}</h1>
+            <div class="inv-detail-meta">${inv.supplier}${inv.outlet ? ' · '+inv.outlet : ''}</div>
+          </div>
+          <span class="nb-pill warn" style="flex-shrink:0;"><i class="ti ti-pencil"></i>Edit mode</span>
+        </div>`;
+
+      const banner = `
+        <div class="override-banner">
+          <span class="override-banner-icon"><i class="ti ti-alert-triangle"></i></span>
+          <div class="override-banner-body">
+            <div class="override-banner-title">Override mode</div>
+            You're correcting Cyrus's OCR extraction. All changes are logged to the activity trail and re-trigger the 3-way match.
+            <textarea id="edit-reason" class="edit-reason" placeholder="Reason for override — e.g. supplier PDF had a formatting error…"></textarea>
+          </div>
+        </div>`;
+
+      const fields = `
+        <div class="section-head">Invoice details</div>
+        <div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Invoice ref</span>
+            <div class="edit-field-right">
+              <span class="dkv-value" style="font-family:'IBM Plex Mono',monospace;">${inv.id}</span>
+              <span class="edit-hint">locked — contact support to amend</span>
+            </div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Purchase order</span>
+            <div class="edit-field-right">
+              <span class="dkv-value" style="font-family:'IBM Plex Mono',monospace;">${inv.po||'—'}</span>
+            </div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Supplier</span>
+            <div class="edit-field-right"><span class="dkv-value">${inv.supplier}</span></div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Outlet</span>
+            <div class="edit-field-right"><span class="dkv-value">${inv.outlet||'—'}</span></div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Date received</span>
+            <div class="edit-field-right">
+              <input class="edit-input" id="edit-date" value="${inv.date}" style="width:136px;" autocomplete="off">
+            </div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Payment due</span>
+            <div class="edit-field-right"><span class="dkv-value">${dueDate(inv)}</span></div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Terms</span>
+            <div class="edit-field-right"><span class="dkv-value">${meta.terms||'NET 14'}</span></div>
+          </div>
+          <div class="edit-field-row">
+            <span class="edit-field-label">Amount</span>
+            <div class="edit-field-right">
+              <span class="dkv-value" id="edit-header-total" style="font-size:15px;">${fmtMoney(total0)}</span>
+              <span class="edit-hint">auto-calculated from line items</span>
+            </div>
+          </div>
+        </div>`;
+
+      const lineRows = inv.lines.map((l, i) => `
+        <tr>
+          <td style="font-weight:600;">${l.name}</td>
+          <td style="color:var(--text-soft);font-size:11px;">${l.uom}</td>
+          <td><input class="edit-inline" id="edit-qty-${i}"   value="${l.invQty}"   type="number" min="0" step="1"    oninput="recalcLine(${i})" autocomplete="off"></td>
+          <td><input class="edit-inline" id="edit-price-${i}" value="${l.invPrice}" type="number" min="0" step="0.01" oninput="recalcLine(${i})" autocomplete="off"></td>
+          <td style="text-align:right;vertical-align:middle;font-weight:600;font-feature-settings:'tnum' 1;" id="edit-line-amt-${i}">${fmtMoney(l.invQty * l.invPrice)}</td>
+        </tr>`).join('');
+
+      const lineTable = inv.lines.length ? `
+        <div class="section-head" style="margin-top:var(--space-xl);">Line items</div>
+        <div class="three-way-wrap">
+          <table class="edit-line-table">
+            <thead><tr>
+              <th>Item</th><th>UoM</th>
+              <th>Inv qty</th><th>Unit price</th><th class="r">Amount</th>
+            </tr></thead>
+            <tbody>${lineRows}</tbody>
+          </table>
+        </div>
+        <div class="edit-totals">
+          <div class="edit-total-row"><span>Subtotal (excl. GST)</span><span id="edit-subtotal">${fmtMoney(lineSum0)}</span></div>
+          <div class="edit-total-row"><span>GST 10%</span><span id="edit-gst">${fmtMoney(gst0)}</span></div>
+          <div class="edit-total-row grand"><span>Total (incl. GST)</span><span id="edit-total">${fmtMoney(total0)}</span></div>
+        </div>` : '';
+
+      return header + banner + fields + lineTable;
+    }
+
+    function buildEditFoot(inv) {
+      return [
+        `<button class="btn-primary" onclick="saveOverride('${inv.id}')"><i class="ti ti-check"></i> Save &amp; re-run match</button>`,
+        `<button class="btn-secondary" onclick="exitEditMode()"><i class="ti ti-x"></i> Cancel</button>`,
+        `<span class="foot-spacer"></span>`,
+        `<a href="invoices.html" class="btn-secondary"><i class="ti ti-list"></i> All invoices</a>`,
+      ].join('');
+    }
+
+    /* ── Toast ── */
+    function toast(msg) {
+      const el = document.createElement('div');
+      el.style.cssText = 'background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.18);pointer-events:none;white-space:nowrap;max-width:460px;text-align:center;';
+      el.textContent = msg;
+      document.getElementById('toast-wrap').appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+  </script>
+</body>
+</html>
