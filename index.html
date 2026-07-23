@@ -1274,7 +1274,13 @@ function renderDualLineChart(containerId, seriesA, seriesB) {
 }
 
 /* ── Tabs / market switching ── */
-function switchMarket(mk) {
+// Each market gets its own shareable/bookmarkable URL via a hash fragment (#SG, #MY, …)
+// rather than a real path — this stays a single static index.html with no server-side
+// routing, and hash changes never hit GitHub Pages so there's nothing to 404 on a direct
+// visit. skipHistory is used when we're already responding to a hash/back-forward change,
+// so we don't push a second, redundant history entry on top of the one that triggered it.
+function switchMarket(mk, opts) {
+  opts = opts || {};
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => {
     const isTarget = b.getAttribute('onclick')?.includes("'" + mk + "'");
@@ -1284,7 +1290,21 @@ function switchMarket(mk) {
   document.getElementById('panel-' + mk).classList.add('active');
   document.getElementById('page-sub').innerHTML = `${MARKET_META[mk].flag ? MARKET_META[mk].flag + ' ' : ''}${MARKET_META[mk].label} · <span>${document.getElementById('daterange-label').textContent}</span>`;
   if (mk !== 'ALL') { metricState[mk] = null; renderMarketPanel(mk); }
+  if (!opts.skipHistory) {
+    const url = location.pathname + location.search + (mk === 'ALL' ? '' : '#' + mk);
+    history.pushState({ market: mk }, '', url);
+  }
 }
+
+function hashToMarket() {
+  const key = location.hash.slice(1).toUpperCase();
+  return MARKET_META[key] ? key : 'ALL';
+}
+
+window.addEventListener('popstate', e => {
+  const mk = (e.state && e.state.market) || hashToMarket();
+  switchMarket(mk, { skipHistory: true });
+});
 
 /* ── Date range popover ── */
 const QUICK_RANGES = [
@@ -1349,6 +1369,8 @@ function insightsToast(msg) {
 
 function init() {
   renderAllPanel();
+  const mk = hashToMarket();
+  if (mk !== 'ALL') switchMarket(mk, { skipHistory: true });
 }
 </script>
 </body>
