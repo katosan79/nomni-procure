@@ -1,49 +1,1355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nomni HQ — Prototype</title>
-  <link rel="stylesheet" href="shared/tokens.css">
-  <style>
-    body { background: var(--surface-soft); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .wrap { max-width: 480px; width: 100%; padding: var(--space-2xl); }
-    .logo { font-size: 22px; font-weight: 700; color: var(--fern); letter-spacing: -0.3px; margin-bottom: var(--space-xs); }
-    .sub  { font-size: 13px; color: var(--text-soft); margin-bottom: var(--space-3xl); }
-    h2 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); margin-bottom: var(--space-sm); }
-    .list { list-style: none; display: flex; flex-direction: column; gap: var(--space-xs); }
-    .list a {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: var(--space-md) var(--space-lg);
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-md); text-decoration: none;
-      color: var(--text); font-size: 14px; font-weight: 500;
-      transition: box-shadow var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard);
-    }
-    .list a:hover { box-shadow: var(--shadow-md); border-color: var(--fern); }
-    .list a:focus-visible { outline: none; box-shadow: var(--focus-ring); }
-    .list a span { font-size: 12px; color: var(--text-soft); font-weight: 400; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Procure Insights</title>
+<link rel="stylesheet" href="shared/tokens.css?v=4"/>
+<link rel="stylesheet" href="shared/components.css?v=4"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+  body { background: var(--surface-soft); margin: 0; }
+
+  /* ── Standalone top bar (this is its own site — no HQ shell/nav) ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px; padding-inline: var(--space-2xl);
+    background: var(--surface-deep); color: var(--cream);
+  }
+  .topbar-left { display: flex; align-items: center; gap: var(--space-md); }
+
+  /* ── Wordmark — same lockup as the Nomni Procure prototype's shell.js sidebar ── */
+  .shell-wordmark { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; }
+  .shell-wordmark-icon { width: 24px; height: 27px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .shell-wordmark-icon svg { width: 24px; height: 27px; }
+  .shell-wordmark-text { font-size: 16px; font-weight: 600; color: var(--chrome-fg); letter-spacing: -0.01em; }
+
+  .topbar-right { font-size: 12px; color: color-mix(in srgb, var(--cream) 65%, transparent); font-feature-settings: 'tnum' 1; }
+
+  .page-body { padding-block: var(--space-2xl); }
+  .page-body .napp-canvas { display: flex; flex-direction: column; gap: var(--space-2xl); }
+
+  /* ── Page header ── */
+  .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); flex-wrap: wrap; }
+  .page-header-left { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .page-eyebrow { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent); }
+  .page-title { font-size: 35px; font-weight: 700; color: var(--text); letter-spacing: -0.025em; line-height: 1.1; }
+  .page-sub { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+  .page-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+  /* ── Filter bar ── */
+  .filter-bar { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+  .filter-select {
+    height: var(--control-h); padding-inline: var(--space-md) var(--space-2xl);
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text);
+    cursor: pointer; outline: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E3727' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right var(--space-sm) center;
+    transition: border-color var(--dur-1) var(--ease-standard);
+  }
+  .filter-select:focus { border-color: var(--text-accent); }
+  .filter-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-right: -2px; }
+
+  /* ── Date range control ── */
+  .daterange-wrap { position: relative; }
+  .daterange-pop {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg); padding: var(--space-lg); width: 300px;
+    display: flex; flex-direction: column; gap: var(--space-md);
+  }
+  .dr-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dr-chip { padding: 5px 10px; border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; }
+  .dr-chip:hover { background: var(--surface-soft); }
+  .dr-chip.active { background: var(--mint); border-color: var(--fern); color: var(--spinach); font-weight: 600; }
+  .dr-fields { display: flex; align-items: center; gap: var(--space-sm); }
+  .dr-fields input { flex: 1; height: 34px; padding-inline: var(--space-sm); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; color: var(--text); background: var(--surface); }
+  .dr-sep { font-size: 12px; color: var(--text-soft); }
+  .dr-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); border-top: 1px solid var(--border); padding-top: var(--space-md); }
+
+  /* ── Tab navigation ── */
+  .tab-nav { display: flex; gap: 0; border-bottom: 1.5px solid var(--border); flex-wrap: wrap; }
+  .tab-btn {
+    padding: var(--space-sm) var(--space-xl); font-size: 14px; font-weight: 500; color: var(--text-soft);
+    background: none; border: none; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px;
+    transition: color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard);
+    display: flex; align-items: center; gap: var(--space-xs); white-space: nowrap;
+  }
+  .tab-btn i { font-size: 15px; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--text); font-weight: 600; border-bottom-color: var(--spinach); }
+  .tab-btn .tab-flag { font-size: 13px; }
+
+  .tab-panel { display: none; flex-direction: column; gap: var(--space-2xl); }
+  .tab-panel.active { display: flex; }
+
+  /* ── KPI strip ── */
+  .kpi-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-lg); }
+  .kpi-strip.cols-6 { grid-template-columns: repeat(6, 1fr); }
+  .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-md); text-align: left; cursor: default; transition: box-shadow var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard); }
+  .kpi-tile.clickable { cursor: pointer; }
+  .kpi-tile.clickable:hover { box-shadow: var(--shadow-md); border-color: var(--fern); }
+  .kpi-tile.sorted { border-color: var(--fern); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fern) 12%, transparent); }
+  .kpi-tile.dim { opacity: 0.5; }
+  .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); display: flex; align-items: center; gap: 4px; }
+  .kpi-label i { font-size: 13px; }
+  .kpi-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; font-feature-settings: 'tnum' 1; }
+  .kpi-context { font-size: 12px; font-weight: 500; color: var(--text-soft); display: flex; align-items: center; gap: var(--space-xs); }
+
+  /* ── Chart cards ── */
+  .charts-row { display: grid; grid-template-columns: 3fr 2fr; gap: var(--space-lg); }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; }
+  .chart-head-left { display: flex; flex-direction: column; gap: 2px; }
+  .chart-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .chart-legend { display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap; }
+
+  /* ── Metric switcher (segmented pills) — drives the All-markets trend chart ── */
+  .metric-pills { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .metric-pill {
+    padding: 5px 12px; border-radius: var(--radius-pill); border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-soft); font-size: 12px; font-weight: 500;
+    font-family: inherit; cursor: pointer; transition: background var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
+  }
+  .metric-pill:hover { color: var(--text); border-color: var(--fern); }
+  .metric-pill.active { background: var(--mint); border-color: var(--fern); color: var(--spinach); font-weight: 600; }
+
+  /* ── Trend chart axis + period-segment labels ── */
+  .chart-y-axis { display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text-soft); font-feature-settings: 'tnum' 1; min-width: 30px; text-align: right; padding: 2px 0; }
+  .chart-segment-labels { display: flex; font-size: 11px; color: var(--text-soft); margin-bottom: 4px; gap: var(--space-sm); }
+  .chart-segment-labels span:last-child { text-align: right; }
+  .trend-split { display: flex; gap: var(--space-lg); align-items: flex-start; }
+  .trend-split-col { flex: 1; min-width: 0; }
+  .trend-split-title { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-sm); }
+  .legend-item { display: flex; align-items: center; gap: var(--space-xs); font-size: 12px; color: var(--text-soft); }
+  .legend-line { width: 18px; height: 2px; border-radius: 2px; }
+  .svg-chart-wrap { width: 100%; overflow: hidden; border-radius: var(--radius-sm); }
+  .svg-chart-wrap svg { display: block; width: 100%; height: auto; }
+  .chart-x-labels { display: flex; justify-content: space-between; padding-inline: 4px; margin-top: -4px; }
+  .chart-x-label { font-size: 10px; color: var(--text-soft); font-feature-settings: 'tnum' 1; }
+
+  /* ── Bar list (market comparison) ── */
+  .bar-list { display: flex; flex-direction: column; gap: var(--space-md); }
+  .bar-row { display: grid; align-items: center; gap: var(--space-sm); grid-template-columns: 130px 1fr 90px; }
+  .bar-row.clickable { cursor: pointer; border-radius: var(--radius-sm); padding: 3px var(--space-xs); transition: background var(--dur-1) var(--ease-standard); }
+  .bar-row.clickable:hover { background: var(--surface-soft); }
+  .bar-label { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+  .bar-track { height: 22px; background: color-mix(in srgb, var(--border) 70%, transparent); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--fern); transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+  .bar-fill.muted { background: color-mix(in srgb, var(--text-soft) 45%, transparent); }
+  .bar-value { font-size: 12px; font-weight: 600; color: var(--text); text-align: right; font-feature-settings: 'tnum' 1; white-space: nowrap; }
+
+  /* ── Data tables ── */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); border-bottom: 1px solid var(--border); gap: var(--space-md); flex-wrap: wrap; }
+  .panel-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .panel-meta { font-size: 12px; color: var(--text-soft); }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { text-align: left; padding: var(--space-sm) var(--space-lg); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
+  .data-table th:hover { color: var(--text); }
+  .data-table th.sorted { color: var(--fern); }
+  .data-table th .sort-caret { font-size: 12px; margin-left: 3px; vertical-align: -1px; }
+  .data-table th.r, .data-table td.r { text-align: right; font-feature-settings: 'tnum' 1; }
+  .data-table td { padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover td { background: color-mix(in srgb, var(--surface-soft) 55%, transparent); }
+  .data-table tbody tr.clickable { cursor: pointer; }
+  .data-table tbody tr.clickable:hover td { background: var(--surface-soft); }
+  .td-name { font-weight: 500; }
+  .td-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+
+  /* ── Entity cell (avatar + name) — Shopify Admin-style initials avatar in table rows ── */
+  .entity-cell { display: flex; align-items: center; gap: var(--space-sm); }
+  .row-avatar {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 26px; height: 26px; border-radius: 50%;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.01em;
+  }
+
+  /* ── Section header ── */
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; }
+  .section-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .section-meta { font-size: 12px; color: var(--text-soft); }
+
+  /* ── Delta chips — Shopify Admin-style trend badge (pill + arrow) instead of plain colored text ── */
+  .delta-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px; border-radius: var(--radius-pill);
+    font-size: 11px; font-weight: 600; line-height: 1.5; font-feature-settings: 'tnum' 1;
+  }
+  .delta-badge i { font-size: 11px; }
+  .delta-badge.up   { background: var(--status-ok-bg);   color: var(--status-ok-fg); }
+  .delta-badge.down { background: var(--status-risk-bg); color: var(--status-risk-fg); }
+  .delta-badge.flat { background: var(--surface-soft);   color: var(--text-soft); }
+  .delta-compare { font-size: 11px; color: var(--text-soft); }
+
+  /* ── Info note ── */
+  .info-note { display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-lg); border-radius: var(--radius-md); background: var(--status-info-bg); color: var(--text); font-size: 13px; line-height: 1.6; }
+  .info-note i { flex-shrink: 0; font-size: 16px; margin-top: 1px; color: var(--status-info-fg); }
+  .info-note.warn { background: var(--status-warn-bg); }
+  .info-note.warn i { color: var(--status-warn-fg); }
+  .info-note strong { color: var(--text); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); align-items: start; }
+
+  /* ── Reused stat/mini-row primitives (drawer stat cards, merchant movement lists) ── */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+  .stat-card { background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); }
+  .mini-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); }
+  .stat-value { font-size: 20px; font-weight: 700; margin-top: 4px; color: var(--text); }
+  .mini-row { display: flex; justify-content: space-between; padding: 8px var(--space-xl); border-bottom: 1px solid var(--border); font-size: 13px; }
+  .mini-row:last-child { border-bottom: none; }
+  .mini-empty { padding: var(--space-xl); color: var(--text-soft); font-size: 13px; }
+
+  /* ── Drawer title gets an avatar too, matching the table rows it drilled in from ── */
+  .nb-drawer-title { display: flex; align-items: center; gap: var(--space-sm); }
+
+  @media (max-width: 1100px) {
+    .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(3, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="logo">Nomni HQ</div>
-    <div class="sub">Prototype · Zeemart 2.0</div>
-    <h2>Screens</h2>
-    <ul class="list">
-      <li><a href="screens/dashboard.html">Overview <span>Morning briefing</span></a></li>
-      <li><a href="screens/venues.html">Venues <span>Outlet management</span></a></li>
-      <li><a href="screens/suppliers.html">Suppliers <span>Supplier directory</span></a></li>
-      <li><a href="screens/users.html">Users <span>Team & permissions</span></a></li>
-      <li><a href="screens/market-list.html">Market Lists <span>Price lists</span></a></li>
-      <li><a href="screens/recipes.html">Recipes <span>Recipe library</span></a></li>
-      <li><a href="screens/recipe-detail.html">Recipe Detail <span>Ingredients & costing</span></a></li>
-      <li><a href="screens/inventory.html">Inventory <span>Stock management</span></a></li>
-      <li><a href="screens/orders.html">Orders <span>Requisitions & POs</span></a></li>
-      <li><a href="screens/pos-mapping.html">POS Mapping <span>Item mapping</span></a></li>
-      <li><a href="screens/reporting.html">Reporting <span>Analytics</span></a></li>
-      <li><a href="screens/login.html">Login <span>Auth screen</span></a></li>
-    </ul>
+
+<!-- Standalone top bar — this page is its own site, not part of the Nomni Procure HQ module -->
+<header class="topbar">
+  <div class="topbar-left">
+    <span class="shell-wordmark" aria-label="Nomni Procure Insights">
+      <span class="shell-wordmark-icon" aria-hidden="true">
+        <svg viewBox="0 0 138.195 157.144" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20.941 30.552C21.157 29.542 22.148 28.896 23.158 29.111L115.484 48.735C116.494 48.951 117.14 49.942 116.925 50.952L115.362 58.322C114.801 60.941 114.043 63.467 113.107 65.89L132.117 61.849C133.128 61.634 134.12 62.279 134.335 63.289L136.683 74.336C144.849 112.732 119.085 150.482 79.635 156.412C43.253 161.874 9.472 136.152 1.838 100.254L0.042 91.826C-0.173 90.816 0.472 89.824 1.482 89.609L33.14 82.885C21.493 71.015 16.095 53.318 19.763 36.052L20.932 30.562ZM92.068 0.041C93.079-0.174 94.07 0.471 94.285 1.481L94.818 3.97C97.559 16.859 88.916 29.532 75.669 31.524C63.461 33.358 52.112 24.725 49.549 12.668L49.203 11.06C48.988 10.049 49.633 9.058 50.644 8.843Z" fill="#2AC864"/>
+        </svg>
+      </span>
+      <span class="shell-wordmark-text">nomni <span style="font-weight:400;opacity:0.65;">procure insights</span></span>
+    </span>
   </div>
+  <div class="topbar-right" id="topbar-clock"></div>
+</header>
+
+<div class="page-body">
+  <div class="napp-canvas" data-measure="wide">
+
+    <!-- Page header -->
+    <header class="page-header">
+      <div class="page-header-left">
+        <span class="page-eyebrow">Procure Insights</span>
+        <h1 class="page-title">Platform activity</h1>
+        <p class="page-sub" id="page-sub">All markets · <span id="header-range-label">01–17 Jul 2026</span></p>
+      </div>
+      <div class="page-actions">
+        <button class="nb-btn" onclick="insightsToast('Exporting current view to XLSX…')"><i class="ti ti-file-spreadsheet"></i>Export view</button>
+      </div>
+    </header>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="daterange-wrap">
+        <button class="nb-btn" onclick="toggleDateRangePopover()"><i class="ti ti-calendar"></i><span id="daterange-label">01–17 Jul 2026</span><i class="ti ti-chevron-down"></i></button>
+        <div class="daterange-pop" id="daterange-pop" style="display:none;">
+          <div class="dr-quick" id="dr-quick"></div>
+          <div class="dr-fields">
+            <input type="date" id="dr-from" value="2026-07-01"/>
+            <span class="dr-sep">to</span>
+            <input type="date" id="dr-to" value="2026-07-17"/>
+          </div>
+          <div class="dr-actions">
+            <button class="nb-btn ghost" onclick="toggleDateRangePopover()">Cancel</button>
+            <button class="nb-btn primary" onclick="applyDateRange()">Apply</button>
+          </div>
+        </div>
+      </div>
+      <span class="filter-label">Compare</span>
+      <select class="filter-select" id="compare-select" onchange="applyCompare()">
+        <option value="previous-week">Previous week</option>
+        <option value="previous-month" selected>Previous month</option>
+        <option value="previous-year">Same month last year</option>
+        <option value="none">None</option>
+      </select>
+    </div>
+
+    <!-- Market tabs -->
+    <nav class="tab-nav" role="tablist" aria-label="Market">
+      <button class="tab-btn active" role="tab" aria-selected="true"  onclick="switchMarket('ALL')"><i class="ti ti-world"></i>All markets</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('SG')"><span class="tab-flag">🇸🇬</span>Singapore</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('MY')"><span class="tab-flag">🇲🇾</span>Malaysia</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('ID')"><span class="tab-flag">🇮🇩</span>Indonesia</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('AU')"><span class="tab-flag">🇦🇺</span>Australia</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('UNATTRIBUTED')"><i class="ti ti-help-circle"></i>Unattributed</button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--  ALL MARKETS (Point 1)                     -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-ALL" role="tabpanel">
+
+      <div class="kpi-strip" id="kpi-ALL"></div>
+
+      <div class="chart-card full">
+        <div class="chart-head">
+          <div class="chart-head-left">
+            <span class="chart-title">Trend over time</span>
+            <span class="panel-meta" id="trend-sub-ALL"></span>
+          </div>
+          <div class="metric-pills" id="trend-pills-ALL"></div>
+        </div>
+        <div class="chart-segment-labels" id="trend-seg-ALL"></div>
+        <div class="svg-chart-wrap" id="trend-chart-ALL"></div>
+        <div class="chart-x-labels" id="trend-x-ALL"></div>
+        <div class="chart-legend" id="trend-legend-ALL"></div>
+      </div>
+
+      <div class="two-col">
+        <div class="chart-card">
+          <div class="section-head" style="margin:0;">
+            <span class="chart-title">Activity by market</span>
+            <span class="section-meta">Orders this period</span>
+          </div>
+          <div class="bar-list" id="bar-ALL"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Market comparison</span>
+            <span class="panel-meta">Click a row to drill in</span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" aria-label="Market comparison">
+              <thead>
+                <tr>
+                  <th>Market</th>
+                  <th class="r">Merchants</th>
+                  <th class="r">Orders</th>
+                  <th class="r">Invoices processed</th>
+                  <th class="r">Invoice value</th>
+                </tr>
+              </thead>
+              <tbody id="market-compare-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-note" id="unattributed-callout"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--  PER-MARKET PANELS (Point 2 + 3)           -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-SG" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-MY" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-ID" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-AU" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-UNATTRIBUTED" role="tabpanel"></div>
+
+  </div>
+</div>
+
+<!-- Merchant drill-down drawer -->
+<div class="nb-drawer-scrim" id="drill-scrim" onclick="closeDrill()"></div>
+<aside class="nb-drawer" id="drill-drawer" aria-label="Merchant detail" aria-hidden="true">
+  <div class="nb-drawer-head">
+    <span class="nb-drawer-title" id="drill-title">Merchant</span>
+    <button class="nb-btn ghost" onclick="closeDrill()" aria-label="Close"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="nb-drawer-body" id="drill-body" style="display:flex;flex-direction:column;gap:var(--space-lg);"></div>
+  <div class="nb-drawer-foot">
+    <button class="nb-btn" onclick="closeDrill()">Close</button>
+    <button class="nb-btn primary" onclick="insightsToast('Opening full merchant report…')">Full report</button>
+  </div>
+</aside>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+<style>
+  .toast-wrap { position: fixed; bottom: var(--space-xl); left: 50%; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: var(--space-sm); align-items: center; pointer-events: none; }
+  .toast { display: flex; align-items: center; gap: var(--space-sm); background: var(--surface-deep); color: var(--cream); padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 500; animation: toastin var(--dur-3) var(--ease-emphasized); }
+  .toast i { color: var(--spring); font-size: 16px; }
+  @keyframes toastin { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => { init(); startClock(); });
+
+function startClock() {
+  const el = document.getElementById('topbar-clock');
+  function tick() {
+    const now = new Date();
+    const label = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' +
+      now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' SGT';
+    el.textContent = label;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+/* ══════════════════════════════════════════════════════
+   DATA MODEL
+   Figures below are grounded in the real Nomni Procure
+   Insights dashboard (35.226.78.102/procure-insights) for
+   July 2026 — pulled from its Orders Overview and Invoice
+   Overview JSON feeds. Merchant-level rows are a realistic
+   top-N sample (the real product only ever renders top-N
+   rankings too, never an exhaustive list), while the KPI
+   totals and market splits are the true aggregate figures.
+   ══════════════════════════════════════════════════════ */
+
+const MARKET_META = {
+  ALL:          { label: 'All markets', flag: '🌐' },
+  SG:           { label: 'Singapore',   flag: '🇸🇬' },
+  MY:           { label: 'Malaysia',    flag: '🇲🇾' },
+  ID:           { label: 'Indonesia',   flag: '🇮🇩' },
+  AU:           { label: 'Australia',   flag: '🇦🇺' },
+  UNATTRIBUTED: { label: 'Unattributed', flag: '' },
+};
+
+// deltaPct: % change vs the comparison period (shared shape across markets,
+// re-labelled by whichever Compare option is selected).
+const DELTA = {
+  merchants: -4.9, orders: -39.4, orderValue: 7.0,
+  invUploaded: -41.9, invProcessed: -44.6, invValue: -35.8, suppliers: -6.2,
+};
+
+const TOTALS = {
+  ALL:          { merchants: 1061,orders: 34150, orderValue: 1285908790.65, invUploaded: 27778, invProcessed: 18280, invValue: 1133749156.16, suppliers: 1777 },
+  SG:           { merchants: 709, orders: 28743, orderValue: 9460188.23,    invUploaded: 16263, invProcessed: 16227, invValue: 4813792.08,     suppliers: 749 },
+  MY:           { merchants: 136, orders: 3998,  orderValue: 3213531.42,   invUploaded: 1058,  invProcessed: 1057,  invValue: 983144.91,       suppliers: 104 },
+  ID:           { merchants: 16,  orders: 1009,  orderValue: 1273224995.00,invUploaded: 1005,  invProcessed: 996,   invValue: 1117484988.75,   suppliers: 137 },
+  AU:           { merchants: 200, orders: 400,   orderValue: 10076.00,     invUploaded: 0,     invProcessed: 0,     invValue: 0,               suppliers: 200 },
+  UNATTRIBUTED: { merchants: null,orders: null,  orderValue: null,         invUploaded: 9452,  invProcessed: 0,     invValue: 10467230.42,     suppliers: 588 },
+};
+
+const MERCHANTS = {
+  SG: [
+    { name: 'Lineage Logistics Mandai Pte Ltd', status: 'active', orders: 573, orderValue: 682320.33, invUploaded: 612, invProcessed: 601, invValue: 645210.10, suppliers: ['Cold Chain Distributors', 'Mandai Fresh Produce'] },
+    { name: 'Phoon Huat Pte Ltd',                status: 'active', orders: 535, orderValue: 177288.67, invUploaded: 540, invProcessed: 533, invValue: 168400.55, suppliers: ['Bakers Pantry', 'Dairy Direct'] },
+    { name: 'MSB Cafeteria (Halal Kitchen)',     status: 'active', orders: 1086, orderValue: 298110.20, invUploaded: 1090, invProcessed: 1082, invValue: 291005.40, suppliers: ['Halal Meats Co', 'Green Farmers Market'] },
+    { name: 'Spize - Bedok',                     status: 'active', orders: 939, orderValue: 210044.90, invUploaded: 945, invProcessed: 930, invValue: 205110.00, suppliers: ['Fresh Direct', 'Sydney Butchers Co.'] },
+    { name: 'BG - Bellygood Caterer',            status: 'active', orders: 1126, orderValue: 341220.15, invUploaded: 1130, invProcessed: 1120, invValue: 336900.80, suppliers: ['Farm Fresh', 'Dairy Direct'] },
+    { name: 'Kitchen (Mount Novena)',            status: 'active', orders: 1557, orderValue: 402880.60, invUploaded: 1560, invProcessed: 1548, invValue: 396210.25, suppliers: ['Green Farmers Market', 'Ocean Fresh Seafood'] },
+    { name: 'Canopy Jurong Lake Gardens - Kitchen', status: 'new', orders: 24, orderValue: 6120.00, invUploaded: 26, invProcessed: 22, invValue: 5890.00, suppliers: ['Fresh Direct'] },
+    { name: 'Pinhole Coffee Bar - Purvis',       status: 'new', orders: 18, orderValue: 3040.50, invUploaded: 19, invProcessed: 16, invValue: 2910.00, suppliers: ['Roasters Collective'] },
+    { name: 'Canopy Changi City Point - Kitchen', status: 'new', orders: 15, orderValue: 3800.00, invUploaded: 16, invProcessed: 13, invValue: 3650.00, suppliers: ['Fresh Direct'] },
+    { name: 'Vincenzo Capuano',                  status: 'dropped', orders: 112, orderValue: 34200.00, invUploaded: 118, invProcessed: 112, invValue: 33500.00, suppliers: ['Mediterranean Foods'] },
+    { name: 'Gotti Italiano',                    status: 'dropped', orders: 103, orderValue: 29850.00, invUploaded: 108, invProcessed: 103, invValue: 29000.00, suppliers: ['Mediterranean Foods'] },
+    { name: 'Burma Social - Siglap',             status: 'dropped', orders: 59,  orderValue: 15100.00, invUploaded: 61, invProcessed: 58, invValue: 14700.00, suppliers: ['Green Farmers Market'] },
+  ],
+  MY: [
+    { name: 'Kenny Hills - Central Pastry - PJ', status: 'active', orders: 872, orderValue: 527544.08, invUploaded: 880, invProcessed: 872, invValue: 519220.00, suppliers: ['Bakers Pantry', 'Dairy Direct'] },
+    { name: 'Kenny Hills - Bangsar',             status: 'active', orders: 410, orderValue: 248900.00, invUploaded: 415, invProcessed: 409, invValue: 244100.00, suppliers: ['Bakers Pantry'] },
+    { name: 'Village Grocer - Bangsar',          status: 'active', orders: 265, orderValue: 160300.00, invUploaded: 270, invProcessed: 264, invValue: 157900.00, suppliers: ['Green Farmers Market'] },
+    { name: "Ben's Independent Grocer - Bandar Utama", status: 'active', orders: 244, orderValue: 147600.00, invUploaded: 248, invProcessed: 241, invValue: 144300.00, suppliers: ['Fresh Direct'] },
+    { name: 'Sushi Zanmai - Mid Valley',         status: 'active', orders: 198, orderValue: 119800.00, invUploaded: 202, invProcessed: 196, invValue: 116900.00, suppliers: ['Ocean Fresh Seafood'] },
+    { name: 'Marché Mövenpick - KLCC',           status: 'active', orders: 156, orderValue: 94300.00, invUploaded: 160, invProcessed: 154, invValue: 91800.00, suppliers: ['Farm Fresh', 'Mediterranean Foods'] },
+    { name: 'Coffee Bean - Sunway',              status: 'new', orders: 32, orderValue: 8100.00, invUploaded: 34, invProcessed: 29, invValue: 7700.00, suppliers: ['Roasters Collective'] },
+    { name: 'Old Town White Coffee - Damansara', status: 'active', orders: 112, orderValue: 67700.00, invUploaded: 115, invProcessed: 111, invValue: 66200.00, suppliers: ['Roasters Collective', 'Dairy Direct'] },
+    { name: "La Juiceria - Publika",             status: 'dropped', orders: 28, orderValue: 6900.00, invUploaded: 30, invProcessed: 27, invValue: 6500.00, suppliers: ['Green Farmers Market'] },
+    { name: 'Grain Traders - TTDI',              status: 'active', orders: 84, orderValue: 50780.00, invUploaded: 86, invProcessed: 83, invValue: 49400.00, suppliers: ['Bakers Pantry'] },
+  ],
+  ID: [
+    { name: 'Shelter Pererenan - Kitchen',       status: 'active', orders: 358, orderValue: 567181440.13, invUploaded: 362, invProcessed: 356, invValue: 561200000.00, suppliers: ['Bali Fresh Market'] },
+    { name: 'Shelter Pererenan - Bar',           status: 'active', orders: 167, orderValue: 229801355.74, invUploaded: 170, invProcessed: 165, invValue: 224500000.00, suppliers: ['Bali Fresh Market'] },
+    { name: 'DHP ID Master Franchisee',          status: 'active', orders: 210, orderValue: 340000000.00, invUploaded: 214, invProcessed: 209, invValue: 332100000.00, suppliers: ['Jakarta Distribution Co'] },
+    { name: 'Canggu Coffee Collective',          status: 'active', orders: 96, orderValue: 68900000.00, invUploaded: 98, invProcessed: 95, invValue: 66700000.00, suppliers: ['Bali Fresh Market'] },
+    { name: 'Ubud Organic Kitchen',              status: 'new', orders: 12, orderValue: 9800000.00, invUploaded: 13, invProcessed: 10, invValue: 9100000.00, suppliers: ['Bali Fresh Market'] },
+    { name: 'Seminyak Beach Club',               status: 'active', orders: 140, orderValue: 51500000.00, invUploaded: 142, invProcessed: 138, invValue: 49800000.00, suppliers: ['Jakarta Distribution Co'] },
+    { name: 'Bali Bakehouse - Kerobokan',        status: 'dropped', orders: 26, orderValue: 5843200.00, invUploaded: 27, invProcessed: 23, invValue: 5600000.00, suppliers: ['Bali Fresh Market'] },
+  ],
+  AU: [
+    { name: 'Nomni AU Pilot Kitchen - Sydney',   status: 'active', orders: 28, orderValue: 720.50, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Sydney Fresh Wholesale'] },
+    { name: 'Harbour Bistro - Melbourne',        status: 'active', orders: 19, orderValue: 480.00, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Melbourne Produce Co'] },
+    { name: 'Outback Grill - Brisbane',          status: 'new',    orders: 14, orderValue: 355.00, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Brisbane Bulk Foods'] },
+    { name: 'Perth Coastal Kitchen',             status: 'new',    orders: 9,  orderValue: 210.00, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Sydney Fresh Wholesale'] },
+  ],
+  UNATTRIBUTED: [],
+};
+
+/* ── Extra real data for metric drill-down screens (also pulled from the
+   live 35.226.78.102/procure-insights JSON feeds) ── */
+
+// Cancelled orders per market — real Orders Overview summaryValues.cancelledOrders.
+// TOTALS[mk].orders is already "non-cancelled", so total order rows = orders + cancelled.
+const CANCELLED = { SG: 961, MY: 168, ID: 8, AU: 0 };
+
+// Top suppliers per market — real Invoice Overview rankings['Top Suppliers'] (top 6 shown).
+const SUPPLIERS = {
+  SG: [
+    { name: 'Fresh Direct Pte Ltd',               orders: 411, orderValue: 48103.28 },
+    { name: 'Bidfood Singapore Pte Ltd',          orders: 387, orderValue: 120772.07 },
+    { name: 'Lineage Logistics Mandai Pte Ltd',   orders: 376, orderValue: 267805.84 },
+    { name: 'Classic Fine Foods (S) Pte Ltd',     orders: 364, orderValue: 99411.42 },
+    { name: 'Double Chin Food Services Pte Ltd',  orders: 329, orderValue: 142485.82 },
+    { name: 'Phoon Huat Pte Ltd',                 orders: 322, orderValue: 100459.30 },
+  ],
+  MY: [
+    { name: 'Global Pacific Victory (M) Sdn Bhd',    orders: 74, orderValue: 87799.97 },
+    { name: 'Sri Segar Food Corporation Sdn Bhd',    orders: 55, orderValue: 26473.20 },
+    { name: 'Piau Kee Live & Frozen Seafoods Sdn Bhd', orders: 44, orderValue: 35089.36 },
+    { name: 'Accent Foods Sdn Bhd',                  orders: 41, orderValue: 12995.63 },
+    { name: 'BGS Trading Sdn Bhd',                   orders: 41, orderValue: 42945.38 },
+    { name: 'QL Ansan Poultry Farm Sdn Bhd',          orders: 39, orderValue: 15696.70 },
+  ],
+  ID: [
+    { name: 'UD Dwipa',                    orders: 75, orderValue: 84172325 },
+    { name: 'Jaya Lestari Supplier',       orders: 36, orderValue: 12360304.99 },
+    { name: 'Mulia Jaya Supplier',         orders: 31, orderValue: 13028000 },
+    { name: 'PT Sukanda Djaya (Bali)',     orders: 30, orderValue: 23962094.46 },
+    { name: 'PT Wahana Boga Nusantara',    orders: 29, orderValue: 13837500 },
+    { name: 'PT Bali Tirta Bhuana',        orders: 27, orderValue: 1319500 },
+  ],
+  AU: [
+    { name: 'Sydney Fresh Wholesale', orders: 22, orderValue: 480.00 },
+    { name: 'Melbourne Produce Co',   orders: 15, orderValue: 310.00 },
+    { name: 'Brisbane Bulk Foods',    orders: 9,  orderValue: 165.00 },
+  ],
+};
+
+// Payment terms per market — real Invoice Overview breakdowns['Payment Terms'] (top 5 shown).
+const PAYMENT_TERMS = {
+  SG: [
+    { name: 'NET30', count: 11411 }, { name: 'Not specified', count: 2209 },
+    { name: '30 days after EOM', count: 804 }, { name: 'NET60', count: 554 }, { name: 'COD', count: 304 },
+  ],
+  MY: [
+    { name: 'NET30', count: 750 }, { name: 'Not specified', count: 160 },
+    { name: 'COD', count: 65 }, { name: 'NET14', count: 23 }, { name: 'NET60', count: 22 },
+  ],
+  ID: [
+    { name: 'NET30', count: 603 }, { name: 'NET14', count: 205 },
+    { name: 'Bank transfer', count: 148 }, { name: 'NET7', count: 21 }, { name: 'NET20', count: 16 },
+  ],
+  AU: [],
+};
+
+// Upload source & match/OCR status — real Invoice Processing breakdowns, but that report has
+// NO market tagging at all, so these ratios are applied pro-rata per market as an estimate.
+const UPLOAD_SOURCE_RATIO = { Mobile: 17588 / 19119, Web: 1381 / 19119, Unknown: 150 / 19119 };
+const MATCH_STATUS_RATIO = [
+  { name: 'Match',                        pct: 14947 / 19119 },
+  { name: 'Unable to match line items',   pct: 2315 / 19119 },
+  { name: 'Preloaded with market list',   pct: 890 / 19119 },
+  { name: 'Invoice number not found',     pct: 530 / 19119 },
+  { name: 'Other exceptions',             pct: (19119 - 14947 - 2315 - 890 - 530) / 19119 },
+];
+
+// Real, platform-wide "Processed by" ranking (Invoice Processing has no market split, so this
+// is shown once, under Singapore, which carries ~90%+ of platform volume).
+const PROCESSORS_ALL = [
+  { name: 'Zeemart System', count: 10830, auto: 10828, manual: 2 },
+  { name: 'Yora Milenda',   count: 975,   auto: 9,     manual: 966 },
+  { name: 'Farah Aqilah',   count: 886,   auto: 0,     manual: 886 },
+  { name: 'Amanda Alviana', count: 764,   auto: 0,     manual: 764 },
+  { name: 'Jocelyn Tan',    count: 692,   auto: 2,     manual: 690 },
+];
+
+// Real Invoice Overview UNKNOWN-market view — where unattributed invoices actually sit.
+const UNATTRIBUTED_STATUS = { issued: 3351, deleted: 2962, pending: 3139 };
+
+const METRIC_DEFS_ALL = [
+  { key: 'merchants',    label: 'Active merchants',    icon: 'ti-building-store' },
+  { key: 'orders',       label: 'Orders',              icon: 'ti-shopping-cart' },
+  { key: 'invProcessed', label: 'Invoices processed',  icon: 'ti-file-check' },
+  { key: 'invValue',     label: 'Invoice value',       icon: 'ti-currency-dollar', money: true },
+  { key: 'suppliers',    label: 'Suppliers',           icon: 'ti-truck' },
+];
+
+const METRIC_DEFS_MARKET = [
+  { key: 'merchants',    label: 'Active merchants',    icon: 'ti-building-store' },
+  { key: 'orders',       label: 'Orders',              icon: 'ti-shopping-cart' },
+  { key: 'orderValue',   label: 'Order value',         icon: 'ti-receipt-2', money: true },
+  { key: 'invUploaded',  label: 'Invoices uploaded',   icon: 'ti-upload' },
+  { key: 'invProcessed', label: 'Invoices processed',  icon: 'ti-file-check' },
+  { key: 'invValue',     label: 'Invoice value',       icon: 'ti-currency-dollar', money: true },
+];
+
+let compareLabel = 'previous month';
+let sortState = { SG: 'orders', MY: 'orders', ID: 'orders', AU: 'orders' };
+let metricState = { SG: null, MY: null, ID: null, AU: null, UNATTRIBUTED: null };
+let trendMetric = 'merchants';
+const MARKET_COLOR = { SG: '#129B41', MY: '#3F8AFB', ID: '#F5C219', AU: '#EE4B87' };
+
+/* ── Formatting helpers ── */
+function fmtNum(n) { return n === null || n === undefined ? '—' : Math.round(n).toLocaleString('en-US'); }
+function fmtMoney(n) {
+  if (n === null || n === undefined) return '—';
+  if (n >= 1000000000) return '$' + (n/1000000000).toFixed(2) + 'B';
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+function deltaChip(pct) {
+  if (pct === null || pct === undefined) return '';
+  const dir = pct > 0.5 ? 'up' : pct < -0.5 ? 'down' : 'flat';
+  const icon = dir === 'up' ? 'ti-arrow-up-right' : dir === 'down' ? 'ti-arrow-down-right' : 'ti-minus';
+  return `<span class="delta-badge ${dir}"><i class="ti ${icon}"></i>${Math.abs(pct).toFixed(1)}%</span> <span class="delta-compare">vs ${compareLabel}</span>`;
+}
+
+/* ── Entity avatars — Shopify Admin-style initials circle, deterministic per name ── */
+const AVATAR_PALETTE = [
+  { bg: 'var(--mint)', fg: 'var(--spinach)' },
+  { bg: 'var(--status-info-bg)', fg: 'var(--status-info-fg)' },
+  { bg: 'var(--status-warn-bg)', fg: 'var(--status-warn-fg)' },
+  { bg: 'var(--status-risk-bg)', fg: 'var(--status-risk-fg)' },
+  { bg: 'var(--surface-soft)', fg: 'var(--text-soft)' },
+];
+function initials(name) {
+  const parts = (name || '').match(/[A-Za-z0-9]+/g) || [];
+  if (!parts.length) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function avatarChip(name) {
+  const c = AVATAR_PALETTE[hashStr(name || '') % AVATAR_PALETTE.length];
+  return `<span class="row-avatar" style="background:${c.bg};color:${c.fg};">${initials(name)}</span>`;
+}
+
+/* ── Deterministic bell-curve daily series (no Math.random — keeps re-renders stable) ── */
+function distribute(total, days, peakDay) {
+  const weights = [];
+  for (let i = 0; i < days; i++) {
+    const d = Math.abs(i - peakDay);
+    weights.push(Math.max(0.35, 1 - d * 0.055));
+  }
+  const sum = weights.reduce((a, b) => a + b, 0);
+  return weights.map(w => (total || 0) * w / sum);
+}
+
+const TREND_X_LABELS = ['01 Jul', '', '', '', '', '', '', '08 Jul', '', '', '', '', '', '', '', '', '17 Jul'];
+
+// Shared by the market-overview trend (two real series) and the metric-detail trend
+// (one series — pass null for seriesB to get a flat zero baseline instead of a second line).
+function renderTrendChart(containerId, xLabelsId, seriesA, seriesB) {
+  renderDualLineChart(containerId, seriesA, seriesB || seriesA.map(() => 0));
+  document.getElementById(xLabelsId).innerHTML = TREND_X_LABELS.map(l => `<span class="chart-x-label">${l}</span>`).join('');
+}
+
+// Shared "Merchants" panel (header + empty <table> shell) used by both the market overview
+// and every metric-detail screen — the caller fills the <table> via renderMerchantTable(mk).
+function merchantsPanelHtml(mk) {
+  const t = TOTALS[mk];
+  const sortLabel = METRIC_DEFS_MARKET.find(m => m.key === sortState[mk])?.label.toLowerCase() || 'orders';
+  return `
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Merchants</span>
+        <span class="panel-meta">Showing top ${MERCHANTS[mk].length} of ${fmtNum(t.merchants)} active merchants · sorted by ${sortLabel}</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" aria-label="Merchants" id="merchant-table-${mk}"></table>
+      </div>
+    </div>`;
+}
+
+function statCardHtml(label, value) {
+  return `<div class="stat-card"><div class="mini-label">${label}</div><div class="stat-value">${value}</div></div>`;
+}
+
+function miniRowHtml(name, meta) {
+  return `<div class="mini-row"><span>${name}</span><span class="td-sub">${meta}</span></div>`;
+}
+
+// One shared supplier table (Orders + Order value columns) reused by both the Orders and
+// Order Value metric breakdowns — sorted by whichever one the user drilled into, with that
+// column called out, instead of rendering two near-identical single-column tables.
+function suppliersPanelHtml(mk, sortBy) {
+  const suppliers = [...(SUPPLIERS[mk] || [])].sort((a, b) => b[sortBy] - a[sortBy]);
+  if (!suppliers.length) return `<div class="mini-empty">No supplier data yet for this market.</div>`;
+  const caret = '<i class="ti ti-chevron-down sort-caret"></i>';
+  return `<table class="data-table">
+    <thead><tr>
+      <th>Supplier</th>
+      <th class="r ${sortBy === 'orders' ? 'sorted' : ''}">Orders${sortBy === 'orders' ? caret : ''}</th>
+      <th class="r ${sortBy === 'orderValue' ? 'sorted' : ''}">Order value${sortBy === 'orderValue' ? caret : ''}</th>
+    </tr></thead>
+    <tbody>${suppliers.map(s => `<tr><td><div class="entity-cell">${avatarChip(s.name)}<span class="td-name">${s.name}</span></div></td><td class="r">${fmtNum(s.orders)}</td><td class="r">${fmtMoney(s.orderValue)}</td></tr>`).join('')}</tbody>
+  </table>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER: All-markets panel
+   ══════════════════════════════════════════════════════ */
+function renderAllPanel() {
+  const t = TOTALS.ALL;
+  const kpiWrap = document.getElementById('kpi-ALL');
+  kpiWrap.innerHTML = METRIC_DEFS_ALL.map(m => `
+    <div class="kpi-tile">
+      <div class="kpi-label"><i class="ti ${m.icon}"></i>${m.label}</div>
+      <div class="kpi-value">${m.money ? fmtMoney(t[m.key]) : fmtNum(t[m.key])}</div>
+      <div class="kpi-context">${deltaChip(DELTA[m.key])}</div>
+    </div>`).join('');
+
+  const marketsForBar = ['SG', 'MY', 'ID', 'AU'];
+  const maxOrders = Math.max(...marketsForBar.map(k => TOTALS[k].orders));
+  document.getElementById('bar-ALL').innerHTML = marketsForBar.map(k => {
+    const m = MARKET_META[k], v = TOTALS[k];
+    const pct = Math.max(2, (v.orders / maxOrders) * 100);
+    return `<div class="bar-row clickable" onclick="switchMarket('${k}')" tabindex="0">
+      <span class="bar-label">${m.flag} ${m.label}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <span class="bar-value">${fmtNum(v.orders)}</span>
+    </div>`;
+  }).join('');
+
+  const rows = ['SG', 'MY', 'ID', 'AU', 'UNATTRIBUTED'];
+  document.getElementById('market-compare-tbody').innerHTML = rows.map(k => {
+    const m = MARKET_META[k], v = TOTALS[k];
+    return `<tr class="clickable" onclick="switchMarket('${k}')">
+      <td class="td-name">${m.flag ? m.flag + ' ' : ''}${m.label}</td>
+      <td class="r">${fmtNum(v.merchants)}</td>
+      <td class="r">${fmtNum(v.orders)}</td>
+      <td class="r">${fmtNum(v.invProcessed)}</td>
+      <td class="r">${fmtMoney(v.invValue)}</td>
+    </tr>`;
+  }).join('');
+
+  const u = TOTALS.UNATTRIBUTED;
+  const pctUnattr = (u.invUploaded / t.invUploaded * 100).toFixed(0);
+  document.getElementById('unattributed-callout').innerHTML = `
+    <i class="ti ti-alert-triangle"></i>
+    <span><strong>${fmtNum(u.invUploaded)} invoices (${pctUnattr}% of all uploads)</strong> couldn't be matched to a market or merchant this period — see the <strong>Unattributed</strong> tab. Closing this gap would materially improve how much of the platform's activity these numbers actually reflect.</span>`;
+
+  renderTrendPills();
+  renderAllTrendChart();
+}
+
+function renderTrendPills() {
+  document.getElementById('trend-pills-ALL').innerHTML = METRIC_DEFS_ALL.map(m =>
+    `<button class="metric-pill ${trendMetric === m.key ? 'active' : ''}" onclick="setTrendMetric('${m.key}')">${m.label}</button>`
+  ).join('');
+}
+
+function setTrendMetric(key) {
+  trendMetric = key;
+  renderTrendPills();
+  renderAllTrendChart();
+}
+
+function getReportRange() {
+  const fromEl = document.getElementById('dr-from'), toEl = document.getElementById('dr-to');
+  const from = new Date((fromEl ? fromEl.value : '2026-07-01') + 'T00:00:00');
+  const to = new Date((toEl ? toEl.value : '2026-07-17') + 'T00:00:00');
+  const days = Math.max(2, Math.round((to - from) / 86400000) + 1);
+  return { from, to, days };
+}
+function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+function shortDate(d) { return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }); }
+function shortDateYear(d) { return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+
+// The trend chart's timeline follows the Compare selector: previous-week/previous-month
+// prepend that comparison window onto the same continuous axis (with a dashed divider
+// where the current report period begins); same-month-last-year is too large a gap to
+// bridge on one axis, so it renders as two separate side-by-side segments instead.
+function renderAllTrendChart() {
+  const marketsForTrend = ['SG', 'MY', 'ID', 'AU'];
+  const label = METRIC_DEFS_ALL.find(m => m.key === trendMetric).label;
+  const { from, to, days: reportDays } = getReportRange();
+  const mode = (document.getElementById('compare-select') || {}).value || 'previous-month';
+
+  document.getElementById('trend-legend-ALL').innerHTML = marketsForTrend.map(mk => {
+    const m = MARKET_META[mk];
+    return `<div class="legend-item"><span class="legend-line" style="background:${MARKET_COLOR[mk]};"></span>${m.flag} ${m.label}</div>`;
+  }).join('');
+
+  if (mode === 'previous-year') {
+    document.getElementById('trend-sub-ALL').textContent = `${label} · indexed to 100 at each period's own start, by market`;
+    document.getElementById('trend-x-ALL').innerHTML = '';
+    document.getElementById('trend-seg-ALL').innerHTML = '';
+    const compFrom = addDays(from, -365), compTo = addDays(to, -365);
+    const level = comparisonLevel(trendMetric);
+    document.getElementById('trend-chart-ALL').innerHTML = `
+      <div class="trend-split">
+        <div class="trend-split-col">
+          <div class="trend-split-title">Same month last year · ${shortDateYear(compFrom)}–${shortDateYear(compTo)}</div>
+          <div id="trend-chart-ALL-a"></div>
+        </div>
+        <div class="trend-split-col">
+          <div class="trend-split-title">This period · ${shortDateYear(from)}–${shortDateYear(to)}</div>
+          <div id="trend-chart-ALL-b"></div>
+        </div>
+      </div>`;
+    renderMultiLineChart('trend-chart-ALL-a', marketsForTrend.map(mk => ({ data: trendWiggle(trendMetric + mk + 'yoy', reportDays, level), color: MARKET_COLOR[mk] })), -1);
+    renderMultiLineChart('trend-chart-ALL-b', marketsForTrend.map(mk => ({ data: reportSeries(trendMetric, mk, reportDays), color: MARKET_COLOR[mk] })), -1);
+    return;
+  }
+
+  let compDays = 0, compLabel = '';
+  if (mode === 'previous-week') { compDays = 7; compLabel = 'Previous week'; }
+  else if (mode === 'previous-month') { compDays = 30; compLabel = 'Previous month'; }
+
+  const level = compDays ? comparisonLevel(trendMetric) : 0;
+  const seriesList = marketsForTrend.map(mk => {
+    const compPart = compDays ? trendWiggle(trendMetric + mk + 'cmp', compDays, level) : [];
+    return { data: compPart.concat(reportSeries(trendMetric, mk, reportDays)), color: MARKET_COLOR[mk] };
+  });
+  renderMultiLineChart('trend-chart-ALL', seriesList, compDays ? compDays - 1 : -1);
+
+  document.getElementById('trend-sub-ALL').textContent = `${label} · indexed to 100${compDays ? ' · comparison period + current period' : ''}, by market`;
+
+  const totalDays = compDays + reportDays;
+  const xLabels = new Array(totalDays).fill('');
+  xLabels[0] = shortDate(compDays ? addDays(from, -compDays) : from);
+  if (compDays) xLabels[compDays] = shortDate(from);
+  xLabels[totalDays - 1] = shortDate(to);
+  document.getElementById('trend-x-ALL').innerHTML = xLabels.map(l => `<span class="chart-x-label">${l}</span>`).join('');
+
+  document.getElementById('trend-seg-ALL').innerHTML = compDays
+    ? `<span style="flex:${compDays};">${compLabel}</span><span style="flex:${reportDays};">Current period</span>`
+    : '';
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER: Per-market panel (Point 2 + 3)
+   ══════════════════════════════════════════════════════ */
+function renderMarketPanel(mk) {
+  if (metricState[mk]) { renderMetricDetail(mk, metricState[mk]); return; }
+
+  const meta = MARKET_META[mk];
+  const t = TOTALS[mk];
+  const panel = document.getElementById('panel-' + mk);
+
+  const kpiTiles = METRIC_DEFS_MARKET.map(m => {
+    const clickable = mk === 'UNATTRIBUTED' ? (m.key === 'invUploaded' || m.key === 'invValue') : true;
+    const val = t[m.key];
+    return `<div class="kpi-tile ${clickable && val !== null ? 'clickable' : ''} ${val === null ? 'dim' : ''}"
+                 ${clickable && val !== null ? `onclick="openMetricDetail('${mk}','${m.key}')"` : ''}>
+      <div class="kpi-label"><i class="ti ${m.icon}"></i>${m.label}</div>
+      <div class="kpi-value">${m.money ? fmtMoney(val) : fmtNum(val)}</div>
+      <div class="kpi-context">${val !== null ? deltaChip(DELTA[m.key]) : 'Not attributable'}</div>
+    </div>`;
+  }).join('');
+
+  let bodyHtml = `
+    <div class="kpi-strip cols-6">${kpiTiles}</div>
+    <div class="chart-card full">
+      <div class="chart-head">
+        <span class="chart-title">${meta.label} · Orders &amp; invoices processed</span>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-line" style="background:#129B41;"></span>Orders</div>
+          <div class="legend-item"><span class="legend-line" style="background:#3F8AFB;"></span>Invoices processed</div>
+        </div>
+      </div>
+      <div class="svg-chart-wrap" id="trend-${mk}"></div>
+      <div class="chart-x-labels" id="trend-x-${mk}"></div>
+    </div>`;
+
+  if (mk === 'UNATTRIBUTED') {
+    bodyHtml += `
+      <div class="info-note warn">
+        <i class="ti ti-help-circle"></i>
+        <span>These ${fmtNum(t.invUploaded)} invoices arrived without a resolvable outlet or supplier match, so they can't be attributed to a merchant or market — there's nothing to drill into below. They sit in Issued / Deleted / Pending states rather than Processed, which is why Invoices processed reads 0 here.</span>
+      </div>`;
+  } else {
+    bodyHtml += merchantsPanelHtml(mk);
+  }
+
+  panel.innerHTML = bodyHtml;
+
+  const days = 17, peak = 8;
+  renderTrendChart('trend-' + mk, 'trend-x-' + mk, distribute(t.orders, days, peak), distribute(t.invProcessed, days, peak));
+
+  if (mk !== 'UNATTRIBUTED') renderMerchantTable(mk);
+}
+
+function renderMerchantTable(mk) {
+  const sortKey = sortState[mk];
+  const rows = [...MERCHANTS[mk]].sort((a, b) => (b[sortKey] || 0) - (a[sortKey] || 0));
+  const table = document.getElementById('merchant-table-' + mk);
+  if (!table) return;
+  const cols = [
+    { key: 'orders', label: 'Orders' },
+    { key: 'orderValue', label: 'Order value', money: true },
+    { key: 'invUploaded', label: 'Inv. uploaded' },
+    { key: 'invProcessed', label: 'Inv. processed' },
+    { key: 'invValue', label: 'Invoice value', money: true },
+  ];
+  table.innerHTML = `
+    <thead><tr>
+      <th>Merchant</th>
+      ${cols.map(c => `<th class="r ${sortKey === c.key ? 'sorted' : ''}" onclick="sortMerchants('${mk}','${c.key}')">${c.label}${sortKey === c.key ? '<i class="ti ti-chevron-down sort-caret"></i>' : ''}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+      ${rows.map((r, i) => `
+        <tr class="clickable" onclick="openMerchant('${mk}', ${i})">
+          <td>
+            <div class="entity-cell">
+              ${avatarChip(r.name)}
+              <div>
+                <div class="td-name">${r.name}</div>
+                <div class="td-sub">${statusLabel(r.status)}</div>
+              </div>
+            </div>
+          </td>
+          ${cols.map(c => `<td class="r">${c.money ? fmtMoney(r[c.key]) : fmtNum(r[c.key])}</td>`).join('')}
+        </tr>`).join('')}
+    </tbody>`;
+}
+
+function statusLabel(s) {
+  if (s === 'new') return '<span class="nb-pill info"><i class="ti ti-circle-filled"></i>New this period</span>';
+  if (s === 'dropped') return '<span class="nb-pill risk"><i class="ti ti-circle-filled"></i>Dropped</span>';
+  return '<span class="nb-pill neutral"><i class="ti ti-circle-filled"></i>Active</span>';
+}
+
+function sortMerchants(mk, key) {
+  sortState[mk] = key;
+  renderMarketPanel(mk);
+  document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ══════════════════════════════════════════════════════
+   METRIC DRILL-DOWN — the "deeper screen" behind each KPI tile
+   ══════════════════════════════════════════════════════ */
+function openMetricDetail(mk, key) {
+  sortState[mk] = key;
+  metricState[mk] = key;
+  renderMarketPanel(mk);
+  document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function closeMetricDetail(mk) {
+  metricState[mk] = null;
+  renderMarketPanel(mk);
+  document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// noShare: when the items are a small displayed sample (not the full population — e.g. New/
+// Dropped counts out of a top-12 merchant list), a "% of these items" figure would misread as
+// "% of the true total". Pass noShare to show plain counts instead of a potentially-wrong share.
+function miniBarList(items, totalOverride, { noShare = false } = {}) {
+  const total = totalOverride !== undefined ? totalOverride : items.reduce((a, b) => a + b.value, 0);
+  const max = Math.max(...items.map(i => i.value), 1);
+  return items.map(i => {
+    const pct = Math.max(2, (i.value / max) * 100);
+    const share = total ? (i.value / total * 100).toFixed(1) : '0.0';
+    return `<div class="bar-row" style="grid-template-columns:180px 1fr 120px;">
+      <span class="bar-label">${i.name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <span class="bar-value">${fmtNum(Math.round(i.value))}${noShare ? '' : ` (${share}%)`}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderMetricDetail(mk, key) {
+  const meta = MARKET_META[mk];
+  const t = TOTALS[mk];
+  const def = METRIC_DEFS_MARKET.find(m => m.key === key);
+  const panel = document.getElementById('panel-' + mk);
+  const val = t[key];
+
+  let html = `
+    <div style="display:flex;align-items:center;gap:var(--space-md);">
+      <button class="nb-btn ghost" onclick="closeMetricDetail('${mk}')"><i class="ti ti-arrow-left"></i>${meta.label} overview</button>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:var(--space-xl);flex-wrap:wrap;">
+      <div class="kpi-tile" style="min-width:260px;">
+        <div class="kpi-label"><i class="ti ${def.icon}"></i>${def.label}</div>
+        <div class="kpi-value" style="font-size:34px;">${def.money ? fmtMoney(val) : fmtNum(val)}</div>
+        <div class="kpi-context">${deltaChip(DELTA[key])}</div>
+      </div>
+    </div>
+    <div class="chart-card full">
+      <div class="chart-head"><span class="chart-title">${meta.label} · ${def.label} over time</span></div>
+      <div class="svg-chart-wrap" id="metric-trend-${mk}"></div>
+      <div class="chart-x-labels" id="metric-trend-x-${mk}"></div>
+    </div>
+  `;
+
+  html += renderMetricBreakdown(mk, key);
+
+  // "Active merchants" has no per-merchant numeric equivalent to sort a list by — the
+  // Merchant movement + New/Dropped panels above are the meaningful merchant-level detail
+  // for this metric, so skip repeating the (unsorted) full table here.
+  const showMerchantTable = mk !== 'UNATTRIBUTED' && key !== 'merchants';
+  if (showMerchantTable) html += merchantsPanelHtml(mk);
+
+  panel.innerHTML = html;
+
+  const days = 17, peak = 8;
+  renderTrendChart('metric-trend-' + mk, 'metric-trend-x-' + mk, distribute(val || 0, days, peak));
+
+  if (showMerchantTable) renderMerchantTable(mk);
+}
+
+function renderMetricBreakdown(mk, key) {
+  if (mk === 'UNATTRIBUTED') {
+    const s = UNATTRIBUTED_STATUS;
+    return `<div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Where these invoices sit</span>
+        <span class="panel-meta">Can't be resolved to a merchant, so status is as close as we can get</span>
+      </div>
+      <div style="padding:var(--space-xl);">
+        ${miniBarList([{ name: 'Issued', value: s.issued }, { name: 'Deleted', value: s.deleted }, { name: 'Pending', value: s.pending }])}
+      </div>
+    </div>`;
+  }
+
+  if (key === 'merchants') {
+    const list = MERCHANTS[mk] || [];
+    const news = list.filter(m => m.status === 'new');
+    const dropped = list.filter(m => m.status === 'dropped');
+    const activeCount = list.filter(m => m.status === 'active').length;
+    return `
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Merchant movement</span>
+          <span class="panel-meta">Within the ${list.length} merchants shown below, not the full ${fmtNum(TOTALS[mk].merchants)}</span>
+        </div>
+        <div style="padding:var(--space-xl);">
+          ${miniBarList([{ name: 'Active', value: activeCount }, { name: 'New this period', value: news.length }, { name: 'Dropped this period', value: dropped.length }], null, { noShare: true })}
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">New this period</span><span class="panel-meta">${news.length} merchant${news.length === 1 ? '' : 's'}</span></div>
+          <div>
+            ${news.length ? news.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders')).join('') : `<div class="mini-empty">None this period.</div>`}
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Dropped this period</span><span class="panel-meta">${dropped.length} merchant${dropped.length === 1 ? '' : 's'}</span></div>
+          <div>
+            ${dropped.length ? dropped.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders last active')).join('') : `<div class="mini-empty">None this period.</div>`}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (key === 'orders' || key === 'orderValue') {
+    const suppliersPanel = `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Top suppliers</span><span class="panel-meta">Sorted by ${key === 'orders' ? 'orders' : 'order value'}</span></div>
+      ${suppliersPanelHtml(mk, key)}
+    </div>`;
+
+    if (key === 'orders') {
+      const cancelled = CANCELLED[mk] || 0;
+      const completed = TOTALS[mk].orders;
+      const total = completed + cancelled;
+      const cancelRate = total ? (cancelled / total * 100).toFixed(1) : '0.0';
+      return `
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Order status</span><span class="panel-meta">${cancelRate}% cancellation rate</span></div>
+            <div style="padding:var(--space-xl);">${miniBarList([{ name: 'Completed / active', value: completed }, { name: 'Cancelled', value: cancelled }], total)}</div>
+          </div>
+          ${suppliersPanel}
+        </div>`;
+    }
+
+    const avg = TOTALS[mk].orders ? TOTALS[mk].orderValue / TOTALS[mk].orders : 0;
+    return `
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Average order value</span></div>
+          <div style="padding:var(--space-xl);">
+            <div class="kpi-value" style="font-size:28px;">${fmtMoney(avg)}</div>
+            <div class="kpi-context" style="margin-top:6px;">per order, this period</div>
+          </div>
+        </div>
+        ${suppliersPanel}
+      </div>`;
+  }
+
+  if (key === 'invUploaded') {
+    const total = TOTALS[mk].invUploaded;
+    const items = [
+      { name: 'Mobile', value: total * UPLOAD_SOURCE_RATIO.Mobile },
+      { name: 'Web', value: total * UPLOAD_SOURCE_RATIO.Web },
+      { name: 'Unknown', value: total * UPLOAD_SOURCE_RATIO.Unknown },
+    ];
+    return `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Upload source</span><span class="panel-meta">Estimated — the platform doesn't track upload source per market today</span></div>
+      <div style="padding:var(--space-xl);">${miniBarList(items, total)}</div>
+    </div>`;
+  }
+
+  if (key === 'invProcessed') {
+    const total = TOTALS[mk].invUploaded;
+    const items = MATCH_STATUS_RATIO.map(r => ({ name: r.name, value: total * r.pct }));
+    let html = `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Match / OCR status</span><span class="panel-meta">Estimated — not tracked per market today</span></div>
+      <div style="padding:var(--space-xl);">${miniBarList(items, total)}</div>
+    </div>`;
+    if (mk === 'SG') {
+      html += `<div class="panel" style="margin-top:var(--space-lg);">
+        <div class="panel-header"><span class="panel-title">Processed by</span><span class="panel-meta">Platform-wide — not broken out by market today</span></div>
+        <table class="data-table"><thead><tr><th>Processor</th><th class="r">Auto</th><th class="r">Manual</th><th class="r">Total</th></tr></thead><tbody>
+          ${PROCESSORS_ALL.map(p => `<tr><td class="td-name">${p.name}</td><td class="r">${fmtNum(p.auto)}</td><td class="r">${fmtNum(p.manual)}</td><td class="r">${fmtNum(p.count)}</td></tr>`).join('')}
+        </tbody></table>
+      </div>`;
+    }
+    return html;
+  }
+
+  if (key === 'invValue') {
+    const terms = PAYMENT_TERMS[mk] || [];
+    const totalCount = terms.reduce((a, b) => a + b.count, 0);
+    const items = terms.map(t => ({ name: t.name, value: t.count }));
+    return `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Payment terms</span><span class="panel-meta">By invoice count, top ${items.length}</span></div>
+      <div style="padding:var(--space-xl);">${items.length ? miniBarList(items, totalCount) : `<div style="color:var(--text-soft);font-size:13px;">No payment terms recorded yet for this market.</div>`}</div>
+    </div>`;
+  }
+
+  return '';
+}
+
+/* ── Merchant drawer ── */
+function openMerchant(mk, idx) {
+  const rows = [...MERCHANTS[mk]].sort((a, b) => (b[sortState[mk]] || 0) - (a[sortState[mk]] || 0));
+  const r = rows[idx];
+  const meta = MARKET_META[mk];
+  document.getElementById('drill-title').innerHTML = `${avatarChip(r.name)}<span>${r.name}</span>`;
+  document.getElementById('drill-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:var(--space-sm);">
+      <span class="nb-pill neutral">${meta.flag} ${meta.label}</span>
+      ${statusLabel(r.status)}
+    </div>
+    <div class="stat-grid">
+      ${statCardHtml('Outlets', '1')}
+      ${statCardHtml('Orders made', fmtNum(r.orders))}
+      ${statCardHtml('Order value', fmtMoney(r.orderValue))}
+      ${statCardHtml('Invoice value', fmtMoney(r.invValue))}
+    </div>
+    <div>
+      <div class="mini-label" style="margin-bottom:var(--space-xs);">Invoices</div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border);"><span>Uploaded</span><strong>${fmtNum(r.invUploaded)}</strong></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:6px 0;"><span>Processed</span><strong>${fmtNum(r.invProcessed)}</strong></div>
+    </div>
+    ${r.suppliers.length ? `<div>
+      <div class="mini-label" style="margin-bottom:var(--space-xs);">Suppliers used</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${r.suppliers.map(s => `<span class="nb-pill neutral">${s}</span>`).join('')}</div>
+    </div>` : ''}
+  `;
+  document.getElementById('drill-scrim').classList.add('open');
+  document.getElementById('drill-drawer').classList.add('open');
+  document.getElementById('drill-drawer').setAttribute('aria-hidden', 'false');
+}
+function closeDrill() {
+  document.getElementById('drill-scrim').classList.remove('open');
+  document.getElementById('drill-drawer').classList.remove('open');
+  document.getElementById('drill-drawer').setAttribute('aria-hidden', 'true');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrill(); });
+
+/* ── Dual-line SVG chart ── */
+// Indexed-to-100 daily segment — deterministic (seeded by name, not Math.random) so
+// re-renders are stable. Walks from startIndex toward endIndex with per-market noise,
+// landing exactly on endIndex at the last point.
+function trendSegment(seedKey, days, startIndex, endIndex) {
+  let seed = hashStr(seedKey) % 2147483647;
+  function rand() { seed = (seed * 48271) % 2147483647; return seed / 2147483647; }
+  const pts = [startIndex];
+  for (let i = 1; i < days; i++) {
+    const t = i / (days - 1);
+    const onTrend = startIndex + (endIndex - startIndex) * t;
+    pts.push(Math.max(15, onTrend + (rand() - 0.5) * 10));
+  }
+  pts[days - 1] = endIndex;
+  return pts;
+}
+
+// Noisy wiggle around a fixed center — used for the "previous" period segment, where we
+// only know its overall level (derived from DELTA below), not its own internal trend.
+function trendWiggle(seedKey, days, center) {
+  let seed = hashStr(seedKey) % 2147483647;
+  function rand() { seed = (seed * 48271) % 2147483647; return seed / 2147483647; }
+  const pts = [];
+  for (let i = 0; i < days; i++) {
+    pts.push(Math.max(15, center + (rand() - 0.5) * center * 0.16));
+  }
+  pts[days - 1] = center;
+  return pts;
+}
+
+// Indexes the report period to 100 at its own start, ending at the level implied by
+// DELTA[metricKey] (the same platform-wide % change already shown on the KPI tile).
+function reportSeries(metricKey, mk, days) {
+  const target = Math.max(40, Math.min(180, 100 + (DELTA[metricKey] || 0)));
+  return trendSegment(metricKey + mk, days, 100, target);
+}
+
+// The level the comparison period must have sat at for DELTA[metricKey] (report vs
+// comparison, already shown on the KPI tile) to hold true, given the report period
+// starts at index 100. E.g. orders down 39.4% vs previous month → comparison period
+// sat around 165, stepping down to 100 at the seam — the same number, drawn instead
+// of just stated.
+function comparisonLevel(metricKey) {
+  const ratio = 1 + (DELTA[metricKey] || 0) / 100;
+  return Math.max(30, Math.min(300, 100 / (ratio || 1)));
+}
+
+// Generic multi-series line chart (no area fill) — used by the All-markets trend card,
+// one line per market, sharing one y-scale so relative movement is comparable. Renders
+// a left-hand y-axis (as HTML, not SVG text, so it isn't distorted by preserveAspectRatio
+// stretching) and an optional dashed divider marking where the report period begins.
+// Rounds a raw tick step up to a "nice" human-friendly increment (1/2/5/10 × a power of
+// ten) — e.g. 84, 129, 152 as gridlines, matching how real chart libraries pick axis ticks.
+function niceStep(rough) {
+  if (!isFinite(rough) || rough <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  const niceNorm = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+  return niceNorm * mag;
+}
+
+function renderMultiLineChart(containerId, seriesList, dividerIndex) {
+  const W = 900, H = 160;
+  const pad = { t: 16, r: 12, b: 8, l: 12 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  const all = seriesList.flatMap(s => s.data);
+  const rawMin = Math.min(...all), rawMax = Math.max(...all);
+  const TICKS = 4;
+  const step = niceStep((rawMax - rawMin) / TICKS || 1);
+  const minV = Math.floor(rawMin / step) * step;
+  const maxV = Math.ceil(rawMax / step) * step;
+  const range = (maxV - minV) || step;
+  const len = Math.max(...seriesList.map(s => s.data.length));
+  const x = i => pad.l + (i / (len - 1)) * pw;
+  const y = v => pad.t + (1 - (v - minV) / range) * ph;
+
+  let gridLines = '';
+  const tickValues = [];
+  for (let v = minV; v <= maxV + step * 0.001; v += step) {
+    tickValues.unshift(Math.round(v));
+    gridLines += `<line x1="${pad.l}" y1="${y(v).toFixed(1)}" x2="${W - pad.r}" y2="${y(v).toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`;
+  }
+
+  let divider = '';
+  if (dividerIndex >= 0 && dividerIndex < len - 1) {
+    const dx = ((x(dividerIndex) + x(dividerIndex + 1)) / 2).toFixed(1);
+    divider = `<line x1="${dx}" y1="${pad.t}" x2="${dx}" y2="${H - pad.b}" stroke="var(--text-soft)" stroke-width="1" stroke-dasharray="3,3"/>`;
+  }
+
+  const lines = seriesList.map(s => {
+    const pts = s.data.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }).join('');
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:140px;display:block;">${gridLines}${divider}${lines}</svg>`;
+  const yAxis = `<div class="chart-y-axis">${tickValues.map(v => `<span>${v}</span>`).join('')}</div>`;
+  const wrap = document.getElementById(containerId);
+  if (wrap) wrap.innerHTML = `<div style="display:flex;gap:8px;">${yAxis}<div style="flex:1;min-width:0;">${svg}</div></div>`;
+}
+
+function renderDualLineChart(containerId, seriesA, seriesB) {
+  const W = 900, H = 160;
+  const pad = { t: 16, r: 12, b: 8, l: 12 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  const all = [...seriesA, ...seriesB];
+  const minV = 0, maxV = Math.max(...all) * 1.15 || 1;
+  const range = maxV - minV || 1;
+  const x = (i, len) => pad.l + (i / (len - 1)) * pw;
+  const y = v => pad.t + (1 - (v - minV) / range) * ph;
+
+  function line(series, color) {
+    const pts = series.map((v, i) => `${x(i, series.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  function area(series, color, id) {
+    const pts = series.map((v, i) => `${x(i, series.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const firstX = x(0, series.length).toFixed(1), lastX = x(series.length - 1, series.length).toFixed(1);
+    const baseY = (pad.t + ph).toFixed(1);
+    return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient></defs>
+      <polygon points="${firstX},${baseY} ${pts} ${lastX},${baseY}" fill="url(#${id})"/>`;
+  }
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:140px;">
+    ${area(seriesA, '#129B41', 'ga' + containerId.replace(/\W/g, ''))}
+    ${line(seriesA, '#129B41')}
+    ${line(seriesB, '#3F8AFB')}
+  </svg>`;
+  const wrap = document.getElementById(containerId);
+  if (wrap) wrap.innerHTML = svg;
+}
+
+/* ── Tabs / market switching ── */
+function switchMarket(mk) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const isTarget = b.getAttribute('onclick')?.includes("'" + mk + "'");
+    b.classList.toggle('active', !!isTarget);
+    b.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+  });
+  document.getElementById('panel-' + mk).classList.add('active');
+  document.getElementById('page-sub').innerHTML = `${MARKET_META[mk].flag ? MARKET_META[mk].flag + ' ' : ''}${MARKET_META[mk].label} · <span>${document.getElementById('daterange-label').textContent}</span>`;
+  if (mk !== 'ALL') { metricState[mk] = null; renderMarketPanel(mk); }
+}
+
+/* ── Date range popover ── */
+const QUICK_RANGES = [
+  { label: 'This week', from: '2026-07-13', to: '2026-07-17' },
+  { label: 'This month', from: '2026-07-01', to: '2026-07-17' },
+  { label: 'Last 7 days', from: '2026-07-11', to: '2026-07-17' },
+  { label: 'Last 30 days', from: '2026-06-18', to: '2026-07-17' },
+];
+function toggleDateRangePopover() {
+  const pop = document.getElementById('daterange-pop');
+  pop.style.display = pop.style.display === 'none' ? 'flex' : 'none';
+  if (pop.style.display === 'flex') renderQuickRanges();
+}
+function renderQuickRanges() {
+  const from = document.getElementById('dr-from').value, to = document.getElementById('dr-to').value;
+  document.getElementById('dr-quick').innerHTML = QUICK_RANGES.map(r => `
+    <button type="button" class="dr-chip ${r.from === from && r.to === to ? 'active' : ''}" onclick="setQuickRange('${r.from}','${r.to}')">${r.label}</button>
+  `).join('');
+}
+function setQuickRange(from, to) {
+  document.getElementById('dr-from').value = from;
+  document.getElementById('dr-to').value = to;
+  renderQuickRanges();
+}
+function applyDateRange() {
+  const from = document.getElementById('dr-from').value, to = document.getElementById('dr-to').value;
+  const label = fmtDateLabel(from) + '–' + fmtDateLabel(to);
+  document.getElementById('daterange-label').textContent = label;
+  document.getElementById('header-range-label').textContent = label;
+  toggleDateRangePopover();
+  renderAllTrendChart();
+  insightsToast('Date range updated to ' + label + '.');
+}
+function fmtDateLabel(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ');
+}
+document.addEventListener('click', e => {
+  const wrap = e.target.closest('.daterange-wrap');
+  if (!wrap) document.getElementById('daterange-pop').style.display = 'none';
+});
+
+/* ── Compare ── */
+function applyCompare() {
+  const sel = document.getElementById('compare-select');
+  const labels = { 'previous-week': 'previous week', 'previous-month': 'previous month', 'previous-year': 'same month last year', 'none': '' };
+  compareLabel = labels[sel.value];
+  renderAllPanel();
+  ['SG', 'MY', 'ID', 'AU', 'UNATTRIBUTED'].forEach(mk => { if (document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk); });
+  insightsToast(sel.value === 'none' ? 'Comparison turned off.' : 'Now comparing against ' + compareLabel + '.');
+}
+
+/* ── Toast ── */
+function insightsToast(msg) {
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i>' + msg;
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function init() {
+  renderAllPanel();
+}
+</script>
 </body>
 </html>
