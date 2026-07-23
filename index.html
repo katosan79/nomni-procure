@@ -106,6 +106,29 @@
   .chart-title { font-size: 14px; font-weight: 600; color: var(--text); }
   .chart-legend { display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap; }
 
+  /* ── Market-specific zone cards — one clear section per data domain (merchants / orders /
+     invoices) instead of one flat KPI strip mixing all three together ── */
+  .zone-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-lg); }
+  .zone-header { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-md) var(--space-xl); background: var(--surface-soft); border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text); }
+  .zone-header i { color: var(--fern); font-size: 16px; }
+  .zone-kpi-row { display: flex; gap: var(--space-xl); align-items: stretch; padding: var(--space-xl); }
+  .zone-kpi-col { display: flex; flex-direction: column; gap: var(--space-lg); flex: 0 0 170px; }
+  .zone-kpi-mini { flex: 0 0 170px; }
+  .zone-kpi-mini.clickable { cursor: pointer; border-radius: var(--radius-md); padding: var(--space-sm); margin: calc(var(--space-sm) * -1); transition: background var(--dur-1) var(--ease-standard); }
+  .zone-kpi-mini.clickable:hover { background: var(--surface-soft); }
+  .zone-kpi-mini.dim { opacity: 0.5; }
+  .zone-kpi-value { font-size: 22px; font-weight: 700; color: var(--text); margin: 4px 0; font-feature-settings: 'tnum' 1; }
+  .zone-trend { flex: 1; min-width: 0; align-self: center; display: flex; justify-content: flex-end; }
+  .zone-trend svg { max-width: 100%; }
+  .zone-breakdown { padding: 0 var(--space-xl) var(--space-xl); }
+  .zone-breakdown-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); }
+  .zone-metric-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-xl); border-top: 1px solid var(--border); font-size: 13px; color: var(--text); }
+  .zone-metric-row.clickable { cursor: pointer; }
+  .zone-metric-row.clickable:hover { background: var(--surface-soft); }
+  .zone-metric-row.dim { color: var(--text-soft); }
+  .zone-metric-row i { color: var(--text-soft); font-size: 16px; }
+  .zone-merchants-wrap { padding: 0 var(--space-xl) var(--space-xl); border-top: 1px solid var(--border); padding-top: var(--space-xl); }
+
   /* ── Metric switcher (segmented pills) — drives the All-markets trend chart ── */
   .metric-pills { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .metric-pill {
@@ -210,6 +233,9 @@
   @media (max-width: 1100px) {
     .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(3, 1fr); }
     .two-col { grid-template-columns: 1fr; }
+    .zone-kpi-row { flex-direction: column; }
+    .zone-kpi-col { flex-direction: row; flex-wrap: wrap; }
+    .zone-breakdown-split { grid-template-columns: 1fr; }
   }
   @media (max-width: 640px) {
     .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(2, 1fr); }
@@ -793,54 +819,134 @@ function renderAllTrendChart() {
 /* ══════════════════════════════════════════════════════
    RENDER: Per-market panel (Point 2 + 3)
    ══════════════════════════════════════════════════════ */
+// One mini KPI within a zone — still opens the same full-screen metric drill-down as
+// before (openMetricDetail), just laid out compactly inside its zone instead of as one of
+// six flat tiles in an undifferentiated strip.
+function zoneKpiMini(mk, key) {
+  const def = METRIC_DEFS_MARKET.find(m => m.key === key);
+  const val = TOTALS[mk][key];
+  const clickable = val !== null && val !== undefined;
+  return `<div class="zone-kpi-mini ${clickable ? 'clickable' : 'dim'}" ${clickable ? `onclick="openMetricDetail('${mk}','${key}')"` : ''}>
+    <div class="mini-label">${def.label}</div>
+    <div class="zone-kpi-value">${def.money ? fmtMoney(val) : fmtNum(val)}</div>
+    <div class="kpi-context">${clickable ? deltaChip(DELTA[key]) : 'Not attributable'}</div>
+  </div>`;
+}
+
+function zoneHeaderHtml(icon, title) {
+  return `<div class="zone-header"><i class="ti ${icon}" aria-hidden="true"></i><span>${title}</span></div>`;
+}
+
+// Compact version of renderMetricBreakdown's merchants case — just the movement counts,
+// no New/Dropped lists or supplier tables. Those stay in the full drill-down (view detail).
+function zoneMerchantMovementHtml(mk) {
+  const list = MERCHANTS[mk] || [];
+  const news = list.filter(m => m.status === 'new').length;
+  const dropped = list.filter(m => m.status === 'dropped').length;
+  const active = list.filter(m => m.status === 'active').length;
+  return `<div class="zone-breakdown">
+    <div class="mini-label" style="margin-bottom:var(--space-sm);">Movement · active / new / dropped</div>
+    ${miniBarList([{ name: 'Active', value: active }, { name: 'New this period', value: news }, { name: 'Dropped this period', value: dropped }], null, { noShare: true })}
+  </div>`;
+}
+
+// Compact order status split + a single top-supplier teaser row — the full cancellation
+// rate breakdown and complete supplier table stay in the "Orders" drill-down.
+function zoneOrderStatusHtml(mk) {
+  const cancelled = CANCELLED[mk] || 0;
+  const completed = TOTALS[mk].orders;
+  const total = completed + cancelled;
+  const cancelRate = total ? (cancelled / total * 100).toFixed(1) : '0.0';
+  const topSupplier = (SUPPLIERS[mk] || [])[0];
+  return `<div class="zone-breakdown zone-breakdown-split">
+    <div>
+      <div class="mini-label" style="margin-bottom:var(--space-sm);">Order status · ${cancelRate}% cancelled</div>
+      ${miniBarList([{ name: 'Completed / active', value: completed }, { name: 'Cancelled', value: cancelled }], total)}
+    </div>
+    <div>
+      <div class="mini-label" style="margin-bottom:var(--space-sm);">Top supplier</div>
+      ${topSupplier ? `<div class="entity-cell">${avatarChip(topSupplier.name)}<span class="td-name">${topSupplier.name}</span><span class="td-sub" style="margin-left:auto;">${fmtNum(topSupplier.orders)} orders</span></div>` : `<div class="mini-empty">No supplier data yet for this market.</div>`}
+    </div>
+  </div>`;
+}
+
+// "Invoices processed" gets its own clickable row rather than a third small KPI tile —
+// it's the one metric in this zone the user wants a further breakdown on (Match/OCR
+// status, processor ranking), so it's called out instead of blending in with uploaded/value.
+function zoneProcessedRowHtml(mk) {
+  const val = TOTALS[mk].invProcessed;
+  const clickable = !!val;
+  return `<div class="zone-metric-row ${clickable ? 'clickable' : 'dim'}" ${clickable ? `onclick="openMetricDetail('${mk}','invProcessed')"` : ''}>
+    <span>Invoices processed <strong>${fmtNum(val)}</strong>${clickable ? ' ' + deltaChip(DELTA.invProcessed) : ''}</span>
+    ${clickable ? '<i class="ti ti-chevron-right" aria-hidden="true"></i>' : ''}
+  </div>`;
+}
+
 function renderMarketPanel(mk) {
   if (metricState[mk]) { renderMetricDetail(mk, metricState[mk]); return; }
 
-  const meta = MARKET_META[mk];
   const t = TOTALS[mk];
   const panel = document.getElementById('panel-' + mk);
+  const isUnattributed = mk === 'UNATTRIBUTED';
 
-  const kpiTiles = METRIC_DEFS_MARKET.map(m => {
-    const clickable = mk === 'UNATTRIBUTED' ? (m.key === 'invUploaded' || m.key === 'invValue') : true;
-    const val = t[m.key];
-    return `<div class="kpi-tile ${clickable && val !== null ? 'clickable' : ''} ${val === null ? 'dim' : ''}"
-                 ${clickable && val !== null ? `onclick="openMetricDetail('${mk}','${m.key}')"` : ''}>
-      <div class="kpi-label"><i class="ti ${m.icon}"></i>${m.label}</div>
-      <div class="kpi-value">${m.money ? fmtMoney(val) : fmtNum(val)}</div>
-      <div class="kpi-context">${val !== null ? deltaChip(DELTA[m.key]) : 'Not attributable'}</div>
-    </div>`;
-  }).join('');
+  let bodyHtml = '';
 
-  let bodyHtml = `
-    <div class="kpi-strip cols-6">${kpiTiles}</div>
-    <div class="chart-card full">
-      <div class="chart-head">
-        <span class="chart-title">${meta.label} · Orders &amp; invoices processed</span>
-        <div class="chart-legend">
-          <div class="legend-item"><span class="legend-line" style="background:#129B41;"></span>Orders</div>
-          <div class="legend-item"><span class="legend-line" style="background:#3F8AFB;"></span>Invoices processed</div>
+  if (!isUnattributed) {
+    bodyHtml += `
+      <div class="zone-card">
+        ${zoneHeaderHtml('ti-building-store', 'Merchant activity')}
+        <div class="zone-kpi-row">
+          ${zoneKpiMini(mk, 'merchants')}
+          <div class="zone-trend" id="zone-trend-merchants-${mk}"></div>
         </div>
+        ${zoneMerchantMovementHtml(mk)}
+        <div class="zone-merchants-wrap">${merchantsPanelHtml(mk)}</div>
       </div>
-      <div class="svg-chart-wrap" id="trend-${mk}"></div>
-      <div class="chart-x-labels" id="trend-x-${mk}"></div>
+
+      <div class="zone-card">
+        ${zoneHeaderHtml('ti-shopping-cart', 'Orders activity')}
+        <div class="zone-kpi-row">
+          <div class="zone-kpi-col">
+            ${zoneKpiMini(mk, 'orders')}
+            ${zoneKpiMini(mk, 'orderValue')}
+          </div>
+          <div class="zone-trend" id="zone-trend-orders-${mk}"></div>
+        </div>
+        ${zoneOrderStatusHtml(mk)}
+      </div>`;
+  }
+
+  bodyHtml += `
+    <div class="zone-card">
+      ${zoneHeaderHtml('ti-file-text', 'Invoices activity')}
+      <div class="zone-kpi-row">
+        <div class="zone-kpi-col">
+          ${zoneKpiMini(mk, 'invUploaded')}
+          ${zoneKpiMini(mk, 'invValue')}
+        </div>
+        <div class="zone-trend" id="zone-trend-invoices-${mk}"></div>
+      </div>
+      ${zoneProcessedRowHtml(mk)}
     </div>`;
 
-  if (mk === 'UNATTRIBUTED') {
+  if (isUnattributed) {
     bodyHtml += `
       <div class="info-note warn">
         <i class="ti ti-help-circle"></i>
         <span>These ${fmtNum(t.invUploaded)} invoices arrived without a resolvable outlet or supplier match, so they can't be attributed to a merchant or market — there's nothing to drill into below. They sit in Issued / Deleted / Pending states rather than Processed, which is why Invoices processed reads 0 here.</span>
       </div>`;
-  } else {
-    bodyHtml += merchantsPanelHtml(mk);
   }
 
   panel.innerHTML = bodyHtml;
 
   const days = 17, peak = 8;
-  renderTrendChart('trend-' + mk, 'trend-x-' + mk, distribute(t.orders, days, peak), distribute(t.invProcessed, days, peak));
+  if (!isUnattributed) {
+    document.getElementById('zone-trend-merchants-' + mk).innerHTML = sparklineSvg(distribute(t.merchants, days, peak), MARKET_COLOR[mk], 220, 56);
+    document.getElementById('zone-trend-orders-' + mk).innerHTML = sparklineSvg(distribute(t.orders, days, peak), MARKET_COLOR[mk], 220, 108);
+  }
+  document.getElementById('zone-trend-invoices-' + mk).innerHTML = sparklineSvg(distribute(t.invUploaded, days, peak), MARKET_COLOR[mk], 220, 108);
 
-  if (mk !== 'UNATTRIBUTED') renderMerchantTable(mk);
+  if (!isUnattributed) renderMerchantTable(mk);
 }
 
 function renderMerchantTable(mk) {
@@ -1164,8 +1270,8 @@ function reportSeries(metricKey, mk, days) {
 // Small inline trend line for a table cell — reuses the exact same indexed series as the
 // big Trend over time chart (same DELTA-derived target, same per-market seed), just drawn
 // tiny, so a market's sparkline always agrees with its line up there.
-function sparklineSvg(data, color) {
-  const W = 46, H = 20, pad = 2;
+function sparklineSvg(data, color, width, height) {
+  const W = width || 46, H = height || 20, pad = 2;
   const minV = Math.min(...data), maxV = Math.max(...data);
   const range = (maxV - minV) || 1;
   const pts = data.map((v, i) => {
