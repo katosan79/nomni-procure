@@ -304,34 +304,24 @@
         <div class="chart-legend" id="trend-legend-ALL"></div>
       </div>
 
-      <div class="two-col">
-        <div class="chart-card">
-          <div class="section-head" style="margin:0;">
-            <span class="chart-title">Activity by market</span>
-            <span class="section-meta">Orders this period</span>
-          </div>
-          <div class="bar-list" id="bar-ALL"></div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Market comparison</span>
+          <span class="panel-meta">Click a row to drill in</span>
         </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title">Market comparison</span>
-            <span class="panel-meta">Click a row to drill in</span>
-          </div>
-          <div style="overflow-x:auto;">
-            <table class="data-table" aria-label="Market comparison">
-              <thead>
-                <tr>
-                  <th>Market</th>
-                  <th class="r">Merchants</th>
-                  <th class="r">Orders</th>
-                  <th class="r">Invoices processed</th>
-                  <th class="r">Invoice value</th>
-                </tr>
-              </thead>
-              <tbody id="market-compare-tbody"></tbody>
-            </table>
-          </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" aria-label="Market comparison">
+            <thead>
+              <tr>
+                <th>Market</th>
+                <th class="r">Merchants</th>
+                <th class="r">Orders</th>
+                <th class="r">Invoices processed</th>
+                <th class="r">Invoice value</th>
+              </tr>
+            </thead>
+            <tbody id="market-compare-tbody"></tbody>
+          </table>
         </div>
       </div>
 
@@ -685,18 +675,6 @@ function renderAllPanel() {
       <div class="kpi-value">${m.money ? fmtMoney(t[m.key]) : fmtNum(t[m.key])}</div>
       <div class="kpi-context">${deltaChip(DELTA[m.key])}</div>
     </div>`).join('');
-
-  const marketsForBar = ['SG', 'MY', 'ID', 'AU'];
-  const maxOrders = Math.max(...marketsForBar.map(k => TOTALS[k].orders));
-  document.getElementById('bar-ALL').innerHTML = marketsForBar.map(k => {
-    const m = MARKET_META[k], v = TOTALS[k];
-    const pct = Math.max(2, (v.orders / maxOrders) * 100);
-    return `<div class="bar-row clickable" onclick="switchMarket('${k}')" tabindex="0">
-      <span class="bar-label">${m.flag} ${m.label}</span>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
-      <span class="bar-value">${fmtNum(v.orders)}</span>
-    </div>`;
-  }).join('');
 
   const rows = ['SG', 'MY', 'ID', 'AU', 'UNATTRIBUTED'];
   document.getElementById('market-compare-tbody').innerHTML = rows.map(k => {
