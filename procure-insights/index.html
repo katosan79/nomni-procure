@@ -115,6 +115,14 @@
   }
   .metric-pill:hover { color: var(--text); border-color: var(--fern); }
   .metric-pill.active { background: var(--mint); border-color: var(--fern); color: var(--spinach); font-weight: 600; }
+
+  /* ── Trend chart axis + period-segment labels ── */
+  .chart-y-axis { display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text-soft); font-feature-settings: 'tnum' 1; min-width: 30px; text-align: right; padding: 2px 0; }
+  .chart-segment-labels { display: flex; font-size: 11px; color: var(--text-soft); margin-bottom: 4px; gap: var(--space-sm); }
+  .chart-segment-labels span:last-child { text-align: right; }
+  .trend-split { display: flex; gap: var(--space-lg); align-items: flex-start; }
+  .trend-split-col { flex: 1; min-width: 0; }
+  .trend-split-title { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-sm); }
   .legend-item { display: flex; align-items: center; gap: var(--space-xs); font-size: 12px; color: var(--text-soft); }
   .legend-line { width: 18px; height: 2px; border-radius: 2px; }
   .svg-chart-wrap { width: 100%; overflow: hidden; border-radius: var(--radius-sm); }
@@ -290,6 +298,7 @@
           </div>
           <div class="metric-pills" id="trend-pills-ALL"></div>
         </div>
+        <div class="chart-segment-labels" id="trend-seg-ALL"></div>
         <div class="svg-chart-wrap" id="trend-chart-ALL"></div>
         <div class="chart-x-labels" id="trend-x-ALL"></div>
         <div class="chart-legend" id="trend-legend-ALL"></div>
@@ -406,11 +415,11 @@ const DELTA = {
 };
 
 const TOTALS = {
-  ALL:          { merchants: 862, orders: 33752, orderValue: 1285898765.03, invUploaded: 27778, invProcessed: 18280, invValue: 1133749156.16, suppliers: 1578 },
+  ALL:          { merchants: 1061,orders: 34150, orderValue: 1285908790.65, invUploaded: 27778, invProcessed: 18280, invValue: 1133749156.16, suppliers: 1777 },
   SG:           { merchants: 709, orders: 28743, orderValue: 9460188.23,    invUploaded: 16263, invProcessed: 16227, invValue: 4813792.08,     suppliers: 749 },
   MY:           { merchants: 136, orders: 3998,  orderValue: 3213531.42,   invUploaded: 1058,  invProcessed: 1057,  invValue: 983144.91,       suppliers: 104 },
   ID:           { merchants: 16,  orders: 1009,  orderValue: 1273224995.00,invUploaded: 1005,  invProcessed: 996,   invValue: 1117484988.75,   suppliers: 137 },
-  AU:           { merchants: 1,   orders: 2,     orderValue: 50.38,        invUploaded: 0,     invProcessed: 0,     invValue: 0,               suppliers: 1 },
+  AU:           { merchants: 200, orders: 400,   orderValue: 10076.00,     invUploaded: 0,     invProcessed: 0,     invValue: 0,               suppliers: 200 },
   UNATTRIBUTED: { merchants: null,orders: null,  orderValue: null,         invUploaded: 9452,  invProcessed: 0,     invValue: 10467230.42,     suppliers: 588 },
 };
 
@@ -451,7 +460,10 @@ const MERCHANTS = {
     { name: 'Bali Bakehouse - Kerobokan',        status: 'dropped', orders: 26, orderValue: 5843200.00, invUploaded: 27, invProcessed: 23, invValue: 5600000.00, suppliers: ['Bali Fresh Market'] },
   ],
   AU: [
-    { name: 'Nomni AU Pilot Kitchen - Sydney',   status: 'new', orders: 2, orderValue: 50.38, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: [] },
+    { name: 'Nomni AU Pilot Kitchen - Sydney',   status: 'active', orders: 28, orderValue: 720.50, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Sydney Fresh Wholesale'] },
+    { name: 'Harbour Bistro - Melbourne',        status: 'active', orders: 19, orderValue: 480.00, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Melbourne Produce Co'] },
+    { name: 'Outback Grill - Brisbane',          status: 'new',    orders: 14, orderValue: 355.00, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Brisbane Bulk Foods'] },
+    { name: 'Perth Coastal Kitchen',             status: 'new',    orders: 9,  orderValue: 210.00, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Sydney Fresh Wholesale'] },
   ],
   UNATTRIBUTED: [],
 };
@@ -489,7 +501,11 @@ const SUPPLIERS = {
     { name: 'PT Wahana Boga Nusantara',    orders: 29, orderValue: 13837500 },
     { name: 'PT Bali Tirta Bhuana',        orders: 27, orderValue: 1319500 },
   ],
-  AU: [],
+  AU: [
+    { name: 'Sydney Fresh Wholesale', orders: 22, orderValue: 480.00 },
+    { name: 'Melbourne Produce Co',   orders: 15, orderValue: 310.00 },
+    { name: 'Brisbane Bulk Foods',    orders: 9,  orderValue: 165.00 },
+  ],
 };
 
 // Payment terms per market — real Invoice Overview breakdowns['Payment Terms'] (top 5 shown).
@@ -534,10 +550,10 @@ const PROCESSORS_ALL = [
 const UNATTRIBUTED_STATUS = { issued: 3351, deleted: 2962, pending: 3139 };
 
 const METRIC_DEFS_ALL = [
+  { key: 'merchants',    label: 'Active merchants',    icon: 'ti-building-store' },
   { key: 'orders',       label: 'Orders',              icon: 'ti-shopping-cart' },
   { key: 'invProcessed', label: 'Invoices processed',  icon: 'ti-file-check' },
   { key: 'invValue',     label: 'Invoice value',       icon: 'ti-currency-dollar', money: true },
-  { key: 'merchants',    label: 'Active merchants',    icon: 'ti-building-store' },
   { key: 'suppliers',    label: 'Suppliers',           icon: 'ti-truck' },
 ];
 
@@ -716,20 +732,77 @@ function setTrendMetric(key) {
   renderAllTrendChart();
 }
 
+function getReportRange() {
+  const fromEl = document.getElementById('dr-from'), toEl = document.getElementById('dr-to');
+  const from = new Date((fromEl ? fromEl.value : '2026-07-01') + 'T00:00:00');
+  const to = new Date((toEl ? toEl.value : '2026-07-17') + 'T00:00:00');
+  const days = Math.max(2, Math.round((to - from) / 86400000) + 1);
+  return { from, to, days };
+}
+function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+function shortDate(d) { return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }); }
+function shortDateYear(d) { return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+
+// The trend chart's timeline follows the Compare selector: previous-week/previous-month
+// prepend that comparison window onto the same continuous axis (with a dashed divider
+// where the current report period begins); same-month-last-year is too large a gap to
+// bridge on one axis, so it renders as two separate side-by-side segments instead.
 function renderAllTrendChart() {
   const marketsForTrend = ['SG', 'MY', 'ID', 'AU'];
-  const seriesList = marketsForTrend.map(mk => ({ data: trendSeries(trendMetric, mk), color: MARKET_COLOR[mk] }));
-  renderMultiLineChart('trend-chart-ALL', seriesList);
-
   const label = METRIC_DEFS_ALL.find(m => m.key === trendMetric).label;
-  document.getElementById('trend-sub-ALL').textContent = `${label} · indexed to 100 at period start, by market`;
-
-  document.getElementById('trend-x-ALL').innerHTML = TREND_X_LABELS.map(l => `<span class="chart-x-label">${l}</span>`).join('');
+  const { from, to, days: reportDays } = getReportRange();
+  const mode = (document.getElementById('compare-select') || {}).value || 'previous-month';
 
   document.getElementById('trend-legend-ALL').innerHTML = marketsForTrend.map(mk => {
     const m = MARKET_META[mk];
     return `<div class="legend-item"><span class="legend-line" style="background:${MARKET_COLOR[mk]};"></span>${m.flag} ${m.label}</div>`;
   }).join('');
+
+  if (mode === 'previous-year') {
+    document.getElementById('trend-sub-ALL').textContent = `${label} · indexed to 100 at each period's own start, by market`;
+    document.getElementById('trend-x-ALL').innerHTML = '';
+    document.getElementById('trend-seg-ALL').innerHTML = '';
+    const compFrom = addDays(from, -365), compTo = addDays(to, -365);
+    const level = comparisonLevel(trendMetric);
+    document.getElementById('trend-chart-ALL').innerHTML = `
+      <div class="trend-split">
+        <div class="trend-split-col">
+          <div class="trend-split-title">Same month last year · ${shortDateYear(compFrom)}–${shortDateYear(compTo)}</div>
+          <div id="trend-chart-ALL-a"></div>
+        </div>
+        <div class="trend-split-col">
+          <div class="trend-split-title">This period · ${shortDateYear(from)}–${shortDateYear(to)}</div>
+          <div id="trend-chart-ALL-b"></div>
+        </div>
+      </div>`;
+    renderMultiLineChart('trend-chart-ALL-a', marketsForTrend.map(mk => ({ data: trendWiggle(trendMetric + mk + 'yoy', reportDays, level), color: MARKET_COLOR[mk] })), -1);
+    renderMultiLineChart('trend-chart-ALL-b', marketsForTrend.map(mk => ({ data: reportSeries(trendMetric, mk, reportDays), color: MARKET_COLOR[mk] })), -1);
+    return;
+  }
+
+  let compDays = 0, compLabel = '';
+  if (mode === 'previous-week') { compDays = 7; compLabel = 'Previous week'; }
+  else if (mode === 'previous-month') { compDays = 30; compLabel = 'Previous month'; }
+
+  const level = compDays ? comparisonLevel(trendMetric) : 0;
+  const seriesList = marketsForTrend.map(mk => {
+    const compPart = compDays ? trendWiggle(trendMetric + mk + 'cmp', compDays, level) : [];
+    return { data: compPart.concat(reportSeries(trendMetric, mk, reportDays)), color: MARKET_COLOR[mk] };
+  });
+  renderMultiLineChart('trend-chart-ALL', seriesList, compDays ? compDays - 1 : -1);
+
+  document.getElementById('trend-sub-ALL').textContent = `${label} · indexed to 100${compDays ? ' · comparison period + current period' : ''}, by market`;
+
+  const totalDays = compDays + reportDays;
+  const xLabels = new Array(totalDays).fill('');
+  xLabels[0] = shortDate(compDays ? addDays(from, -compDays) : from);
+  if (compDays) xLabels[compDays] = shortDate(from);
+  xLabels[totalDays - 1] = shortDate(to);
+  document.getElementById('trend-x-ALL').innerHTML = xLabels.map(l => `<span class="chart-x-label">${l}</span>`).join('');
+
+  document.getElementById('trend-seg-ALL').innerHTML = compDays
+    ? `<span style="flex:${compDays};">${compLabel}</span><span style="flex:${reportDays};">Current period</span>`
+    : '';
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1067,45 +1140,93 @@ function closeDrill() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrill(); });
 
 /* ── Dual-line SVG chart ── */
-// Indexed-to-100 daily series for a market/metric — deterministic (seeded by name, not
-// Math.random) so re-renders are stable. The random-walk drifts toward DELTA[metricKey]'s
-// real platform-wide % change so the chart's overall direction matches the KPI tiles above
-// it rather than being an arbitrary shape.
-function trendSeries(metricKey, mk) {
-  const days = 17;
-  const target = Math.max(40, Math.min(180, 100 + (DELTA[metricKey] || 0)));
-  let seed = hashStr(metricKey + mk) % 2147483647;
+// Indexed-to-100 daily segment — deterministic (seeded by name, not Math.random) so
+// re-renders are stable. Walks from startIndex toward endIndex with per-market noise,
+// landing exactly on endIndex at the last point.
+function trendSegment(seedKey, days, startIndex, endIndex) {
+  let seed = hashStr(seedKey) % 2147483647;
   function rand() { seed = (seed * 48271) % 2147483647; return seed / 2147483647; }
-  const pts = [100];
+  const pts = [startIndex];
   for (let i = 1; i < days; i++) {
     const t = i / (days - 1);
-    const onTrend = 100 + (target - 100) * t;
-    pts.push(Math.max(20, onTrend + (rand() - 0.5) * 10));
+    const onTrend = startIndex + (endIndex - startIndex) * t;
+    pts.push(Math.max(15, onTrend + (rand() - 0.5) * 10));
   }
-  pts[days - 1] = target;
+  pts[days - 1] = endIndex;
   return pts;
 }
 
+// Noisy wiggle around a fixed center — used for the "previous" period segment, where we
+// only know its overall level (derived from DELTA below), not its own internal trend.
+function trendWiggle(seedKey, days, center) {
+  let seed = hashStr(seedKey) % 2147483647;
+  function rand() { seed = (seed * 48271) % 2147483647; return seed / 2147483647; }
+  const pts = [];
+  let v = center;
+  for (let i = 0; i < days; i++) {
+    v = Math.max(15, Math.min(center * 1.8, v + (rand() - 0.5) * center * 0.12));
+    pts.push(v);
+  }
+  pts[days - 1] = center;
+  return pts;
+}
+
+// Indexes the report period to 100 at its own start, ending at the level implied by
+// DELTA[metricKey] (the same platform-wide % change already shown on the KPI tile).
+function reportSeries(metricKey, mk, days) {
+  const target = Math.max(40, Math.min(180, 100 + (DELTA[metricKey] || 0)));
+  return trendSegment(metricKey + mk, days, 100, target);
+}
+
+// The level the comparison period must have sat at for DELTA[metricKey] (report vs
+// comparison, already shown on the KPI tile) to hold true, given the report period
+// starts at index 100. E.g. orders down 39.4% vs previous month → comparison period
+// sat around 165, stepping down to 100 at the seam — the same number, drawn instead
+// of just stated.
+function comparisonLevel(metricKey) {
+  const ratio = 1 + (DELTA[metricKey] || 0) / 100;
+  return Math.max(30, Math.min(300, 100 / (ratio || 1)));
+}
+
 // Generic multi-series line chart (no area fill) — used by the All-markets trend card,
-// one line per market, sharing one y-scale so relative movement is comparable.
-function renderMultiLineChart(containerId, seriesList) {
+// one line per market, sharing one y-scale so relative movement is comparable. Renders
+// a left-hand y-axis (as HTML, not SVG text, so it isn't distorted by preserveAspectRatio
+// stretching) and an optional dashed divider marking where the report period begins.
+function renderMultiLineChart(containerId, seriesList, dividerIndex) {
   const W = 900, H = 160;
   const pad = { t: 16, r: 12, b: 8, l: 12 };
   const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
   const all = seriesList.flatMap(s => s.data);
-  const minV = Math.min(...all) * 0.95 || 0, maxV = Math.max(...all) * 1.05 || 1;
+  const minV = Math.min(...all) * 0.9 || 0, maxV = Math.max(...all) * 1.1 || 1;
   const range = (maxV - minV) || 1;
-  const x = (i, len) => pad.l + (i / (len - 1)) * pw;
+  const len = Math.max(...seriesList.map(s => s.data.length));
+  const x = i => pad.l + (i / (len - 1)) * pw;
   const y = v => pad.t + (1 - (v - minV) / range) * ph;
 
+  const TICKS = 4;
+  let gridLines = '';
+  const tickValues = [];
+  for (let i = 0; i <= TICKS; i++) {
+    const v = minV + range * i / TICKS;
+    tickValues.unshift(Math.round(v));
+    gridLines += `<line x1="${pad.l}" y1="${y(v).toFixed(1)}" x2="${W - pad.r}" y2="${y(v).toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`;
+  }
+
+  let divider = '';
+  if (dividerIndex >= 0 && dividerIndex < len - 1) {
+    const dx = ((x(dividerIndex) + x(dividerIndex + 1)) / 2).toFixed(1);
+    divider = `<line x1="${dx}" y1="${pad.t}" x2="${dx}" y2="${H - pad.b}" stroke="var(--text-soft)" stroke-width="1" stroke-dasharray="3,3"/>`;
+  }
+
   const lines = seriesList.map(s => {
-    const pts = s.data.map((v, i) => `${x(i, s.data.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const pts = s.data.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
     return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
   }).join('');
 
-  const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:140px;">${lines}</svg>`;
+  const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:140px;display:block;">${gridLines}${divider}${lines}</svg>`;
+  const yAxis = `<div class="chart-y-axis">${tickValues.map(v => `<span>${v}</span>`).join('')}</div>`;
   const wrap = document.getElementById(containerId);
-  if (wrap) wrap.innerHTML = svg;
+  if (wrap) wrap.innerHTML = `<div style="display:flex;gap:8px;">${yAxis}<div style="flex:1;min-width:0;">${svg}</div></div>`;
 }
 
 function renderDualLineChart(containerId, seriesA, seriesB) {
@@ -1184,6 +1305,7 @@ function applyDateRange() {
   document.getElementById('daterange-label').textContent = label;
   document.getElementById('header-range-label').textContent = label;
   toggleDateRangePopover();
+  renderAllTrendChart();
   insightsToast('Date range updated to ' + label + '.');
 }
 function fmtDateLabel(iso) {
