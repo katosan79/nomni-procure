@@ -159,6 +159,7 @@
   .data-table tbody tr.clickable:hover td { background: var(--surface-soft); }
   .td-name { font-weight: 500; }
   .td-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+  .td-metric-cell { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-sm); }
 
   /* ── Entity cell (avatar + name) — Shopify Admin-style initials avatar in table rows ── */
   .entity-cell { display: flex; align-items: center; gap: var(--space-sm); }
@@ -560,7 +561,7 @@ let compareLabel = 'previous month';
 let sortState = { SG: 'orders', MY: 'orders', ID: 'orders', AU: 'orders' };
 let metricState = { SG: null, MY: null, ID: null, AU: null, UNATTRIBUTED: null };
 let trendMetric = 'merchants';
-const MARKET_COLOR = { SG: '#129B41', MY: '#3F8AFB', ID: '#F5C219', AU: '#EE4B87' };
+const MARKET_COLOR = { SG: '#129B41', MY: '#3F8AFB', ID: '#F5C219', AU: '#EE4B87', UNATTRIBUTED: 'var(--text-soft)' };
 
 /* ── Formatting helpers ── */
 function fmtNum(n) { return n === null || n === undefined ? '—' : Math.round(n).toLocaleString('en-US'); }
@@ -677,14 +678,20 @@ function renderAllPanel() {
     </div>`).join('');
 
   const rows = ['SG', 'MY', 'ID', 'AU', 'UNATTRIBUTED'];
+  const metricCell = (mk, key, val, money) => {
+    const display = (val === null || val === undefined) ? '—' : (money ? fmtMoney(val) : fmtNum(val));
+    if (!val) return `<td class="r">${display}</td>`;
+    const spark = sparklineSvg(reportSeries(key, mk, 12), MARKET_COLOR[mk]);
+    return `<td class="r"><div class="td-metric-cell">${spark}<span>${display}</span></div></td>`;
+  };
   document.getElementById('market-compare-tbody').innerHTML = rows.map(k => {
     const m = MARKET_META[k], v = TOTALS[k];
     return `<tr class="clickable" onclick="switchMarket('${k}')">
       <td class="td-name">${m.flag ? m.flag + ' ' : ''}${m.label}</td>
-      <td class="r">${fmtNum(v.merchants)}</td>
-      <td class="r">${fmtNum(v.orders)}</td>
-      <td class="r">${fmtNum(v.invProcessed)}</td>
-      <td class="r">${fmtMoney(v.invValue)}</td>
+      ${metricCell(k, 'merchants', v.merchants)}
+      ${metricCell(k, 'orders', v.orders)}
+      ${metricCell(k, 'invProcessed', v.invProcessed)}
+      ${metricCell(k, 'invValue', v.invValue, true)}
     </tr>`;
   }).join('');
 
@@ -1152,6 +1159,21 @@ function trendWiggle(seedKey, days, center) {
 function reportSeries(metricKey, mk, days) {
   const target = Math.max(40, Math.min(180, 100 + (DELTA[metricKey] || 0)));
   return trendSegment(metricKey + mk, days, 100, target);
+}
+
+// Small inline trend line for a table cell — reuses the exact same indexed series as the
+// big Trend over time chart (same DELTA-derived target, same per-market seed), just drawn
+// tiny, so a market's sparkline always agrees with its line up there.
+function sparklineSvg(data, color) {
+  const W = 46, H = 20, pad = 2;
+  const minV = Math.min(...data), maxV = Math.max(...data);
+  const range = (maxV - minV) || 1;
+  const pts = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (W - pad * 2);
+    const y = pad + (1 - (v - minV) / range) * (H - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;flex-shrink:0;" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 
 // The level the comparison period must have sat at for DELTA[metricKey] (report vs
