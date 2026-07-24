@@ -644,15 +644,6 @@ function distribute(total, days, peakDay) {
   return weights.map(w => (total || 0) * w / sum);
 }
 
-const TREND_X_LABELS = ['01 Jul', '', '', '', '', '', '', '08 Jul', '', '', '', '', '', '', '', '', '17 Jul'];
-
-// Shared by the market-overview trend (two real series) and the metric-detail trend
-// (one series — pass null for seriesB to get a flat zero baseline instead of a second line).
-function renderTrendChart(containerId, xLabelsId, seriesA, seriesB) {
-  renderDualLineChart(containerId, seriesA, seriesB || seriesA.map(() => 0));
-  document.getElementById(xLabelsId).innerHTML = TREND_X_LABELS.map(l => `<span class="chart-x-label">${l}</span>`).join('');
-}
-
 // Shared "Merchants" panel (header + empty <table> shell) used by both the market overview
 // and every metric-detail screen — the caller fills the <table> via renderMerchantTable(mk).
 function merchantsPanelHtml(mk) {
@@ -1055,15 +1046,90 @@ function renderZoneDetail(mk, zoneKey) {
   if (showMerchantTable) renderMerchantTable(mk);
 }
 
+// The absolute-value level a metric's comparison period must have sat at for DELTA[key]
+// (already shown on the KPI tile) to hold true, given the current period totals `total`.
+// Mirrors comparisonLevel()'s indexed-to-100 version, but in the metric's own real units
+// (merchants, orders, dollars) since these zone charts plot actual counts, not an index.
+function zoneComparisonLevel(key, total) {
+  const ratio = 1 + (DELTA[key] || 0) / 100;
+  return ratio ? total / ratio : total;
+}
+
+// trendSegment/trendWiggle floor small values at 15 — correct for indexed-to-100 series
+// (a market realistically won't dip below 15% of baseline) but wrong for a genuinely zero
+// absolute metric (e.g. Australia's invoices), where it draws a false "bounce off the
+// floor" pattern instead of a flat zero. These wrappers skip the noise entirely at zero.
+function zoneSegment(seedKey, days, startVal, endVal) {
+  return (startVal === 0 && endVal === 0) ? new Array(days).fill(0) : trendSegment(seedKey, days, startVal, endVal);
+}
+function zoneWiggle(seedKey, days, center) {
+  return center ? trendWiggle(seedKey, days, center) : new Array(days).fill(0);
+}
+
+// Absolute-value trend chart for a zone deep screen. Follows the same Compare-driven
+// timeline as the All-markets "Trend over time" chart (comparison period prepended with a
+// divider, or split side-by-side for "same month last year") and the actual selected date
+// range — unlike the old fixed 17-day mock curve, this now reflects what's really selected.
+// Reuses renderMultiLineChart (proper y-axis, no forced/meaningless second line) instead of
+// the old two-series-only renderDualLineChart.
+function renderZoneTrendChart(mk, metricDefs, containerId, xLabelsId, segLabelsId) {
+  const { from, to, days: reportDays } = getReportRange();
+  const mode = (document.getElementById('compare-select') || {}).value || 'previous-month';
+  // Current period trends FROM its own comparison level TO the real current total — not
+  // distribute()'s sum-across-days model, which would make the line's magnitude swing
+  // purely with day-count (a 30-day comparison segment vs a 5-day current one) instead of
+  // reflecting DELTA. This mirrors reportSeries()'s indexed version, just in real units.
+  const currentSeries = key => zoneSegment('zonecur' + mk + key, reportDays, zoneComparisonLevel(key, TOTALS[mk][key]), TOTALS[mk][key]);
+
+  if (mode === 'previous-year') {
+    const compFrom = addDays(from, -365), compTo = addDays(to, -365);
+    document.getElementById(xLabelsId).innerHTML = '';
+    document.getElementById(segLabelsId).innerHTML = '';
+    document.getElementById(containerId).innerHTML = `
+      <div class="trend-split">
+        <div class="trend-split-col">
+          <div class="trend-split-title">Same month last year · ${shortDateYear(compFrom)}–${shortDateYear(compTo)}</div>
+          <div id="${containerId}-a"></div>
+        </div>
+        <div class="trend-split-col">
+          <div class="trend-split-title">This period · ${shortDateYear(from)}–${shortDateYear(to)}</div>
+          <div id="${containerId}-b"></div>
+        </div>
+      </div>`;
+    renderMultiLineChart(containerId + '-a', metricDefs.map(m => ({ data: zoneWiggle('zoneyoy' + mk + m.key, reportDays, zoneComparisonLevel(m.key, TOTALS[mk][m.key])), color: m.color })), -1);
+    renderMultiLineChart(containerId + '-b', metricDefs.map(m => ({ data: currentSeries(m.key), color: m.color })), -1);
+    return;
+  }
+
+  let compDays = 0, compLabel = '';
+  if (mode === 'previous-week') { compDays = 7; compLabel = 'Previous week'; }
+  else if (mode === 'previous-month') { compDays = 30; compLabel = 'Previous month'; }
+
+  const seriesList = metricDefs.map(m => {
+    const compPart = compDays ? zoneWiggle('zonecmp' + mk + m.key, compDays, zoneComparisonLevel(m.key, TOTALS[mk][m.key])) : [];
+    return { data: compPart.concat(currentSeries(m.key)), color: m.color };
+  });
+  renderMultiLineChart(containerId, seriesList, compDays ? compDays - 1 : -1);
+
+  const totalDays = compDays + reportDays;
+  const xLabels = new Array(totalDays).fill('');
+  xLabels[0] = shortDate(compDays ? addDays(from, -compDays) : from);
+  if (compDays) xLabels[compDays] = shortDate(from);
+  xLabels[totalDays - 1] = shortDate(to);
+  document.getElementById(xLabelsId).innerHTML = xLabels.map(l => `<span class="chart-x-label">${l}</span>`).join('');
+  document.getElementById(segLabelsId).innerHTML = compDays
+    ? `<span style="flex:${compDays};">${compLabel}</span><span style="flex:${reportDays};">Current period</span>`
+    : '';
+}
+
 function renderZoneDetailCharts(mk, zoneKey) {
-  const t = TOTALS[mk];
-  const days = 17, peak = 8;
+  const containerId = 'zone-detail-trend-' + mk, xLabelsId = 'zone-detail-trend-x-' + mk, segLabelsId = 'zone-detail-trend-seg-' + mk;
   if (zoneKey === 'merchants') {
-    renderTrendChart('zone-detail-trend-' + mk, 'zone-detail-trend-x-' + mk, distribute(t.merchants, days, peak));
+    renderZoneTrendChart(mk, [{ key: 'merchants', color: MARKET_COLOR[mk] }], containerId, xLabelsId, segLabelsId);
   } else if (zoneKey === 'orders') {
-    renderTrendChart('zone-detail-trend-' + mk, 'zone-detail-trend-x-' + mk, distribute(t.orders, days, peak));
+    renderZoneTrendChart(mk, [{ key: 'orders', color: MARKET_COLOR[mk] }], containerId, xLabelsId, segLabelsId);
   } else {
-    renderTrendChart('zone-detail-trend-' + mk, 'zone-detail-trend-x-' + mk, distribute(t.invUploaded, days, peak), distribute(t.invProcessed, days, peak));
+    renderZoneTrendChart(mk, [{ key: 'invUploaded', color: '#129B41' }, { key: 'invProcessed', color: '#3F8AFB' }], containerId, xLabelsId, segLabelsId);
   }
 }
 
@@ -1083,13 +1149,14 @@ function renderMerchantZoneDetail(mk) {
     </div>
     <div class="chart-card full">
       <div class="chart-head"><span class="chart-title">${MARKET_META[mk].label} · Active merchants over time</span></div>
+      <div class="chart-segment-labels" id="zone-detail-trend-seg-${mk}"></div>
       <div class="svg-chart-wrap" id="zone-detail-trend-${mk}"></div>
       <div class="chart-x-labels" id="zone-detail-trend-x-${mk}"></div>
     </div>
     <div class="panel">
       <div class="panel-header">
         <span class="panel-title">Merchant movement</span>
-        <span class="panel-meta">Within the ${list.length} merchants shown below, not the full ${fmtNum(t.merchants)}</span>
+        <span class="panel-meta">From a ${list.length}-merchant sample — New/Dropped named below, not the full ${fmtNum(t.merchants)}</span>
       </div>
       <div style="padding:var(--space-xl);">
         ${stackedBarHtml([
@@ -1137,6 +1204,7 @@ function renderOrdersZoneDetail(mk) {
     </div>
     <div class="chart-card full">
       <div class="chart-head"><span class="chart-title">${MARKET_META[mk].label} · Orders over time</span></div>
+      <div class="chart-segment-labels" id="zone-detail-trend-seg-${mk}"></div>
       <div class="svg-chart-wrap" id="zone-detail-trend-${mk}"></div>
       <div class="chart-x-labels" id="zone-detail-trend-x-${mk}"></div>
     </div>
@@ -1198,6 +1266,7 @@ function renderInvoicesZoneDetail(mk) {
           <div class="legend-item"><span class="legend-line" style="background:#3F8AFB;"></span>Processed</div>
         </div>
       </div>
+      <div class="chart-segment-labels" id="zone-detail-trend-seg-${mk}"></div>
       <div class="svg-chart-wrap" id="zone-detail-trend-${mk}"></div>
       <div class="chart-x-labels" id="zone-detail-trend-x-${mk}"></div>
     </div>
@@ -1380,40 +1449,6 @@ function renderMultiLineChart(containerId, seriesList, dividerIndex) {
   const yAxis = `<div class="chart-y-axis">${tickValues.map(v => `<span>${v}</span>`).join('')}</div>`;
   const wrap = document.getElementById(containerId);
   if (wrap) wrap.innerHTML = `<div style="display:flex;gap:8px;">${yAxis}<div style="flex:1;min-width:0;">${svg}</div></div>`;
-}
-
-function renderDualLineChart(containerId, seriesA, seriesB) {
-  const W = 900, H = 160;
-  const pad = { t: 16, r: 12, b: 8, l: 12 };
-  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
-  const all = [...seriesA, ...seriesB];
-  const minV = 0, maxV = Math.max(...all) * 1.15 || 1;
-  const range = maxV - minV || 1;
-  const x = (i, len) => pad.l + (i / (len - 1)) * pw;
-  const y = v => pad.t + (1 - (v - minV) / range) * ph;
-
-  function line(series, color) {
-    const pts = series.map((v, i) => `${x(i, series.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-  }
-  function area(series, color, id) {
-    const pts = series.map((v, i) => `${x(i, series.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-    const firstX = x(0, series.length).toFixed(1), lastX = x(series.length - 1, series.length).toFixed(1);
-    const baseY = (pad.t + ph).toFixed(1);
-    return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${color}" stop-opacity="0.16"/>
-        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-      </linearGradient></defs>
-      <polygon points="${firstX},${baseY} ${pts} ${lastX},${baseY}" fill="url(#${id})"/>`;
-  }
-
-  const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:140px;">
-    ${area(seriesA, '#129B41', 'ga' + containerId.replace(/\W/g, ''))}
-    ${line(seriesA, '#129B41')}
-    ${line(seriesB, '#3F8AFB')}
-  </svg>`;
-  const wrap = document.getElementById(containerId);
-  if (wrap) wrap.innerHTML = svg;
 }
 
 /* ── Tabs / market switching ── */
