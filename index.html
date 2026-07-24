@@ -122,6 +122,14 @@
   .zone-trend svg { max-width: 100%; }
   .zone-breakdown { padding: 0 var(--space-xl) var(--space-xl); }
   .zone-breakdown-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); }
+
+  /* ── Segmented bar — one combined horizontal bar (e.g. active/new/dropped) instead of a
+     separate row per category ── */
+  .stacked-bar-track { display: flex; height: 10px; border-radius: var(--radius-pill); overflow: hidden; background: var(--surface-soft); }
+  .stacked-bar-legend { display: flex; gap: var(--space-lg); margin-top: var(--space-sm); flex-wrap: wrap; }
+  .stacked-bar-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-soft); }
+  .stacked-bar-legend-item strong { color: var(--text); font-weight: 600; }
+  .stacked-bar-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .zone-metric-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-xl); border-top: 1px solid var(--border); font-size: 13px; color: var(--text); }
   .zone-metric-row.clickable { cursor: pointer; }
   .zone-metric-row.clickable:hover { background: var(--surface-soft); }
@@ -846,7 +854,11 @@ function zoneMerchantMovementHtml(mk) {
   const active = list.filter(m => m.status === 'active').length;
   return `<div class="zone-breakdown">
     <div class="mini-label" style="margin-bottom:var(--space-sm);">Movement · active / new / dropped</div>
-    ${miniBarList([{ name: 'Active', value: active }, { name: 'New this period', value: news }, { name: 'Dropped this period', value: dropped }], null, { noShare: true })}
+    ${stackedBarHtml([
+      { name: 'Active', value: active, color: 'var(--fern)' },
+      { name: 'New this period', value: news, color: '#3F8AFB' },
+      { name: 'Dropped this period', value: dropped, color: '#EE4B87' },
+    ])}
   </div>`;
 }
 
@@ -861,7 +873,10 @@ function zoneOrderStatusHtml(mk) {
   return `<div class="zone-breakdown zone-breakdown-split">
     <div>
       <div class="mini-label" style="margin-bottom:var(--space-sm);">Order status · ${cancelRate}% cancelled</div>
-      ${miniBarList([{ name: 'Completed / active', value: completed }, { name: 'Cancelled', value: cancelled }], total)}
+      ${stackedBarHtml([
+        { name: 'Completed / active', value: completed, color: 'var(--fern)' },
+        { name: 'Cancelled', value: cancelled, color: '#EE4B87' },
+      ])}
     </div>
     <div>
       <div class="mini-label" style="margin-bottom:var(--space-sm);">Top supplier</div>
@@ -1008,6 +1023,16 @@ function closeMetricDetail(mk) {
   metricState[mk] = null;
   renderMarketPanel(mk);
   document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// One combined horizontal bar with a colored segment per item (widths via flex-grow, so
+// proportions are automatic) plus a dot-legend row below — used where categories are parts
+// of one whole (active/new/dropped, completed/cancelled) instead of independent quantities
+// each needing their own row.
+function stackedBarHtml(items) {
+  const segs = items.map(i => `<div style="flex:${Math.max(i.value, 0.01)};background:${i.color};" title="${i.name}: ${fmtNum(i.value)}"></div>`).join('');
+  const legend = items.map(i => `<span class="stacked-bar-legend-item"><span class="stacked-bar-dot" style="background:${i.color};"></span>${i.name} <strong>${fmtNum(i.value)}</strong></span>`).join('');
+  return `<div class="stacked-bar-track">${segs}</div><div class="stacked-bar-legend">${legend}</div>`;
 }
 
 // noShare: when the items are a small displayed sample (not the full population — e.g. New/
