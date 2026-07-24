@@ -319,7 +319,6 @@
       <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('AU')"><span class="tab-flag">🇦🇺</span>Australia</button>
       <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('MY')"><span class="tab-flag">🇲🇾</span>Malaysia</button>
       <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('ID')"><span class="tab-flag">🇮🇩</span>Indonesia</button>
-      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('UNATTRIBUTED')"><i class="ti ti-help-circle"></i>Unattributed</button>
     </nav>
 
     <!-- ══════════════════════════════════════════ -->
@@ -363,8 +362,6 @@
           </table>
         </div>
       </div>
-
-      <div class="info-note" id="unattributed-callout"></div>
     </div>
 
     <!-- ══════════════════════════════════════════ -->
@@ -374,7 +371,6 @@
     <div class="tab-panel" id="panel-AU" role="tabpanel"></div>
     <div class="tab-panel" id="panel-MY" role="tabpanel"></div>
     <div class="tab-panel" id="panel-ID" role="tabpanel"></div>
-    <div class="tab-panel" id="panel-UNATTRIBUTED" role="tabpanel"></div>
 
   </div>
 </div>
@@ -433,7 +429,6 @@ const MARKET_META = {
   MY:           { label: 'Malaysia',    flag: '🇲🇾' },
   ID:           { label: 'Indonesia',   flag: '🇮🇩' },
   AU:           { label: 'Australia',   flag: '🇦🇺' },
-  UNATTRIBUTED: { label: 'Unattributed', flag: '' },
 };
 
 // deltaPct: % change vs the comparison period (shared shape across markets,
@@ -444,12 +439,11 @@ const DELTA = {
 };
 
 const TOTALS = {
-  ALL:          { merchants: 1061,orders: 34150, orderValue: 1285908790.65, invUploaded: 27778, invProcessed: 18280, invValue: 1133749156.16, suppliers: 1777 },
+  ALL:          { merchants: 1061,orders: 34150, orderValue: 1285908790.65, invUploaded: 18326, invProcessed: 18280, invValue: 1123281925.74, suppliers: 1777 },
   SG:           { merchants: 709, orders: 28743, orderValue: 9460188.23,    invUploaded: 16263, invProcessed: 16227, invValue: 4813792.08,     suppliers: 749 },
   MY:           { merchants: 136, orders: 3998,  orderValue: 3213531.42,   invUploaded: 1058,  invProcessed: 1057,  invValue: 983144.91,       suppliers: 104 },
   ID:           { merchants: 16,  orders: 1009,  orderValue: 1273224995.00,invUploaded: 1005,  invProcessed: 996,   invValue: 1117484988.75,   suppliers: 137 },
   AU:           { merchants: 200, orders: 400,   orderValue: 10076.00,     invUploaded: 0,     invProcessed: 0,     invValue: 0,               suppliers: 200 },
-  UNATTRIBUTED: { merchants: null,orders: null,  orderValue: null,         invUploaded: 9452,  invProcessed: 0,     invValue: 10467230.42,     suppliers: 588 },
 };
 
 const MERCHANTS = {
@@ -494,7 +488,6 @@ const MERCHANTS = {
     { name: 'Outback Grill - Brisbane',          status: 'new',    orders: 14, orderValue: 355.00, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Brisbane Bulk Foods'] },
     { name: 'Perth Coastal Kitchen',             status: 'new',    orders: 9,  orderValue: 210.00, invUploaded: 0, invProcessed: 0, invValue: 0, suppliers: ['Sydney Fresh Wholesale'] },
   ],
-  UNATTRIBUTED: [],
 };
 
 /* ── Extra real data for metric drill-down screens (also pulled from the
@@ -575,9 +568,6 @@ const PROCESSORS_ALL = [
   { name: 'Jocelyn Tan',    count: 692,   auto: 2,     manual: 690 },
 ];
 
-// Real Invoice Overview UNKNOWN-market view — where unattributed invoices actually sit.
-const UNATTRIBUTED_STATUS = { issued: 3351, deleted: 2962, pending: 3139 };
-
 const METRIC_DEFS_ALL = [
   { key: 'merchants',    label: 'Active merchants',    icon: 'ti-building-store' },
   { key: 'orders',       label: 'Orders',              icon: 'ti-shopping-cart' },
@@ -597,9 +587,9 @@ const METRIC_DEFS_MARKET = [
 
 let compareLabel = 'previous month';
 let sortState = { SG: 'orders', MY: 'orders', ID: 'orders', AU: 'orders' };
-let metricState = { SG: null, MY: null, ID: null, AU: null, UNATTRIBUTED: null };
+let metricState = { SG: null, MY: null, ID: null, AU: null };
 let trendMetric = 'merchants';
-const MARKET_COLOR = { SG: '#129B41', MY: '#3F8AFB', ID: '#F5C219', AU: '#EE4B87', UNATTRIBUTED: 'var(--text-soft)' };
+const MARKET_COLOR = { SG: '#129B41', MY: '#3F8AFB', ID: '#F5C219', AU: '#EE4B87' };
 
 /* ── Formatting helpers ── */
 function fmtNum(n) { return n === null || n === undefined ? '—' : Math.round(n).toLocaleString('en-US'); }
@@ -715,7 +705,7 @@ function renderAllPanel() {
       <div class="kpi-context">${deltaChip(DELTA[m.key])}</div>
     </div>`).join('');
 
-  const rows = ['SG', 'AU', 'MY', 'ID', 'UNATTRIBUTED'];
+  const rows = ['SG', 'AU', 'MY', 'ID'];
   const metricCell = (mk, key, val, money) => {
     const display = (val === null || val === undefined) ? '—' : (money ? fmtMoney(val) : fmtNum(val));
     if (!val) return `<td class="r">${display}</td>`;
@@ -732,12 +722,6 @@ function renderAllPanel() {
       ${metricCell(k, 'invValue', v.invValue, true)}
     </tr>`;
   }).join('');
-
-  const u = TOTALS.UNATTRIBUTED;
-  const pctUnattr = (u.invUploaded / t.invUploaded * 100).toFixed(0);
-  document.getElementById('unattributed-callout').innerHTML = `
-    <i class="ti ti-alert-triangle"></i>
-    <span><strong>${fmtNum(u.invUploaded)} invoices (${pctUnattr}% of all uploads)</strong> couldn't be matched to a market or merchant this period — see the <strong>Unattributed</strong> tab. Closing this gap would materially improve how much of the platform's activity these numbers actually reflect.</span>`;
 
   renderTrendPills();
   renderAllTrendChart();
@@ -920,51 +904,36 @@ function renderMarketPanel(mk) {
 
   const t = TOTALS[mk];
   const panel = document.getElementById('panel-' + mk);
-  const isUnattributed = mk === 'UNATTRIBUTED';
 
-  let bodyHtml = '';
+  const bodyHtml = `
+    <div class="zone-card">
+      ${zoneHeaderHtml('ti-building-store', 'Merchant activity')}
+      ${zoneMetricsGridHtml(mk, ['merchants'])}
+      ${zoneMerchantMovementHtml(mk)}
+      <div class="zone-merchants-wrap">${merchantsPanelHtml(mk)}</div>
+    </div>
 
-  if (!isUnattributed) {
-    bodyHtml += `
-      <div class="zone-card">
-        ${zoneHeaderHtml('ti-building-store', 'Merchant activity')}
-        ${zoneMetricsGridHtml(mk, ['merchants'])}
-        ${zoneMerchantMovementHtml(mk)}
-        <div class="zone-merchants-wrap">${merchantsPanelHtml(mk)}</div>
-      </div>
+    <div class="zone-card">
+      ${zoneHeaderHtml('ti-shopping-cart', 'Orders activity')}
+      ${zoneMetricsGridHtml(mk, ['orders', 'orderValue'])}
+      ${zoneOrderStatusHtml(mk)}
+    </div>
 
-      <div class="zone-card">
-        ${zoneHeaderHtml('ti-shopping-cart', 'Orders activity')}
-        ${zoneMetricsGridHtml(mk, ['orders', 'orderValue'])}
-        ${zoneOrderStatusHtml(mk)}
-      </div>`;
-  }
-
-  bodyHtml += `
     <div class="zone-card">
       ${zoneHeaderHtml('ti-file-text', 'Invoices activity')}
       ${zoneMetricsGridHtml(mk, ['invUploaded', 'invValue'])}
       ${zoneProcessedRowHtml(mk)}
     </div>`;
 
-  if (isUnattributed) {
-    bodyHtml += `
-      <div class="info-note warn">
-        <i class="ti ti-help-circle"></i>
-        <span>These ${fmtNum(t.invUploaded)} invoices arrived without a resolvable outlet or supplier match, so they can't be attributed to a merchant or market — there's nothing to drill into below. They sit in Issued / Deleted / Pending states rather than Processed, which is why Invoices processed reads 0 here.</span>
-      </div>`;
-  }
-
   panel.innerHTML = bodyHtml;
 
   const days = 17, peak = 8;
-  const sparkKeys = isUnattributed ? ['invUploaded', 'invValue'] : ['merchants', 'orders', 'orderValue', 'invUploaded', 'invValue'];
-  sparkKeys.forEach(key => {
+  ['merchants', 'orders', 'orderValue', 'invUploaded', 'invValue'].forEach(key => {
     const el = document.getElementById('zone-spark-' + mk + '-' + key);
     if (el) el.innerHTML = sparklineSvg(distribute(t[key] || 0, days, peak), MARKET_COLOR[mk], 70, 28);
   });
 
-  if (!isUnattributed) renderMerchantTable(mk);
+  renderMerchantTable(mk);
 }
 
 function renderMerchantTable(mk) {
@@ -1085,7 +1054,7 @@ function renderMetricDetail(mk, key) {
   // "Active merchants" has no per-merchant numeric equivalent to sort a list by — the
   // Merchant movement + New/Dropped panels above are the meaningful merchant-level detail
   // for this metric, so skip repeating the (unsorted) full table here.
-  const showMerchantTable = mk !== 'UNATTRIBUTED' && key !== 'merchants';
+  const showMerchantTable = key !== 'merchants';
   if (showMerchantTable) html += merchantsPanelHtml(mk);
 
   panel.innerHTML = html;
@@ -1097,19 +1066,6 @@ function renderMetricDetail(mk, key) {
 }
 
 function renderMetricBreakdown(mk, key) {
-  if (mk === 'UNATTRIBUTED') {
-    const s = UNATTRIBUTED_STATUS;
-    return `<div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">Where these invoices sit</span>
-        <span class="panel-meta">Can't be resolved to a merchant, so status is as close as we can get</span>
-      </div>
-      <div style="padding:var(--space-xl);">
-        ${miniBarList([{ name: 'Issued', value: s.issued }, { name: 'Deleted', value: s.deleted }, { name: 'Pending', value: s.pending }])}
-      </div>
-    </div>`;
-  }
-
   if (key === 'merchants') {
     const list = MERCHANTS[mk] || [];
     const news = list.filter(m => m.status === 'new');
@@ -1487,7 +1443,7 @@ function applyCompare() {
   const labels = { 'previous-week': 'previous week', 'previous-month': 'previous month', 'previous-year': 'same month last year', 'none': '' };
   compareLabel = labels[sel.value];
   renderAllPanel();
-  ['SG', 'AU', 'MY', 'ID', 'UNATTRIBUTED'].forEach(mk => { if (document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk); });
+  ['SG', 'AU', 'MY', 'ID'].forEach(mk => { if (document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk); });
   insightsToast(sel.value === 'none' ? 'Comparison turned off.' : 'Now comparing against ' + compareLabel + '.');
 }
 
