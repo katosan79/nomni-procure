@@ -587,7 +587,10 @@ const METRIC_DEFS_MARKET = [
 
 let compareLabel = 'previous month';
 let sortState = { SG: 'orders', MY: 'orders', ID: 'orders', AU: 'orders' };
-let metricState = { SG: null, MY: null, ID: null, AU: null };
+// Which zone deep-screen (if any) is expanded per market — 'merchants' | 'orders' | 'invoices' | null.
+let zoneState = { SG: null, MY: null, ID: null, AU: null };
+// Every individual metric belongs to exactly one of the 3 zone deep-screens.
+const ZONE_OF_METRIC = { merchants: 'merchants', orders: 'orders', orderValue: 'orders', invUploaded: 'invoices', invProcessed: 'invoices', invValue: 'invoices' };
 let trendMetric = 'merchants';
 const MARKET_COLOR = { SG: '#129B41', MY: '#3F8AFB', ID: '#F5C219', AU: '#EE4B87' };
 
@@ -815,17 +818,15 @@ function renderAllTrendChart() {
 /* ══════════════════════════════════════════════════════
    RENDER: Per-market panel (Point 2 + 3)
    ══════════════════════════════════════════════════════ */
-// One mini KPI within a zone — still opens the same full-screen metric drill-down as
-// before (openMetricDetail), just laid out compactly inside its zone instead of as one of
-// six flat tiles in an undifferentiated strip.
 // One metric's own compact card — label, value, delta, and its own small inline
 // sparkline, all folded together (Stripe/Mercury/Ramp-style KPI tile) instead of one big
-// shared chart floating beside a stack of numbers. Still opens the same drill-down on click.
+// shared chart floating beside a stack of numbers. Clicking it opens its zone's deep
+// screen (openZoneDetail) rather than a screen of its own — see ZONE_OF_METRIC.
 function zoneMetricCardHtml(mk, key) {
   const def = METRIC_DEFS_MARKET.find(m => m.key === key);
   const val = TOTALS[mk][key];
   const clickable = val !== null && val !== undefined;
-  return `<div class="zone-metric-card ${clickable ? 'clickable' : 'dim'}" ${clickable ? `onclick="openMetricDetail('${mk}','${key}')"` : ''}>
+  return `<div class="zone-metric-card ${clickable ? 'clickable' : 'dim'}" ${clickable ? `onclick="openZoneDetail('${mk}','${ZONE_OF_METRIC[key]}')"` : ''}>
     <div class="mini-label">${def.label}</div>
     <div class="zone-metric-card-inner">
       <div>
@@ -847,8 +848,8 @@ function zoneHeaderHtml(icon, title) {
   return `<div class="zone-header"><i class="ti ${icon}" aria-hidden="true"></i><span>${title}</span></div>`;
 }
 
-// Compact version of renderMetricBreakdown's merchants case — just the movement counts,
-// no New/Dropped lists or supplier tables. Those stay in the full drill-down (view detail).
+// Compact version of the Merchant zone's deep-screen movement breakdown — just the counts,
+// no New/Dropped name lists. Those stay in the full deep screen (renderMerchantZoneDetail).
 function zoneMerchantMovementHtml(mk) {
   const list = MERCHANTS[mk] || [];
   const news = list.filter(m => m.status === 'new').length;
@@ -893,14 +894,14 @@ function zoneOrderStatusHtml(mk) {
 function zoneProcessedRowHtml(mk) {
   const val = TOTALS[mk].invProcessed;
   const clickable = !!val;
-  return `<div class="zone-metric-row ${clickable ? 'clickable' : 'dim'}" ${clickable ? `onclick="openMetricDetail('${mk}','invProcessed')"` : ''}>
+  return `<div class="zone-metric-row ${clickable ? 'clickable' : 'dim'}" ${clickable ? `onclick="openZoneDetail('${mk}','invoices')"` : ''}>
     <span>Invoices processed <strong>${fmtNum(val)}</strong>${clickable ? ' ' + deltaChip(DELTA.invProcessed) : ''}</span>
     ${clickable ? '<i class="ti ti-chevron-right" aria-hidden="true"></i>' : ''}
   </div>`;
 }
 
 function renderMarketPanel(mk) {
-  if (metricState[mk]) { renderMetricDetail(mk, metricState[mk]); return; }
+  if (zoneState[mk]) { renderZoneDetail(mk, zoneState[mk]); return; }
 
   const t = TOTALS[mk];
   const panel = document.getElementById('panel-' + mk);
@@ -985,15 +986,16 @@ function sortMerchants(mk, key) {
 /* ══════════════════════════════════════════════════════
    METRIC DRILL-DOWN — the "deeper screen" behind each KPI tile
    ══════════════════════════════════════════════════════ */
-function openMetricDetail(mk, key) {
-  sortState[mk] = key;
-  metricState[mk] = key;
-  renderMarketPanel(mk);
+// Opening a zone's deep screen also picks a sensible default merchant-table sort for that
+// zone (the table itself stays independently re-sortable by clicking any column header).
+const ZONE_DEFAULT_SORT = { orders: 'orders', invoices: 'invUploaded' };
+function openZoneDetail(mk, zoneKey) {
+  if (ZONE_DEFAULT_SORT[zoneKey]) sortState[mk] = ZONE_DEFAULT_SORT[zoneKey];
+  applyRoute(mk, zoneKey);
   document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-function closeMetricDetail(mk) {
-  metricState[mk] = null;
-  renderMarketPanel(mk);
+function closeZoneDetail(mk) {
+  applyRoute(mk, null);
   document.getElementById('panel-' + mk).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1024,156 +1026,207 @@ function miniBarList(items, totalOverride, { noShare = false } = {}) {
   }).join('');
 }
 
-function renderMetricDetail(mk, key) {
+const ZONE_LABELS = { merchants: 'Merchant activity', orders: 'Orders activity', invoices: 'Invoices activity' };
+
+// Dispatcher for the 3 zone deep-screens — consolidates what used to be 6 separate
+// per-metric drill-downs (one per KPI) into one richer screen per zone, matching the
+// 3 sub-sections the overview is already organized into.
+function renderZoneDetail(mk, zoneKey) {
   const meta = MARKET_META[mk];
-  const t = TOTALS[mk];
-  const def = METRIC_DEFS_MARKET.find(m => m.key === key);
   const panel = document.getElementById('panel-' + mk);
-  const val = t[key];
 
   let html = `
-    <div style="display:flex;align-items:center;gap:var(--space-md);">
-      <button class="nb-btn ghost" onclick="closeMetricDetail('${mk}')"><i class="ti ti-arrow-left"></i>${meta.label} overview</button>
-    </div>
-    <div style="display:flex;align-items:flex-start;gap:var(--space-xl);flex-wrap:wrap;">
-      <div class="kpi-tile" style="min-width:260px;">
-        <div class="kpi-label"><i class="ti ${def.icon}"></i>${def.label}</div>
-        <div class="kpi-value" style="font-size:34px;">${def.money ? fmtMoney(val) : fmtNum(val)}</div>
-        <div class="kpi-context">${deltaChip(DELTA[key])}</div>
-      </div>
-    </div>
-    <div class="chart-card full">
-      <div class="chart-head"><span class="chart-title">${meta.label} · ${def.label} over time</span></div>
-      <div class="svg-chart-wrap" id="metric-trend-${mk}"></div>
-      <div class="chart-x-labels" id="metric-trend-x-${mk}"></div>
-    </div>
-  `;
+    <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-lg);">
+      <button class="nb-btn ghost" onclick="closeZoneDetail('${mk}')"><i class="ti ti-arrow-left"></i>${meta.label} overview</button>
+    </div>`;
 
-  html += renderMetricBreakdown(mk, key);
+  if (zoneKey === 'merchants') html += renderMerchantZoneDetail(mk);
+  else if (zoneKey === 'orders') html += renderOrdersZoneDetail(mk);
+  else html += renderInvoicesZoneDetail(mk);
 
-  // "Active merchants" has no per-merchant numeric equivalent to sort a list by — the
-  // Merchant movement + New/Dropped panels above are the meaningful merchant-level detail
-  // for this metric, so skip repeating the (unsorted) full table here.
-  const showMerchantTable = key !== 'merchants';
+  // Merchant activity's deep screen skips the table — it's already fully shown, unsorted-
+  // KPI aside, in the collapsed zone card. Orders/Invoices don't show a table when
+  // collapsed, so their deep screens are where it belongs.
+  const showMerchantTable = zoneKey !== 'merchants';
   if (showMerchantTable) html += merchantsPanelHtml(mk);
 
   panel.innerHTML = html;
-
-  const days = 17, peak = 8;
-  renderTrendChart('metric-trend-' + mk, 'metric-trend-x-' + mk, distribute(val || 0, days, peak));
-
+  renderZoneDetailCharts(mk, zoneKey);
   if (showMerchantTable) renderMerchantTable(mk);
 }
 
-function renderMetricBreakdown(mk, key) {
-  if (key === 'merchants') {
-    const list = MERCHANTS[mk] || [];
-    const news = list.filter(m => m.status === 'new');
-    const dropped = list.filter(m => m.status === 'dropped');
-    const activeCount = list.filter(m => m.status === 'active').length;
-    return `
+function renderZoneDetailCharts(mk, zoneKey) {
+  const t = TOTALS[mk];
+  const days = 17, peak = 8;
+  if (zoneKey === 'merchants') {
+    renderTrendChart('zone-detail-trend-' + mk, 'zone-detail-trend-x-' + mk, distribute(t.merchants, days, peak));
+  } else if (zoneKey === 'orders') {
+    renderTrendChart('zone-detail-trend-' + mk, 'zone-detail-trend-x-' + mk, distribute(t.orders, days, peak));
+  } else {
+    renderTrendChart('zone-detail-trend-' + mk, 'zone-detail-trend-x-' + mk, distribute(t.invUploaded, days, peak), distribute(t.invProcessed, days, peak));
+  }
+}
+
+function renderMerchantZoneDetail(mk) {
+  const t = TOTALS[mk];
+  const list = MERCHANTS[mk] || [];
+  const news = list.filter(m => m.status === 'new');
+  const dropped = list.filter(m => m.status === 'dropped');
+  const activeCount = list.filter(m => m.status === 'active').length;
+  return `
+    <div style="display:flex;align-items:flex-start;gap:var(--space-xl);flex-wrap:wrap;">
+      <div class="kpi-tile" style="min-width:260px;">
+        <div class="kpi-label"><i class="ti ti-building-store"></i>Active merchants</div>
+        <div class="kpi-value" style="font-size:34px;">${fmtNum(t.merchants)}</div>
+        <div class="kpi-context">${deltaChip(DELTA.merchants)}</div>
+      </div>
+    </div>
+    <div class="chart-card full">
+      <div class="chart-head"><span class="chart-title">${MARKET_META[mk].label} · Active merchants over time</span></div>
+      <div class="svg-chart-wrap" id="zone-detail-trend-${mk}"></div>
+      <div class="chart-x-labels" id="zone-detail-trend-x-${mk}"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Merchant movement</span>
+        <span class="panel-meta">Within the ${list.length} merchants shown below, not the full ${fmtNum(t.merchants)}</span>
+      </div>
+      <div style="padding:var(--space-xl);">
+        ${stackedBarHtml([
+          { name: 'Active', value: activeCount, color: 'var(--fern)' },
+          { name: 'New this period', value: news.length, color: '#3F8AFB' },
+          { name: 'Dropped this period', value: dropped.length, color: '#EE4B87' },
+        ])}
+      </div>
+    </div>
+    <div class="two-col">
       <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">Merchant movement</span>
-          <span class="panel-meta">Within the ${list.length} merchants shown below, not the full ${fmtNum(TOTALS[mk].merchants)}</span>
-        </div>
-        <div style="padding:var(--space-xl);">
-          ${miniBarList([{ name: 'Active', value: activeCount }, { name: 'New this period', value: news.length }, { name: 'Dropped this period', value: dropped.length }], null, { noShare: true })}
+        <div class="panel-header"><span class="panel-title">New this period</span><span class="panel-meta">${news.length} merchant${news.length === 1 ? '' : 's'}</span></div>
+        <div>
+          ${news.length ? news.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders')).join('') : `<div class="mini-empty">None this period.</div>`}
         </div>
       </div>
-      <div class="two-col">
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">New this period</span><span class="panel-meta">${news.length} merchant${news.length === 1 ? '' : 's'}</span></div>
-          <div>
-            ${news.length ? news.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders')).join('') : `<div class="mini-empty">None this period.</div>`}
-          </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Dropped this period</span><span class="panel-meta">${dropped.length} merchant${dropped.length === 1 ? '' : 's'}</span></div>
+        <div>
+          ${dropped.length ? dropped.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders last active')).join('') : `<div class="mini-empty">None this period.</div>`}
         </div>
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">Dropped this period</span><span class="panel-meta">${dropped.length} merchant${dropped.length === 1 ? '' : 's'}</span></div>
-          <div>
-            ${dropped.length ? dropped.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders last active')).join('') : `<div class="mini-empty">None this period.</div>`}
-          </div>
+      </div>
+    </div>`;
+}
+
+function renderOrdersZoneDetail(mk) {
+  const t = TOTALS[mk];
+  const cancelled = CANCELLED[mk] || 0;
+  const completed = t.orders;
+  const total = completed + cancelled;
+  const cancelRate = total ? (cancelled / total * 100).toFixed(1) : '0.0';
+  const avg = t.orders ? t.orderValue / t.orders : 0;
+  return `
+    <div style="display:flex;align-items:flex-start;gap:var(--space-xl);flex-wrap:wrap;">
+      <div class="kpi-tile" style="min-width:220px;">
+        <div class="kpi-label"><i class="ti ti-shopping-cart"></i>Orders</div>
+        <div class="kpi-value" style="font-size:34px;">${fmtNum(t.orders)}</div>
+        <div class="kpi-context">${deltaChip(DELTA.orders)}</div>
+      </div>
+      <div class="kpi-tile" style="min-width:220px;">
+        <div class="kpi-label"><i class="ti ti-receipt-2"></i>Order value</div>
+        <div class="kpi-value" style="font-size:34px;">${fmtMoney(t.orderValue)}</div>
+        <div class="kpi-context">${deltaChip(DELTA.orderValue)}</div>
+      </div>
+    </div>
+    <div class="chart-card full">
+      <div class="chart-head"><span class="chart-title">${MARKET_META[mk].label} · Orders over time</span></div>
+      <div class="svg-chart-wrap" id="zone-detail-trend-${mk}"></div>
+      <div class="chart-x-labels" id="zone-detail-trend-x-${mk}"></div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Order status</span><span class="panel-meta">${cancelRate}% cancellation rate</span></div>
+        <div style="padding:var(--space-xl);">${stackedBarHtml([{ name: 'Completed / active', value: completed, color: 'var(--fern)' }, { name: 'Cancelled', value: cancelled, color: '#EE4B87' }])}</div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Average order value</span></div>
+        <div style="padding:var(--space-xl);">
+          <div class="kpi-value" style="font-size:28px;">${fmtMoney(avg)}</div>
+          <div class="kpi-context" style="margin-top:6px;">per order, this period</div>
         </div>
-      </div>`;
-  }
-
-  if (key === 'orders' || key === 'orderValue') {
-    const suppliersPanel = `<div class="panel">
-      <div class="panel-header"><span class="panel-title">Top suppliers</span><span class="panel-meta">Sorted by ${key === 'orders' ? 'orders' : 'order value'}</span></div>
-      ${suppliersPanelHtml(mk, key)}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Top suppliers</span><span class="panel-meta">Sorted by orders</span></div>
+      ${suppliersPanelHtml(mk, 'orders')}
     </div>`;
+}
 
-    if (key === 'orders') {
-      const cancelled = CANCELLED[mk] || 0;
-      const completed = TOTALS[mk].orders;
-      const total = completed + cancelled;
-      const cancelRate = total ? (cancelled / total * 100).toFixed(1) : '0.0';
-      return `
-        <div class="two-col">
-          <div class="panel">
-            <div class="panel-header"><span class="panel-title">Order status</span><span class="panel-meta">${cancelRate}% cancellation rate</span></div>
-            <div style="padding:var(--space-xl);">${miniBarList([{ name: 'Completed / active', value: completed }, { name: 'Cancelled', value: cancelled }], total)}</div>
-          </div>
-          ${suppliersPanel}
-        </div>`;
-    }
+function renderInvoicesZoneDetail(mk) {
+  const t = TOTALS[mk];
+  const uploadTotal = t.invUploaded;
+  const uploadItems = [
+    { name: 'Mobile', value: uploadTotal * UPLOAD_SOURCE_RATIO.Mobile },
+    { name: 'Web', value: uploadTotal * UPLOAD_SOURCE_RATIO.Web },
+    { name: 'Unknown', value: uploadTotal * UPLOAD_SOURCE_RATIO.Unknown },
+  ];
+  const matchItems = MATCH_STATUS_RATIO.map(r => ({ name: r.name, value: uploadTotal * r.pct }));
+  const terms = PAYMENT_TERMS[mk] || [];
+  const termsTotal = terms.reduce((a, b) => a + b.count, 0);
+  const termsItems = terms.map(x => ({ name: x.name, value: x.count }));
 
-    const avg = TOTALS[mk].orders ? TOTALS[mk].orderValue / TOTALS[mk].orders : 0;
-    return `
-      <div class="two-col">
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">Average order value</span></div>
-          <div style="padding:var(--space-xl);">
-            <div class="kpi-value" style="font-size:28px;">${fmtMoney(avg)}</div>
-            <div class="kpi-context" style="margin-top:6px;">per order, this period</div>
-          </div>
+  let html = `
+    <div style="display:flex;align-items:flex-start;gap:var(--space-xl);flex-wrap:wrap;">
+      <div class="kpi-tile" style="min-width:200px;">
+        <div class="kpi-label"><i class="ti ti-upload"></i>Invoices uploaded</div>
+        <div class="kpi-value" style="font-size:30px;">${fmtNum(t.invUploaded)}</div>
+        <div class="kpi-context">${deltaChip(DELTA.invUploaded)}</div>
+      </div>
+      <div class="kpi-tile" style="min-width:200px;">
+        <div class="kpi-label"><i class="ti ti-file-check"></i>Invoices processed</div>
+        <div class="kpi-value" style="font-size:30px;">${fmtNum(t.invProcessed)}</div>
+        <div class="kpi-context">${deltaChip(DELTA.invProcessed)}</div>
+      </div>
+      <div class="kpi-tile" style="min-width:200px;">
+        <div class="kpi-label"><i class="ti ti-currency-dollar"></i>Invoice value</div>
+        <div class="kpi-value" style="font-size:30px;">${fmtMoney(t.invValue)}</div>
+        <div class="kpi-context">${deltaChip(DELTA.invValue)}</div>
+      </div>
+    </div>
+    <div class="chart-card full">
+      <div class="chart-head">
+        <span class="chart-title">${MARKET_META[mk].label} · Invoices uploaded &amp; processed over time</span>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-line" style="background:#129B41;"></span>Uploaded</div>
+          <div class="legend-item"><span class="legend-line" style="background:#3F8AFB;"></span>Processed</div>
         </div>
-        ${suppliersPanel}
-      </div>`;
-  }
+      </div>
+      <div class="svg-chart-wrap" id="zone-detail-trend-${mk}"></div>
+      <div class="chart-x-labels" id="zone-detail-trend-x-${mk}"></div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Upload source</span><span class="panel-meta">Estimated — not tracked per market today</span></div>
+        <div style="padding:var(--space-xl);">${miniBarList(uploadItems, uploadTotal)}</div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Match / OCR status</span><span class="panel-meta">Estimated — not tracked per market today</span></div>
+        <div style="padding:var(--space-xl);">${miniBarList(matchItems, uploadTotal)}</div>
+      </div>
+    </div>`;
 
-  if (key === 'invUploaded') {
-    const total = TOTALS[mk].invUploaded;
-    const items = [
-      { name: 'Mobile', value: total * UPLOAD_SOURCE_RATIO.Mobile },
-      { name: 'Web', value: total * UPLOAD_SOURCE_RATIO.Web },
-      { name: 'Unknown', value: total * UPLOAD_SOURCE_RATIO.Unknown },
-    ];
-    return `<div class="panel">
-      <div class="panel-header"><span class="panel-title">Upload source</span><span class="panel-meta">Estimated — the platform doesn't track upload source per market today</span></div>
-      <div style="padding:var(--space-xl);">${miniBarList(items, total)}</div>
+  if (mk === 'SG') {
+    html += `<div class="panel">
+      <div class="panel-header"><span class="panel-title">Processed by</span><span class="panel-meta">Platform-wide — not broken out by market today</span></div>
+      <table class="data-table"><thead><tr><th>Processor</th><th class="r">Auto</th><th class="r">Manual</th><th class="r">Total</th></tr></thead><tbody>
+        ${PROCESSORS_ALL.map(p => `<tr><td class="td-name">${p.name}</td><td class="r">${fmtNum(p.auto)}</td><td class="r">${fmtNum(p.manual)}</td><td class="r">${fmtNum(p.count)}</td></tr>`).join('')}
+      </tbody></table>
     </div>`;
   }
 
-  if (key === 'invProcessed') {
-    const total = TOTALS[mk].invUploaded;
-    const items = MATCH_STATUS_RATIO.map(r => ({ name: r.name, value: total * r.pct }));
-    let html = `<div class="panel">
-      <div class="panel-header"><span class="panel-title">Match / OCR status</span><span class="panel-meta">Estimated — not tracked per market today</span></div>
-      <div style="padding:var(--space-xl);">${miniBarList(items, total)}</div>
-    </div>`;
-    if (mk === 'SG') {
-      html += `<div class="panel" style="margin-top:var(--space-lg);">
-        <div class="panel-header"><span class="panel-title">Processed by</span><span class="panel-meta">Platform-wide — not broken out by market today</span></div>
-        <table class="data-table"><thead><tr><th>Processor</th><th class="r">Auto</th><th class="r">Manual</th><th class="r">Total</th></tr></thead><tbody>
-          ${PROCESSORS_ALL.map(p => `<tr><td class="td-name">${p.name}</td><td class="r">${fmtNum(p.auto)}</td><td class="r">${fmtNum(p.manual)}</td><td class="r">${fmtNum(p.count)}</td></tr>`).join('')}
-        </tbody></table>
-      </div>`;
-    }
-    return html;
-  }
+  html += `<div class="panel">
+    <div class="panel-header"><span class="panel-title">Payment terms</span><span class="panel-meta">By invoice count, top ${termsItems.length}</span></div>
+    <div style="padding:var(--space-xl);">${termsItems.length ? miniBarList(termsItems, termsTotal) : `<div style="color:var(--text-soft);font-size:13px;">No payment terms recorded yet for this market.</div>`}</div>
+  </div>`;
 
-  if (key === 'invValue') {
-    const terms = PAYMENT_TERMS[mk] || [];
-    const totalCount = terms.reduce((a, b) => a + b.count, 0);
-    const items = terms.map(t => ({ name: t.name, value: t.count }));
-    return `<div class="panel">
-      <div class="panel-header"><span class="panel-title">Payment terms</span><span class="panel-meta">By invoice count, top ${items.length}</span></div>
-      <div style="padding:var(--space-xl);">${items.length ? miniBarList(items, totalCount) : `<div style="color:var(--text-soft);font-size:13px;">No payment terms recorded yet for this market.</div>`}</div>
-    </div>`;
-  }
-
-  return '';
+  return html;
 }
 
 /* ── Merchant drawer ── */
@@ -1364,12 +1417,20 @@ function renderDualLineChart(containerId, seriesA, seriesB) {
 }
 
 /* ── Tabs / market switching ── */
-// Each market gets its own shareable/bookmarkable URL via a hash fragment (#SG, #MY, …)
-// rather than a real path — this stays a single static index.html with no server-side
-// routing, and hash changes never hit GitHub Pages so there's nothing to 404 on a direct
-// visit. skipHistory is used when we're already responding to a hash/back-forward change,
-// so we don't push a second, redundant history entry on top of the one that triggered it.
-function switchMarket(mk, opts) {
+// Each market — and now each zone deep-screen within it — gets its own shareable/
+// bookmarkable URL via a two-segment hash fragment (#SG, #SG/orders, …) rather than a real
+// path — this stays a single static index.html with no server-side routing, and hash
+// changes never hit GitHub Pages so there's nothing to 404 on a direct visit. skipHistory
+// is used when we're already responding to a hash/back-forward change, so we don't push a
+// second, redundant history entry on top of the one that triggered it.
+function hashParse() {
+  const [mkPart, zonePart] = location.hash.slice(1).split('/');
+  const mk = MARKET_META[(mkPart || '').toUpperCase()] ? (mkPart || '').toUpperCase() : 'ALL';
+  const zone = ['merchants', 'orders', 'invoices'].includes(zonePart) ? zonePart : null;
+  return { mk, zone };
+}
+
+function applyRoute(mk, zone, opts) {
   opts = opts || {};
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => {
@@ -1379,21 +1440,24 @@ function switchMarket(mk, opts) {
   });
   document.getElementById('panel-' + mk).classList.add('active');
   document.getElementById('page-sub').innerHTML = `${MARKET_META[mk].flag ? MARKET_META[mk].flag + ' ' : ''}${MARKET_META[mk].label} · <span>${document.getElementById('daterange-label').textContent}</span>`;
-  if (mk !== 'ALL') { metricState[mk] = null; renderMarketPanel(mk); }
+  if (mk !== 'ALL') {
+    zoneState[mk] = zone || null;
+    renderMarketPanel(mk);
+  }
   if (!opts.skipHistory) {
-    const url = location.pathname + location.search + (mk === 'ALL' ? '' : '#' + mk);
-    history.pushState({ market: mk }, '', url);
+    let hash = '';
+    if (mk !== 'ALL') { hash = '#' + mk; if (zone) hash += '/' + zone; }
+    history.pushState({ market: mk, zone: zone || null }, '', location.pathname + location.search + hash);
   }
 }
 
-function hashToMarket() {
-  const key = location.hash.slice(1).toUpperCase();
-  return MARKET_META[key] ? key : 'ALL';
+function switchMarket(mk, opts) {
+  applyRoute(mk, null, opts);
 }
 
 window.addEventListener('popstate', e => {
-  const mk = (e.state && e.state.market) || hashToMarket();
-  switchMarket(mk, { skipHistory: true });
+  const parsed = e.state ? { mk: e.state.market, zone: e.state.zone } : hashParse();
+  applyRoute(parsed.mk, parsed.zone, { skipHistory: true });
 });
 
 /* ── Date range popover ── */
@@ -1459,8 +1523,8 @@ function insightsToast(msg) {
 
 function init() {
   renderAllPanel();
-  const mk = hashToMarket();
-  if (mk !== 'ALL') switchMarket(mk, { skipHistory: true });
+  const { mk, zone } = hashParse();
+  if (mk !== 'ALL') applyRoute(mk, zone, { skipHistory: true });
 }
 </script>
 </body>
