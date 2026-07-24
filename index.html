@@ -279,7 +279,7 @@
       <div class="page-header-left">
         <span class="page-eyebrow">Procure Insights</span>
         <h1 class="page-title">Platform activity</h1>
-        <p class="page-sub" id="page-sub">All markets · <span id="header-range-label">01–17 Jul 2026</span></p>
+        <p class="page-sub" id="page-sub">All markets · <span id="header-range-label">13–17 Jul 2026</span></p>
       </div>
       <div class="page-actions">
         <button class="nb-btn" onclick="insightsToast('Exporting current view to XLSX…')"><i class="ti ti-file-spreadsheet"></i>Export view</button>
@@ -289,11 +289,11 @@
     <!-- Filter bar -->
     <div class="filter-bar">
       <div class="daterange-wrap">
-        <button class="nb-btn" onclick="toggleDateRangePopover()"><i class="ti ti-calendar"></i><span id="daterange-label">01–17 Jul 2026</span><i class="ti ti-chevron-down"></i></button>
+        <button class="nb-btn" onclick="toggleDateRangePopover()"><i class="ti ti-calendar"></i><span id="daterange-label">13–17 Jul 2026</span><i class="ti ti-chevron-down"></i></button>
         <div class="daterange-pop" id="daterange-pop" style="display:none;">
           <div class="dr-quick" id="dr-quick"></div>
           <div class="dr-fields">
-            <input type="date" id="dr-from" value="2026-07-01"/>
+            <input type="date" id="dr-from" value="2026-07-13"/>
             <span class="dr-sep">to</span>
             <input type="date" id="dr-to" value="2026-07-17"/>
           </div>
@@ -316,9 +316,9 @@
     <nav class="tab-nav" role="tablist" aria-label="Market">
       <button class="tab-btn active" role="tab" aria-selected="true"  onclick="switchMarket('ALL')"><i class="ti ti-world"></i>All markets</button>
       <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('SG')"><span class="tab-flag">🇸🇬</span>Singapore</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('AU')"><span class="tab-flag">🇦🇺</span>Australia</button>
       <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('MY')"><span class="tab-flag">🇲🇾</span>Malaysia</button>
       <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('ID')"><span class="tab-flag">🇮🇩</span>Indonesia</button>
-      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('AU')"><span class="tab-flag">🇦🇺</span>Australia</button>
       <button class="tab-btn" role="tab" aria-selected="false" onclick="switchMarket('UNATTRIBUTED')"><i class="ti ti-help-circle"></i>Unattributed</button>
     </nav>
 
@@ -371,9 +371,9 @@
     <!--  PER-MARKET PANELS (Point 2 + 3)           -->
     <!-- ══════════════════════════════════════════ -->
     <div class="tab-panel" id="panel-SG" role="tabpanel"></div>
+    <div class="tab-panel" id="panel-AU" role="tabpanel"></div>
     <div class="tab-panel" id="panel-MY" role="tabpanel"></div>
     <div class="tab-panel" id="panel-ID" role="tabpanel"></div>
-    <div class="tab-panel" id="panel-AU" role="tabpanel"></div>
     <div class="tab-panel" id="panel-UNATTRIBUTED" role="tabpanel"></div>
 
   </div>
@@ -715,7 +715,7 @@ function renderAllPanel() {
       <div class="kpi-context">${deltaChip(DELTA[m.key])}</div>
     </div>`).join('');
 
-  const rows = ['SG', 'MY', 'ID', 'AU', 'UNATTRIBUTED'];
+  const rows = ['SG', 'AU', 'MY', 'ID', 'UNATTRIBUTED'];
   const metricCell = (mk, key, val, money) => {
     const display = (val === null || val === undefined) ? '—' : (money ? fmtMoney(val) : fmtNum(val));
     if (!val) return `<td class="r">${display}</td>`;
@@ -757,7 +757,7 @@ function setTrendMetric(key) {
 
 function getReportRange() {
   const fromEl = document.getElementById('dr-from'), toEl = document.getElementById('dr-to');
-  const from = new Date((fromEl ? fromEl.value : '2026-07-01') + 'T00:00:00');
+  const from = new Date((fromEl ? fromEl.value : '2026-07-13') + 'T00:00:00');
   const to = new Date((toEl ? toEl.value : '2026-07-17') + 'T00:00:00');
   const days = Math.max(2, Math.round((to - from) / 86400000) + 1);
   return { from, to, days };
@@ -771,7 +771,7 @@ function shortDateYear(d) { return d.toLocaleDateString('en-GB', { day: '2-digit
 // where the current report period begins); same-month-last-year is too large a gap to
 // bridge on one axis, so it renders as two separate side-by-side segments instead.
 function renderAllTrendChart() {
-  const marketsForTrend = ['SG', 'MY', 'ID', 'AU'];
+  const marketsForTrend = ['SG', 'AU', 'MY', 'ID'];
   const label = METRIC_DEFS_ALL.find(m => m.key === trendMetric).label;
   const { from, to, days: reportDays } = getReportRange();
   const mode = (document.getElementById('compare-select') || {}).value || 'previous-month';
@@ -1487,7 +1487,7 @@ function applyCompare() {
   const labels = { 'previous-week': 'previous week', 'previous-month': 'previous month', 'previous-year': 'same month last year', 'none': '' };
   compareLabel = labels[sel.value];
   renderAllPanel();
-  ['SG', 'MY', 'ID', 'AU', 'UNATTRIBUTED'].forEach(mk => { if (document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk); });
+  ['SG', 'AU', 'MY', 'ID', 'UNATTRIBUTED'].forEach(mk => { if (document.getElementById('panel-' + mk).innerHTML) renderMarketPanel(mk); });
   insightsToast(sel.value === 'none' ? 'Comparison turned off.' : 'Now comparing against ' + compareLabel + '.');
 }
 
