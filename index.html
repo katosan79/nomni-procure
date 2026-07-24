@@ -111,16 +111,19 @@
   .zone-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-lg); }
   .zone-header { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-md) var(--space-xl); background: var(--surface-soft); border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text); }
   .zone-header i { color: var(--fern); font-size: 16px; }
-  .zone-kpi-row { display: flex; gap: var(--space-xl); align-items: stretch; padding: var(--space-xl); }
-  .zone-kpi-col { display: flex; flex-direction: column; gap: var(--space-lg); flex: 0 0 170px; }
-  .zone-kpi-mini { flex: 0 0 170px; }
-  .zone-kpi-mini.clickable { cursor: pointer; border-radius: var(--radius-md); padding: var(--space-sm); margin: calc(var(--space-sm) * -1); transition: background var(--dur-1) var(--ease-standard); }
-  .zone-kpi-mini.clickable:hover { background: var(--surface-soft); }
-  .zone-kpi-mini.dim { opacity: 0.5; }
   .zone-kpi-value { font-size: 22px; font-weight: 700; color: var(--text); margin: 4px 0; font-feature-settings: 'tnum' 1; }
-  .zone-trend { flex: 1; min-width: 0; align-self: center; display: flex; justify-content: flex-end; }
-  .zone-trend svg { max-width: 100%; }
-  .zone-breakdown { padding: 0 var(--space-xl) var(--space-xl); }
+
+  /* ── Each metric gets its own compact card (value + delta + a small inline sparkline)
+     instead of one large shared chart floating beside a tall stack of numbers ── */
+  .zone-metrics-grid { display: grid; border-bottom: 1px solid var(--border); }
+  .zone-metric-card { padding: var(--space-lg) var(--space-xl); border-right: 1px solid var(--border); }
+  .zone-metric-card:last-child { border-right: none; }
+  .zone-metric-card.clickable { cursor: pointer; transition: background var(--dur-1) var(--ease-standard); }
+  .zone-metric-card.clickable:hover { background: var(--surface-soft); }
+  .zone-metric-card.dim { opacity: 0.5; }
+  .zone-metric-card-inner { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-md); margin-top: 4px; }
+  .zone-metric-spark { flex-shrink: 0; }
+  .zone-breakdown { padding: var(--space-xl); }
   .zone-breakdown-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); }
 
   /* ── Segmented bar — one combined horizontal bar (e.g. active/new/dropped) instead of a
@@ -241,8 +244,9 @@
   @media (max-width: 1100px) {
     .kpi-strip, .kpi-strip.cols-6 { grid-template-columns: repeat(3, 1fr); }
     .two-col { grid-template-columns: 1fr; }
-    .zone-kpi-row { flex-direction: column; }
-    .zone-kpi-col { flex-direction: row; flex-wrap: wrap; }
+    .zone-metrics-grid { grid-template-columns: 1fr !important; }
+    .zone-metric-card { border-right: none; border-bottom: 1px solid var(--border); }
+    .zone-metric-card:last-child { border-bottom: none; }
     .zone-breakdown-split { grid-template-columns: 1fr; }
   }
   @media (max-width: 640px) {
@@ -830,14 +834,28 @@ function renderAllTrendChart() {
 // One mini KPI within a zone — still opens the same full-screen metric drill-down as
 // before (openMetricDetail), just laid out compactly inside its zone instead of as one of
 // six flat tiles in an undifferentiated strip.
-function zoneKpiMini(mk, key) {
+// One metric's own compact card — label, value, delta, and its own small inline
+// sparkline, all folded together (Stripe/Mercury/Ramp-style KPI tile) instead of one big
+// shared chart floating beside a stack of numbers. Still opens the same drill-down on click.
+function zoneMetricCardHtml(mk, key) {
   const def = METRIC_DEFS_MARKET.find(m => m.key === key);
   const val = TOTALS[mk][key];
   const clickable = val !== null && val !== undefined;
-  return `<div class="zone-kpi-mini ${clickable ? 'clickable' : 'dim'}" ${clickable ? `onclick="openMetricDetail('${mk}','${key}')"` : ''}>
+  return `<div class="zone-metric-card ${clickable ? 'clickable' : 'dim'}" ${clickable ? `onclick="openMetricDetail('${mk}','${key}')"` : ''}>
     <div class="mini-label">${def.label}</div>
-    <div class="zone-kpi-value">${def.money ? fmtMoney(val) : fmtNum(val)}</div>
-    <div class="kpi-context">${clickable ? deltaChip(DELTA[key]) : 'Not attributable'}</div>
+    <div class="zone-metric-card-inner">
+      <div>
+        <div class="zone-kpi-value">${def.money ? fmtMoney(val) : fmtNum(val)}</div>
+        <div class="kpi-context">${clickable ? deltaChip(DELTA[key]) : 'Not attributable'}</div>
+      </div>
+      <div class="zone-metric-spark" id="zone-spark-${mk}-${key}"></div>
+    </div>
+  </div>`;
+}
+
+function zoneMetricsGridHtml(mk, keys) {
+  return `<div class="zone-metrics-grid" style="grid-template-columns: repeat(${keys.length}, 1fr);">
+    ${keys.map(k => zoneMetricCardHtml(mk, k)).join('')}
   </div>`;
 }
 
@@ -910,23 +928,14 @@ function renderMarketPanel(mk) {
     bodyHtml += `
       <div class="zone-card">
         ${zoneHeaderHtml('ti-building-store', 'Merchant activity')}
-        <div class="zone-kpi-row">
-          ${zoneKpiMini(mk, 'merchants')}
-          <div class="zone-trend" id="zone-trend-merchants-${mk}"></div>
-        </div>
+        ${zoneMetricsGridHtml(mk, ['merchants'])}
         ${zoneMerchantMovementHtml(mk)}
         <div class="zone-merchants-wrap">${merchantsPanelHtml(mk)}</div>
       </div>
 
       <div class="zone-card">
         ${zoneHeaderHtml('ti-shopping-cart', 'Orders activity')}
-        <div class="zone-kpi-row">
-          <div class="zone-kpi-col">
-            ${zoneKpiMini(mk, 'orders')}
-            ${zoneKpiMini(mk, 'orderValue')}
-          </div>
-          <div class="zone-trend" id="zone-trend-orders-${mk}"></div>
-        </div>
+        ${zoneMetricsGridHtml(mk, ['orders', 'orderValue'])}
         ${zoneOrderStatusHtml(mk)}
       </div>`;
   }
@@ -934,13 +943,7 @@ function renderMarketPanel(mk) {
   bodyHtml += `
     <div class="zone-card">
       ${zoneHeaderHtml('ti-file-text', 'Invoices activity')}
-      <div class="zone-kpi-row">
-        <div class="zone-kpi-col">
-          ${zoneKpiMini(mk, 'invUploaded')}
-          ${zoneKpiMini(mk, 'invValue')}
-        </div>
-        <div class="zone-trend" id="zone-trend-invoices-${mk}"></div>
-      </div>
+      ${zoneMetricsGridHtml(mk, ['invUploaded', 'invValue'])}
       ${zoneProcessedRowHtml(mk)}
     </div>`;
 
@@ -955,11 +958,11 @@ function renderMarketPanel(mk) {
   panel.innerHTML = bodyHtml;
 
   const days = 17, peak = 8;
-  if (!isUnattributed) {
-    document.getElementById('zone-trend-merchants-' + mk).innerHTML = sparklineSvg(distribute(t.merchants, days, peak), MARKET_COLOR[mk], 220, 56);
-    document.getElementById('zone-trend-orders-' + mk).innerHTML = sparklineSvg(distribute(t.orders, days, peak), MARKET_COLOR[mk], 220, 108);
-  }
-  document.getElementById('zone-trend-invoices-' + mk).innerHTML = sparklineSvg(distribute(t.invUploaded, days, peak), MARKET_COLOR[mk], 220, 108);
+  const sparkKeys = isUnattributed ? ['invUploaded', 'invValue'] : ['merchants', 'orders', 'orderValue', 'invUploaded', 'invValue'];
+  sparkKeys.forEach(key => {
+    const el = document.getElementById('zone-spark-' + mk + '-' + key);
+    if (el) el.innerHTML = sparklineSvg(distribute(t[key] || 0, days, peak), MARKET_COLOR[mk], 70, 28);
+  });
 
   if (!isUnattributed) renderMerchantTable(mk);
 }
