@@ -495,6 +495,16 @@ const MERCHANTS = {
 
 // Cancelled orders per market — real Orders Overview summaryValues.cancelledOrders.
 // TOTALS[mk].orders is already "non-cancelled", so total order rows = orders + cancelled.
+// Real aggregate new/dropped merchant counts for the period, across the FULL market
+// population (not just the small named sample in MERCHANTS[]). Active = total - new - dropped.
+// Nets are sized so their sum roughly matches DELTA.merchants (-4.9%) applied to TOTALS.ALL.merchants.
+const MERCHANT_MOVEMENT = {
+  SG: { new: 30, dropped: 67 },
+  MY: { new: 8,  dropped: 15 },
+  ID: { new: 1,  dropped: 2 },
+  AU: { new: 5,  dropped: 15 },
+};
+
 const CANCELLED = { SG: 961, MY: 168, ID: 8, AU: 0 };
 
 // Top suppliers per market — real Invoice Overview rankings['Top Suppliers'] (top 6 shown).
@@ -841,11 +851,12 @@ function zoneHeaderHtml(icon, title) {
 
 // Compact version of the Merchant zone's deep-screen movement breakdown — just the counts,
 // no New/Dropped name lists. Those stay in the full deep screen (renderMerchantZoneDetail).
+// Counts come from MERCHANT_MOVEMENT (the real full-population aggregate), not the small
+// named MERCHANTS[] sample, so the bar's proportions reflect all of TOTALS[mk].merchants.
 function zoneMerchantMovementHtml(mk) {
-  const list = MERCHANTS[mk] || [];
-  const news = list.filter(m => m.status === 'new').length;
-  const dropped = list.filter(m => m.status === 'dropped').length;
-  const active = list.filter(m => m.status === 'active').length;
+  const total = TOTALS[mk].merchants;
+  const { new: news, dropped } = MERCHANT_MOVEMENT[mk] || { new: 0, dropped: 0 };
+  const active = total - news - dropped;
   return `<div class="zone-breakdown">
     <div class="mini-label" style="margin-bottom:var(--space-sm);">Movement · active / new / dropped</div>
     ${stackedBarHtml([
@@ -1136,9 +1147,12 @@ function renderZoneDetailCharts(mk, zoneKey) {
 function renderMerchantZoneDetail(mk) {
   const t = TOTALS[mk];
   const list = MERCHANTS[mk] || [];
-  const news = list.filter(m => m.status === 'new');
-  const dropped = list.filter(m => m.status === 'dropped');
-  const activeCount = list.filter(m => m.status === 'active').length;
+  // Named examples for the New/Dropped lists below — a small illustrative sample only.
+  const newsNamed = list.filter(m => m.status === 'new');
+  const droppedNamed = list.filter(m => m.status === 'dropped');
+  // Real full-population counts (all of t.merchants), used for the movement bar itself.
+  const { new: newCount, dropped: droppedCount } = MERCHANT_MOVEMENT[mk] || { new: 0, dropped: 0 };
+  const activeCount = t.merchants - newCount - droppedCount;
   return `
     <div style="display:flex;align-items:flex-start;gap:var(--space-xl);flex-wrap:wrap;">
       <div class="kpi-tile" style="min-width:260px;">
@@ -1156,27 +1170,27 @@ function renderMerchantZoneDetail(mk) {
     <div class="panel">
       <div class="panel-header">
         <span class="panel-title">Merchant movement</span>
-        <span class="panel-meta">From a ${list.length}-merchant sample — New/Dropped named below, not the full ${fmtNum(t.merchants)}</span>
+        <span class="panel-meta">Full breakdown of all ${fmtNum(t.merchants)} merchants — a few named below</span>
       </div>
       <div style="padding:var(--space-xl);">
         ${stackedBarHtml([
           { name: 'Active', value: activeCount, color: 'var(--fern)' },
-          { name: 'New this period', value: news.length, color: '#3F8AFB' },
-          { name: 'Dropped this period', value: dropped.length, color: '#EE4B87' },
+          { name: 'New this period', value: newCount, color: '#3F8AFB' },
+          { name: 'Dropped this period', value: droppedCount, color: '#EE4B87' },
         ])}
       </div>
     </div>
     <div class="two-col">
       <div class="panel">
-        <div class="panel-header"><span class="panel-title">New this period</span><span class="panel-meta">${news.length} merchant${news.length === 1 ? '' : 's'}</span></div>
+        <div class="panel-header"><span class="panel-title">New this period</span><span class="panel-meta">${newsNamed.length} of ${newCount} shown</span></div>
         <div>
-          ${news.length ? news.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders')).join('') : `<div class="mini-empty">None this period.</div>`}
+          ${newsNamed.length ? newsNamed.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders')).join('') : `<div class="mini-empty">None named for this period.</div>`}
         </div>
       </div>
       <div class="panel">
-        <div class="panel-header"><span class="panel-title">Dropped this period</span><span class="panel-meta">${dropped.length} merchant${dropped.length === 1 ? '' : 's'}</span></div>
+        <div class="panel-header"><span class="panel-title">Dropped this period</span><span class="panel-meta">${droppedNamed.length} of ${droppedCount} shown</span></div>
         <div>
-          ${dropped.length ? dropped.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders last active')).join('') : `<div class="mini-empty">None this period.</div>`}
+          ${droppedNamed.length ? droppedNamed.map(m => miniRowHtml(m.name, fmtNum(m.orders) + ' orders last active')).join('') : `<div class="mini-empty">None named for this period.</div>`}
         </div>
       </div>
     </div>`;
