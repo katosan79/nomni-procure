@@ -1,0 +1,491 @@
+<title>Invoice Review Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --seaweed:#0E3727; --spinach:#076715; --fern:#129B41; --spring:#2AC864;
+    --porcelain:#FFFFFF; --appcream:#F5F2EF; --mint:#E2FFE6; --stone:#BCBCBC;
+    --charcoal:#353535; --charcoal-2:#2A2A2A; --ink:#111111;
+    --sun:#F5C219; --sunbg:#FBEFC6; --suntext:#8A6A00;
+    --rose:#EE4B87; --rosebg:#FBDCEA; --rosetext:#A11454;
+    --sky:#3FC3FB; --skybg:#D9F2FD; --skytext:#0B6C93;
+    --neutralbg:#EDEBE6; --neutraltext:#4B4B47;
+    --text:#0E3727; --text-soft:#4C6058; --border:#DDD8CF;
+    --surface:#FFFFFF; --surface-soft:#F5F2EF;
+    --focus:#129B41;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--appcream); color:var(--text);
+    font-family:"Hanken Grotesk",Arial,sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--focus); outline-offset:2px;}
+
+  .shell{ display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
+
+  /* ---------- sidebar ---------- */
+  .sidebar{ background:var(--charcoal); color:#D8DAD8; display:flex; flex-direction:column; padding:20px 14px; gap:22px; position:sticky; top:0; height:100vh; }
+  .brand{ display:flex; align-items:center; gap:8px; padding:0 6px; }
+  .brand .mark{ width:22px; height:22px; border-radius:6px; background:var(--spring); display:grid; place-items:center; font-size:13px; }
+  .brand .word{ font-weight:700; font-size:15px; color:#fff; letter-spacing:.2px; }
+  .brand .word em{ font-style:normal; color:var(--spring); }
+  nav.navlist{ display:flex; flex-direction:column; gap:2px; }
+  .navitem{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; font-size:13.5px; color:#B9BDB9; text-decoration:none; }
+  .navitem svg{ width:16px; height:16px; flex:none; opacity:.85; }
+  .navitem.active{ background:#3F4A44; color:#fff; }
+  .navitem.active svg{ opacity:1; color:var(--spring); }
+  .navitem .badge{ margin-left:auto; background:var(--spring); color:var(--seaweed); font-weight:700; font-size:10.5px; border-radius:999px; padding:1px 6px; }
+  .proto-note{ margin-top:auto; background:#2A332E; border:1px solid #445048; border-radius:10px; padding:12px; font-size:11.5px; line-height:1.5; color:#AEB8B1; }
+  .proto-note b{ color:#fff; }
+
+  /* ---------- main ---------- */
+  main{ min-width:0; }
+  .topstrip{ background:var(--seaweed); color:#E4F3E9; font-size:12.5px; padding:8px 28px; display:flex; gap:8px; align-items:center; justify-content:center; }
+  .topstrip b{ color:var(--spring); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:18px 28px 0 28px; }
+  .topbar h1{ font-size:26px; margin:0; font-weight:700; }
+  .topbar .actions{ display:flex; gap:10px; align-items:center; }
+  .btn{ border:none; border-radius:8px; padding:9px 16px; font-size:13.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .btn-primary{ background:var(--fern); color:#fff; }
+  .btn-primary:hover{ background:var(--spinach); }
+  .btn-secondary{ background:var(--surface); color:var(--seaweed); border:1px solid var(--border); }
+  .btn-secondary:hover{ border-color:var(--fern); color:var(--fern); }
+  .btn-ghost{ background:transparent; color:var(--text-soft); border:1px solid transparent; }
+  .btn-ghost:hover{ color:var(--seaweed); text-decoration:underline; }
+  .help-user{ display:flex; align-items:center; gap:16px; font-size:13px; color:var(--text-soft); margin-left:8px; }
+
+  .tabs{ display:flex; gap:22px; padding:18px 28px 0 28px; border-bottom:1px solid var(--border); }
+  .tab{ background:none; border:none; padding:0 0 12px 0; font-size:14px; font-weight:600; color:var(--text-soft); border-bottom:2px solid transparent; cursor:pointer; display:flex; gap:6px; align-items:center; }
+  .tab .cnt{ background:var(--neutralbg); color:var(--neutraltext); border-radius:999px; font-size:11px; padding:1px 6px; font-weight:700; }
+  .tab.active{ color:var(--seaweed); border-bottom-color:var(--fern); }
+  .tab.active .cnt{ background:var(--mint); color:var(--spinach); }
+
+  .view{ padding:22px 28px 60px 28px; display:none; }
+  .view.active{ display:block; }
+
+  /* ---------- shared bits ---------- */
+  .banner{ background:var(--sunbg); border:1px solid #E9D488; border-radius:10px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; cursor:pointer; }
+  .banner:hover{ border-color:var(--sun); }
+  .banner .msg{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:#5E4A00; font-weight:600; }
+  .banner .go{ font-size:12.5px; font-weight:700; color:var(--suntext); }
+
+  .chips{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+  .chip{ border:1px solid var(--border); background:var(--surface); border-radius:999px; padding:7px 14px; font-size:12.5px; font-weight:600; color:var(--text-soft); cursor:pointer; }
+  .chip.active{ background:var(--mint); border-color:var(--fern); color:var(--spinach); }
+  .chip.danger{ color:var(--rosetext); border-color:#EFC2D6; }
+
+  table{ width:100%; border-collapse:collapse; }
+  .tablewrap{ background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:auto; }
+  th{ text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-soft); padding:12px 16px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  td{ padding:14px 16px; border-bottom:1px solid var(--border); font-size:13.5px; vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  tr.rowlink{ cursor:pointer; }
+  tr.rowlink:hover{ background:var(--surface-soft); }
+  .upl-date{ font-weight:700; }
+  .upl-meta{ display:flex; align-items:center; gap:6px; color:var(--text-soft); font-size:12px; margin-top:2px; }
+
+  .badge-src{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; }
+  .src-photo{ background:var(--skybg); color:var(--skytext); }
+  .src-email{ background:#EFE7FB; color:#6B3FA0; }
+  .src-pdf{ background:var(--neutralbg); color:var(--neutraltext); }
+  .src-peppol{ background:var(--mint); color:var(--spinach); }
+
+  .status{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:5px 11px; border-radius:999px; white-space:nowrap; }
+  .status .dot{ width:6px; height:6px; border-radius:50%; }
+  .status-ok{ background:var(--mint); color:var(--spinach); } .status-ok .dot{ background:var(--spinach); }
+  .status-warn{ background:var(--sunbg); color:var(--suntext); } .status-warn .dot{ background:var(--sun); }
+  .status-risk{ background:var(--rosebg); color:var(--rosetext); } .status-risk .dot{ background:var(--rose); }
+  .status-info{ background:var(--skybg); color:var(--skytext); } .status-info .dot{ background:var(--sky); }
+  .status-neutral{ background:var(--neutralbg); color:var(--neutraltext); } .status-neutral .dot{ background:#9A9A94; }
+
+  .amt{ font-weight:700; }
+
+  /* numbered fix badge + drawer */
+  .fix{ display:inline-grid; place-items:center; width:19px; height:19px; border-radius:50%; background:var(--seaweed); color:#fff; font-size:10.5px; font-weight:700; cursor:pointer; border:2px solid var(--surface); box-shadow:0 0 0 1px var(--seaweed); flex:none; }
+  .fix:hover{ background:var(--fern); }
+  #drawer{ position:fixed; right:22px; bottom:22px; width:340px; background:var(--seaweed); color:#E4F3E9; border-radius:14px; padding:18px; box-shadow:0 12px 32px rgba(14,55,39,.35); display:none; z-index:50; }
+  #drawer.open{ display:block; }
+  #drawer .k{ color:var(--spring); font-weight:700; font-size:11px; letter-spacing:.05em; text-transform:uppercase; }
+  #drawer h4{ margin:6px 0 8px 0; font-size:15.5px; }
+  #drawer p{ margin:0; font-size:12.5px; line-height:1.5; color:#CFE6D8; }
+  #drawer .close{ position:absolute; top:10px; right:12px; background:none; border:none; color:#9FC4AC; font-size:16px; cursor:pointer; }
+
+  /* ---------- exception review detail ---------- */
+  .backlink{ display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--text-soft); text-decoration:none; margin-bottom:14px; cursor:pointer; background:none; border:none; padding:0; }
+  .backlink:hover{ color:var(--fern); }
+  .doc-head{ display:flex; align-items:center; justify-content:space-between; background:var(--charcoal); color:#D8DAD8; padding:12px 18px; border-radius:12px 12px 0 0; font-size:12.5px; }
+  .doc-head .left{ display:flex; align-items:center; gap:10px; }
+  .doc-head .files{ font-weight:600; color:#fff; }
+  .toolbar{ display:flex; gap:8px; }
+  .toolbar button{ background:transparent; border:1px solid #4B564F; color:#C9CFC9; border-radius:7px; padding:6px 11px; font-size:12px; cursor:pointer; }
+  .toolbar button:hover{ border-color:var(--spring); color:#fff; }
+
+  .detail-grid{ display:grid; grid-template-columns:1.55fr 1fr; gap:0; background:var(--surface); border:1px solid var(--border); border-top:none; border-radius:0 0 12px 12px; overflow:hidden; }
+  .detail-form{ padding:22px; border-right:1px solid var(--border); }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:16px; }
+  .field label{ display:block; font-size:11.5px; font-weight:700; color:var(--text-soft); margin-bottom:6px; text-transform:uppercase; letter-spacing:.03em; }
+  .field .val{ font-size:14px; font-weight:600; }
+  .field input, .field select{ width:100%; border:1px solid var(--border); border-radius:8px; padding:9px 11px; font-size:13.5px; font-family:inherit; color:var(--text); background:var(--surface); }
+  .po-chip{ display:inline-flex; flex-direction:column; align-items:flex-start; gap:1px; background:var(--mint); border:1px solid #B7E8C4; border-radius:8px; padding:6px 10px; margin:0 6px 6px 0; }
+  .po-chip .n{ font-size:12.5px; font-weight:700; color:var(--spinach); }
+  .po-chip .d{ font-size:10.5px; color:#3E7A54; }
+  .po-help{ font-size:11.5px; color:var(--text-soft); margin-top:6px; }
+
+  .lineitems{ margin-top:6px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .li-row{ display:grid; grid-template-columns:1fr 48px 84px 140px; gap:12px; padding:12px 14px; border-bottom:1px solid var(--border); align-items:center; }
+  .li-row:last-child{ border-bottom:none; }
+  .li-row.head{ background:var(--surface-soft); font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-soft); font-weight:700; padding:9px 14px; }
+  .li-desc{ font-size:13px; line-height:1.35; }
+  .li-desc .sku{ color:var(--text-soft); font-size:11px; display:block; }
+  .li-price-line{ display:flex; align-items:baseline; gap:6px; margin-top:3px; font-size:11.5px; }
+  .li-price-line .was{ text-decoration:line-through; color:var(--text-soft); }
+  .li-num{ text-align:right; font-weight:600; font-size:13px; }
+  .li-status{ display:flex; justify-content:flex-end; }
+
+  .agent-card{ margin-top:16px; background:var(--mint); border:1px solid var(--spring); border-radius:12px; padding:14px 16px; box-shadow:0 0 0 3px rgba(42,200,100,.12); }
+  .agent-card .who{ display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; color:var(--spinach); margin-bottom:6px; }
+  .agent-card .who .dot{ width:7px; height:7px; border-radius:50%; background:var(--spring); }
+  .agent-card h5{ margin:0 0 4px 0; font-size:14.5px; }
+  .agent-card .sub{ font-size:12px; color:#2C5B3E; margin-bottom:8px; }
+  .agent-card a{ font-size:12px; font-weight:700; color:var(--spinach); text-decoration:none; }
+  .agent-card a:hover{ text-decoration:underline; }
+
+  .totals{ padding:22px; }
+  .totals .row{ display:flex; justify-content:space-between; padding:7px 0; font-size:13.5px; color:var(--text-soft); }
+  .totals .row.total{ color:var(--text); font-weight:700; font-size:16px; border-top:1px solid var(--border); margin-top:6px; padding-top:12px; }
+  .totals img.doc{ width:100%; border-radius:10px; border:1px solid var(--border); margin-bottom:16px; }
+  .doc-preview{ background:var(--surface-soft); border:1px dashed var(--border); border-radius:10px; height:170px; display:flex; align-items:center; justify-content:center; color:var(--text-soft); font-size:12px; margin-bottom:16px; }
+
+  .footer-actions{ display:flex; justify-content:space-between; align-items:center; padding:16px 22px; border-top:1px solid var(--border); background:var(--surface-soft); grid-column:1 / -1; }
+
+  /* needs-your-input cards */
+  .exc-toolbar{ display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:16px; }
+  .exc-toolbar .left{ display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-soft); }
+  .exc-card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px; display:grid; grid-template-columns:20px 1fr auto; gap:14px; align-items:center; }
+  .exc-card input[type=checkbox]{ width:16px; height:16px; }
+  .exc-card .supplier{ font-weight:700; font-size:13.5px; }
+  .exc-card .why{ font-size:12.5px; color:var(--text-soft); margin-top:2px; }
+  .exc-card .amt{ font-size:13px; color:var(--text-soft); margin-left:10px; font-weight:400; }
+
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(14,55,39,.35); display:none; align-items:center; justify-content:center; z-index:60; }
+  .modal-backdrop.open{ display:flex; }
+  .modal{ background:var(--surface); border-radius:14px; padding:24px; width:380px; box-shadow:0 20px 50px rgba(0,0,0,.25); }
+  .modal h4{ margin:0 0 8px 0; }
+  .modal p{ font-size:13px; color:var(--text-soft); line-height:1.5; }
+  .modal .row{ display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
+
+  code.mono{ font-family:"IBM Plex Mono",monospace; }
+</style>
+
+<div class="topstrip">Prototype — proposed redesign for invoice capture, exception review &amp; status. <b>Not the live product.</b> Numbered badges (<span class="fix" style="display:inline-grid;vertical-align:middle;">i</span>) explain each change.</div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="mark">🌱</span><span class="word">nomni <em>Procure</em></span></div>
+    <nav class="navlist">
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>Reports</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Orders</a>
+      <a class="navitem active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M9 12h6M9 16h6"/></svg>Invoices</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Payments</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>Items</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-6 9 6v11H3z"/></svg>Inventory</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h14v18l-7-4-7 4z"/></svg>Recipes</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/></svg>Outlets</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.4"/><path d="M4 20c1.6-4 5-6 8-6s6.4 2 8 6"/></svg>Users</a>
+      <a class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 004 0"/></svg>News<span class="badge">9</span></a>
+    </nav>
+    <div class="proto-note"><b>Why this exists</b><br>Built from the current-state UX review — see the numbered fixes throughout, or the full writeup in the Zeemart 2.0 project.</div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <h1>Invoices</h1>
+      <div class="actions">
+        <button class="btn btn-secondary">↑ Upload invoice</button>
+        <button class="btn btn-primary">💳 Pay online</button>
+        <div class="help-user">Help &nbsp;·&nbsp; Keith Tan ▾</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-view="uploads">Uploads <span class="cnt">43</span></button>
+      <button class="tab" data-view="needs">Needs your input <span class="cnt">4</span></button>
+      <button class="tab" data-view="invoices">Invoices</button>
+    </div>
+
+    <!-- ============ UPLOADS ============ -->
+    <section class="view active" id="view-uploads">
+      <div class="banner" onclick="document.querySelector('[data-view=needs]').click()">
+        <div class="msg">ℹ️ 12 invoices are ready for review</div>
+        <div class="go">Show only these →</div>
+      </div>
+      <div class="chips">
+        <span class="chip active">This week (3)</span>
+        <span class="chip">Last week</span>
+        <span class="chip">older (22)</span>
+        <span class="chip danger">Rejected (4)</span>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Upload</th><th>Invoice #</th><th>Outlet</th><th>Supplier</th><th>Status <span class="fix" onclick="openDrawer('reason')">7</span></th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="upl-date">09/09 14:25</div><div class="upl-meta"><span class="badge-src src-photo">📷 Photo</span>Keith Tan</div></td>
+              <td>N/A</td><td>Shake Shack (Demo)</td><td>N/A</td>
+              <td><span class="status status-neutral"><span class="dot"></span>Missing invoice photo</span></td>
+              <td><button class="btn btn-secondary">View/edit</button></td>
+            </tr>
+            <tr class="rowlink" onclick="openDetail()">
+              <td><div class="upl-date">08/09 16:52</div><div class="upl-meta"><span class="badge-src src-photo">📷 Photo</span>Waihong Chee</div></td>
+              <td>5685225</td><td>Monti - Culinary</td><td>Classic Fine Foods (S)…</td>
+              <td><span class="status status-risk"><span class="dot"></span>Price above PO — needs review</span></td>
+              <td><button class="btn btn-secondary">View/edit</button></td>
+            </tr>
+            <tr>
+              <td><div class="upl-date">08/09 13:59</div><div class="upl-meta"><span class="badge-src src-email">✉️ Email</span>Idayu</div></td>
+              <td>2608178</td><td>Bedok Food City 0212</td><td>Leader Concept Trading</td>
+              <td><span class="status status-warn"><span class="dot"></span>Awaiting PO match</span></td>
+              <td><button class="btn btn-secondary">View/edit</button></td>
+            </tr>
+            <tr>
+              <td><div class="upl-date">07/09 15:01</div><div class="upl-meta"><span class="badge-src src-pdf">📄 PDF</span>Twyst Asia Square</td>
+              <td>8060308186</td><td>Twyst - Asia Square</td><td>SATS Food Services Pte…</td>
+              <td><span class="status status-ok"><span class="dot"></span>Ready — auto-post pending</span></td>
+              <td><button class="btn btn-secondary">View/edit</button></td>
+            </tr>
+            <tr>
+              <td><div class="upl-date">03/09 13:41</div><div class="upl-meta"><span class="badge-src src-photo">📷 Photo</span>Twyst Asia Square</td>
+              <td>26090483</td><td>Twyst - Asia Square</td><td>SynTech Chemicals Pte…</td>
+              <td><span class="status status-neutral"><span class="dot"></span>Missing GRN</span></td>
+              <td><button class="btn btn-secondary">View/edit</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ NEEDS YOUR INPUT ============ -->
+    <section class="view" id="view-needs">
+      <div class="chips">
+        <span class="chip active">All (4)</span>
+        <span class="chip">Price variance (1)</span>
+        <span class="chip">Quantity variance (1)</span>
+        <span class="chip">Missing GRN (1)</span>
+        <span class="chip">Duplicate (1)</span>
+      </div>
+      <div class="exc-toolbar">
+        <div class="left"><input type="checkbox" onchange="if(this.checked) openModal()"> Approve all selected under configured tolerance (±2% price · ±1% qty) <span class="fix" onclick="openDrawer('bulk')">8</span></div>
+        <button class="btn btn-secondary" disabled>Approve selected (0)</button>
+      </div>
+
+      <div class="exc-card rowlink" onclick="openDetail()">
+        <input type="checkbox" onclick="event.stopPropagation()">
+        <div>
+          <div class="supplier">Classic Fine Foods (S) Pte Ltd — INV 5685225 <span class="amt">S$295.83</span></div>
+          <div class="why"><span class="status status-risk" style="margin-right:6px"><span class="dot"></span>Price</span>“Acquerello” Riso rice +9.4% vs PO ($32.00 → $35.00)</div>
+        </div>
+        <button class="btn btn-secondary">Review</button>
+      </div>
+      <div class="exc-card">
+        <input type="checkbox">
+        <div>
+          <div class="supplier">SynTech Chemicals Pte Ltd — INV 26090483 <span class="amt">S$412.00</span></div>
+          <div class="why"><span class="status status-warn" style="margin-right:6px"><span class="dot"></span>Quantity</span>Billed 12 units, GRN shows 9 received — short delivery</div>
+        </div>
+        <button class="btn btn-secondary">Review</button>
+      </div>
+      <div class="exc-card">
+        <input type="checkbox">
+        <div>
+          <div class="supplier">Leader Concept Trading — INV 2608178 <span class="amt">S$180.20</span></div>
+          <div class="why"><span class="status status-neutral" style="margin-right:6px"><span class="dot"></span>GRN</span>Goods not yet received at Bedok Food City 0212</div>
+        </div>
+        <button class="btn btn-secondary">Review</button>
+      </div>
+      <div class="exc-card">
+        <input type="checkbox">
+        <div>
+          <div class="supplier">New East Asia Trading — INV 2608-14610 <span class="amt">S$37.10</span></div>
+          <div class="why"><span class="status status-risk" style="margin-right:6px"><span class="dot"></span>Duplicate</span>Same supplier + amount already posted 3 days ago</div>
+        </div>
+        <button class="btn btn-secondary">Review</button>
+      </div>
+    </section>
+
+    <!-- ============ INVOICES (processed) ============ -->
+    <section class="view" id="view-invoices">
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Date</th><th>No.</th><th>Supplier</th><th>Outlet</th><th>Total</th><th>How it posted</th><th>Sync <span class="fix" onclick="openDrawer('sync')">9</span></th></tr></thead>
+          <tbody>
+            <tr><td>11/09/2026</td><td>BAO-IN26-08670</td><td>Bakery Artisan Original Pte Ltd</td><td>Monti - Culinary</td><td class="amt">S$209.28</td>
+              <td><span class="status status-ok"><span class="dot"></span>Auto-posted</span></td>
+              <td><span class="status status-ok"><span class="dot"></span>Synced</span></td></tr>
+            <tr><td>09/09/2026</td><td>F58449031</td><td>Lim Joo Huat Enterprise Pte Ltd</td><td>Twyst - Asia Square</td><td class="amt">S$87.64</td>
+              <td><span class="status status-ok"><span class="dot"></span>Auto-posted</span></td>
+              <td><span class="status status-info"><span class="dot"></span>Ready to export</span></td></tr>
+            <tr><td>09/09/2026</td><td>INV0079273</td><td>S.E.A. Global Pte Ltd</td><td>Twyst - Asia Square</td><td class="amt">S$230.97</td>
+              <td><span class="status status-warn"><span class="dot"></span>Approved w/ override — Keith Tan</span></td>
+              <td><span class="status status-info"><span class="dot"></span>Ready to export</span></td></tr>
+            <tr><td>08/09/2026</td><td>26141555</td><td>Kirei Japanese Food Supply Pte Ltd</td><td>Monti - Culinary</td><td class="amt">S$150.97</td>
+              <td><span class="status status-ok"><span class="dot"></span>Auto-posted</span></td>
+              <td><span class="status status-neutral"><span class="dot"></span>Not connected</span></td></tr>
+            <tr><td>08/09/2026</td><td>27SIL-A056413</td><td>Bidfood Singapore Pte Ltd</td><td>Monti - Culinary</td><td class="amt">S$130.80</td>
+              <td><span class="status status-ok"><span class="dot"></span>Auto-posted</span></td>
+              <td><span class="status status-risk"><span class="dot"></span>Sync failed — retry</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ EXCEPTION REVIEW DETAIL (drill-down) ============ -->
+    <section class="view" id="view-detail">
+      <button class="backlink" onclick="closeDetail()">← Back to Needs your input</button>
+
+      <div class="doc-head">
+        <div class="left">
+          <span class="doc-head-files files">20260908165315.jpg, 20260908165210.jpg</span>
+          <span class="badge-src src-photo">📷 Photo</span>
+          <span style="color:#9FA89F">Uploaded yesterday by Waihong Chee</span>
+        </div>
+        <div class="toolbar">
+          <span class="fix" style="align-self:center;margin-right:2px" onclick="openDrawer('actions')">5</span>
+          <button>↻ Refresh data</button><button>Discard</button><button>Save draft</button>
+          <button style="background:var(--fern);border-color:var(--fern);color:#fff;font-weight:700;">Publish invoice</button>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-form">
+          <div class="field-row">
+            <div class="field"><label>Supplier</label><div class="val">Classic Fine Foods (S) Pte Ltd</div></div>
+            <div class="field"><label>Delivered to</label><div class="val">Monti - Culinary</div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Invoice number</label><div class="val">5685225</div></div>
+            <div class="field"><label>Invoice date</label><div class="val">8 Sept 2026</div></div>
+          </div>
+          <div class="field" style="margin-bottom:18px;">
+            <label>Order number <span class="fix" onclick="openDrawer('po')">4</span></label>
+            <div>
+              <span class="po-chip"><span class="n">PO 202609070785</span><span class="d">8 Sept · S$260.00</span></span>
+              <span class="po-chip"><span class="n">PO 202609072714</span><span class="d">8 Sept · S$35.83</span></span>
+            </div>
+            <div class="po-help">“Use data” pulls quantities and prices from these POs into the lines below.</div>
+          </div>
+
+          <label style="font-size:11.5px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.03em;">Line items <span class="fix" onclick="openDrawer('lines')">2</span> <span class="fix" onclick="openDrawer('desc')">3</span></label>
+          <div class="lineitems" style="margin-top:8px;">
+            <div class="li-row head"><div>Description</div><div style="text-align:right">Qty</div><div style="text-align:right">Amount</div><div>Match</div></div>
+            <div class="li-row">
+              <div class="li-desc">"Acquerello" Riso (rice) 2.5kg × 4 bag/ctn<span class="sku">RON07003-4 · Bag</span>
+                <div class="li-price-line"><span class="was">PO $32.00</span><span style="color:var(--rosetext);font-weight:700">Invoiced $35.00</span></div>
+              </div>
+              <div class="li-num">3</div><div class="li-num">S$105.00</div>
+              <div class="li-status"><span class="status status-risk"><span class="dot"></span>+9.4% vs PO</span></div>
+            </div>
+            <div class="li-row">
+              <div class="li-desc">"Fage" Total Yogurt 5% (950g × 6 tub) × 2<span class="sku">FAGE1753 · Tub</span></div>
+              <div class="li-num">1</div><div class="li-num">S$18.50</div>
+              <div class="li-status"><span class="status status-ok"><span class="dot"></span>Matches PO</span></div>
+            </div>
+            <div class="li-row">
+              <div class="li-desc">"Le Gall" Cream Cheese 1kg × 12 pcs<span class="sku">LE-GA0403-00001 · Pieces</span></div>
+              <div class="li-num">1</div><div class="li-num">S$12.90</div>
+              <div class="li-status"><span class="status status-ok"><span class="dot"></span>Matches PO</span></div>
+            </div>
+            <div class="li-row">
+              <div class="li-desc">Mushroom Frozen Cepes, whole, size 4–6cm<span class="sku">CPD00019 · Packet</span>
+                <div class="li-price-line"><span class="was">GRN qty 4</span><span style="color:var(--suntext);font-weight:700">Invoiced 5</span></div>
+              </div>
+              <div class="li-num">5</div><div class="li-num">S$135.00</div>
+              <div class="li-status"><span class="status status-warn"><span class="dot"></span>Qty +1 vs GRN</span></div>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <div class="who"><span class="dot"></span>MARGIN AGENT <span class="fix" onclick="openDrawer('margin')">6</span></div>
+            <h5>Affects 3 recipes · 1 now below target margin</h5>
+            <div class="sub">Truffle Fries 38% → 34% · Garlic Aioli Fries 41% → 38% · Herb Risotto 45% → 44%</div>
+            <a href="#">View affected recipes →</a>
+          </div>
+        </div>
+
+        <div class="totals">
+          <div class="doc-preview">📄 Source image · page 1 of 2 <span class="fix" style="margin-left:8px" onclick="openDrawer('provenance')">1</span></div>
+          <div class="row"><span>Subtotal</span><span>S$271.40</span></div>
+          <div class="row"><span>Delivery fee</span><span>—</span></div>
+          <div class="row"><span>Discount</span><span>—</span></div>
+          <div class="row"><span>GST</span><span>S$24.43</span></div>
+          <div class="row total"><span>Total</span><span>S$295.83</span></div>
+        </div>
+        <div class="footer-actions">
+          <button class="btn btn-ghost">💬 Check with a colleague</button>
+          <div style="font-size:12px;color:var(--text-soft)">One action bar — no more split top/bottom controls</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="drawer">
+  <button class="close" onclick="document.getElementById('drawer').classList.remove('open')">✕</button>
+  <div class="k">Proposed fix</div>
+  <h4 id="drawer-title"></h4>
+  <p id="drawer-body"></p>
+</div>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h4>Approve 1 invoice under tolerance?</h4>
+    <p>1 invoice selected, totalling S$37.10, all within the ±2% price / ±1% quantity tolerance. This posts them immediately — the reviewer-facing confirmation the current bulk-tolerance logic doesn't ask for anywhere in the category.</p>
+    <div class="row">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal()">Approve &amp; post</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const FIXES = {
+    provenance:["Show where it came from","No screen currently says PEPPOL, Photo, Email or PDF — yet PEPPOL invoices skip the confidence check entirely. A small badge makes that visible everywhere."],
+    lines:["Line-level match status","Two POs are already linked upstream, but nothing on the current line items shows whether a price or quantity actually matches. Each line now carries its own verdict."],
+    desc:["Readable descriptions","Current descriptions truncate mid-word inside a narrow combobox. Widened here so a reviewer can read what they're approving without opening a dropdown."],
+    po:["PO picker with context","The current order-number field shows bare numbers with zero context, even while searching. Chips now carry date and amount."],
+    actions:["One action bar","The current screen splits six actions across a top toolbar and a bottom row, with unclear Save vs. Publish semantics. Consolidated to one bar here."],
+    margin:["Inline margin impact","No product reviewed — Nomni included — shows recipe/margin impact at the point of coding a price exception. The event already exists between the invoice and margin agents; this just surfaces it."],
+    reason:["Reason-coded, not a fraction","“3 of 5” told you nothing about why. Expanding it does reveal a real checklist — this promotes the specific blocking reason onto the row itself."],
+    bulk:["Bulk-approve, with confirmation","Every AP tool researched has this tolerance logic; none expose it as a reviewer-facing action. Try the checkbox — it always confirms count and total before posting."],
+    sync:["No blank statuses","A blank Export/Sync cell isn't a status. Every row now says explicitly: synced, ready, failed, or not connected."],
+  };
+  function openDrawer(key){
+    const [t,b] = FIXES[key];
+    document.getElementById('drawer-title').textContent = t;
+    document.getElementById('drawer-body').textContent = b;
+    document.getElementById('drawer').classList.add('open');
+  }
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('view-'+t.dataset.view).classList.add('active');
+  }));
+  function openDetail(){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-detail').classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function closeDetail(){
+    document.querySelector('[data-view="needs"]').click();
+  }
+  function openModal(){ document.getElementById('modal').classList.add('open'); }
+  function closeModal(){
+    document.getElementById('modal').classList.remove('open');
+    document.querySelectorAll('#view-needs input[type=checkbox]').forEach(c=>c.checked=false);
+  }
+</script>

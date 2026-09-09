@@ -1,0 +1,63 @@
+# Current-State UX Review: Nomni Invoice Processing
+
+*Reviewed against the Nomni Design System and the "Invoice processing UX research" competitive brief (both in the Zeemart 2.0 project). Based on 8 screenshots of the live flow: outlet selection → upload → digitization/verify → uploads queue (including its expanded completeness checklist) → processed invoices.*
+
+## What's already working
+
+Worth naming before the critique, because these are real strengths and the fixes below should build on them, not replace them:
+
+The **source-image panel** on the digitization screen (zoom, rotate, and page-by-page navigation across a multi-page invoice) is genuinely good and matches the "side-by-side verify" pattern the research flagged as best-in-class — this is more than most of the competitors reviewed publicly document. The **outlet-scoped upload** (pick the outlet first, then upload) correctly threads outlet context through the whole flow rather than asking for it later. **"Check with a colleague"** on the digitization screen is a real, working version of the Stampli-style collaborative-review pattern the research called out — most competitors only describe this, Nomni has shipped it. And the **"12 invoices are ready for review" banner** on the uploads queue is close to the Brex-style actionable summary card the research recommended — it just needs to go further (see below). The **expanded completeness checklist** behind "In progress N of 5" is also better than it first appears — each item is specific (supplier name, invoice number, invoice date, total matched order, all details verified) and attributed to an actor ("by Zeemart System"), which is the right instinct for an auditable, self-serve status. It just stays hidden one click too deep, and its two incomplete items don't yet say *why* (see below).
+
+## Screen 1 — Outlet picker & upload modal
+
+The outlet-selection grid is clean and appropriately simple for four outlets. It will need a search/filter once an operator has more than a screenful of outlets, but that's a scale problem, not a current defect.
+
+The upload modal is where the gap starts. It's a generic file picker ("Drag and drop files here or click to upload," JPG/PNG/PDF, **max 2MB each**) with no capture-specific affordances at all — no in-app camera, no explicit "add another page" step, no indication of what happens after the file lands (does extraction start immediately? is there a progress state?). Two things stand out as real risks, not just polish:
+
+The **2MB-per-file cap is a receiving-dock problem waiting to happen.** A phone photo of a multi-page invoice taken by an outlet worker routinely exceeds 2MB, especially at full camera resolution. Right now that almost certainly means a silent failure or a confusing error at the exact moment self-serve matters most — someone standing at a delivery truck, not at a desk. Either raise the limit substantially or add client-side compression before upload, with a clear message about what's happening if the file needs to shrink.
+
+There's **no multi-page assembly step.** If an outlet worker photographs a 3-page invoice as three separate shots, nothing in this modal tells them whether that's one invoice or three, or gives them an explicit way to say "these three belong together" before upload. (The digitization screen downstream does show "Image 1 of 3," so multi-page grouping clearly exists somewhere in the pipeline — but the upload step itself gives the person capturing the invoice no confirmation or control over it.)
+
+## Screen 2 — Digitization / verify screen
+
+This is the highest-leverage screen in the whole flow, and where most of the findings concentrate.
+
+**There is no line-level match status anywhere on this screen.** Two PO numbers are already linked (visible as chips next to "Order number") and there's a "Use data" button, which implies the system already knows what the PO expected — but none of that comparison surfaces on the four line items below. A reviewer has no way to tell, without leaving this screen and going to open the PO separately, whether the $35.00 unit price on line 1 matches what was ordered, or whether the quantities match a GRN. This is the single biggest gap relative to the competitive research: Ramp's pattern of a per-line pass/warning badge exists precisely to answer "is this line fine?" without a manual cross-check, and right now this screen asks a human to either trust the extraction blindly or do that cross-check themselves outside the tool — which is the opposite of self-serve.
+
+**Line-item descriptions are unreadable without extra clicks.** Each row crams a SKU code and full product name into one narrow combobox — "RON07003-4-"ACQUERELLO" RISO (RICE) 2.5KGX4BAG/CTN" is representative, and it's still truncated mid-attribute for several rows. A reviewer approving a line should be able to read what it is without opening a dropdown. Widening the description column (at the cost of the mostly-empty "Disc" column, see below) or wrapping to two lines would fix most of this immediately.
+
+**The "Disc" and "GST %" columns are visually dead weight.** Every row's Disc cell is empty with no visible affordance suggesting it's editable versus just blank, and GST is rendered as flat "9" text that doesn't read as an input at all — a reviewer can't tell at a glance whether that's a fixed rate or something they could correct. Either give these real input styling (border, placeholder) consistent with the rest of the form, or collapse Disc into an inline-edit-on-hover pattern and reclaim the width for the description column above.
+
+**The PO-linking control is functionally opaque.** Two order numbers appear as removable chips with a separate green "Use data" button, but nothing on screen explains what "Use data" actually does — pull PO quantities/prices into the line items? Overwrite what's there? — and there's no visual distinction between a PO the system matched automatically versus one added manually. Given how central this control is to the exception logic, it deserves a one-line helper caption ("Pulls quantities and prices from the linked PO into the lines below") at minimum.
+
+**There's no provenance indicator on the invoice itself.** Nothing on this screen says "PEPPOL," "Photo," "Email," or "PDF" — which matters more here than on a generic AP tool, since PEPPOL invoices should skip extraction-confidence review entirely per the existing invoice agent rules, and a reviewer currently has no way to know which handling path they're looking at.
+
+**Action hierarchy is split and overlapping.** The top toolbar has Refresh pre-filled data / Discard processing / Cancel / Save; the bottom of the form separately has Check with a colleague / Publish this invoice. That's six distinct actions in two different locations, and the difference between top-of-screen "Save" and bottom-of-screen "Publish this invoice" isn't self-evident (draft save vs. commit?), nor is the difference between "Cancel" and "Discard processing." Consolidating to one action bar — or at minimum giving Save and Publish visibly different weight (one primary, one secondary, with a shared location) — would remove a real point of hesitation right before the highest-stakes click on the page.
+
+## Screen 3 — Uploads / completeness queue
+
+The "12 invoices are ready for review" banner is the right instinct — it's most of the way to the Brex-style actionable-summary pattern the research recommended. Making the whole banner (not just "Show") a one-click filter into that exact subset, and matching its treatment on the finance user's home view, would close the gap.
+
+**"In progress 3 of 5" understates what's actually there — the checklist behind it is better than the collapsed view suggests, but it's still not reason-coded.** Expanding the row shows a real checklist attributed to an actor ("by Zeemart System"): Supplier name ✓, Invoice number ✓, Invoice date ✓, Total matched order ○, All details verified ○. That's a good foundation — it's specific, and it's attributed, which is more than the flat "3 of 5" implies on its own. Two things still limit it, though. First, it's one click away from every row, every time — a reviewer scanning a list of 22 "older" invoices has to expand each one to learn anything beyond the fraction, rather than seeing the blocking reason at a glance the way a reason-coded chip on the row itself would show it. Second, the two incomplete items are themselves still generic: "Total matched order" pending doesn't say by how much it's off or against which PO/GRN, and "All details verified" doesn't say which detail. Those two are effectively where `price_variance_exceeded` / `qty_variance_exceeded` / `po_not_found` — reasons the invoice agent already models — collapse into one vague, unlabeled state. Surfacing the specific reason at that point (even just promoting it from the expanded checklist onto the collapsed row when the invoice is stuck) is the fix, not building a new mechanism from scratch — closer than my original read of this screen gave it credit for.
+
+**The small icons before each uploader's name appear to encode the upload source, but they're too small and inconsistent to read as an intentional signal** — at a glance, it's not clear whether "Twyst Asia Squ..." on the SATS Food Services row is a person or a location, or what distinguishes it from a phone-camera icon on another row. If this is meant to show provenance (photo vs. email vs. desktop upload), it should be a small labeled badge, not an ambiguous glyph — this is the same provenance-badge gap as the digitization screen, showing up a second time in the list view.
+
+**Filters are date-only** (This week / Last week / older / Rejected) — there's no way to filter this queue by *why* something is incomplete (missing supplier match, missing PO, missing GRN), which is the categorization the research found across every competitor reviewed and recommended carrying into Nomni's queue.
+
+## Screen 4 — Processed invoices list
+
+The table itself is clean and appropriately dense. Two gaps:
+
+**The Export/Sync column has three states that read as two.** A green checkmark means synced, "Export to Xero" means it hasn't been yet — but several rows (Kirei Japanese Food Supply, Bidfood Singapore) show neither, and it's not obvious from the list whether that means "not applicable," "pending," or "failed." A blank cell should never be a status. Replace it with an explicit label for every row: Synced / Ready to export / Sync failed / Not connected.
+
+**There's no visible record, in this list, of *how* an invoice got here.** Once an invoice reaches this table, whether it was auto-posted clean, approved after a variance override, or cleared after a "check with a colleague" thread all look identical. Given that Nomni's own invoice-agent rules require an audit trail on every state transition, surfacing at least a small status indicator here (not just in the detail view) would make that audit trail visible where a finance user is actually scanning, not just where it's technically logged.
+
+## Priority fixes
+
+**Do first (small, high-impact, no new backend logic):** raise or compress around the 2MB upload cap; widen/wrap the line-item description column; give Disc and GST real input styling; replace the Export/Sync blank state with an explicit label on every row; make the "ready for review" banner a one-click filter.
+
+**Do next (moderate effort, mostly UI + wiring to data already computed elsewhere):** add line-level match-status badges to the digitization screen's line items (the PO data is clearly already available — "Use data" proves it); promote the specific blocking reason behind "Total matched order" / "All details verified" out of the expanded checklist and onto the collapsed row, so a stuck invoice's reason is visible without a click; add a visible provenance badge (PEPPOL/Photo/Email/PDF) on both the digitization screen and the uploads list; consolidate the digitization screen's six scattered actions into one clear hierarchy.
+
+**Bigger fixes (worth scoping properly, not squeezing into a sprint):** an explicit multi-page capture flow in the upload step itself, rather than relying on downstream page-grouping the uploader never sees or confirms; categorized (not just date-filtered) views on the uploads queue, by why an item is incomplete.
+
+Everything above lines up with the non-negotiables already drafted for the invoice-processing screens (no numeric confidence exposed, uniform duplicate handling, provenance always visible, line-level status, reason-coded chips) — this review is effectively the "here's where the live product stands against those" companion to that spec.
