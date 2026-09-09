@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" data-role="hq" data-tier="hq">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Invoice Review Prototype — Nomni Procure</title>
+<link rel="stylesheet" href="../shared/tokens.css?v=4"/>
+<link rel="stylesheet" href="../shared/components.css?v=4"/>
+<style>
+  body { background:var(--surface-soft); }
+  .page-body { padding-block:var(--space-2xl) var(--space-5xl); }
+
+  /* ── Prototype banner — not real chrome, but tokened like everything else ── */
+  .proto-banner {
+    display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg);
+    background:var(--seaweed); color:#E4F3E9; border-radius:var(--radius-lg);
+    padding:var(--space-sm) var(--space-xl); margin-bottom:var(--space-xl);
+    font-size:12.5px; flex-wrap:wrap;
+  }
+  .proto-banner b { color:var(--spring); }
+  .proto-banner .fix-legend { display:flex; align-items:center; gap:6px; color:#AEB8B1; }
+
+  /* ── Page header (matches screens/invoices.html) ── */
+  .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-xl); flex-wrap:wrap; margin-bottom:var(--space-xl); }
+  .page-eyebrow { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-accent); margin-bottom:var(--space-xs); }
+  .page-title { font-size:35px; font-weight:700; color:var(--text); letter-spacing:-0.025em; line-height:1.1; margin:0; }
+  .page-sub { font-size:14px; color:var(--text-soft); margin:var(--space-sm) 0 0; }
+  .header-actions { display:flex; align-items:center; gap:var(--space-sm); }
+
+  /* ── Tabs ── */
+  .proto-tabs { display:flex; gap:var(--space-xl); border-bottom:1px solid var(--border); margin-bottom:var(--space-xl); }
+  .proto-tab {
+    background:none; border:none; padding:0 0 var(--space-md) 0; margin-bottom:-1px;
+    font-family:inherit; font-size:14px; font-weight:600; color:var(--text-soft);
+    border-bottom:2px solid transparent; cursor:pointer; display:flex; gap:8px; align-items:center;
+  }
+  .proto-tab.active { color:var(--text); border-bottom-color:var(--fern); }
+  .proto-view { display:none; }
+  .proto-view.active { display:block; }
+
+  /* ── Reuses screens/invoices.html's real table + badge system verbatim ── */
+  .inv-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; overflow-x:auto; margin-bottom:var(--space-xl); }
+  .inv-table { width:100%; min-width:760px; border-collapse:collapse; table-layout:fixed; }
+  .inv-table th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); padding:var(--space-sm); background:var(--surface-soft); border-bottom:1px solid var(--border); white-space:nowrap; }
+  .inv-table td { font-size:13px; padding:10px var(--space-sm); border-bottom:1px solid var(--border); vertical-align:middle; }
+  .inv-table tr:last-child td { border-bottom:none; }
+  .inv-table tbody tr.rowlink { cursor:pointer; }
+  .inv-table tbody tr.rowlink:hover td { background:rgba(42,200,100,0.05); }
+  .col-inv { width:120px; } .col-sup { width:190px; } .col-outlet { width:130px; }
+  .col-date { width:80px; } .col-amt { width:90px; } .col-status { width:220px; }
+  .num { text-align:right; font-feature-settings:'tnum' 1; }
+  .cell-id { font-size:13px; font-weight:700; color:var(--text); }
+  .cell-sub { font-size:11px; color:var(--text-soft); margin-top:2px; }
+  .src-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap; }
+  .src-badge.email  { background:var(--status-info-bg); color:var(--status-info-fg); }
+  .src-badge.upload { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); }
+  .src-badge.photo  { background:color-mix(in srgb, var(--sky) 20%, transparent); color:var(--status-info-fg); }
+  .src-badge.pdf    { background:var(--surface-soft); color:var(--text-soft); border:1px solid var(--border); }
+  .src-badge.peppol { background:var(--mint); color:var(--spinach); }
+  .link-btn { background:none; border:none; color:var(--text-link); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:2px 4px; }
+  .link-btn:hover { text-decoration:underline; }
+
+  /* ── Ready-for-review banner (Brex-style summary card, clickable) ── */
+  .ready-banner {
+    display:flex; align-items:center; justify-content:space-between; gap:var(--space-md);
+    background:var(--status-ok-bg); border:1px solid rgba(42,200,100,0.35); border-radius:var(--radius-lg);
+    padding:var(--space-md) var(--space-xl); margin-bottom:var(--space-lg); cursor:pointer;
+  }
+  .ready-banner:hover { border-color:var(--fern); }
+  .ready-banner .msg { display:flex; align-items:center; gap:10px; font-size:13.5px; font-weight:600; color:var(--status-ok-fg); }
+  .ready-banner .go { font-size:12.5px; font-weight:700; color:var(--spinach); }
+
+  /* ── Filter chips (reused from screens/invoices.html) ── */
+  .proto-chips { display:flex; gap:var(--space-sm); margin-bottom:var(--space-lg); flex-wrap:wrap; }
+  .proto-chip {
+    border:1.5px solid var(--border); background:var(--surface); border-radius:var(--radius-pill);
+    padding:6px 14px; font-size:12.5px; font-weight:600; color:var(--text-soft); cursor:pointer;
+  }
+  .proto-chip.active { background:var(--mint); border-color:var(--fern); color:var(--spinach); }
+  .proto-chip.danger { color:var(--status-risk-fg); border-color:rgba(238,75,135,0.4); }
+
+  /* ── Needs-your-input exception cards ── */
+  .bulk-row {
+    display:flex; align-items:center; justify-content:space-between; gap:var(--space-md);
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:var(--space-md) var(--space-lg); margin-bottom:var(--space-lg); font-size:13px; color:var(--text-soft);
+  }
+  .bulk-row label { display:flex; align-items:center; gap:var(--space-sm); }
+  .exc-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:var(--space-md) var(--space-lg); margin-bottom:var(--space-md);
+    display:grid; grid-template-columns:20px 1fr auto; gap:var(--space-lg); align-items:center;
+    cursor:pointer; transition:border-color var(--dur-1);
+  }
+  .exc-card:hover { border-color:var(--text-accent); }
+  .exc-card input[type=checkbox] { width:16px; height:16px; accent-color:var(--fern); }
+  .exc-supplier { font-weight:700; font-size:13.5px; color:var(--text); }
+  .exc-amt { font-size:13px; color:var(--text-soft); font-weight:400; margin-left:8px; }
+  .exc-why { font-size:12.5px; color:var(--text-soft); margin-top:3px; display:flex; align-items:center; gap:8px; }
+
+  /* ── Numbered fix badge + explanation drawer ── */
+  .fix {
+    display:inline-grid; place-items:center; width:19px; height:19px; border-radius:50%;
+    background:var(--seaweed); color:#fff; font-size:10.5px; font-weight:700; cursor:pointer;
+    border:2px solid var(--surface); box-shadow:0 0 0 1px var(--seaweed); flex:none;
+  }
+  .fix:hover { background:var(--fern); }
+  #fixdrawer { position:fixed; right:22px; bottom:22px; width:340px; background:var(--seaweed); color:#E4F3E9; border-radius:var(--radius-lg); padding:var(--space-lg); box-shadow:var(--shadow-lg); display:none; z-index:80; }
+  #fixdrawer.open { display:block; }
+  #fixdrawer .k { color:var(--spring); font-weight:700; font-size:11px; letter-spacing:0.05em; text-transform:uppercase; }
+  #fixdrawer h4 { margin:6px 0 8px 0; font-size:15.5px; }
+  #fixdrawer p { margin:0; font-size:12.5px; line-height:1.5; color:#CFE6D8; }
+  #fixdrawer .close { position:absolute; top:10px; right:12px; background:none; border:none; color:#9FC4AC; font-size:16px; cursor:pointer; }
+
+  /* ── Exception detail (drill-down) — mirrors screens/invoice-detail.html ── */
+  .detail-topbar { display:flex; align-items:center; gap:var(--space-md); padding-bottom:var(--space-lg); margin-bottom:var(--space-xl); border-bottom:1px solid var(--border); }
+  .back-btn { display:inline-flex; align-items:center; gap:var(--space-xs); height:32px; padding-inline:var(--space-md); border-radius:var(--radius-md); border:1px solid var(--border); background:var(--surface); font-family:inherit; font-size:13px; font-weight:600; color:var(--text); cursor:pointer; text-decoration:none; }
+  .back-btn:hover { border-color:var(--text-accent); color:var(--text-accent); }
+  .detail-topbar .sep { color:var(--border); font-size:18px; }
+  .detail-topbar .inv-id { font-size:14px; font-weight:700; color:var(--text); }
+  .detail-topbar .inv-sup { font-size:13px; color:var(--text-soft); }
+
+  .detail-grid { display:grid; grid-template-columns:1.5fr 1fr; gap:var(--space-2xl); align-items:start; }
+  .detail-form .field-row { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-xl); margin-bottom:var(--space-md); }
+  .detail-form .field label { display:block; font-size:11px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:4px; }
+  .detail-form .field .val { font-size:14px; font-weight:600; color:var(--text); }
+  .po-chip { display:inline-flex; flex-direction:column; align-items:flex-start; gap:1px; background:var(--mint); border:1px solid rgba(42,200,100,0.35); border-radius:var(--radius-sm); padding:6px 10px; margin:0 6px 6px 0; }
+  .po-chip .n { font-size:12.5px; font-weight:700; color:var(--spinach); font-family:'IBM Plex Mono',monospace; }
+  .po-chip .d { font-size:10.5px; color:#3E7A54; }
+  .po-help { font-size:11.5px; color:var(--text-soft); margin-top:6px; }
+  .section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin:var(--space-xl) 0 var(--space-sm); display:flex; align-items:center; gap:8px; }
+
+  /* 3-way match table — identical component to screens/invoice-detail.html */
+  .three-way-wrap { overflow-x:auto; border-radius:var(--radius-md); border:1px solid var(--border); }
+  .three-way { width:100%; border-collapse:collapse; font-size:12px; min-width:480px; }
+  .three-way th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); padding:var(--space-xs) var(--space-sm); background:var(--surface-soft); border-bottom:1px solid var(--border); text-align:right; white-space:nowrap; }
+  .three-way th:first-child { text-align:left; }
+  .three-way td { padding:var(--space-sm); border-bottom:1px solid var(--border); text-align:right; font-feature-settings:'tnum' 1; color:var(--text); }
+  .three-way td:first-child { text-align:left; font-weight:600; }
+  .three-way tr:last-child td { border-bottom:none; }
+  .three-way tr.line-pass td { background:rgba(42,200,100,0.03); }
+  .three-way tr.line-fail td { background:rgba(238,75,135,0.03); }
+  .fail-val { color:var(--status-risk-fg) !important; font-weight:700; }
+  .pass-val { color:var(--status-ok-fg) !important; }
+
+  .totals-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-lg); }
+  .doc-preview { background:var(--surface-soft); border:1px dashed var(--border); border-radius:var(--radius-md); height:150px; display:flex; align-items:center; justify-content:center; color:var(--text-soft); font-size:12px; margin-bottom:var(--space-lg); gap:8px; }
+  .totals-row { display:flex; justify-content:space-between; padding:6px 0; font-size:13.5px; color:var(--text-soft); }
+  .totals-row.total { color:var(--text); font-weight:700; font-size:16px; border-top:1px solid var(--border); margin-top:6px; padding-top:var(--space-sm); }
+
+  /* Footer action bar — same local pattern as screens/invoice-detail.html */
+  .detail-foot { display:flex; justify-content:space-between; align-items:center; padding-top:var(--space-lg); margin-top:var(--space-xl); border-top:1px solid var(--border); grid-column:1/-1; flex-wrap:wrap; gap:var(--space-sm); }
+  .btn-primary { height:40px; padding-inline:var(--space-xl); border-radius:var(--radius-md); border:none; background:var(--btn-primary-bg); color:#fff; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:var(--space-xs); }
+  .btn-primary:hover { opacity:0.9; }
+  .btn-secondary { height:40px; padding-inline:var(--space-lg); border-radius:var(--radius-md); border:1px solid var(--border); background:var(--surface); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; gap:var(--space-xs); }
+  .btn-secondary:hover { border-color:var(--text-accent); }
+  .btn-ghost { background:none; border:none; color:var(--text-link); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+
+  /* ── Bulk-approve confirm dialog ── */
+  .modal-backdrop { position:fixed; inset:0; background:rgba(14,55,39,0.35); display:none; align-items:center; justify-content:center; z-index:90; }
+  .modal-backdrop.open { display:flex; }
+  .modal { background:var(--surface); border-radius:var(--radius-lg); padding:var(--space-xl); width:380px; box-shadow:var(--shadow-lg); }
+  .modal h4 { margin:0 0 8px 0; font-size:16px; color:var(--text); }
+  .modal p { font-size:13px; color:var(--text-soft); line-height:1.5; margin:0; }
+  .modal .row { display:flex; gap:var(--space-sm); justify-content:flex-end; margin-top:var(--space-xl); }
+
+  #toast-wrap { position:fixed; bottom:var(--space-xl); left:50%; transform:translateX(-50%); z-index:300; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+</style>
+</head>
+<body>
+<script src="../shared/shell.js?v=12" data-active="invoices"></script>
+
+<main class="main">
+  <div class="page-body">
+    <div class="napp-canvas" data-measure="wide">
+
+      <div class="proto-banner">
+        <span>🧪 Prototype — proposed redesign of Uploads / Needs your input / Invoices, built with the real Nomni Design System. <b>Not yet wired to live data.</b></span>
+        <span class="fix-legend"><span class="fix" style="display:inline-grid;">i</span> = why this changed</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-eyebrow">Finance · Accounts Payable</div>
+          <h1 class="page-title">Invoices</h1>
+          <p class="page-sub">Digitised supplier invoices · 3-way matched against PO and GRN · ready for export</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="toast('Upload invoice — take a photo or attach a file')"><i class="ti ti-upload"></i> Upload invoice</button>
+        </div>
+      </div>
+
+      <div class="proto-tabs">
+        <button class="proto-tab active" data-view="uploads" onclick="showTab('uploads')">Uploads <span class="nb-pill neutral" style="margin-left:2px;">11</span></button>
+        <button class="proto-tab" data-view="needs" onclick="showTab('needs')">Needs your input <span class="nb-pill risk" style="margin-left:2px;">5</span></button>
+        <button class="proto-tab" data-view="invoices" onclick="showTab('invoices')">Invoices</button>
+      </div>
+
+      <!-- ============ UPLOADS ============ -->
+      <section class="proto-view active" id="view-uploads">
+        <div class="ready-banner" onclick="showTab('needs')">
+          <div class="msg"><i class="ti ti-info-circle"></i> 5 invoices are ready for review</div>
+          <div class="go">Show only these →</div>
+        </div>
+        <div class="proto-chips">
+          <span class="proto-chip active">This week (7)</span>
+          <span class="proto-chip">Older (4)</span>
+          <span class="proto-chip danger">Rejected (0)</span>
+        </div>
+        <div class="inv-wrap">
+          <table class="inv-table">
+            <thead><tr><th class="col-inv">Invoice</th><th class="col-sup">Supplier</th><th class="col-outlet">Outlet</th><th class="col-date">Received</th><th class="col-amt num">Amount</th><th class="col-status">Status <span class="fix" onclick="openFixDrawer('reason')">7</span></th></tr></thead>
+            <tbody id="uploads-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ NEEDS YOUR INPUT ============ -->
+      <section class="proto-view" id="view-needs">
+        <div class="bulk-row">
+          <label><input type="checkbox" onchange="if(this.checked) openModal(); else this.checked=false;"> Approve all selected under configured tolerance (±2% price · ±1% qty) <span class="fix" onclick="openFixDrawer('bulk')">8</span></label>
+          <button class="btn-secondary" disabled>Approve selected (0)</button>
+        </div>
+        <div id="needs-list"></div>
+      </section>
+
+      <!-- ============ INVOICES (processed) ============ -->
+      <section class="proto-view" id="view-invoices">
+        <div class="inv-wrap">
+          <table class="inv-table">
+            <thead><tr><th class="col-inv">Invoice</th><th class="col-sup">Supplier</th><th class="col-outlet">Outlet</th><th class="col-amt num">Total</th><th>How it posted</th><th>Sync <span class="fix" onclick="openFixDrawer('sync')">9</span></th></tr></thead>
+            <tbody id="invoices-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ EXCEPTION DETAIL (drill-down) ============ -->
+      <section class="proto-view" id="view-detail">
+        <div class="detail-topbar">
+          <button class="back-btn" onclick="showTab('needs')"><i class="ti ti-arrow-left"></i> Needs your input</button>
+          <span class="sep">/</span>
+          <span class="inv-id" id="detail-inv-id"></span>
+          <span class="inv-sup" id="detail-inv-sup"></span>
+          <span class="fix" style="margin-left:auto;" onclick="openFixDrawer('provenance')">1</span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-form">
+            <div class="field-row">
+              <div class="field"><label>Supplier</label><div class="val" id="d-supplier"></div></div>
+              <div class="field"><label>Delivered to</label><div class="val" id="d-outlet"></div></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Invoice number</label><div class="val" id="d-id"></div></div>
+              <div class="field"><label>Invoice date</label><div class="val" id="d-date"></div></div>
+            </div>
+
+            <div class="field" style="margin-bottom:var(--space-md);">
+              <label>Order number <span class="fix" onclick="openFixDrawer('po')">4</span></label>
+              <div id="d-po-chips"></div>
+              <div class="po-help">Pulls quantities and prices from this PO into the lines below.</div>
+            </div>
+
+            <div class="section-label">3-way match — PO vs GRN vs Invoice <span class="fix" onclick="openFixDrawer('lines')">2</span><span class="fix" onclick="openFixDrawer('desc')">3</span></div>
+            <div class="three-way-wrap">
+              <table class="three-way">
+                <thead><tr><th style="text-align:left;">Item</th><th>UoM</th><th>PO qty</th><th>GRN qty</th><th>Inv qty</th><th>PO price</th><th>Inv price</th><th>Variance</th></tr></thead>
+                <tbody id="d-lines"></tbody>
+              </table>
+            </div>
+
+            <div id="margin-impact-section" style="display:none;">
+              <div class="section-label" style="margin-bottom:0;">Recipe &amp; margin impact <span class="fix" onclick="openFixDrawer('margin')">6</span></div>
+              <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);border:1.5px solid var(--agent-border);border-radius:var(--radius-lg);box-shadow:0 0 0 4px var(--agent-glow);">
+                <div class="agent-card-head">
+                  <span class="agent-avatar" data-agent="mara" aria-hidden="true">Ma</span>
+                  <span class="agent-id"><span class="agent-name">Mara</span><span class="agent-role">Margin agent</span></span>
+                  <span class="agent-card-spacer"></span>
+                  <span class="agent-state needs-you"><i class="ti ti-alert-triangle"></i>Needs you</span>
+                </div>
+                <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;margin:0;">Affects Avocado Toast v3 — now above target food cost</p>
+                <p class="agent-why" style="margin:0;">Avocado invoiced at $2.80/each vs the agreed $2.40 PO rate (+16.7%) pushes food cost to 34.7% — above its 28% target.</p>
+                <a href="recipe-detail.html" style="font-size:13px;font-weight:700;color:var(--text-link);text-decoration:none;">View affected recipe →</a>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="totals-card">
+              <div class="doc-preview"><i class="ti ti-file-invoice"></i> Source document <span class="fix" onclick="openFixDrawer('provenance')">1</span></div>
+              <div class="totals-row"><span>Subtotal</span><span id="d-subtotal"></span></div>
+              <div class="totals-row"><span>GST 10%</span><span id="d-gst"></span></div>
+              <div class="totals-row total"><span>Total</span><span id="d-total"></span></div>
+            </div>
+          </div>
+
+          <div class="detail-foot">
+            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+              <button class="btn-primary" onclick="toast('Credit note drafted — supplier will be notified')"><i class="ti ti-receipt-refund"></i> Raise credit note</button>
+              <button class="btn-secondary" onclick="toast('Flagged for follow-up')"><i class="ti ti-flag"></i> Flag for follow-up</button>
+              <button class="btn-ghost" onclick="toast('Opens a thread on this invoice — same pattern as invoice-detail.html')"><i class="ti ti-message-circle"></i> Check with a colleague</button>
+            </div>
+            <div style="font-size:12px;color:var(--text-soft);">One action bar <span class="fix" onclick="openFixDrawer('actions')">5</span></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<div id="fixdrawer">
+  <button class="close" onclick="document.getElementById('fixdrawer').classList.remove('open')">✕</button>
+  <div class="k">Proposed fix</div>
+  <h4 id="fixdrawer-title"></h4>
+  <p id="fixdrawer-body"></p>
+</div>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h4>Approve 3 invoices under tolerance?</h4>
+    <p>3 invoices selected, totalling $1,255.00, all within the ±2% price / ±1% quantity tolerance. This posts them immediately — the confirmation the current bulk-tolerance logic doesn't ask for anywhere today.</p>
+    <div class="row">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="closeModal()">Approve &amp; post</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => NomniShell.init('Invoices'));
+
+/* ── Real invoice data (same set as screens/invoices.html / invoice-detail.html) ── */
+const INV_DATA = [
+  { id:'INV-00895', po:'PO-5515', supplier:'Sydney Butchers Co.', outlet:'Bondi Beach', date:'12 Jun 2026', source:'email', amount:310, status:'pending',
+    lines:[{name:'Chicken Thigh 2kg',uom:'pkg',poQty:8,grnQty:null,invQty:8,poPrice:11.50,invPrice:11.50},{name:'Beef Mince 500g',uom:'pkg',poQty:10,grnQty:null,invQty:10,poPrice:9.80,invPrice:9.80}] },
+  { id:'INV-00892', po:'PO-5519', supplier:'Green Farmers Market', outlet:'Newtown', date:'11 Jun 2026', source:'upload', amount:1180, status:'pending',
+    lines:[{name:'Mixed Leaf 2kg',uom:'bag',poQty:12,grnQty:null,invQty:12,poPrice:9.00,invPrice:9.00}] },
+  { id:'INV-00891', po:'PO-5510', supplier:'Green Farmers Market', outlet:'Parramatta Table', date:'9 Jun 2026', source:'upload', amount:890, status:'matched',
+    lines:[{name:'Mixed Leaf 2kg',uom:'bag',poQty:16,grnQty:16,invQty:16,poPrice:9.00,invPrice:9.00}] },
+  { id:'INV-00884', po:'PO-5518', supplier:'Pacific Drinks Wholesale', outlet:'Melbourne CBD', date:'14 Jun 2026', source:'peppol', amount:520, status:'matched',
+    lines:[{name:'Sparkling Water 1L',uom:'btl',poQty:48,grnQty:48,invQty:48,poPrice:1.80,invPrice:1.80}] },
+  { id:'INV-00889', po:'PO-5509', supplier:'Harbour Meats', outlet:'Bondi Beach', date:'9 Jun 2026', source:'email', amount:1386, status:'failed',
+    why:'Chicken Breast +6.2% and Salmon Fillet +19.3% above market list — $170 overbilled',
+    lines:[{name:'Chicken Breast 500g',uom:'kg',poQty:40,grnQty:40,invQty:40,poPrice:8.40,invPrice:8.92},{name:'Salmon Fillet 200g',uom:'kg',poQty:24,grnQty:24,invQty:24,poPrice:32.20,invPrice:38.40}] },
+  { id:'INV-00887', po:'PO-5508', supplier:'Harbour Meats', outlet:'Newtown', date:'8 Jun 2026', source:'email', amount:470, status:'failed',
+    why:'GRN confirms 8 Beef Short Rib and 4 Lamb Rack received — invoice bills for 12 and 6 — $106 overbilled',
+    lines:[{name:'Beef Short Rib 500g',uom:'pkg',poQty:12,grnQty:8,invQty:12,poPrice:12.50,invPrice:12.50},{name:'Lamb Rack (each)',uom:'ea',poQty:6,grnQty:4,invQty:6,poPrice:28.00,invPrice:28.00}] },
+  { id:'INV-00885', po:'PO-5507', supplier:'Green Farmers Market', outlet:'Surry Hills', date:'7 Jun 2026', source:'email', amount:745, status:'failed',
+    why:'Avocado (each) invoiced at $2.80 vs agreed PO rate of $2.40 — $24 price variance, no pre-approved increase on file',
+    lines:[{name:'Mixed Leaf 2kg',uom:'bag',poQty:10,grnQty:10,invQty:10,poPrice:9.00,invPrice:9.00},{name:'Avocado (each)',uom:'ea',poQty:60,grnQty:60,invQty:60,poPrice:2.40,invPrice:2.80},{name:'Roma Tomatoes 5kg',uom:'box',poQty:8,grnQty:8,invQty:8,poPrice:16.50,invPrice:16.50},{name:'Baby Spinach 1kg',uom:'bag',poQty:12,grnQty:12,invQty:12,poPrice:12.00,invPrice:12.00}],
+    po_options:[{po:'PO-5507',date:'7 Jun 2026',amount:745.00}] },
+  { id:'INV-00880', po:'PO-5502', supplier:'Fresh Produce Co', outlet:'Surry Hills', date:'5 Jun 2026', source:'upload', amount:320, status:'approved',
+    lines:[{name:'Cherry Tomatoes 250g',uom:'punnet',poQty:20,grnQty:20,invQty:20,poPrice:3.50,invPrice:3.50}] },
+  { id:'INV-00876', po:'PO-5499', supplier:'Sydney Butchers Co.', outlet:'Bondi Beach', date:'1 Jun 2026', source:'email', amount:290, status:'exported', exportedTo:'Xero',
+    lines:[{name:'Chicken Breast 500g',uom:'pkg',poQty:12,grnQty:12,invQty:12,poPrice:7.15,invPrice:7.15}] },
+  { id:'INV-00897', po:null, supplier:'Harbour Meats', outlet:null, date:'12 Jun 2026', source:'email', amount:364, status:'unlinked',
+    why:'No PO reference — Cyrus found a high-confidence match: PO-5512, same supplier, amount within 1%',
+    lines:[] },
+  { id:'INV-00894', po:null, supplier:'Metro Bakery Supplies', outlet:null, date:'10 Jun 2026', source:'email', amount:145, status:'unlinked',
+    why:'Supplier not registered in the system — no matching PO could be identified', lines:[] },
+];
+
+function fmt(n){ return '$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function srcBadge(s){
+  if (s==='peppol') return '<span class="src-badge peppol"><i class="ti ti-plug-connected"></i>PEPPOL</span>';
+  if (s==='email')  return '<span class="src-badge email"><i class="ti ti-mail"></i>Email</span>';
+  if (s==='photo')  return '<span class="src-badge photo"><i class="ti ti-camera"></i>Photo</span>';
+  if (s==='upload') return '<span class="src-badge upload"><i class="ti ti-file-type-pdf"></i>PDF</span>';
+  return '<span class="src-badge upload"><i class="ti ti-upload"></i>Upload</span>';
+}
+const STATUS_PILL = {
+  unlinked:'<span class="nb-pill warn"><i class="ti ti-unlink"></i>No PO linked</span>',
+  pending: '<span class="nb-pill info"><i class="ti ti-loader-2"></i>Pending match</span>',
+  matched: '<span class="nb-pill ok"><i class="ti ti-circle-check"></i>Matched</span>',
+  failed:  '<span class="nb-pill risk"><i class="ti ti-alert-hexagon"></i>Match failed</span>',
+  approved:'<span class="nb-pill ok"><i class="ti ti-circle-check-filled"></i>Approved</span>',
+  exported:'<span class="nb-pill neutral"><i class="ti ti-send"></i>Exported</span>',
+};
+function lineMatch(l){ if (l.grnQty===null) return 'pending'; return (l.grnQty===l.invQty && Math.abs(l.poPrice-l.invPrice)<0.001) ? 'pass' : 'fail'; }
+
+/* ── Uploads tab ── */
+document.getElementById('uploads-tbody').innerHTML = INV_DATA.map(inv => `
+  <tr class="rowlink" onclick="${(inv.status==='failed'||inv.status==='unlinked') ? `openDetail('${inv.id}')` : `toast('${inv.id} — view/edit not built in this prototype')`}">
+    <td><div class="cell-id">${inv.id}</div><div class="cell-sub">${inv.po ? '<a href="order-detail.html" style="color:var(--text-link);" onclick="event.stopPropagation()">'+inv.po+'</a>' : 'No PO'}</div></td>
+    <td>${inv.supplier}<div class="cell-sub">${srcBadge(inv.source)}</div></td>
+    <td>${inv.outlet||'—'}</td>
+    <td>${inv.date.replace(/ \d{4}$/,'')}</td>
+    <td class="num"><strong>${fmt(inv.amount)}</strong></td>
+    <td>${STATUS_PILL[inv.status]}</td>
+  </tr>`).join('');
+
+/* ── Needs your input tab ── */
+const NEEDS = INV_DATA.filter(i => i.status==='failed' || i.status==='unlinked');
+document.getElementById('needs-list').innerHTML = NEEDS.map(inv => `
+  <div class="exc-card" onclick="openDetail('${inv.id}')">
+    <input type="checkbox" onclick="event.stopPropagation()">
+    <div>
+      <div class="exc-supplier">${inv.supplier} — ${inv.id}<span class="exc-amt">${fmt(inv.amount)}</span></div>
+      <div class="exc-why">${STATUS_PILL[inv.status]}<span>${inv.why||''}</span></div>
+    </div>
+    <button class="btn-secondary" onclick="event.stopPropagation();openDetail('${inv.id}')">Review</button>
+  </div>`).join('');
+
+/* ── Invoices (processed) tab ── */
+const PROCESSED = INV_DATA.filter(i => ['matched','approved','exported'].includes(i.status));
+document.getElementById('invoices-tbody').innerHTML = PROCESSED.map(inv => `
+  <tr>
+    <td><div class="cell-id">${inv.id}</div></td>
+    <td>${inv.supplier}</td>
+    <td>${inv.outlet||'—'}</td>
+    <td class="num"><strong>${fmt(inv.amount)}</strong></td>
+    <td>${inv.status==='exported' ? '<span class="nb-pill ok"><i class="ti ti-circle-check"></i>Auto-posted</span>' : inv.status==='approved' ? '<span class="nb-pill ok"><i class="ti ti-circle-check"></i>Approved · Keith Tan</span>' : '<span class="nb-pill info"><i class="ti ti-loader-2"></i>Awaiting approval</span>'}</td>
+    <td>${inv.status==='exported' ? '<span class="nb-pill ok"><i class="ti ti-send"></i>Synced to '+inv.exportedTo+'</span>' : inv.status==='approved' ? '<span class="nb-pill info"><i class="ti ti-clock"></i>Ready to export</span>' : '<span class="nb-pill neutral"><i class="ti ti-lock"></i>Not yet</span>'}</td>
+  </tr>`).join('');
+
+/* ── Tabs ── */
+function showTab(view){
+  document.querySelectorAll('.proto-tab').forEach(t => t.classList.toggle('active', t.dataset.view===view));
+  document.querySelectorAll('.proto-view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-'+view);
+  if (el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── Exception detail ── */
+function openDetail(id){
+  const inv = INV_DATA.find(i => i.id===id);
+  if (!inv) return;
+  document.getElementById('detail-inv-id').textContent = inv.id;
+  document.getElementById('detail-inv-sup').textContent = inv.supplier + (inv.outlet ? ' · '+inv.outlet : '');
+  document.getElementById('d-supplier').textContent = inv.supplier;
+  document.getElementById('d-outlet').textContent = inv.outlet || '—';
+  document.getElementById('d-id').textContent = inv.id;
+  document.getElementById('d-date').textContent = inv.date;
+  document.getElementById('d-po-chips').innerHTML = inv.po
+    ? `<span class="po-chip"><span class="n">${inv.po}</span><span class="d">${inv.date} · ${fmt(inv.amount)}</span></span>`
+    : `<span style="color:var(--status-warn-fg);font-size:13px;"><i class="ti ti-unlink"></i> Not linked yet</span>`;
+  document.getElementById('d-lines').innerHTML = inv.lines.map(l => {
+    const res = lineMatch(l);
+    const cls = res==='pass' ? 'line-pass' : res==='fail' ? 'line-fail' : '';
+    const qCell = l.grnQty===null ? '<td class="soft-val">—</td>' : `<td class="${l.grnQty===l.invQty?'pass-val':'fail-val'}">${l.grnQty}</td>`;
+    const pCell = `<td class="${Math.abs(l.poPrice-l.invPrice)<0.001?'pass-val':'fail-val'}">${fmt(l.invPrice)}</td>`;
+    const varAmt = (l.invPrice-l.poPrice)*l.invQty;
+    const varStr = Math.abs(varAmt)>0.001 ? (varAmt>0?'+':'')+fmt(varAmt) : '—';
+    return `<tr class="${cls}"><td>${l.name}</td><td>${l.uom}</td><td>${l.poQty}</td>${qCell}<td>${l.invQty}</td><td>${fmt(l.poPrice)}</td>${pCell}<td class="${Math.abs(varAmt)>0.001?'fail-val':''}">${varStr}</td></tr>`;
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-soft);font-style:italic;">No PO linked yet — line items unavailable</td></tr>';
+  const subtotal = inv.amount/1.1, gst = inv.amount-subtotal;
+  document.getElementById('d-subtotal').textContent = fmt(subtotal);
+  document.getElementById('d-gst').textContent = fmt(gst);
+  document.getElementById('d-total').textContent = fmt(inv.amount);
+  // Recipe/margin impact only renders for the one invoice it's actually
+  // grounded in (matches screens/invoice-detail.html's RECIPE_IMPACT lookup) —
+  // never shown for an invoice with no known recipe linkage.
+  document.getElementById('margin-impact-section').style.display = (inv.id === 'INV-00885') ? '' : 'none';
+  showTab('detail');
+}
+
+/* ── Fix explanation drawer ── */
+const FIXES = {
+  provenance:["Show where it came from","No screen currently says PEPPOL, Photo, Email or PDF — yet PEPPOL invoices skip the confidence check entirely. A small badge (reusing the real .src-badge component) makes that visible everywhere, with the fuller 5-source taxonomy the research recommends."],
+  lines:["Line-level match status","The real invoice-detail.html already has this exact three-way table — ported verbatim here so the exception queue and the detail view share one component instead of two."],
+  desc:["Readable descriptions","Item name gets its own column at full width — no truncated combobox to open before a reviewer can tell what they're approving."],
+  po:["PO picker with context","Chips carry date and amount instead of a bare number — reused from screens/invoice-detail.html's own po-chip component."],
+  actions:["One action bar","Every action lives in a single footer row, primary vs. secondary vs. destructive styled with the real .btn-primary/.btn-secondary/.btn-danger classes."],
+  margin:["Inline margin impact","This is the exact Agent card (Mara, data-agent=\"mara\") already shipped on screens/invoice-detail.html for INV-00885 — same numbers, same component, no new pattern invented."],
+  reason:["Reason-coded, not a fraction","Every row states the specific blocking reason via the real .nb-pill component, not a vague progress fraction."],
+  bulk:["Bulk-approve, with confirmation","Every AP tool researched has this tolerance logic; none expose it as a reviewer-facing action. The checkbox always opens a Confirm dialog naming count and total before posting."],
+  sync:["No blank statuses","Every row says explicitly: synced, ready to export, or not yet — never a blank cell."],
+};
+function openFixDrawer(key){
+  const [t,b] = FIXES[key];
+  document.getElementById('fixdrawer-title').textContent = t;
+  document.getElementById('fixdrawer-body').textContent = b;
+  document.getElementById('fixdrawer').classList.add('open');
+}
+
+function openModal(){ document.getElementById('modal').classList.add('open'); }
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.querySelectorAll('.bulk-row input[type=checkbox]').forEach(c=>c.checked=false);
+}
+
+function toast(msg){
+  const el = document.createElement('div');
+  el.style.cssText = 'background:var(--seaweed);color:#fff;padding:10px 20px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);pointer-events:none;white-space:nowrap;max-width:460px;text-align:center;';
+  el.textContent = msg;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+</script>
+</body>
+</html>
