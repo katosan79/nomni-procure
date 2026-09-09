@@ -542,6 +542,14 @@
       },
     ];
 
+    /* ── Merge in any invoices captured via upload-invoice.html this session ──
+       Same demo-persistence pattern as screens/invoices.html — no shared
+       backend, so this is read once at load and unshifted onto INV_DATA. */
+    try {
+      const uploaded = JSON.parse(localStorage.getItem('nomni_demo_uploads') || '[]');
+      INV_DATA.unshift(...uploaded);
+    } catch (e) { /* localStorage unavailable — falls back to the seed data */ }
+
     /* ── Supplier meta for document rendering ── */
     const SUPPLIER_META = {
       'Sydney Butchers Co.':      { email:'accounts@sydneybutchers.com.au',  abn:'42 123 456 789', address:'15 Wholesale Drive\nHomebush NSW 2140',          phone:'(02) 9745 8800', bank:'CBA · BSB 062-001 · Acc 10234567',  terms:'NET 14' },
