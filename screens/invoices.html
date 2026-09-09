@@ -241,7 +241,7 @@
             <p style="font-size:14px;color:var(--text-soft);margin:var(--space-sm) 0 0;">Digitised supplier invoices &middot; 3-way matched against PO and GRN &middot; ready for export</p>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-sm);">
-            <a href="upload-invoice.html" style="display:inline-flex;align-items:center;gap:var(--space-xs);height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);text-decoration:none;"><i class="ti ti-upload"></i> Upload invoice</a>
+            <button onclick="toast('Upload invoice — take a photo or attach a file · PDF, JPG, PNG')" style="display:inline-flex;align-items:center;gap:var(--space-xs);height:40px;padding-inline:var(--space-lg);border-radius:var(--radius-md);border:1px solid var(--border);background:var(--surface);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);"><i class="ti ti-upload"></i> Upload invoice</button>
             <div class="acct-chip">
               <span class="acct-logo xero" aria-label="Xero">
                 <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -541,15 +541,6 @@
         lines:[]
       },
     ];
-
-    /* ── Merge in any invoices captured via upload-invoice.html this session ──
-       There's no shared backend across these static screens, so this mirrors
-       the same demo-persistence pattern already used for nomni_role /
-       nomni_agents: read once at load, unshift so new uploads show up first. */
-    try {
-      const uploaded = JSON.parse(localStorage.getItem('nomni_demo_uploads') || '[]');
-      INV_DATA.unshift(...uploaded);
-    } catch (e) { /* localStorage unavailable — table just shows the seed data */ }
 
     /* ── Date helpers (today = 12 Jun 2026 per prototype) ── */
     const TODAY_DAYS = 20260612; // YYYYMMDD integer for comparison
