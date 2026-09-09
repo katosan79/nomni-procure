@@ -552,6 +552,25 @@
       'Metro Bakery Supplies':    { email:'accounts@metrobakery.com.au',     abn:'61 345 678 901', address:'4 Baker Street\nMarrickville NSW 2204',          phone:'(02) 9519 8700', bank:'Bendigo · BSB 633-000 · Acc 73849201', terms:'NET 14' },
     };
 
+    /* ── Recipe/margin impact — rendered from the Margin Agent's price_change_event
+       consumer (nomni-margin-agent). This is UI-layer only: it never computes margin
+       itself, it renders what Mara already found. Keyed by invoice id and populated
+       only where the linkage is grounded elsewhere in the app (see recipes.html's
+       Avocado Toast v3 cost trend, which already points back at this invoice). ── */
+    const RECIPE_IMPACT = {
+      'INV-00885': {
+        state: 'needs-you',
+        recipes: [{
+          name: 'Avocado Toast v3',
+          href: 'recipe-detail.html',
+          foodCostPct: 34.7,
+          targetPct: 28,
+          belowTarget: true,
+        }],
+        why: 'Avocado invoiced at $2.80/each vs the agreed $2.40 PO rate (+16.7%) pushes Avocado Toast v3’s food cost to 34.7% — above its 28% target. Price dispute has been open 19 days; cost rises further if it resolves in the supplier’s favour.',
+      },
+    };
+
     /* ── Status config ── */
     const STATUS_CFG = {
       unlinked: { pill:'<span class="nb-pill warn"><i class="ti ti-unlink"></i>No PO linked</span>' },
@@ -755,6 +774,46 @@
         </div>`;
     }
 
+    /* ── Recipe/margin impact card (Mara, the Margin agent) ──
+       Renders inline on the exception itself — not a separate report — per
+       the nomni-invoice-ux skill §4.3. Only appears when RECIPE_IMPACT has an
+       entry for this invoice; never fabricates a number for one it doesn't. */
+    function buildRecipeImpact(inv) {
+      const impact = RECIPE_IMPACT[inv.id];
+      if (!impact) return '';
+      const belowCount = impact.recipes.filter(r => r.belowTarget).length;
+      const headline = impact.recipes.length === 1
+        ? `Affects ${impact.recipes[0].name}${impact.recipes[0].belowTarget ? ' — now above target food cost' : ''}`
+        : `Affects ${impact.recipes.length} recipes · ${belowCount} now above target food cost`;
+      const recipeLines = impact.recipes.map(r => `
+        <div class="dkv">
+          <span class="dkv-label">${r.name}</span>
+          <span class="dkv-value" style="color:${r.belowTarget ? 'var(--status-risk-fg)' : 'var(--status-ok-fg)'};">
+            ${r.foodCostPct}% food cost <span style="color:var(--text-soft);font-weight:400;">(target ${r.targetPct}%)</span>
+          </span>
+        </div>`).join('');
+      const stateCls = impact.state || 'needs-you';
+      const stateLabel = stateCls === 'needs-you' ? 'Needs you' : stateCls === 'done' ? 'Acted' : 'Proposed';
+      const stateIcon = stateCls === 'needs-you' ? 'ti-alert-triangle' : stateCls === 'done' ? 'ti-circle-check' : 'ti-bulb';
+      return `
+        <div class="section-head">Recipe &amp; margin impact</div>
+        <div class="agent-card" style="padding:var(--space-lg);gap:var(--space-md);border:1.5px solid var(--agent-border);border-radius:var(--radius-lg);box-shadow:0 0 0 4px var(--agent-glow);margin-bottom:var(--space-xl);">
+          <div class="agent-card-head">
+            <span class="agent-avatar" data-agent="mara" aria-hidden="true">Ma</span>
+            <span class="agent-id"><span class="agent-name">Mara</span><span class="agent-role">Margin agent</span></span>
+            <span class="agent-card-spacer"></span>
+            <span class="agent-state ${stateCls}"><i class="ti ${stateIcon}" aria-hidden="true"></i>${stateLabel}</span>
+          </div>
+          <p style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;margin:0;">${headline}</p>
+          <p class="agent-why" style="margin:0;">${impact.why}</p>
+          <div>${recipeLines}</div>
+          <div>${impact.recipes.map(r => {
+            const label = impact.recipes.length > 1 ? `View ${r.name}` : 'View affected recipe';
+            return `<a href="${r.href}" style="font-size:13px;font-weight:700;color:var(--text-link);text-decoration:none;margin-right:var(--space-lg);">${label} →</a>`;
+          }).join('')}</div>
+        </div>`;
+    }
+
     /* ══════════════════════════════════════════════════════
        DATA PANE RENDERER
     ══════════════════════════════════════════════════════ */
@@ -902,7 +961,9 @@
           </div>`;
       }
 
-      return header + cyrus + kvHtml + overrideHtml + matchHtml;
+      const marginHtml = buildRecipeImpact(inv);
+
+      return header + cyrus + kvHtml + overrideHtml + matchHtml + marginHtml;
     }
 
     function buildUnlinkedSection(inv) {
